@@ -1,0 +1,709 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#  Important :      only developpers and advanced users can modified this database (the others users can used the file DictionaryMRI_Bruker_Users.yml which is in the same directory)
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :           subject , visu_pars , method , acqp , reco (for Bruker Paravasion 5 , Paravision 6)
+#          keyName :        $'nameparameter'= (for Bruker)
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#                           _nBIT_sgn_type (Bruker data type)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       (category of your choice)
+#    json:
+#          tagJson :        same tag as Dicom if it exists , a tag of your choice otherwise
+#          type :           (see before)
+#          format :         (see before)
+#          units :          (see before)
+#
+#---------------------------------- Bruker Paravision 5, Paravision 6 ------------------------------------------
+dictionaryMRI:
+
+  Acquisition Date:
+     where:  
+          file: visu_pars
+          keyName: $VisuAcqDate=
+          type: string
+          format: hh:mn:ss dd/MM/yyyy
+          units: ~
+     viewer: 
+          category: Equipment
+     json:   
+          tagJson: AcquisitionDate
+          type: float
+          format: dd/MM/yyyy hh:mn:ss
+          units: ~
+
+  Acquisition Time:
+    where:
+          file: visu_pars
+          keyName: $VisuAcqScanTime=
+          type:  string
+          format: hh:mn:ss.ms
+          units: s
+    viewer: 
+         category: Equipment 
+    json: 
+         tag_Json: AcquisitionTime
+         type: float
+         format: s
+         units: ~
+
+  BandWidth:
+     where: 
+          file: acqp
+          keyName: $SW_h=
+          type: float
+          format: ~
+          units: MHz
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Byte Order:
+     where: 
+          file: visu_pars
+          keyName: $VisuCoreByteOrder=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ByteOrder
+          type: string
+          format: ~
+          units: ~
+   
+  Coil:
+     where: 
+          file: acqp
+          keyName: $ACQ_operation_mode=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: ~   
+          type: ~
+          format: ~
+          units: ~
+
+  Creation Date:
+     where: 
+          file: subject
+          keyName: $SUBJECT_date=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: ~   
+          type: ~
+          format: ~
+          units: ~         
+ 
+  Data Type:
+     where: 
+          file: visu_pars
+          keyName: $VisuCoreWordType=
+          type: string
+          format: _nBIT_sgn_type
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Echo Time:
+     where: 
+          file: acqp
+          keyName: $ACQ_echo_time=
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: EchoTime
+          type: float
+          format: ~
+          units: ms
+
+  Flip Angle:
+     where: 
+          file: acqp
+          keyName: $ACQ_flip_angle=
+          type: float
+          format: ~
+          units: degree
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: FlipAngle
+          type: float
+          format: ~
+          units: degree
+   
+  FOV:
+     where: 
+          file: reco
+          keyName: $RECO_fov=
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: Fov
+          type: float
+          format: ~
+          units: mm
+       
+  Imaged Nucleus:
+     where: 
+          file: acqp
+          keyName: $NUCLEUS=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: Fov
+          type: float
+          format: ~
+          units: mm        
+   
+  Image Orientation Patient:
+     where: 
+          file: visu_pars
+          keyName: $VisuCoreOrientation=
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ImageOrientationPatient
+          type: float
+          format: ~
+          units: ~
+  
+  Image Position Patient:
+     where: 
+          file: visu_pars
+          keyName: $VisuCorePosition=
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ImagePositionPatient
+          type: float
+          format: ~
+          units: ~   
+
+  Images In Acquisition:
+     where: 
+          file: visu_pars
+          keyName: $VisuCoreFrameCount=
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ImageInAcquisition
+          type: int
+          format: ~
+          units: ~
+   
+  Image Type:
+     where: 
+          file: visu_pars
+          keyName: $VisuCoreFrameType=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~   
+
+  Imaging Frequency:
+     where: 
+          file: visu_pars
+          keyName: $VisuAcqImagingFrequency=
+          type: float
+          format: ~
+          units: MHz
+     viewer:
+          category: ~
+     json:
+          tagJson: ImagingFrequency
+          type: float
+          format: ~
+          units: MHz
+
+  Inversion Time:
+     where:
+          file: visu_pars
+          keyName: $ACQ_inversion_time=
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: InversionTime
+          type: float
+          format: ~
+          units: ms
+
+  Manufacturer:
+     where:
+          file: method
+          keyName: ORIGIN=
+          type: string
+          format: ~
+          units: ms
+     viewer:
+          category: Equipment
+     json:
+          tagJson: Manufacturer
+          type: string
+          format: ~
+          units: ms
+
+  Number Of Averages:
+     where:
+          file: visu_pars
+          keyName: $VisuAcqNumberOfAverages=
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Echo:
+     where:
+          file: method
+          keyName: $PVM_NEchoImages=
+          type: ~
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Repetition:
+     where:
+          file: method
+          keyName: $PVM_NRepetitions=
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Slice:
+     where:
+          file: visu_pars
+          keyName: $VisuCorePosition= # first element in brackets
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Patient BirthDate:
+     where:
+          file: subject
+          keyName: $SUBJECT_dbirth=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Patient ID:
+     where:
+          file: subject
+          keyName: $SUBJECT_id=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientID
+          type: string
+          format: ~
+          units: ~
+
+  Patient Name:
+     where:
+          file: subject
+          keyName: $SUBJECT_name_string=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientName
+          type: string
+          format: ~
+          units: ~
+
+  Patient Position:
+     where:
+          file: visu_pars
+          keyName: $VisuSubjectPosition=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: PatientPosition
+          type: string
+          format: ~
+          units: ~
+
+  Patient Sex:
+     where:
+          file: subject
+          keyName: $SUBJECT_sex=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientSex
+          type: string
+          format: ~
+          units: ~
+
+  Patient Weight:
+     where:
+          file: subject
+          keyName: $SUBJECT_weight=
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientWeight
+          type: float
+          format: ~
+          units: ~
+
+  Pixel Bandwidth:
+     where:
+          file: visu_pars
+          keyName: $VisuAcqPixelBandwidth=
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: ~
+     json:
+          tagJson: PixelBandwidth
+          type: float
+          format: ~
+          units: ms
+
+  Pixel Spacing:
+     where:
+          file: method
+          keyName: $PVM_SpatResol=
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Protocol:
+     where:
+          file: acqp
+          keyName: $ACQ_protocol_name=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ProtocolName
+          type: string
+          format: ~
+          units: ~
+          
+  Read Direction:
+     where:
+          file: method
+          keyName: $PVM_SPackArrReadOrient=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ReadDirection
+          type: string
+          format: ~
+          units: ~
+
+  Repetition Time:
+     where:
+          file: acqp
+          keyName: $ACQ_repetition_time=
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: RepetitionTime
+          type: float
+          format: ~
+          units: ms
+
+  Scan Mode:
+     where:
+          file: visu_pars
+          keyName: $VisuCoreDim=
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Scan Resolution:
+     where:
+          file: reco
+          keyName: $RECO_size=
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Sequence Name:
+     where:
+          file: visu_pars
+          keyName: $VisuAcqSequenceName=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: SequenceName
+          type: string
+          format: ~
+          units: ~
+
+
+  Session:
+     where:
+          file: acqp
+          keyName: $ACQ_operator=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: Session
+          type: string
+          format: ~
+          units: ~
+
+  Slice Orientation:
+     where:
+          file: method
+          keyName: $PVM_SPackArrSliceOrient=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Slice Position:
+     where:
+          file: visu_pars
+          keyName: $VisuCorePosition=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Slice Separation:
+     where:
+          file: acqp
+          keyName: $ACQ_slice_sepn=
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: SpacingBetweenSlices
+          type: float
+          format: ~
+          units: mm
+
+  Slice Thickness:
+     where:
+          file: acqp
+          keyName: $ACQ_slice_thick=
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: SliceThickness
+          type: float
+          format: ~
+          units: mm
+
+  Software Version:
+     where:
+          file: visu_pars
+          keyName: $VisuCreatorVersion=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: SoftwareVersions
+          type: string
+          format: ~
+          units: ~
+
+  Spatial Resolution:
+     where:
+          file: method
+          keyName: $PVM_SpatResol=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Station Name:
+     where:
+          file: acqp
+          keyName: $ACQ_station=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: StationName
+          type: string
+          format: ~
+          units: ~
+
+  Study Name:
+     where:
+          file: subject
+          keyName: $SUBJECT_study_name=
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~

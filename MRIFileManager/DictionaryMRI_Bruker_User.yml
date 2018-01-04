@@ -1,0 +1,124 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :           subject , visu_pars , method , acqp , reco (for Bruker Paravasion 5 , Paravision 6)
+#          keyName :        $'nameparameter'= (for Bruker)
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#                           _nBIT_sgn_type (Bruker data type)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       (category of your choice)
+#    json:
+#          tagJson :        same tag as Dicom if it exists , a tag of your choice otherwise
+#          type :           (see before)
+#          format :         (see before)
+#          units :          (see before)
+#
+#
+#---------------------------------- Bruker Paravision 5, Paravision 6 ------------------------------------------
+dictionaryMRI:
+
+  Diffusion Preparation Method:
+     where:  
+          file: method
+          keyName: $PVM_DiffPrepMode=
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+     json:   
+          tagJson: DiffusionPreparationMethod
+          type: string
+          format: ~
+          units: ~
+
+  Direction Diffusion Number:
+     where:  
+          file: method
+          keyName: $PVM_DwNDiffDir=
+          type: int
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+     json:   
+          tagJson: DirectionDiffusionNumber
+          type: int
+          format: ~
+          units: ~
+
+  Method Diffusion:
+     where:  
+          file: method
+          keyName: $Method=
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+     json:   
+          tagJson: MethodDiffusion
+          type: string
+          format: ~
+          units: ~
+
+  Segment EPI:
+     where:  
+          file: method
+          keyName: $NSegments=
+          type: int
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+     json:   
+          tagJson: SegmentEPI
+          type: int
+          format: ~
+          units: ~
+
+  PCasl Phi:
+     where:  
+          file: method
+          keyName: $PCASL_PhiSwList=
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: PCasl
+     json:   
+          tagJson: PCaslPhi
+          type: string
+          format: ~
+          units: ~
+
+  PCasl Label:
+     where:  
+          file: method
+          keyName: $PCASL_LabelImages=
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: PCasl
+     json:   
+          tagJson: PCaslLabel
+          type: string
+          format: ~
+          units: ~

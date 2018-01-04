@@ -1,0 +1,68 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :           niftiheader or json
+#          keyName :        tag nifti or json
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       category of your choice for viewer
+#
+#
+#----------------------------------NifTI-1 ----------------------------------------------------------------
+dictionaryMRI:
+  
+  Diffusion Preparation Method:
+     where:  
+          file: json
+          keyName: DiffusionPreparationMethod
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+
+  Direction Diffusion Number:
+     where:  
+          file: json
+          keyName: DirectionDiffusionNumber
+          type: int
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+
+  Method Diffusion:
+     where:  
+          file: json
+          keyName: MethodDiffusion
+          type: string
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion
+
+  Segment EPI:
+     where:  
+          file: json
+          keyName: SegmentEPI
+          type: int
+          format: ~
+          units: ~
+     viewer: 
+          category: Diffusion 

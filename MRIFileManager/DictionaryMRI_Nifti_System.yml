@@ -1,0 +1,414 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#  Important :      only developpers and advanced users can modified this database (the others users can used the file DictionaryMRI_Nifti_Users.yml which is in the same directory)
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :           niftiheader or json
+#          keyName :        tag nifti or json
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       category of your choice for viewer
+#
+#
+#---------------------------------- NifTI-1 ----------------------------------------------------------------
+dictionaryMRI:
+  
+  Acquisition Date:
+     where:  
+          file: json
+          keyName: SeriesDate
+          type: string
+          format: hh:mn:ss dd/MM/yyyy
+          units: ~
+     viewer: 
+          category: Equipment
+
+  Acquisition Time:
+     where: 
+          file: json
+          keyName: AcquisitionTime
+          type: string
+          format: hh:mn:ss dd/MM/yyyy
+          units: ~
+     viewer:
+          category: MRI parameters
+
+  BandWidth:
+     where: 
+          file: json
+          keyName: BandWidth
+          type: float
+          format: ~
+          units: MHz
+     viewer:
+          category: MRI parameters
+
+  Byte Order:
+     where: 
+          file: niftiheader
+          keyName: Endianness
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+   
+  Coil:
+     where: 
+          file: json
+          keyName: Coil
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+
+  Creation Date:
+     where: 
+          file: json
+          keyName: StudyDate
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+ 
+  Data Type:
+     where: 
+          file: niftiheader
+          keyName: Datatype
+          type: string
+          format: _nBIT_sgn_type
+          units: ~
+     viewer:
+          category: Dimensions
+
+  Echo Time:
+     where: 
+          file: json
+          keyName: EchoTime
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+
+  Flip Angle:
+     where: 
+          file: json
+          keyName: FlipAngle
+          type: float
+          format: ~
+          units: degree
+     viewer:
+          category: MRI parameters
+   
+  FOV:
+     where: 
+          file: json
+          keyName: FOV
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+      
+  Imaged Nucleus:
+     where: 
+          file: json
+          keyName: ImagedNucleus
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+   
+  Image Orientation Patient:
+     where: 
+          file: json
+          keyName: ImageOrientationPatient
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  
+  Image Position Patient:
+     where: 
+          file: visu_pars
+          keyName: ImagePositionPatient
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Images In Acquisition:
+     where: 
+          file: json
+          keyName: ImageInAcquisition
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+   
+  Image Type:
+     where: 
+          file: json
+          keyName: ImageType
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+
+  Imaging Frequency:
+     where: 
+          file: json
+          keyName: ImagingFrequency
+          type: float
+          format: ~
+          units: MHz
+     viewer:
+          category: ~
+
+  Inversion Time:
+     where:
+          file: json
+          keyName: InversionTime
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+
+  Manufacturer:
+     where:
+          file: json
+          keyName: Manufacturer
+          type: string
+          format: ~
+          units: ms
+     viewer:
+          category: Equipment
+
+#  Number Of Averages:
+#     where:
+#          file: 
+#          keyName: $VisuAcqNumberOfAverages=
+#          type: int
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: MRI parameters
+#     json:
+#          tagJson: ~
+#          type: ~
+#          format: ~
+#          units: ~
+
+  Patient ID:
+     where:
+          file: json
+          keyName: PatientID
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Patient Name:
+     where:
+          file: json
+          keyName: PatientName
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Patient Position:
+     where:
+          file: json
+          keyName: PatientPosition
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+
+  Patient Sex:
+     where:
+          file: json
+          keyName: PatientSex
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Patient Weight:
+     where:
+          file: json
+          keyName: PatientWeight
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Pixel Bandwidth:
+     where:
+          file: json
+          keyName: PixelBandwidth
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: ~
+          
+  Protocol:
+     where:
+          file: json
+          keyName: ProtocolName
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+          
+  Read Direction:
+     where:
+          file: json
+          keyName: ReadDirection
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+
+  Repetition Time:
+     where:
+          file: json
+          keyName: RepetitionTime
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+          
+  Scan Resolution:
+     where:
+          file: niftiheader
+          keyName: Dataset dimensions
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+
+  Sequence Name:
+     where:
+          file: json
+          keyName: SequenceName
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+
+#  Slice Orientation:
+#     where:
+#          file: method
+#          keyName: $PVM_SPackArrSliceOrient=
+#          type: string
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: MRI parameters
+#     json:
+#          tagJson: ~
+#          type: ~
+#          format: ~
+#          units: ~
+
+#  Slice Position:
+#     where:
+#          file: visu_pars
+#          keyName: $VisuCorePosition=
+#          type: string
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: ~
+#     json:
+#          tagJson: ~
+#          type: ~
+#          format: ~
+#          units: ~
+          
+  Slice Separation:
+     where:
+          file: json
+          keyName: SpacingBetweenSlices
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+
+  Slice Thickness:
+     where:
+          file: json
+          keyName: SliceThickness
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+
+  Software Version:
+     where:
+          file: json
+          keyName: SoftwareVersions
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+
+  Spatial Resolution:
+     where:
+          file: niftiheader
+          keyName: Grid spacings
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+
+  Station Name:
+     where:
+          file: json
+          keyName: StationName
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment

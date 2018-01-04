@@ -1,0 +1,178 @@
+
+//------------------------------------------------------------------------------------------
+//Analyze Particles according to shape discriptor limitations
+//Author: Jan Brocher/BioVoxxel
+//First version released: 02/05/2013
+//version 0.3 (03/05/2013), bug-fixed analyses, works with selections
+//version 0.4 (08/05/2013), bug-fix to work with scaled images and improved performance
+//version 0.5 Image selection changed to drop-down menu (14/05/2013)
+//------------------------------------------------------------------------------------------
+
+
+
+	original=getTitle();
+	//run("Select None");
+	if(isOpen("Log")==1) { selectWindow("Log"); run("Close"); }
+	if(is("binary")==false) {
+		exit("works only on binary images");
+	}
+	
+	
+	run("Set Measurements...", "area mean standard modal min centroid center perimeter bounding fit shape feret's integrated median skewness kurtosis area_fraction redirect=None decimal=3");
+	
+	//Setup including shape descriptors
+	Dialog.create("Advanced Particle Analyzer");
+		Dialog.addString("Area (pixel^2)", "0-Infinity");
+		Dialog.addString("Perimeter (pixel)", "0.00-Infinity");
+		Dialog.addString("Circularity", "0.00-1.00");
+		Dialog.addString("Solidity", "0.00-1.00");
+		Dialog.addString("Aspect ratio (AR)", "0.00-Infinity");
+		Dialog.addString("Ellipsoid angle (degree)", "0-180");
+		Dialog.addString("Max. Feret", "0.00-Infinity");
+		Dialog.addString("Feret's angle (degree)", "0-180");
+		Dialog.addChoice("Show", newArray("Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay Outlines", "Overlay Masks"), "Masks");
+		Dialog.addCheckboxGroup(3, 2, newArray("Display results", "Summarize", "Add to Manager", "Exclude edges", "Include holes"), newArray(true, false, false, false, false));
+		Dialog.addHelp("www.biovoxxel.de/macros.html");
+		Dialog.show();
+		Area=Dialog.getString();
+		Perimeter=Dialog.getString();
+		Circularity=Dialog.getString();
+		Solidity=Dialog.getString();
+		AR=Dialog.getString();
+		EllipsoidAngle=Dialog.getString();
+		MaxFeret=Dialog.getString();
+		FeretAngle=Dialog.getString();
+		Output=Dialog.getChoice();
+		DisplayResults=Dialog.getCheckbox();
+		if(DisplayResults==true) {DisplayResults=" display";} else {DisplayResults="";}
+		Summarize=Dialog.getCheckbox();
+		if(Summarize==true) {Summarize=" summarize";} else {Summarize="";}
+		AddToManager=Dialog.getCheckbox();
+		if(AddToManager==true) {AddToManager=" add";} else {AddToManager="";}
+		ExcludeEdges=Dialog.getCheckbox();
+		if(ExcludeEdges==true) {ExcludeEdges=" exclude";} else {ExcludeEdges="";}
+		IncludeHoles=Dialog.getCheckbox();
+		if(IncludeHoles==true) {IncludeHoles=" include";} else {IncludeHoles="";}
+	
+		
+	setForegroundColor(0,0,0);
+	selectWindow(original);
+	run("Analyze Particles...", "size="+Area+" pixel circularity="+Circularity+" show=Masks" + " clear" + ExcludeEdges + IncludeHoles + " record");
+	temp=getTitle();
+	setBatchMode(true);
+	initList=nResults;
+	run("Invert LUT");
+	run("Duplicate...", "title=voronoi");
+	voronoi=getTitle();
+	run("Voronoi");
+	setThreshold(1, 255);
+	run("Convert to Mask");
+	run("Invert");
+
+	X=newArray(initList);
+	Y=newArray(initList);
+	
+	for(coord=0; coord<initList; coord++) {
+		X[coord]=getResult("X", coord);
+		Y[coord]=getResult("Y", coord);
+		toUnscaled(X[coord], Y[coord]); //bug-fix in v0.4 to work correctly with scaled images
+	}
+	
+	for(n=0; n<initList; n++) {
+		end=false;
+		selectWindow(voronoi);
+		if(Perimeter!="0-Infinity" && end==false) {
+				PerimeterMin=substring(Perimeter, 0, (indexOf(Perimeter, "-")));
+				PerimeterMax=substring(Perimeter, (indexOf(Perimeter, "-")+1));
+				if(PerimeterMax=="Infinity") { 
+					PerimeterMax=999999999999;
+				}
+				if(getResult("Perim.", n)<PerimeterMin || getResult("Perim.", n)>PerimeterMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+					
+			}
+			
+		if(Solidity!="0.00-1.00" && end==false) {
+				SolidityMin=substring(Solidity, 0, (indexOf(Solidity, "-")));
+				SolidityMax=substring(Solidity, (indexOf(Solidity, "-")+1));
+				if(getResult("Solidity", n)<SolidityMin || getResult("Solidity", n)>SolidityMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+		}
+			
+		if(AR!="0.00-Infinity" && end==false) {
+				ARMin=substring(AR, 0, (indexOf(AR, "-")));
+				ARMax=substring(AR, (indexOf(AR, "-")+1));
+				if(ARMax=="Infinity") {
+					ARMax=999999999999;
+				}
+				if(getResult("AR", n)<ARMin || getResult("AR", n)>ARMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+		}
+		
+		if(EllipsoidAngle!="0-180" && end==false) {
+				EllipsoidAngleMin=substring(EllipsoidAngle, 0, (indexOf(EllipsoidAngle, "-")));
+				EllipsoidAngleMax=substring(EllipsoidAngle, (indexOf(EllipsoidAngle, "-")+1));
+				if(getResult("Angle", n)<EllipsoidAngleMin || getResult("Angle", n)>EllipsoidAngleMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+				
+		}
+		
+		if(MaxFeret!="0.00-Infinity" && end==false) {
+				MaxFeretMin=substring(MaxFeret, 0, (indexOf(MaxFeret, "-")));
+				MaxFeretMax=substring(MaxFeret, (indexOf(MaxFeret, "-")+1));
+				if(MaxFeretMax=="Infinity") {
+					MaxFeretMax=999999999999;
+				}
+				if(getResult("Feret", n)<MaxFeretMin || getResult("Feret", n)>MaxFeretMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+				
+		}
+			
+		if(FeretAngle!="0-180" && end==false) {
+				FeretAngleMin=substring(FeretAngle, 0, (indexOf(FeretAngle, "-")));
+				FeretAngleMax=substring(FeretAngle, (indexOf(FeretAngle, "-")+1));
+				if(getResult("FeretAngle", n)<FeretAngleMin || getResult("FeretAngle", n)>FeretAngleMax) {
+					doWand(X[n],Y[n]);
+					run("Fill");
+					end=true;
+				}
+				
+		}
+	}
+	selectWindow(voronoi);
+	run("Select None");
+	selectWindow(temp);
+	run("Select All");
+	run("Copy");
+	setPasteMode("Transparent-white");
+	selectWindow(voronoi);
+	run("Select All");
+	run("Paste");
+	run("Select None");
+	run("Analyze Particles...", "size=0-Infinity pixel circularity=0.00-1.00 show=["+Output+"]" + DisplayResults +" clear" + Summarize + AddToManager + ExcludeEdges + IncludeHoles);
+	rename("PartAnal_"+original);
+	setBatchMode(false);
+	if(Output=="Masks") {
+		run("Invert LUT");
+	}
+	close(temp);
+	close(voronoi);
+
+	
+
+//---------

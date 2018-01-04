@@ -1,0 +1,777 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#  Important :      only developpers and advanced users can modified this database (the others users can used the file DictionaryMRI_Bruker_Users.yml which is in the same directory)
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :            ,  ,  ,  , reco (for Bruker Paravasion 5 , Paravision 6)
+#          keyName :        $'nameparameter'= (for Bruker)
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#                           _nBIT_sgn_type (Bruker data type)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       (category of your choice)
+#    json:
+#          tagJson :        same tag as Dicom if it exists , a tag of your choice otherwise
+#          type :           (see before)
+#          format :         (see before)
+#          units :          (see before)
+#
+#---------------------------------- Bruker Paravision 5, Paravision 6 ------------------------------------------
+dictionaryMRI:
+
+  Acquisition Date:
+     where: 
+          file: ~
+          keyName: Image Date
+          type: string
+          format: hh:mn:ss dd/MM/yyyy
+          units: ~
+     viewer: 
+          category: Equipment
+     json:   
+          tagJson: AcquisitionDate
+          type: float
+          format: dd/MM/yyyy hh:mn:ss
+          units: ~
+
+  Acquisition Time:
+    where:
+          file: ~
+          keyName: Series Time
+          type:  string
+          format: hh:mn:ss.ms
+          units: s
+    viewer: 
+         category: Equipment 
+    json: 
+         tagJson: AcquisitionTime
+         type: float
+         format: s
+         units: ~
+
+#  BandWidth:
+#     where: 
+#          file: 
+#          keyName: 
+#          type: float
+#          format: ~
+#          units: MHz
+#     viewer:
+#          category: MRI parameters
+#     json:
+#          tagJson: ~
+#          type: ~
+#          format: ~
+#          units: ~
+
+#  Byte Order:
+#     where: 
+#          file: 
+#          keyName: 
+#          type: string
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: Dimensions
+#     json:
+#          tagJson: ByteOrder
+#          type: string
+#          format: ~
+#          units: ~
+   
+#  Coil:
+#     where: 
+#          file: 
+#          keyName: 
+#          type: string
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: Equipment
+#     json:
+#          tagJson: ~   
+#          type: ~
+#          format: ~
+#          units: ~
+
+  Creation Date:
+     where: 
+          file: ~
+          keyName: Study Date
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: ~   
+          type: ~
+          format: ~
+          units: ~         
+
+  Columns:
+     where: 
+          file: ~
+          keyName: Columns
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~   
+          type: ~
+          format: ~
+          units: ~ 
+ 
+  Data Type:
+     where: 
+          file: dirfile,dicomdir
+          keyName: Bits Allocated
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Echo Time:
+     where:
+          file: dirfile
+          keyName: Echo Time
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: EchoTime
+          type: float
+          format: ~
+          units: ms
+
+  Flip Angle:
+     where: 
+          file: dirfile
+          keyName: Flip Angle
+          type: float
+          format: ~
+          units: degree
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: FlipAngle
+          type: float
+          format: ~
+          units: degree
+   
+#  FOV:
+#     where: 
+#          keyName: $RECO_fov=
+#          type: float
+#          format: ~
+#          units: mm
+#     viewer:
+#          category: MRI parameters
+#     json:
+#          tagJson: Fov
+#          type: float
+#          format: ~
+#          units: mm
+       
+  Imaged Nucleus:
+     where:
+          file: ~
+          keyName: Imaged Nucleus
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: Fov
+          type: float
+          format: ~
+          units: mm        
+   
+  Image Orientation Patient:
+     where: 
+          file: dirfile
+          keyName: Image Orientation (Patient)
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ImageOrientationPatient
+          type: float
+          format: ~
+          units: ~
+  
+  Image Position Patient:
+     where:
+          file: dirfile
+          keyName: Image Position (Patient)
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ImagePositionPatient
+          type: float
+          format: ~
+          units: ~   
+
+  Images In Acquisition:
+     where: 
+          keyName: Number of Frames
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ImageInAcquisition
+          type: int
+          format: ~
+          units: ~
+   
+  Image Type:
+     where:
+          file: dirfile, dicomdir
+          keyName: Image Type
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~   
+
+  Imaging Frequency:
+     where:
+          file: ~
+          keyName: Imaging Frequency
+          type: float
+          format: ~
+          units: MHz
+     viewer:
+          category: ~
+     json:
+          tagJson: ImagingFrequency
+          type: float
+          format: ~
+          units: MHz
+
+  Inversion Time:
+     where:
+          file: dirfile
+          keyName: Inversion Time
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: InversionTime
+          type: float
+          format: ~
+          units: ms
+
+  Manufacturer:
+     where:
+          file: ~
+          keyName: Manufacturer
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: Manufacturer
+          type: string
+          format: ~
+          units: ~
+ 
+  Manufacturer's Model:
+     where:
+          file: ~
+          keyName: Manufacturer's Model Name
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: Manufacturer's Model
+          type: string
+          format: ~
+          units: ~         
+
+  Modality:
+     where:
+          file: ~
+          keyName: Modality
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Test
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Averages:
+     where:
+          file: ~
+          keyName: Number of Averages
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Diffusion:
+     where:
+          file: ~
+          keyName: 0018,9087
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Echo:
+     where:
+          file: dirfile
+          keyName: Echo Time
+          type: ~
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Repetition:
+     where:
+          file: ~
+          keyName: Temporal Position
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Number Of Slice:
+     where:
+          file: ~
+          keyName: Image Position Patient #Slice Location
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Patient BirthDate:
+     where:
+          file: ~
+          keyName: Patient's Birth Date
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Patient ID:
+     where:
+          file: ~
+          keyName: Patient ID
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientID
+          type: string
+          format: ~
+          units: ~
+
+  Patient Name:
+     where:
+          file: ~
+          keyName: Patient's Name
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientName
+          type: string
+          format: ~
+          units: ~
+
+  Patient Position:
+     where:
+          file: dirfile
+          keyName: Patient Position
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: PatientPosition
+          type: string
+          format: ~
+          units: ~
+
+  Patient Sex:
+     where:
+          file: ~
+          keyName: Patient's Sex
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientSex
+          type: string
+          format: ~
+          units: ~
+
+  Patient Weight:
+     where:
+          file: ~
+          keyName: Patient's Weight
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: PatientWeight
+          type: float
+          format: ~
+          units: ~
+
+  Pixel Bandwidth:
+     where:
+          file: ~
+          keyName: Pixel Bandwidth
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: ~
+     json:
+          tagJson: PixelBandwidth
+          type: float
+          format: ~
+          units: ms
+
+  Pixel Spacing:
+     where:
+          file: ~
+          keyName: Pixel Spacing
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Protocol:
+     where:
+          file: ~
+          keyName: Protocol Name
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ProtocolName
+          type: string
+          format: ~
+          units: ~
+          
+  Read Direction:
+     where:
+          keyName: Acquisition Matrix #Multi-valued: frequency rows\frequency columns\phase rows\phase columns.
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ReadDirection
+          type: string
+          format: ~
+          units: ~
+
+  Repetition Time:
+     where:
+          file: ~
+          keyName: Repetition Time
+          type: float
+          format: ~
+          units: ms
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: RepetitionTime
+          type: float
+          format: ~
+          units: ms
+
+  Rows:
+     where:
+          file: ~
+          keyName: Rows
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+  
+  Scan Mode:
+     where:
+          file: ~
+          keyName: MR Acquisition Type
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Scan Resolution:
+     where:
+          keyName: Rows & Columns
+          type: int
+          format: ~
+          units: ~
+     viewer:
+          category: Dimensions
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Sequence Name:
+     where:
+          file: dirfile
+          keyName: Sequence Name
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: SequenceName
+          type: string
+          format: ~
+          units: ~
+
+#  Session:
+#     where:
+#          keyName: 
+#          type: string
+#          format: ~
+#          units: ~
+#     viewer:
+#          category: Equipment
+#     json:
+#          tagJson: Session
+#          type: string
+#          format: ~
+#          units: ~
+
+  Slice Orientation:
+     where:
+          file: dirfile
+          keyName: Image Orientation (Patient)
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Slice Position:
+     where:
+          file: dirfile
+          keyName: Slice Location
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+          
+  Slice Separation:
+     where:
+          file: ~
+          keyName: Spacing Between Slices
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: SpacingBetweenSlices
+          type: float
+          format: ~
+          units: mm
+
+  Slice Thickness:
+     where:
+          file: ~
+          keyName: Slice Thickness
+          type: float
+          format: ~
+          units: mm
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: SliceThickness
+          type: float
+          format: ~
+          units: mm
+
+  Software Version:
+     where:
+          file: ~
+          keyName: Software Versions(s)
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: SoftwareVersions
+          type: string
+          format: ~
+          units: ~
+
+  Spatial Resolution:
+     where:
+          keyName: Pixel Spacing
+          type: float
+          format: ~
+          units: ~
+     viewer:
+          category: MRI parameters
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~
+
+  Station Name:
+     where:
+          file: ~
+          keyName: Station Name
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: Equipment
+     json:
+          tagJson: StationName
+          type: string
+          format: ~
+          units: ~
+
+  Study Name:
+     where:
+          file: ~
+          keyName: Study ID
+          type: string
+          format: ~
+          units: ~
+     viewer:
+          category: ~
+     json:
+          tagJson: ~
+          type: ~
+          format: ~
+          units: ~

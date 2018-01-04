@@ -1,0 +1,49 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where:
+#          file :           par ; xml ; ExtendsCard (for Philips Achieva PAR 4.2 , Xml 5)
+#          keyName :        tag Philips without [],(),<> and its elements which are inside
+#          type :           string, float, int
+#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          units :          um , mm , cm , m (for distance)
+#                           us , ms , s or (usec, msec, sec), mn , h (for time)
+#                           degree or degrees (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       (category of your choice)
+#    json:
+#          tagJson :        same tag as Dicom if it exists , a tag of your choice otherwise
+#          type :           (see before)
+#          format :         (see before)
+#          units :          (see before)
+#
+#
+#---------------------------------- Philips Achieva PAR, Xml, ExamCard ----------------------------------
+dictionaryMRI:
+
+  Diffusion AP,FH,RL:
+    where:
+          file:           PAR       ; Xml
+          keyName:        diffusion ; Diffusion AP
+          type:           ~         ; ~
+          format: ~
+          units: ~          
+    viewer: 
+         category: Diffusion 
+    json: 
+         tag_Json: ~
+         type: ~
+         format: ~
+         units: ~
+         

@@ -1,0 +1,1 @@
+jre\bin\java -Xmx4096M -jar MRIManagerFinal.jar
