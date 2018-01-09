@@ -14,11 +14,11 @@ tp_listing = unique(handles.database.Tp(Patient_filter));
 tp_filter = handles.database.Tp== tp_listing(time_point_seleted);
 
 if get(handles.MIA_scan_VOIs_button, 'Value') == 0  % search inside the scan listing
-    is_scan =  handles.database.type == 'scan';
+    is_scan =  handles.database.Type == 'Scan';
     nii_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
     
 else % search inside the ROI listing
-    is_ROI =  handles.database.type == 'ROI';
+    is_ROI =  handles.database.Type == 'ROI';
     nii_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_ROI);
 end
 

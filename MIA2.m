@@ -8894,7 +8894,7 @@ else
      % create the database structure
     handles.database =  table;%
     handles.database = cell2table(cell(0,8));
-   handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
+    handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
     handles.database.Properties.UserData.MIA_root_path = MIA_root_path;       
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
  
@@ -8909,6 +8909,9 @@ if exist(MIA_tmp_folder, 'dir') ~= 7
         return
     end
 end
+
+%update handes
+guidata(hObject, handles)
 
 % [folder, ~, ~] = fileparts(which('MIA2.m'));
 % MRIFileManager_path = [folder,filesep,'MRIFileManager', filesep];
@@ -8940,7 +8943,6 @@ global handlesb;
 hObject = hObjectb;
 eventdata=eventdatab;
 handles=handlesb;
-
 clear hObjectb
 clear eventdatab
 clear handlesb
