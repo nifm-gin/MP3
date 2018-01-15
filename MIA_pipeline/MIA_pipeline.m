@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 27-Oct-2017 09:51:07
+% Last Modified by GUIDE v2.5 12-Jan-2018 20:53:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,6 +66,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      };
  handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM' };
  
+ 
+ handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
+ 
 %  
 %  {'Arithmetic', 'Mean slices', 'Smooth', 'Add slices', ...
 %    'SPM: Realign (Over time)', 'Same registration as', 'Normalization', 'Repair outlier',...
@@ -73,8 +76,10 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
 %     'T2starcorr3D', 'ASL_InvEff',
 
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
-set(handles.MIA_pipeline_input_data_source_popupmenu, 'String', 'Database');
-handles.Source_selected = 'Database';
+set(handles.MIA_pipeline_input_data_source_popupmenu, 'String', handles.Tags_listing);
+handles.Source_selected = handles.Tags_listing{1};
+handles.MIA_pipeline_Filtering_Table.Data = [{'all'} ;cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+handles.MIA_pipeline_Filtering_Table.ColumnName = {handles.Source_selected};
 % Update handles structure
 guidata(hObject, handles);
 
@@ -149,7 +154,7 @@ end
 %     % Add the job to the pipeline
 %     pipeline = psom_add_job(pipeline, job_name,brick,job_in,job_out,opt.test_brick);
 %     % The outputs of this brick are just
-%     % intermediate outputs :
+%     % intermediate outputs :biograph_obj
 %     % clean these up as soon as possible
 % %     pipeline = psom_add_clean(pipeline, [job_name ...
 % %         '_clean'],pipeline.(job_name).files_out);
@@ -226,6 +231,7 @@ switch handles.new_module.opt.parameter_type{parameter_selected}
             table.data(1:numel(SequenceType_listing),2) = {false};
             table.columnName = {'Scan Type', 'Select Input'};
             table.editable = [false true];
+            table.Database = handles.MIA_data.database;
         else % case of selecting input data from an output module
             
             
@@ -285,7 +291,7 @@ end
 
 
 
-% 
+
 % parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 % parameter_list = get(handles.MIA_pipeline_module_parameters,'String');
 % set(handles.MIA_pipeline_parameter_setup, 'Value', 1);
@@ -358,6 +364,7 @@ function MIA_pipeline_parameter_setup_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_parameter_setup contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_parameter_setup
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -465,67 +472,66 @@ table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
 patient_listing = table_data(:,1);
 patient_selected = patient_listing(find([table_data{:,2}]' == true));
 
-% case go back to all patient
-if table_data{1,2} == 1 && handles.new_module.files_in_filter_data{1,2} == 0
-    idex_patient = true(numel(handles.MIA_data.database.Patient),1);
-    table_data(1,2) = {true};
-    table_data(2:numel(unique(handles.MIA_data.database.Patient))+1,2) = {false};
-    % from all patient to a specific patient
-elseif sum(find([table_data{:,2}]' == true)) >1 && table_data{1,2} == 1
-    table_data{1,2} = false;
-    patient_selected = patient_listing(find([table_data{:,2}]' == true));
-    idex_patient = handles.MIA_data.database.Patient == patient_selected;
-    
-    % if all patient is selected
-elseif sum(find([table_data{:,2}]' == true))  == 1 && table_data{1,2} == 1
-    idex_patient = true(numel(handles.MIA_data.database.Patient),1);
-    % 1 or more patient (but not all)
-else
-    idex_patient = false(numel(handles.MIA_data.database.Patient),1);
-    for i=1:numel(patient_selected)
-        idex_patient = idex_patient | handles.MIA_data.database.Patient == patient_selected(i);
-    end
-end
-
-  
-tp_listing = table_data(:,3);
-tp_selected = tp_listing(find([table_data{:,4}]' == true));
-
-% case go back to all time point
-if table_data{1,4} == 1 && handles.new_module.files_in_filter_data{1,4} == 0
-    idex_tp = true(numel(handles.MIA_data.database.Tp),1);
-    table_data(1,4) = {true};
-    table_data(2:numel(unique(handles.MIA_data.database.Tp))+1,4) = {false};
-    % from all time point to a specific time point
-elseif sum(find([table_data{:,4}]' == true)) >1 && table_data{1,4} == 1
-    table_data{1,4} = false;
-    tp_selected = tp_listing(find([table_data{:,4}]' == true));
-    idex_tp = handles.MIA_data.database.Tp == tp_selected;
-    
-    % if all time point is selected
-elseif sum(find([table_data{:,4}]' == true))  == 1 && table_data{1,4} == 1
-    idex_tp = true(numel(handles.MIA_data.database.Tp),1);
-    % if 1 or more time point (but not all)
-else
-    idex_tp = false(numel(handles.MIA_data.database.Tp),1);
-    for i=1:numel(tp_selected)
-        idex_tp = idex_tp | handles.MIA_data.database.Tp == tp_selected(i);
-    end
-end
-
-SequenceName_listing =table_data(:,5);
-SequenceName_selected = SequenceName_listing(find([table_data{:,6}]' == true));
-if isempty(SequenceName_selected)
-    index_SequenceName =true(numel(handles.MIA_data.database.Tp,1));
-else
-     index_SequenceName = false(numel(handles.MIA_data.database.Tp),1);
-    for i=1:numel(SequenceName_selected)
-        index_SequenceName = index_SequenceName | handles.MIA_data.database.SequenceName == SequenceName_selected(i);
-    end
-end
-handles.new_module.files_in = char(handles.MIA_data.database.Filename(idex_patient & idex_tp & index_SequenceName));
-handles.new_module.files_in_index = find(idex_patient & idex_tp & index_SequenceName);
-handles.new_module.files_in_filter_data = table_data;
+% % case go back to all patient
+% if table_data{1,2} == 1 && handles.new_module.files_in_filter_data{1,2} == 0
+%     idex_patient = true(numel(handles.MIA_data.database.Patient),1);
+%     table_data(1,2) = {true};
+%     table_data(2:numel(unique(handles.MIA_data.database.Patient))+1,2) = {false};
+%     % from all patient to a specific patient
+% elseif sum(find([table_data{:,2}]' == true)) >1 && table_data{1,2} == 1
+%     table_data{1,2} = false;
+%     patient_selected = patient_listing(find([table_data{:,2}]' == true));
+%     idex_patient = handles.MIA_data.database.Patient == patient_selected;
+%     
+%     % if all patient is selected
+% elseif sum(find([table_data{:,2}]' == true))  == 1 && table_data{1,2} == 1
+%     idex_patient = true(numel(handles.MIA_data.database.Patient),1);
+%     % 1 or more patient (but not all)
+% else
+%     idex_patient = false(numel(handles.MIA_data.database.Patient),1);
+%     for i=1:numel(patient_selected)
+%         idex_patient = idex_patient | handles.MIA_data.database.Patient == patient_selected(i);
+%     end
+% end
+% 
+% tp_listing = table_data(:,3);
+% tp_selected = tp_listing(find([table_data{:,4}]' == true));
+% 
+% % case go back to all time point
+% if table_data{1,4} == 1 && handles.new_module.files_in_filter_data{1,4} == 0
+%     idex_tp = true(numel(handles.MIA_data.database.Tp),1);
+%     table_data(1,4) = {true};
+%     table_data(2:numel(unique(handles.MIA_data.database.Tp))+1,4) = {false};
+%     % from all time point to a specific time point
+% elseif sum(find([table_data{:,4}]' == true)) >1 && table_data{1,4} == 1
+%     table_data{1,4} = false;
+%     tp_selected = tp_listing(find([table_data{:,4}]' == true));
+%     idex_tp = handles.MIA_data.database.Tp == tp_selected;
+%     
+%     % if all time point is selected
+% elseif sum(find([table_data{:,4}]' == true))  == 1 && table_data{1,4} == 1
+%     idex_tp = true(numel(handles.MIA_data.database.Tp),1);
+%     % if 1 or more time point (but not all)
+% else
+%     idex_tp = false(numel(handles.MIA_data.database.Tp),1);
+%     for i=1:numel(tp_selected)
+%         idex_tp = idex_tp | handles.MIA_data.database.Tp == tp_selected(i);
+%     end
+% end
+% 
+% SequenceName_listing =table_data(:,5);
+% SequenceName_selected = SequenceName_listing(find([table_data{:,6}]' == true));
+% if isempty(SequenceName_selected)
+%     index_SequenceName =true(numel(handles.MIA_data.database.Tp,1));
+% else
+%      index_SequenceName = false(numel(handles.MIA_data.database.Tp),1);
+%     for i=1:numel(SequenceName_selected)
+%         index_SequenceName = index_SequenceName | handles.MIA_data.database.SequenceName == SequenceName_selected(i);
+%     end
+% end
+% handles.new_module.files_in = char(handles.MIA_data.database.Filename(idex_patient & idex_tp & index_SequenceName));
+% handles.new_module.files_in_index = find(idex_patient & idex_tp & index_SequenceName);
+% handles.new_module.files_in_filter_data = table_data;
 
 guidata(hObject, handles);
 MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
@@ -570,7 +576,8 @@ function MIA_pipeline_input_data_source_popupmenu_Callback(hObject, eventdata, h
 % hObject    handle to MIA_pipeline_input_data_source_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+handles.Source_selected = handles.MIA_pipeline_input_data_source_popupmenu.String{handles.MIA_pipeline_input_data_source_popupmenu.Value};
+guidata(hObject, handles);
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_input_data_source_popupmenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_input_data_source_popupmenu
 
@@ -585,6 +592,7 @@ function MIA_pipeline_input_data_source_popupmenu_CreateFcn(hObject, eventdata, 
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+
 end
 
 function nii_json_fullfilename = fullfilename(handles, nii_index, ext)
@@ -622,6 +630,12 @@ switch char(handles.Modules_listing(module_selected))
 %      };
     case handles.Module_groups	
         module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
+    case '   .SPM: Coreg'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_SPMCoreg('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = module_SPMCoreg(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
+        handles.new_module.module_name = 'module_SPMCoreg';
+        module_parameters_string = handles.new_module.opt.parameter_list;
+        ismodule = 1;
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = module_T2map(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
@@ -715,3 +729,56 @@ function MIA_pipeline_close_modules_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_close_modules_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in MIA_pipeline_Add_Tag_Button.
+function MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Add_Tag_Button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if isempty(intersect(handles.Source_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
+    NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+    SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
+    SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
+    FullTable = cell(SizeVert,SizeHor);
+    FullTable(1:size(handles.MIA_pipeline_Filtering_Table.Data,1),1:size(handles.MIA_pipeline_Filtering_Table.Data,2)) = handles.MIA_pipeline_Filtering_Table.Data;
+    FullTable(1:size(NewTagValues,1),size(handles.MIA_pipeline_Filtering_Table.Data,2)+1) = NewTagValues;
+    handles.MIA_pipeline_Filtering_Table.Data = FullTable;
+    handles.MIA_pipeline_Filtering_Table.ColumnName = [handles.MIA_pipeline_Filtering_Table.ColumnName; {handles.Source_selected}];
+else
+    msgbox('This Tag is already used ! You cannot use it twice.', 'Warning')
+end
+guidata(hObject, handles);
+
+% --- Executes on button press in MIA_pipeline_Remove_Tag_Button.
+function MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Remove_Tag_Button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if isempty(intersect(handles.Source_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
+    msgbox('This Tag is not used ! You cannot remove it.', 'Warning')
+else
+   Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Source_selected));
+   handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
+   [val, index]=min(sum(cellfun(@isempty,handles.MIA_pipeline_Filtering_Table.Data)));
+   handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun(@isempty, handles.MIA_pipeline_Filtering_Table.Data(:,index)), :);
+   %handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun('isempty',handles.MIA_pipeline_Filtering_Table.Data));
+   handles.MIA_pipeline_Filtering_Table.ColumnName(Index) = [];
+end
+
+guidata(hObject, handles);
+
+
+% --- Executes when selected cell(s) is changed in MIA_pipeline_Filtering_Table.
+function MIA_pipeline_Filtering_Table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Filtering_Table (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+NbSelected = length(eventdata.Indices);
+for i = 1:NbSelected
+    NameSelected = eventdata.Source.Data{eventdata.Indices(i,1), eventdata.Indices(i,2)};
+    Tag = handles.MIA_pipeline_Filtering_Table.ColumnName{enventdata.Indices(i,2)};
+end
+
+guidata(hObject, handles);
