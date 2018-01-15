@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 12-Jan-2018 20:53:36
+% Last Modified by GUIDE v2.5 15-Jan-2018 15:49:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,10 +76,14 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
 %     'T2starcorr3D', 'ASL_InvEff',
 
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
-set(handles.MIA_pipeline_input_data_source_popupmenu, 'String', handles.Tags_listing);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
+set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 handles.Source_selected = handles.Tags_listing{1};
-handles.MIA_pipeline_Filtering_Table.Data = [{'all'} ;cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
-handles.MIA_pipeline_Filtering_Table.ColumnName = {handles.Source_selected};
+handles.Remove_Tags_listing = {'NoMoreTags'};
+handles.Remove_selected = handles.Remove_Tags_listing{1};
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+handles.MIA_pipeline_Filtering_Table.Data = [];
+handles.MIA_pipeline_Filtering_Table.ColumnName = {};
 % Update handles structure
 guidata(hObject, handles);
 
@@ -571,20 +575,25 @@ output_file_names = [...
 output_file_names  = strrep(cellstr(output_file_names), ' ', '');
 
 
-% --- Executes on selection change in MIA_pipeline_input_data_source_popupmenu.
-function MIA_pipeline_input_data_source_popupmenu_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_input_data_source_popupmenu (see GCBO)
+% --- Executes on selection change in MIA_pipeline_add_tag_popupmenu.
+function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.Source_selected = handles.MIA_pipeline_input_data_source_popupmenu.String{handles.MIA_pipeline_input_data_source_popupmenu.Value};
+handles.Source_selected = handles.MIA_pipeline_add_tag_popupmenu.String{handles.MIA_pipeline_add_tag_popupmenu.Value};
+TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+
+handles.MIA_pipeline_Unique_Values_Tag.Data = TagValues;
+handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
+
 guidata(hObject, handles);
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_input_data_source_popupmenu contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_input_data_source_popupmenu
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_add_tag_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_add_tag_popupmenu
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_input_data_source_popupmenu_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_input_data_source_popupmenu (see GCBO)
+function MIA_pipeline_add_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -748,6 +757,34 @@ if isempty(intersect(handles.Source_selected, handles.MIA_pipeline_Filtering_Tab
 else
     msgbox('This Tag is already used ! You cannot use it twice.', 'Warning')
 end
+Tag_To_Add = handles.Source_selected;
+Index = find(contains(handles.Tags_listing, Tag_To_Add));
+NewTagListing = {handles.Tags_listing{1:Index-1},handles.Tags_listing{Index+1:end}};
+if isempty(NewTagListing)
+    set(handles.MIA_pipeline_add_tag_popupmenu, 'String', {'NoMoreTags'})
+    set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+    handles.Source_selected = {'NoMoreTags'};
+    handles.Tags_listing = {'NoMoreTags'};
+else
+    set(handles.MIA_pipeline_add_tag_popupmenu, 'String', NewTagListing);
+    set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+    handles.Source_selected = NewTagListing{1};
+    handles.Tags_listing = NewTagListing;
+    MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+end
+if contains(handles.MIA_pipeline_remove_tag_popupmenu.String, 'NoMoreTag')
+    set(handles.MIA_pipeline_remove_tag_popupmenu,'String', Tag_To_Add);
+    handles.Remove_selected = Tag_To_Add;
+else
+%handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
+    if size(handles.MIA_pipeline_remove_tag_popupmenu.String,1)==1
+        set(handles.MIA_pipeline_remove_tag_popupmenu,'String',{handles.MIA_pipeline_remove_tag_popupmenu.String; Tag_To_Add});
+        handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
+    else
+        set(handles.MIA_pipeline_remove_tag_popupmenu,'String',[handles.MIA_pipeline_remove_tag_popupmenu.String; Tag_To_Add]);
+        handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
+    end
+end
 guidata(hObject, handles);
 
 % --- Executes on button press in MIA_pipeline_Remove_Tag_Button.
@@ -755,17 +792,43 @@ function MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_Remove_Tag_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if isempty(intersect(handles.Source_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
+if isempty(intersect(handles.Remove_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
     msgbox('This Tag is not used ! You cannot remove it.', 'Warning')
 else
-   Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Source_selected));
+   Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
    handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
    [val, index]=min(sum(cellfun(@isempty,handles.MIA_pipeline_Filtering_Table.Data)));
    handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun(@isempty, handles.MIA_pipeline_Filtering_Table.Data(:,index)), :);
    %handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun('isempty',handles.MIA_pipeline_Filtering_Table.Data));
    handles.MIA_pipeline_Filtering_Table.ColumnName(Index) = [];
 end
-
+Tag_To_Add = handles.Remove_selected;
+Index = find(contains(handles.Remove_Tags_listing, Tag_To_Add));
+NewTagListing = {handles.Remove_Tags_listing{1:Index-1},handles.Remove_Tags_listing{Index+1:end}};
+if isempty(NewTagListing)
+    set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
+    set(handles.MIA_pipeline_remove_tag_popupmenu, 'Value', 1);
+    handles.Remove_selected = {'NoMoreTags'};
+    handles.Remove_Tags_listing = {'NoMoreTags'};
+else
+    set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', NewTagListing);
+    set(handles.MIA_pipeline_remove_tag_popupmenu, 'Value', 1);
+    handles.Remove_selected = NewTagListing{1};
+    handles.Remove_Tags_listing = NewTagListing;
+    MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
+end
+if contains(handles.MIA_pipeline_add_tag_popupmenu.String, 'NoMoreTag')
+    set(handles.MIA_pipeline_add_tag_popupmenu,'String', Tag_To_Add);
+else
+%handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
+    if size(handles.MIA_pipeline_add_tag_popupmenu.String,1)==1
+        set(handles.MIA_pipeline_add_tag_popupmenu,'String',{handles.MIA_pipeline_add_tag_popupmenu.String; Tag_To_Add});
+        handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
+    else
+        set(handles.MIA_pipeline_add_tag_popupmenu,'String',[handles.MIA_pipeline_add_tag_popupmenu.String; Tag_To_Add]);
+        handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
+    end
+end
 guidata(hObject, handles);
 
 
@@ -782,3 +845,50 @@ for i = 1:NbSelected
 end
 
 guidata(hObject, handles);
+
+
+% --- Executes on button press in MIA_pipeline_pushMIASelection.
+function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_pushMIASelection (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in MIA_pipeline_remove_tag_popupmenu.
+function MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_remove_tag_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.Remove_selected = handles.MIA_pipeline_remove_tag_popupmenu.String{handles.MIA_pipeline_remove_tag_popupmenu.Value};
+guidata(hObject, handles);
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_remove_tag_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_remove_tag_popupmenu
+
+
+
+% --- Executes on button press in MIA_pipeline_pushMIATPSelection.
+function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_pushMIATPSelection (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in MIA_pipeline_push_Database.
+function MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_push_Database (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function MIA_pipeline_remove_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_remove_tag_popupmenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
