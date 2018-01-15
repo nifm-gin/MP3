@@ -7873,18 +7873,26 @@ if ~isfield(handles, 'database')
 end
 
 % define all the scan available
-parameters_list = [];
-VOIs_list = [];
-for i=1:numel(get(handles.MIA_name_list, 'String'))
-    for j = 1:numel(handles.database(i).day)
-        parameters_list = [parameters_list handles.database(i).day(j).parameters];
-        VOIs_list = [VOIs_list handles.database(i).day(j).VOIs];
-    end
-end
+% parameters_list = [];
+% VOIs_list = [];
+% for i=1:numel(get(handles.MIA_name_list, 'String'))
+%     for j = 1:numel(handles.database(i).day)
+%         parameters_list = [parameters_list handles.database(i).day(j).parameters];
+%         VOIs_list = [VOIs_list handles.database(i).day(j).VOIs];
+%     end
+% end
 
-parameters_list = unique(parameters_list);
-VOIs_list = unique(VOIs_list);
-Math_module(handles, parameters_list, VOIs_list)
+rows = handles.database.Type == 'Scan';
+vars = {'SequenceName'};
+new_parameters_list = handles.database{rows, vars}; % Ou alors handles.database(rows, :) ?
+
+new_VOIs_list = handles.database{handles.database.Type == 'ROI', {'SequenceName'}}; %Ou alors handles.database(handles.database.Type == 'ROI', :) ?
+
+
+%parameters_list = unique(parameters_list);
+%VOIs_list = unique(VOIs_list);
+%Math_module(handles, parameters_list, VOIs_list)
+Math_module(handles, char(new_parameters_list), char(new_VOIs_list))
 
 
 % --------------------------------------------------------------------
