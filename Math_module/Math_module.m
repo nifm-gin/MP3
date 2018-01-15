@@ -57,7 +57,7 @@ handles.output = hObject;
 
 % Variables initiation
 handles.MIA_data = varargin{1};
-handles.Math_parameters_list = varargin{2};
+handles.Math_parameters_list = varargin{2}.';
 handles.Math_VOIs_list = varargin{3};
 %% probl?me pour calculer les nouveau offset lor de transformation d'image (ratation/permutation)
 handles.Math_operations_listing = {'Arithmetic', 'Mean slices', 'Smooth', 'Add slices', ...
@@ -72,27 +72,30 @@ set(handles.Math_additional_info_table, 'Data', '', 'ColumnName', '', 'columnFor
 
 % find out he time point list
 % set popup menu
-id_list = {}; tp_list = {}; group_list = {};
+%id_list = {}; tp_list = {}; group_list = {};
 if isfield(handles.MIA_data, 'database')
-    for i=1:numel(handles.MIA_data.database)
-        for j = 1:numel(handles.MIA_data.database(i).day)
-            tp_list = [tp_list {handles.MIA_data.database(i).day(j).date}];
-        end
-        id_list = [id_list {handles.MIA_data.database(i).name}];
-        group_list = [group_list {handles.MIA_data.database(i).group}];
-    end
+    new_tp_list = handles.MIA_data.database{:,{'Tp'}};
+    new_id_list = handles.MIA_data.database{:,{'Patient'}};
+    new_group_list = handles.MIA_data.database{:,{'Group'}};
+%     for i=1:numel(handles.MIA_data.database)
+%         for j = 1:numel(handles.MIA_data.database(i).day)
+%             tp_list = [tp_list {handles.MIA_data.database(i).day(j).date}];
+%         end
+%         id_list = [id_list {handles.MIA_data.database(i).name}];
+%         group_list = [group_list {handles.MIA_data.database(i).group}];
+%     end
 end
-handles.Math_id_list = sort(unique(id_list));
-handles.Math_tp_list = sort(unique(tp_list));
-handles.Math_group_list = sort(unique(group_list)); 
+handles.Math_id_list = sort(unique(new_id_list));
+handles.Math_tp_list = sort(unique(new_tp_list));
+handles.Math_group_list = sort(unique(new_group_list)); 
 
-% patient selected name
-handles.patient_selected.name_nbr = get(handles.MIA_data.MIA_name_list, 'Value');
-handles.patient_selected.name = handles.MIA_data.database(handles.patient_selected.name_nbr).name;
-handles.patient_selected.tp_nbr = get(handles.MIA_data.MIA_time_points_list, 'Value');
-handles.patient_selected.tp = handles.MIA_data.database(handles.patient_selected.name_nbr).day(handles.patient_selected.tp_nbr).date;
-set(handles.Math_patient_selected, 'String', ['Patient selected:  ' handles.patient_selected.name ' ' handles.patient_selected.tp]);
-set(handles.Math_additional_info_table, 'Data', {});
+% % patient selected name
+% handles.patient_selected.name_nbr = get(handles.MIA_data.MIA_name_list, 'Value');
+% handles.patient_selected.name = handles.MIA_data.database(handles.patient_selected.name_nbr).name;
+% handles.patient_selected.tp_nbr = get(handles.MIA_data.MIA_time_points_list, 'Value');
+% handles.patient_selected.tp = handles.MIA_data.database(handles.patient_selected.name_nbr).day(handles.patient_selected.tp_nbr).date;
+% set(handles.Math_patient_selected, 'String', ['Patient selected:  ' handles.patient_selected.name ' ' handles.patient_selected.tp]);
+% set(handles.Math_additional_info_table, 'Data', {});
 
 % Update handles structure
 guidata(hObject, handles);
