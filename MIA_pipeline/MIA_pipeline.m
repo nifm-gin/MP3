@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 15-Jan-2018 15:49:47
+% Last Modified by GUIDE v2.5 16-Jan-2018 11:42:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,11 +79,15 @@ set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
 set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 handles.Source_selected = handles.Tags_listing{1};
+%handles.MIA_pipeline_Unique_Values_Selection = 
 handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
+handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,:});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_data.database.Properties.VariableNames;
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-handles.MIA_pipeline_Filtering_Table.Data = [];
-handles.MIA_pipeline_Filtering_Table.ColumnName = {};
+handles.FilterParameters = {};
+%MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
 % Update handles structure
 guidata(hObject, handles);
 
@@ -581,7 +585,9 @@ function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.Source_selected = handles.MIA_pipeline_add_tag_popupmenu.String{handles.MIA_pipeline_add_tag_popupmenu.Value};
-TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+[val, ind] = max(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Source_selected));
+TagValues = [{'all'} ; unique(handles.MIA_pipeline_Filtering_Table.Data(:,ind))];
+%TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 
 handles.MIA_pipeline_Unique_Values_Tag.Data = TagValues;
 handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
@@ -745,18 +751,42 @@ function MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_Add_Tag_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if isempty(intersect(handles.Source_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
-    NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
-    SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
-    SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
-    FullTable = cell(SizeVert,SizeHor);
-    FullTable(1:size(handles.MIA_pipeline_Filtering_Table.Data,1),1:size(handles.MIA_pipeline_Filtering_Table.Data,2)) = handles.MIA_pipeline_Filtering_Table.Data;
-    FullTable(1:size(NewTagValues,1),size(handles.MIA_pipeline_Filtering_Table.Data,2)+1) = NewTagValues;
-    handles.MIA_pipeline_Filtering_Table.Data = FullTable;
-    handles.MIA_pipeline_Filtering_Table.ColumnName = [handles.MIA_pipeline_Filtering_Table.ColumnName; {handles.Source_selected}];
-else
-    msgbox('This Tag is already used ! You cannot use it twice.', 'Warning')
+if strcmp(handles.Source_selected, 'NoMoreTags')
+   return 
 end
+%% Update of the Filtering Table
+%if isempty(handles.MIA_pipeline_Filtering_Table.Data)
+%    handles.MIA_pipeline_Filtering_Table.Data = table2cell(handles.MIA_data.database);
+%end
+if length(handles.MIA_pipeline_Unique_Values_Selection) == 1
+    return
+end
+TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
+handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
+NewTable = handles.MIA_data.database;
+for i=1:length(handles.FilterParameters)
+    Tag = handles.FilterParameters{1,i}{1};
+    TagTable = table();
+    for j=2:length(handles.FilterParameters{1,i})
+        SelectedValue = handles.FilterParameters{1,i}{j};
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,TagsToPrint)];
+        TagTable = unique(TagTable);
+    end
+    NewTable = TagTable;
+end
+
+
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,:});
+handles.MIA_pipeline_Filtering_Table.ColumnName = NewTable.Properties.VariableNames;
+% NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+% SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
+% SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
+% FullTable = cell(SizeVert,SizeHor);
+% FullTable(1:size(handles.MIA_pipeline_Filtering_Table.Data,1),1:size(handles.MIA_pipeline_Filtering_Table.Data,2)) = handles.MIA_pipeline_Filtering_Table.Data;
+% FullTable(1:size(NewTagValues,1),size(handles.MIA_pipeline_Filtering_Table.Data,2)+1) = NewTagValues;
+% handles.MIA_pipeline_Filtering_Table.Data = FullTable;
+% handles.MIA_pipeline_Filtering_Table.ColumnName = [handles.MIA_pipeline_Filtering_Table.ColumnName; {handles.Source_selected}];
+%% Update of the add tag popupmenu after an add
 Tag_To_Add = handles.Source_selected;
 Index = find(contains(handles.Tags_listing, Tag_To_Add));
 NewTagListing = {handles.Tags_listing{1:Index-1},handles.Tags_listing{Index+1:end}};
@@ -772,7 +802,8 @@ else
     handles.Tags_listing = NewTagListing;
     MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 end
-if contains(handles.MIA_pipeline_remove_tag_popupmenu.String, 'NoMoreTag')
+%% Update of the remove tag popupmenu after an add
+if contains(handles.MIA_pipeline_remove_tag_popupmenu.String, 'NoMoreTags')
     set(handles.MIA_pipeline_remove_tag_popupmenu,'String', Tag_To_Add);
     handles.Remove_selected = Tag_To_Add;
 else
@@ -792,16 +823,39 @@ function MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_Remove_Tag_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if isempty(intersect(handles.Remove_selected, handles.MIA_pipeline_Filtering_Table.ColumnName))
-    msgbox('This Tag is not used ! You cannot remove it.', 'Warning')
-else
-   Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
-   handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
-   [val, index]=min(sum(cellfun(@isempty,handles.MIA_pipeline_Filtering_Table.Data)));
-   handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun(@isempty, handles.MIA_pipeline_Filtering_Table.Data(:,index)), :);
-   %handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun('isempty',handles.MIA_pipeline_Filtering_Table.Data));
-   handles.MIA_pipeline_Filtering_Table.ColumnName(Index) = [];
+if strcmp(handles.Remove_selected, 'NoMoreTags')
+    return
 end
+%% Update of the Filtering table
+for i=1:length(handles.FilterParameters)
+   if  strcmp(handles.FilterParameters{1,i}{1},handles.Remove_selected)
+       index = i;
+   end
+end
+handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
+
+TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
+NewTable = handles.MIA_data.database;
+for i=1:length(handles.FilterParameters)
+    Tag = handles.FilterParameters{1,i}{1};
+    TagTable = table();
+    for j=2:length(handles.FilterParameters{1,i})
+        SelectedValue = handles.FilterParameters{1,i}{j};
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,TagsToPrint)];
+        TagTable = unique(TagTable);
+    end
+    NewTable = TagTable;
+end
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,:});
+handles.MIA_pipeline_Filtering_Table.ColumnName = NewTable.Properties.VariableNames;
+
+% Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
+% handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
+% [val, index]=min(sum(cellfun(@isempty,handles.MIA_pipeline_Filtering_Table.Data)));
+% handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun(@isempty, handles.MIA_pipeline_Filtering_Table.Data(:,index)), :);
+% %handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun('isempty',handles.MIA_pipeline_Filtering_Table.Data));
+% handles.MIA_pipeline_Filtering_Table.ColumnName(Index) = [];
+%% Update of the remove tag popup menu after a remove
 Tag_To_Add = handles.Remove_selected;
 Index = find(contains(handles.Remove_Tags_listing, Tag_To_Add));
 NewTagListing = {handles.Remove_Tags_listing{1:Index-1},handles.Remove_Tags_listing{Index+1:end}};
@@ -817,7 +871,8 @@ else
     handles.Remove_Tags_listing = NewTagListing;
     MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
 end
-if contains(handles.MIA_pipeline_add_tag_popupmenu.String, 'NoMoreTag')
+%% Update of the add tag popup menu after a remove
+if contains(handles.MIA_pipeline_add_tag_popupmenu.String, 'NoMoreTags')
     set(handles.MIA_pipeline_add_tag_popupmenu,'String', Tag_To_Add);
 else
 %handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
@@ -892,3 +947,19 @@ function MIA_pipeline_remove_tag_popupmenu_CreateFcn(hObject, eventdata, handles
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes when selected cell(s) is changed in MIA_pipeline_Unique_Values_Tag.
+function MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Unique_Values_Tag (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+NbSelect = size(eventdata.Indices,1);
+Names = cell(size(eventdata.Indices,1)+1,1);
+Names{1,1}=handles.Source_selected;
+for i=1:NbSelect
+    Names{i+1,1} = eventdata.Source.Data{eventdata.Indices(i,1), eventdata.Indices(i,2)};
+end
+handles.MIA_pipeline_Unique_Values_Selection = Names;
+% handles    structure with handles and user data (see GUIDATA)
+guidata(hObject, handles);
