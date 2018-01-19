@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 16-Jan-2018 11:42:14
+% Last Modified by GUIDE v2.5 19-Jan-2018 16:30:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,15 +80,20 @@ set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
 set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 handles.Source_selected = handles.Tags_listing{1};
 %handles.MIA_pipeline_Unique_Values_Selection = 
+handles.MIA_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
 handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,:});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_data.database.Properties.VariableNames;
+
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 handles.FilterParameters = {};
 %MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
 % Update handles structure
+handles.MIA_pipeline_Unique_Values_Selection = {};
 guidata(hObject, handles);
 
 
@@ -585,11 +590,12 @@ function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.Source_selected = handles.MIA_pipeline_add_tag_popupmenu.String{handles.MIA_pipeline_add_tag_popupmenu.Value};
-[val, ind] = max(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Source_selected));
-TagValues = [{'all'} ; unique(handles.MIA_pipeline_Filtering_Table.Data(:,ind))];
+%[val, ind] = max(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.Source_selected));
+TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
+%TagValues = [{'all'} ; unique(handles.MIA_pipeline_Filtering_Table.Data(:,ind))];
 %TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 
-handles.MIA_pipeline_Unique_Values_Tag.Data = TagValues;
+handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
 handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
 
 guidata(hObject, handles);
@@ -758,10 +764,10 @@ end
 %if isempty(handles.MIA_pipeline_Filtering_Table.Data)
 %    handles.MIA_pipeline_Filtering_Table.Data = table2cell(handles.MIA_data.database);
 %end
-if length(handles.MIA_pipeline_Unique_Values_Selection) == 1
+if length(handles.MIA_pipeline_Unique_Values_Selection) <= 1
     return
 end
-TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
+
 handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
 NewTable = handles.MIA_data.database;
 for i=1:length(handles.FilterParameters)
@@ -769,15 +775,15 @@ for i=1:length(handles.FilterParameters)
     TagTable = table();
     for j=2:length(handles.FilterParameters{1,i})
         SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,TagsToPrint)];
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
         TagTable = unique(TagTable);
     end
     NewTable = TagTable;
 end
 
-
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,:});
-handles.MIA_pipeline_Filtering_Table.ColumnName = NewTable.Properties.VariableNames;
+handles.MIA_pipeline_Filtered_Table = NewTable;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 % NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 % SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
 % SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
@@ -834,20 +840,20 @@ for i=1:length(handles.FilterParameters)
 end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
 
-TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 NewTable = handles.MIA_data.database;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
     TagTable = table();
     for j=2:length(handles.FilterParameters{1,i})
         SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,TagsToPrint)];
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
         TagTable = unique(TagTable);
     end
     NewTable = TagTable;
 end
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,:});
-handles.MIA_pipeline_Filtering_Table.ColumnName = NewTable.Properties.VariableNames;
+handles.MIA_pipeline_Filtered_Table = NewTable;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
 % Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
 % handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
@@ -963,3 +969,22 @@ end
 handles.MIA_pipeline_Unique_Values_Selection = Names;
 % handles    structure with handles and user data (see GUIDATA)
 guidata(hObject, handles);
+
+
+% --- Executes on button press in MIA_pipeline_Tags_To_Print_Button.
+function MIA_pipeline_Tags_To_Print_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Tags_To_Print_Button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PreviousTagsIndex = find(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.MIA_pipeline_TagsToPrint));
+[selection, ok] = listdlg('PromptString', 'Select the Tags to print among : ', 'InitialValue', PreviousTagsIndex(:), 'ListString', handles.MIA_pipeline_Filtered_Table.Properties.VariableNames);
+if ok == 0;
+   return 
+end
+handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Properties.VariableNames(selection);
+
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+guidata(hObject, handles);
+
+
