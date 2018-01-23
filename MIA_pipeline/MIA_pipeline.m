@@ -63,8 +63,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg', '   .SPM: Reslice','   .SPM: Realign', ...
+     'Spatial', '   .Smoothing'...
      };
- handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM' };
+ handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
  
  handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -236,31 +237,50 @@ function MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
-switch handles.new_module.opt.parameter_type{parameter_selected}
-    case 'Scan'
-        if handles.Source_selected == 'Database'
-            SequenceType_listing = unique(handles.MIA_data.database.SequenceName(handles.MIA_data.database.Type == 'Scan'));
-            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-            table.data(1:numel(SequenceType_listing),2) = {false};
-            table.columnName = {'Scan Type', 'Select Input'};
+if iscell(handles.new_module.opt.parameter_type{parameter_selected})
+   OptionFields = fieldnames(handles.new_module.opt.Module_settings);
+   table.data(1:numel(handles.new_module.opt.parameter_type{parameter_selected}),1) = handles.new_module.opt.parameter_type{parameter_selected};
+   %table.data(1:numel(handles.new_module.opt.parameter_type{parameter_selected}),2) = {false};
+   table.columnName = OptionFields(parameter_selected);
+   table.editable = false;
+else
+
+
+    switch handles.new_module.opt.parameter_type{parameter_selected}
+        case 'Scan'
+            if strcmp(handles.Source_selected,'Database')
+                SequenceType_listing = unique(handles.MIA_data.database.SequenceName(handles.MIA_data.database.Type == 'Scan'));
+                table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+                table.data(1:numel(SequenceType_listing),2) = {false};
+                table.columnName = {'Scan Type', 'Select Input'};
+                table.editable = [false true];
+                table.Database = handles.MIA_data.database;
+            else % case of selecting input data from an output module
+
+
+            end
+        case 'char'
+            OptionFields = fieldnames(handles.new_module.opt.Module_settings);
+            %[val, ind] = max(endsWith(OptionFields, handles.MIA_pipeline_module_parameters.String{parameter_selected}, 'IgnoreCase', true));
+            table.data(1,1) = cellstr(handles.MIA_pipeline_module_parameters.String{parameter_selected});
+            table.data(1,2) = cellstr(getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected}));
+            table.columnName = {OptionFields{parameter_selected}, 'Select Input'};
+
+
             table.editable = [false true];
-            table.Database = handles.MIA_data.database;
-        else % case of selecting input data from an output module
             
+        case 'numeric'
+            OptionFields = fieldnames(handles.new_module.opt.Module_settings);
+            %[val, ind] = max(endsWith(OptionFields, handles.MIA_pipeline_module_parameters.String{parameter_selected}, 'IgnoreCase', true));
+            table.data(1,1) = {getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected})};
+            table.columnName = {OptionFields{parameter_selected}};
+            table.editable = true;
             
-        end
-    case 'char'
-        table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-        table.data(1:numel(SequenceType_listing),2) = {false};
-        table.columnName = {'Scan Type', 'Select Input'};
-        
-        
-        
-        table.editable = [false true];
-    otherwise
-        table.data = '';
-        table.columnName = '';
-        table.editable = false;
+        otherwise
+            table.data = '';
+            table.columnName = '';
+            table.editable = false;
+    end
 end
 
 %% update the setup table
@@ -591,13 +611,18 @@ function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.Source_selected = handles.MIA_pipeline_add_tag_popupmenu.String{handles.MIA_pipeline_add_tag_popupmenu.Value};
 %[val, ind] = max(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.Source_selected));
-TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
+if strcmp(handles.Source_selected, 'NoMoreTags')
+    handles.MIA_pipeline_Unique_Values_Tag.Data = {};
+    handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {};
+else
+
+    TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
 %TagValues = [{'all'} ; unique(handles.MIA_pipeline_Filtering_Table.Data(:,ind))];
 %TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 
-handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
-handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
-
+    handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
+    handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
+end
 guidata(hObject, handles);
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_add_tag_popupmenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_add_tag_popupmenu
@@ -661,6 +686,12 @@ switch char(handles.Modules_listing(module_selected))
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = module_T2map(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
         handles.new_module.module_name = 'module_T2map';
+        module_parameters_string = handles.new_module.opt.parameter_list;
+        ismodule = 1;
+    case '   .Smoothing'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = module_Smooting(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
+        handles.new_module.module_name = 'module_Smoothing';
         module_parameters_string = handles.new_module.opt.parameter_list;
         ismodule = 1;
         
@@ -801,6 +832,7 @@ if isempty(NewTagListing)
     set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
     handles.Source_selected = {'NoMoreTags'};
     handles.Tags_listing = {'NoMoreTags'};
+
 else
     set(handles.MIA_pipeline_add_tag_popupmenu, 'String', NewTagListing);
     set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
@@ -810,18 +842,19 @@ else
 end
 %% Update of the remove tag popupmenu after an add
 if contains(handles.MIA_pipeline_remove_tag_popupmenu.String, 'NoMoreTags')
-    set(handles.MIA_pipeline_remove_tag_popupmenu,'String', Tag_To_Add);
+    set(handles.MIA_pipeline_remove_tag_popupmenu,'String', {Tag_To_Add});
     handles.Remove_selected = Tag_To_Add;
 else
 %handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
     if size(handles.MIA_pipeline_remove_tag_popupmenu.String,1)==1
-        set(handles.MIA_pipeline_remove_tag_popupmenu,'String',{handles.MIA_pipeline_remove_tag_popupmenu.String; Tag_To_Add});
+        set(handles.MIA_pipeline_remove_tag_popupmenu,'String',[handles.MIA_pipeline_remove_tag_popupmenu.String; {Tag_To_Add}]);
         handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
     else
         set(handles.MIA_pipeline_remove_tag_popupmenu,'String',[handles.MIA_pipeline_remove_tag_popupmenu.String; Tag_To_Add]);
         handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
     end
 end
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
 
 % --- Executes on button press in MIA_pipeline_Remove_Tag_Button.
@@ -879,17 +912,18 @@ else
 end
 %% Update of the add tag popup menu after a remove
 if contains(handles.MIA_pipeline_add_tag_popupmenu.String, 'NoMoreTags')
-    set(handles.MIA_pipeline_add_tag_popupmenu,'String', Tag_To_Add);
+    set(handles.MIA_pipeline_add_tag_popupmenu,'String', {Tag_To_Add});
 else
 %handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
     if size(handles.MIA_pipeline_add_tag_popupmenu.String,1)==1
-        set(handles.MIA_pipeline_add_tag_popupmenu,'String',{handles.MIA_pipeline_add_tag_popupmenu.String; Tag_To_Add});
+        set(handles.MIA_pipeline_add_tag_popupmenu,'String',[handles.MIA_pipeline_add_tag_popupmenu.String; {Tag_To_Add}]);
         handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
     else
         set(handles.MIA_pipeline_add_tag_popupmenu,'String',[handles.MIA_pipeline_add_tag_popupmenu.String; Tag_To_Add]);
         handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
     end
 end
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
 
 
