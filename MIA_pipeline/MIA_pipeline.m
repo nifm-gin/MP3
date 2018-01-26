@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 19-Jan-2018 16:30:42
+% Last Modified by GUIDE v2.5 24-Jan-2018 11:20:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -240,40 +240,44 @@ parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 if iscell(handles.new_module.opt.parameter_type{parameter_selected})
    OptionFields = fieldnames(handles.new_module.opt.Module_settings);
    table.data(1:numel(handles.new_module.opt.parameter_type{parameter_selected}),1) = handles.new_module.opt.parameter_type{parameter_selected};
-   %table.data(1:numel(handles.new_module.opt.parameter_type{parameter_selected}),2) = {false};
-   table.columnName = OptionFields(parameter_selected);
+   table.columnName = {OptionFields{parameter_selected}};
    table.editable = false;
 else
 
 
     switch handles.new_module.opt.parameter_type{parameter_selected}
         case 'Scan'
-            if strcmp(handles.Source_selected,'Database')
-                SequenceType_listing = unique(handles.MIA_data.database.SequenceName(handles.MIA_data.database.Type == 'Scan'));
+            if isempty(handles.new_module.opt.parameter_default{parameter_selected})
+                SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
                 table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
                 table.data(1:numel(SequenceType_listing),2) = {false};
-                table.columnName = {'Scan Type', 'Select Input'};
-                table.editable = [false true];
-                table.Database = handles.MIA_data.database;
-            else % case of selecting input data from an output module
-
-
+            else
+                table.data = handles.new_module.opt.parameter_default{parameter_selected};
             end
+
+            table.columnName = {'Scan Type', 'Select Input'};
+            table.editable = [false true];
+            %table.Database = handles.MIA_data.database;
+            %else % case of selecting input data from an output module
+            %end
         case 'char'
             OptionFields = fieldnames(handles.new_module.opt.Module_settings);
             %[val, ind] = max(endsWith(OptionFields, handles.MIA_pipeline_module_parameters.String{parameter_selected}, 'IgnoreCase', true));
-            table.data(1,1) = cellstr(handles.MIA_pipeline_module_parameters.String{parameter_selected});
-            table.data(1,2) = cellstr(getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected}));
-            table.columnName = {OptionFields{parameter_selected}, 'Select Input'};
+            %table.data(1,1) = cellstr(handles.MIA_pipeline_module_parameters.String{parameter_selected});
+            %table.data(1,2) = cellstr(getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected}));
+            table.data(1,1) = cellstr(handles.new_module.opt.parameter_default{parameter_selected});
+            table.columnName = cellstr(handles.MIA_pipeline_module_parameters.String{parameter_selected});
 
 
-            table.editable = [false true];
+            table.editable = [true];
             
         case 'numeric'
             OptionFields = fieldnames(handles.new_module.opt.Module_settings);
             %[val, ind] = max(endsWith(OptionFields, handles.MIA_pipeline_module_parameters.String{parameter_selected}, 'IgnoreCase', true));
-            table.data(1,1) = {getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected})};
-            table.columnName = {OptionFields{parameter_selected}};
+            %table.data(1,1) = {getfield(handles.new_module.opt.Module_settings, OptionFields{parameter_selected})};
+            table.data(1,1) = {handles.new_module.opt.parameter_default{parameter_selected}};
+            %table.columnName = {OptionFields{parameter_selected}};
+            table.columnName = {handles.new_module.opt.parameter_list{parameter_selected}};
             table.editable = true;
             
         otherwise
@@ -394,6 +398,7 @@ function MIA_pipeline_parameter_setup_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_parameter_setup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+print('Yo!')
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_parameter_setup contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_parameter_setup
@@ -500,10 +505,17 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 %	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
 %	Error: error string when failed to convert EditData to appropriate value for Data
 % handles    structure with handles and user data (see GUIDATA)
+parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
-patient_listing = table_data(:,1);
-patient_selected = patient_listing(find([table_data{:,2}]' == true));
+if strcmp(handles.new_module.opt.parameter_type{parameter_selected}, 'Scan')
+    %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
+    handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+else
+    handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
+end
+    %patient_listing = table_data(:,1);
+% patient_selected = patient_listing(find([table_data{:,2}]' == true));
 
 % % case go back to all patient
 % if table_data{1,2} == 1 && handles.new_module.files_in_filter_data{1,2} == 0
@@ -566,8 +578,9 @@ patient_selected = patient_listing(find([table_data{:,2}]' == true));
 % handles.new_module.files_in_index = find(idex_patient & idex_tp & index_SequenceName);
 % handles.new_module.files_in_filter_data = table_data;
 
+
+%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
-MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
   %             handles.new_module.files_in_filter_name = {'Patient Name', '', 'Time Point','', 'Sequence Name',''};
         %             Patient_listing = unique(handles.MIA_data.database.Patient);
         %             Tp_listing = unique(handles.MIA_data.database.Tp);
@@ -684,14 +697,15 @@ switch char(handles.Modules_listing(module_selected))
         ismodule = 1;
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = module_T2map(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
-        handles.new_module.module_name = 'module_T2map';
+        handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_T2map';
         module_parameters_string = handles.new_module.opt.parameter_list;
         ismodule = 1;
     case '   .Smoothing'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = module_Smooting(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
-        handles.new_module.module_name = 'module_Smoothing';
+%         handles.new_module.command = '[files_in,files_out,opt] = module_Smooting(char(pipeline.new_module.files_in),pipeline.new_module.files_out,pipeline.new_module.opt)';
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Smoothing(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Smoothing';
         module_parameters_string = handles.new_module.opt.parameter_list;
         ismodule = 1;
         
@@ -774,6 +788,54 @@ function MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handle
 % hObject    handle to MIA_pipeline_exectute_module_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+Scans = handles.new_module.opt.parameter_default{1};
+if isempty(Scans)
+    return
+end
+    
+answer = inputdlg({'Where do you want to save the reporting files of the pipeline ?'}, 'Save reporting files', 1, {[pwd, '/LogsPSOM']});
+opt_pipe.path_logs = answer{1};
+ScansSelected = Scans(cell2mat(Scans(:,2)),1);
+NewTable = table();
+for i = 1:length(ScansSelected)
+    NewTable = [NewTable; handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == ScansSelected{i},:)];
+end
+NewTable = unique(NewTable);
+
+%extnii = repmat('.nii', size(NewTable, 1), 1);
+handles.new_module.files_in = struct();
+% for i=1:size(NewTable, 1)
+%     %handles.new_module.files_in{i,1} = [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'];
+%     handles.new_module.files_in = setfield(handles.new_module.files_in, ['Scan', num2str(i)], [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']);
+% end
+handles.new_module.files_out = '';
+
+handles.new_module.opt2 = handles.new_module.opt;
+handles.new_module.opt = handles.new_module.opt2.Module_settings;
+handles.new_module.opt.flag_test = 0;
+%handles.new_module.opt.restart = {'new_module'};
+
+
+
+for i=1:length(handles.new_module.opt2.parameter_link_psom)
+    NameGUI = handles.new_module.opt2.parameter_link_psom{i, 2};
+    NameField = handles.new_module.opt2.parameter_link_psom{i, 1};
+    Vec = contains(handles.new_module.opt2.parameter_list, NameGUI);
+    DefaultValue = handles.new_module.opt2.parameter_default{Vec};
+    handles.new_module.opt = setfield(handles.new_module.opt, NameField, DefaultValue);
+end
+%pipeline.new_module = handles.new_module;
+%list_fields = fieldnames(handles.new_module.files_in);
+pipeline = struct();
+for i=1:size(NewTable, 1)
+    pipeline = psom_add_job(pipeline, ['job_Scan', num2str(i)], handles.new_module.module_name, [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'], handles.new_module.files_out, handles.new_module.opt);
+end
+
+
+
+psom_run_pipeline(pipeline, opt_pipe)
 
 
 % --- Executes on button press in MIA_pipeline_close_modules_button.
@@ -1005,9 +1067,9 @@ handles.MIA_pipeline_Unique_Values_Selection = Names;
 guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_Tags_To_Print_Button.
-function MIA_pipeline_Tags_To_Print_Button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Tags_To_Print_Button (see GCBO)
+% --- Executes on button press in MIA_pipeline_Tags_To_Display_Button.
+function MIA_pipeline_Tags_To_Display_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Tags_To_Display_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 PreviousTagsIndex = find(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.MIA_pipeline_TagsToPrint));
@@ -1020,5 +1082,3 @@ handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Propertie
 handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 guidata(hObject, handles);
-
-
