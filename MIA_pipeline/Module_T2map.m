@@ -99,7 +99,8 @@ if isempty(opt)
     % list of everything displayed to the user associated to their 'type'
     opt.parameter_list = {'Select a Multi Spin Echo scan as input', 'Parameters', '   .Output filename extension'  '   .Threshold'};
     opt.parameter_type = {'Scan', '', 'char', 'numeric'};
-
+    opt.parameter_default = {'', '', '_T2map', 5};
+    opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'threshold', '   .Threshold'};
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
@@ -116,14 +117,15 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
 end
 
 %% Inputs
-if ischar(files_in) 
+if ~ischar(files_in) 
     error('files in should be a char');
 end
 
-[path_nii,name_nii,ext_nii] = fileparts(char(files_in(1)));
+[path_nii,name_nii,ext_nii] = fileparts(char(files_in));
 if ~strcmp(ext_nii, '.nii')
      error('First file need to be a .nii');  
 end
+
 
 if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
     opt.threshold = str2double(opt.threshold);
@@ -143,18 +145,18 @@ else
 end
 
 %% Check the output files structure
-fields    = {'filename'};
-defaults  = {'output defaults' };
-files_out = psom_struct_defaults(files_out,fields,defaults);
+%fields    = {'filename'};
+%defaults  = {'output defaults' };
+%files_out = psom_struct_defaults(files_out,fields,defaults);
 
 %% Building default output names
 if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same folder as the input
     opt.folder_out = path_nii;    
 end
 
-if isempty(files_out.filename)
-    files_out.filename = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii);
-end
+%if isempty(files_out.filename)
+%    files_out.filename = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii);
+%end
 
 %% If the test flag is true, stop here !
 if opt.flag_test == 1
