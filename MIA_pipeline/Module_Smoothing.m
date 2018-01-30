@@ -93,15 +93,19 @@ function [files_in,files_out,opt] = Module_Smoothing(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma'};
-    defaults = {'', true, '_Smooth', {'gaussian'}, 3, 1};
+    fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma', 'Success'};
+    defaults = {'', true, '_Smooth', {'gaussian'}, 3, 1, false};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    opt.parameter_list = {'Select one scan or more as input', 'Parameters', '   .Output filename extension'  '   .Type'  '   .HSize'  '   .Sigma'};
-    opt.parameter_type = {'Scan', '', 'char', {'gaussian'}, 'numeric', 'numeric'};
-    opt.parameter_default = {'', '', '_Smooth', {'gaussian'}, 3, 1};
-    opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+    user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''; ''};
+    user_parameter_type = {'Scan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'; 'logical'};
+    parameter_default = {''; ''; '_Smooth'; 'gaussian'; '3'; '1'; '1'; ''; '0'};
+    psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'; 'Success'};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
     
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
@@ -188,10 +192,15 @@ J = jsondecode(raw);
 
 FilteredImages = zeros(size(N), 'int16');
 
-h = fspecial(opt.Type{1},opt.HSize, opt.Sigma);
+h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
 for i=1:size(N,3)
     FilteredImages(:,:,i) = imfilter(N(:,:,i), h, 'replicate');
 end
+
+
+%info.Filename = files_out;
+%info.Filemoddate = char(datetime('now'));
+%info.Description = [info.Description, 'Modified by Smoothing Module'];
 
 niftiwrite(FilteredImages, files_out, info)
 JMod = jsonencode(J);
@@ -200,6 +209,7 @@ jsonfile = [path, '/', name, '.json'];
 fidmod = fopen(jsonfile, 'w');
 fwrite(fidmod, JMod, 'uint8');
 fclose(fidmod);
+%opt.Success = 1;
 
 
 
