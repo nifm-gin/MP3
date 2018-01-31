@@ -190,19 +190,25 @@ fclose(fid);
 %raw = reshape(raw, 1,length(raw));
 J = jsondecode(raw);
 
-FilteredImages = zeros(size(N), 'int16');
-
+Informations = whos('N');
+FilteredImages = zeros(size(N), Informations.class);
+NbDim = length(size(N));
+if NbDim>4
+    warning('Too much dimensions. This module deals with at most 4 dimensions.')
+end
 h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
 for i=1:size(N,3)
-    FilteredImages(:,:,i) = imfilter(N(:,:,i), h, 'replicate');
+    for j=1:size(N,4)
+        FilteredImages(:,:,i,j) = imfilter(N(:,:,i,j), h, 'replicate');
+    end
 end
 
+info2 = info;
+info2.Filename = files_out;
+info2.Filemoddate = char(datetime('now'));
+info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
-%info.Filename = files_out;
-%info.Filemoddate = char(datetime('now'));
-%info.Description = [info.Description, 'Modified by Smoothing Module'];
-
-niftiwrite(FilteredImages, files_out, info)
+niftiwrite(FilteredImages, files_out, info2)
 JMod = jsonencode(J);
 [path, name, ext] = fileparts(files_out);
 jsonfile = [path, '/', name, '.json'];
