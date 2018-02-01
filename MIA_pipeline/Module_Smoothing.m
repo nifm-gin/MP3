@@ -93,15 +93,15 @@ function [files_in,files_out,opt] = Module_Smoothing(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma', 'Success'};
-    defaults = {'', true, '_Smooth', {'gaussian'}, 3, 1, false};
+    fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma'};
+    defaults = {'', true, '_Smooth', 'gaussian', '3', '1'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''; ''};
-    user_parameter_type = {'Scan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'; 'logical'};
-    parameter_default = {''; ''; '_Smooth'; 'gaussian'; '3'; '1'; '1'; ''; '0'};
-    psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'; 'Success'};
+    user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''};
+    user_parameter_type = {'Scan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'};
+    parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'; '1'; ''};
+    psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
