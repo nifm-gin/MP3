@@ -251,23 +251,38 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 
         table.columnName = {'Scan Type', 'Select Input'};
         table.editable = [false true];
+        table.ColumnFormat = {'char'};
 
     case 'cell'
-        table.data(1,1) = handles.new_module.opt.table.Default(parameter_selected);
+        %Def_values = handles.new_module.opt.table.Default(parameter_selected);
+        table.ColumnFormat = handles.new_module.opt.table.Default(parameter_selected);;
+        %set(handles.MIA_pipeline_parameter_setup_table, 'ColumnFormat', table.ColumnFormat);
+        Propositions = handles.new_module.opt.table.Default{parameter_selected};
+        %table.data = Propositions(1);
+        table.data = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
         table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
-        table.editable = false;
+        table.editable = true;
         
     case {'char', 'numeric'}
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data = '';
+            table.ColumnFormat = {'char'};
             table.columnName = '';
             table.editable = false;
         else
-            table.data(1,1) = handles.new_module.opt.table.Default(parameter_selected);
+            table.ColumnFormat = {'char'};
+            table.data(1,1) = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
             table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
             table.editable = true;
         end
+    case 'logical'
+        table.ColumnFormat = {'logical'};
+        table.data(1,1) = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
+        %table.data(1,1)= handles.new_module.opt.table.Default(parameter_selected);
+        table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
+        table.editable = true;
     otherwise
+        table.ColumnFormat = {'char'};
         table.data = '';
         table.columnName = '';
         table.editable = false;
@@ -325,6 +340,7 @@ end
 % end
 
 %% update the setup table
+set(handles.MIA_pipeline_parameter_setup_table, 'ColumnFormat', table.ColumnFormat);
 % set names of the columns
 set(handles.MIA_pipeline_parameter_setup_table, 'ColumnName', table.columnName);
 % set data (default's parameters)
@@ -549,7 +565,8 @@ if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'Scan')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
 else
-    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
+    handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MIA_pipeline_parameter_setup_table.Data{1,1}); 
+    %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
 end
     %patient_listing = table_data(:,1);
 % patient_selected = patient_listing(find([table_data{:,2}]' == true));
@@ -727,10 +744,10 @@ switch char(handles.Modules_listing(module_selected))
     case handles.Module_groups	
         module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
     case '   .SPM: Coreg'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_SPMCoreg('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = module_SPMCoreg(char(handles.new_module.files_in),handles.new_module.files_out,handles.new_module.opt)';
-        handles.new_module.module_name = 'module_SPMCoreg';
-        module_parameters_string = handles.new_module.opt.parameter_list;
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Coreg';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
         ismodule = 1;
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
@@ -831,14 +848,14 @@ opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_pat
 Types = handles.new_module.opt.table.Type;
 ScanInputs = find(contains(Types, 'Scan'));
 NbScanInput = length(ScanInputs);
-opt = struct();
-for i=1:size(handles.new_module.opt.table,1)
-    if isempty(handles.new_module.opt.table.PSOM_Fields{i})
-        
-    else
-        opt = setfield(opt, handles.new_module.opt.table.PSOM_Fields{i}, handles.new_module.opt.table.Default{i});
-    end
-end
+% opt = struct();
+% for i=1:size(handles.new_module.opt.table,1)
+%     if isempty(handles.new_module.opt.table.PSOM_Fields{i})
+%         
+%     else
+%         opt = setfield(opt, handles.new_module.opt.table.PSOM_Fields{i}, handles.new_module.opt.table.Default{i});
+%     end
+% end
 opt.flag_test = 0;
 
 switch NbScanInput
@@ -857,7 +874,7 @@ switch NbScanInput
         NbJobs = size(NewTable,1);
         pipeline = struct();
         for i=1:NbJobs
-            pipeline = psom_add_job(pipeline, ['job_', num2str(i)], handles.new_module.module_name, [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'], '', opt);
+            pipeline = psom_add_job(pipeline, ['job_', num2str(i)], handles.new_module.module_name, [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'], '', handles.new_module.opt.Module_settings);
         end
         
 end
