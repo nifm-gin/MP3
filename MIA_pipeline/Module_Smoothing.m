@@ -94,14 +94,18 @@ if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
     fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma'};
-    defaults = {'', true, '_Smooth', {'gaussian'}, 3, 1};
+    defaults = {'', true, '_Smooth', 'gaussian', '3', '1'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    opt.parameter_list = {'Select one scan or more as input', 'Parameters', '   .Output filename extension'  '   .Type'  '   .HSize'  '   .Sigma'};
-    opt.parameter_type = {'Scan', '', 'char', {'gaussian'}, 'numeric', 'numeric'};
-    opt.parameter_default = {'', '', '_Smooth', {'gaussian'}, 3, 1};
-    opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+    user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''};
+    user_parameter_type = {'Scan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'};
+    parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'; '1'; ''};
+    psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
     
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
@@ -186,20 +190,32 @@ fclose(fid);
 %raw = reshape(raw, 1,length(raw));
 J = jsondecode(raw);
 
-FilteredImages = zeros(size(N), 'int16');
-
-h = fspecial(opt.Type{1},opt.HSize, opt.Sigma);
+Informations = whos('N');
+FilteredImages = zeros(size(N), Informations.class);
+NbDim = length(size(N));
+if NbDim>4
+    warning('Too much dimensions. This module deals with at most 4 dimensions.')
+end
+h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
 for i=1:size(N,3)
-    FilteredImages(:,:,i) = imfilter(N(:,:,i), h, 'replicate');
+    for j=1:size(N,4)
+        FilteredImages(:,:,i,j) = imfilter(N(:,:,i,j), h, 'replicate');
+    end
 end
 
-niftiwrite(FilteredImages, files_out, info)
+info2 = info;
+info2.Filename = files_out;
+info2.Filemoddate = char(datetime('now'));
+info2.Description = [info.Description, 'Modified by Smoothing Module'];
+
+niftiwrite(FilteredImages, files_out, info2)
 JMod = jsonencode(J);
 [path, name, ext] = fileparts(files_out);
 jsonfile = [path, '/', name, '.json'];
 fidmod = fopen(jsonfile, 'w');
 fwrite(fidmod, JMod, 'uint8');
 fclose(fidmod);
+%opt.Success = 1;
 
 
 
