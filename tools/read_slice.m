@@ -10,10 +10,16 @@ Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
 
 xy = Vref(1).dim(1:2);
 index_3D_vol = echo_nbr*expt_nbr ;
+
+mat_tmp = Vref(1).mat\Vi(index_3D_vol).mat;
+Vi_index_3D_vol=Vi(index_3D_vol);
+
 parfor p = 1:Vref(1).dim(3)
     B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
-    M = inv(B*(Vref(1).mat\Vi(index_3D_vol).mat));
-    d = spm_slice_vol(Vi(index_3D_vol),M,xy,3);
+%     M = inv(B*(Vref(1).mat\Vi(index_3D_vol).mat));
+    M = inv(B*mat_tmp);
+%     d = spm_slice_vol(Vi(index_3D_vol),M,xy,3);
+    d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
     Y(:,:,p) = reshape(d,xy);
 end
 
@@ -27,6 +33,16 @@ if det(R) == 0 | ~isequal(R(find(R)), sum(R)')
     R_sort = sort(abs(R(:)));
     R( find( abs(R) < tolerance*min(R_sort(end-2:end)) ) ) = 0;
 end
+%% weird code to still display non orthogonal images 
+% need to check it !!
+%  There is too much distortion in the loaded image for any non-orthogonal rotation or shearing
+if sum(sum(R==0) ~= [2 2 2]) ~= 3
+    R = zeros([3,3]);
+    R(1,1) = Vref(1).mat(1,1);
+    R(2,2) = Vref(1).mat(2,2);
+    R(3,3) = Vref(1).mat(3,3);
+end
+
 
 inv_R = inv(R);
 orient = get_orient(inv_R);
@@ -51,22 +67,40 @@ end
 
 function orient = get_orient(R)
 
-orient = [];
+% % orient = [];
+% for i = 1:3
+%     switch find(R(i,:)) * sign(sum(R(i,:))) 
+%         case 1
+%             orient = [orient 5];		% Left to Right
+%         case 2
+%             orient = [orient 4];		% Posterior to Anterior
+%         case 3
+%             orient = [orient 3];		% Inferior to Superior
+%         case -1
+%             orient = [orient 2];		% Right to Left
+%         case -2
+%             orient = [orient 1];		% Anterior to Posterior
+%         case -3
+%             orient = [orient 6];		% Superior to Inferior
+%     end
+% end
 
-for i = 1:3
+
+orient = zeros(1,3);
+parfor i = 1:3
     switch find(R(i,:)) * sign(sum(R(i,:))) 
         case 1
-            orient = [orient 5];		% Left to Right
+            orient(i) = 5;		% Left to Right
         case 2
-            orient = [orient 4];		% Posterior to Anterior
+            orient(i) = 4;		% Posterior to Anterior
         case 3
-            orient = [orient 3];		% Inferior to Superior
+            orient(i) = 3;		% Inferior to Superior
         case -1
-            orient = [orient 2];		% Right to Left
+            orient(i) = 2;		% Right to Left
         case -2
-            orient = [orient 1];		% Anterior to Posterior
+            orient(i) = 1;		% Anterior to Posterior
         case -3
-            orient = [orient 6];		% Superior to Inferior
+            orient(i) = 6;		% Superior to Inferior
     end
 end
 
