@@ -12,10 +12,10 @@
 #
 #  Label MRI:
 #     where:
-#          file :           par ; xml ; ExtendsCard (for Philips Achieva PAR 4.2 , Xml 5)
+#          file :           par ; xml (for Philips Achieva PAR 4.2 , Xml 5)
 #          keyName :        tag Philips without [],(),<> and its elements which are inside
 #          type :           string, float, int
-#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          format :         "hh:mn:ss dd/MM/yyyy" , "dd/MM/yyyy hh:mn:ss" for date, duree, ... (Put the parameter in quote "" !) 
 #          units :          um , mm , cm , m (for distance)
 #                           us , ms , s or (usec, msec, sec), mn , h (for time)
 #                           degree or degrees (for angle)
@@ -32,18 +32,7 @@
 #---------------------------------- Philips Achieva PAR, Xml, ExamCard ----------------------------------
 dictionaryMRI:
 
-  Diffusion AP,FH,RL:
-    where:
-          file:           PAR       ; Xml
-          keyName:        diffusion ; Diffusion AP
-          type:           ~         ; ~
-          format: ~
-          units: ~          
-    viewer: 
-         category: Diffusion 
-    json: 
-         tag_Json: ~
-         type: ~
-         format: ~
-         units: ~
-         
+  Diffusion AP_FH_RL:
+                  where:  {file: PAR ; Xml, keyName: diffusion ; Diffusion AP, type: ~ ; ~, format: ~, units: ~}          
+                  viewer: {category: Diffusion} 
+                  json:   {tag_Json: ~, type: ~, format: ~, units: ~}

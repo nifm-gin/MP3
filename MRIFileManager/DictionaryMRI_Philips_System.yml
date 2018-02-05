@@ -1,6 +1,6 @@
 # Dictionary MRI by IRMaGe - Grenoble, 2017 July.
 #
-#  Important :      only developpers and advanced users can modified this database (the others users can used the file DictionaryMRI_Philips_Users.yml which is in the same directory)
+#  Important :      only developpers and advanced users can modified this database (the others users can used the file DictionaryMRI_Philips_User.yml which is in the same directory)
 #
 #  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
 #                                           if the Output case don't show red error message, it's ok !
@@ -12,10 +12,10 @@
 #
 #  Label MRI:
 #     where:
-#          file :           par , xml , ExamCard (for Philips Achieva PAR 4.2 , Xml)
-#          keyName :        tag Philips
+#          file :           par , xml (for Philips Achieva PAR 4.2 , Xml)
+#          keyName :        tag Philips without [],(),<> and its elements which are inside
 #          type :           string, float, int
-#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          format :         "hh:mn:ss dd/MM/yyyy" , "dd/MM/yyyy hh:mn:ss" for date, duree, ... (Put the parameter in quote "" !) 
 #          units :          um , mm , cm , m (for distance)
 #                           us , ms , s or (usec, msec, sec), mn , h (for time)
 #                           degree or degrees (for angle)
@@ -29,476 +29,165 @@
 #          units :          (see before)
 #
 #
-#---------------------------------- Philips Achieva PAR, Xml, ExamCard ----------------------------------
+#---------------------------------- Philips Achieva PAR/Rec, Xml/Rec ------------------------------------------------
 dictionaryMRI:
 
   Acquisition Time:
-    where:
-          file:           PAR                               ; Xml
-          keyName:        Scan Duration                     ; Scan Duration
-          type:           float                             ; float
-          format: ~
-          units:          $=key:"Scan Duration ["$"]"       ; s
-    viewer: 
-         category: Equipment 
-    json: 
-         tag_Json: AcquisitionTime
-         type: float
-         format: s
-         units: ~
+                  where:  {file: PAR ; Xml, keyName: Scan Duration ; Scan Duration, type: float ; float, format: ~, units: ~; s}
+                  viewer: {category: Equipment}
+                  json:   {tagJson: AcquisitionTime, type: string, format: s, units: ~}
 
   Acquisition Date:
-     where:  
-          file:           PAR                               ; Xml
-          keyName:        Examination date/time             ; Examination Date
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer: 
-          category: Equipment
-     json:   
-          tagJson: AcquisitionDate
-          type: float
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: ~, units: ~}
+                  viewer: {category: Equipment}
+                  json:   {tagJson: AcquisitionDate, type: string, format: ~, units: ~}
   
   Angulation Image:
-     where:  
-          file:           PAR                               ; Xml
-          keyName:        image angulation                  ; Angulation AP (Image_Info) # && Angulation FH && Angulation RL
-          type:           float                             ; float
-          format: ~
-          units: ~
-     viewer: 
-          category: Angulation-Position
-     json:   
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: image angulation ; Angulation AP (Image_Info), type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
+                  viewer: {category: Angulation-Position}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
           
   Angulation Midslice:
-     where:  
-          file:           PAR                               ; Xml
-          keyName:        Angulation midslice               ; Angulation AP # && Angulation FH && Angulation RL
-          type:           float                             ; float
-          format: ~
-          units: ~
-     viewer: 
-          category: Angulation-Position
-     json:   
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Angulation midslice ; Angulation AP, type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
+                  viewer: {category: Angulation-Position}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Creation Date:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        Examination date/time             ; Examination Date
-          type:           string                            ; string
-          format:         yyyy.MM.dd / hh:mm:ss             ; yyyy.MM.dd
-          units: ~
-     viewer:
-          category: Equipment
-     json:
-          tagJson: ~   
-          type: ~
-          format: ~
-          units: ~         
+                  where:  {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / hh:mm:ss ; yyyy.MM.dd", units: ~}
+                  viewer: {category: Equipment}
+                  json:   {tagJson: CreationDate, type: string, format: ~, units: ~}
  
   Data Type:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        image pixel size                  ; Pixel Size
-          type:           string                            ; int
-          format:         _nBIT_sgn_type                    ; ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: image pixel size ; Pixel Size, type: string ; int, format:         _nBIT_sgn_type ; ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Echo Time:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        echo_time                         ; Echo Time
-          type:           float                             ; float
-          format: ~
-          units:          ms                                ; ms
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: EchoTime
-          type: float
-          format: ~
-          units: ms
+                  where:  {file: PAR ; Xml, keyName: echo_time ; Echo Time, type: float  ; float, format: ~, units: ms   ; ms}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
 
   Flip Angle:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        image_flip_angle                  ; Image Flip Angle
-          type:           float                             ; float
-          format: ~
-          units:          $=key:"image_flip_angle (in "$")" ; degree
-     where2: 
-          file: Xml
-          parameterName: Image Flip Angle
-          type: float
-          format: ~
-          units: degree
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: FlipAngle
-          type: float
-          format: ~
-          units: degree
+                  where:  {file: PAR ; Xml, keyName: image_flip_angle ; Image Flip Angle, type: float  ; float, format: ~, units: ~ ; degree}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FlipAngle, type: float, format: ~, units: degree}
    
   FOV:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        FOV                               ; FOV AP #&& FOV FH && FOV RL
-          type:           float                             ; float
-          format: ~
-          units:          $=key:"FOV (ap,fh,rl) ["$"]"      ; degree
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: Fov
-          type: float
-          format: ~
-          units: mm
+                  where:  {file: PAR ; Xml, keyName: FOV  ; FOV AP , type: float  ; float, format: ~, units: ~ ; degree} # && FOV FH && FOV RL
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FOV, type: float, format: ~, units: mm}
 
   Images In Acquisition:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        index in REC file                 ; Index
-          type:           int                               ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: Fov
-          type: float
-          format: ~
-          units: mm
+                  where:  {file: PAR ; Xml, keyName: index in REC file   ; Index, type: int  ; int, format: ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ImageInAcquisition, type: float, format: ~, units: mm}
 
   Image Orientation Patient:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        image angulation                  ; Angulation AP #&& Angulation FH && Angulation RL
-          type:           float                             ; float
-          format: ~
-          units:          degree                            ; degree
-     viewer:
-          category: ~
-     json:
-          tagJson: ImageOrientationPatient
-          type: float
-          format: ~
-          units: degree
+                  where:  {file: PAR ; Xml, keyName: image angulation ; Angulation AP , type: float  ; float, format: ~, units: degree ; degree} # && Angulation FH && Angulation RL
+                  viewer: {category: ~}
+                  json:   {tagJson: ImageOrientationPatient, type: float, format: ~, units: degree}
 
   Image Position Patient:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        image offcentre                   ; Offcenter AP #&& Offcenter FH && Offcenter RL
-          type:           float                             ; float
-          format: ~
-          units:          mm                                ; ~
-     viewer:
-          category: ~
-     json:
-          tagJson: ImagePositionPatient
-          type: float
-          format: ~
-          units: mm
+                  where:  {file: PAR ; Xml, keyName: image offcentre  ; Offcenter AP, type: float  ; float, format: ~, units: mm   ; ~} # && Offcenter FH && Offcenter RL
+                  viewer: {category: ~}
+                  json:   {tagJson: ImagePositionPatient, type: float, format: ~, units: mm}
 
   Image Type:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        image_type_mr                     ; Type
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: ImagePositionPatient
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: image_type_mr  ; Type, type: string ; string, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ImageType, type: string, format: ~, units: ~}
 
   Number Of Average:
-     where: 
-          file:           PAR                                     ; Xml
-          keyName:        number of averages                      ; No Averages
-          type:           int                                     ; int
-          format: ~
-          units: ~
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: number of averages   ; No Averages, type: int   ; int, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
        
   Number Of Diffusion:
-     where: 
-          file:           PAR                                     ; Xml
-          keyName:        diffusion b value number                ; BValue
-          type:           int                                     ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: diffusion b value number  ; BValue, type: int   ; int, format: ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Echo:
-     where: 
-          file:           PAR                                     ; Xml
-          keyName:        echo number                             ; Echo
-          type:           int                                     ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: echo number  ; Echo, type: int   ; int, format: ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Repetition:
-     where: 
-          file:           PAR                                     ; Xml
-          keyName:        Max. number of dynamics                 ; Max No Dynamics
-          type:           int                                     ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Max. number of dynamics   ; Max No Dynamics, type: int   ; int, format: ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Slice:
-     where: 
-          file:           PAR                                     ; Xml
-          keyName:        Max. number of slices/locations         ; Max No Slices
-          type:           int                                     ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Max. number of slices/locations  ; Max No Slices, type: int   ; int, format: ~, units: ~}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
          
   Patient Name:
-     where: 
-          file:           PAR                               ; Xml
-          keyName:        Patient name                      ; Patient Name
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: ~
-     json:
-          tagJson: PatientName
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Patient name   ; Patient Name, type: string ; string, format: ~, units: ~}
+                  viewer: {category: ~}
+                  json:   {tagJson: PatientName, type: string, format: ~, units: ~}
 
   Position Image:              
-     where:  
-          file:           PAR                               ; Xml
-          keyName:        image offcentre                   ; Offcenter AP # && Off Center FH && Off Center RL
-          type:           float                             ; float
-          format: ~
-          units: ~
-     viewer: 
-          category: Angulation-Position
-     json:   
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: image offcentre  ; Offcenter AP, type: float  ; float, format: ~, units: ~} # && Off Center FH && Off Center RL, type: float  ; float, format: ~, units: ~}
+                  viewer: {category: Angulation-Position}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
                  
   Position Midslice:              
-     where:  
-          file:           PAR                               ; Xml
-          keyName:        Off Centre midslice               ; Off Center AP # && Off Center FH && Off Center RL
-          type:           float                             ; float
-          format: ~
-          units: ~
-     viewer: 
-          category: Angulation-Position
-     json:   
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Off Centre midslice ; Off Center AP , type: float  ; float, format: ~, units: ~} # && Off Center FH && Off Center RL
+                  viewer: {category: Angulation-Position}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Protocol:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        Protocol name                     ; Protocol Name
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: ProtocolName
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Protocol name  ; Protocol Name, type: string ; string, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ProtocolName, type: string, format: ~, units: ~}
 
   Repetition Time:
-    where:
-          file:           PAR                               ; Xml
-          keyName:        Repetition time                   ; Repetition Times
-          type:           float                             ; float
-          format: ~
-          units: ~          
-    viewer: 
-         category: MRI parameters 
-    json: 
-         tag_Json: RepetitionTime
-         type: float
-         format: ~
-         units: ~
+                  where:  {file: PAR ; Xml, keyName: Repetition time  ; Repetition Times, type: float  ; float, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: RepetitionTime, type: float, format: , units: ~}
 
   Scan Mode:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        Scan mode                         ; Scan Mode
-          type:           string                            ; string
-          format: ~
-          units: ms
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Scan mode ; Scan Mode, type: string ; string, format: ~, units: ms}
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ScanMode, type: string, format: ~, units: ~}
 
   Scan Resolution:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        recon resolution                  ; Resolution X #&& Resolution Y
-          type:           int                               ; int
-          format: ~
-          units: ~
-     viewer:
-          category: Dimensions
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: recon resolution ; Resolution X , type: int  ; int, format: ~, units: ~} # && Resolution Y
+                  viewer: {category: Dimensions}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Sequence Name:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        Technique                         ; Technique
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: ~
-     json:
-          tagJson: SequenceName
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Technique ; Technique, type: string ; string, format: ~, units: ~}
+                  viewer: {category: ~}
+                  json:   {tagJson: SequenceName, type: string, format: ~, units: ~}
+
+  Scanning Sequence:
+                  where:  {file: PAR ; Xml, keyName: scanning sequence ; Sequence, type: string ; string, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Slice Gap:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        slice gap                         ; Slice Gap
-          type:           float                             ; float
-          format: ~
-          units: mm
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: SliceThickness
-          type: float
-          format: ~
-          units: mm
+                  where:  {file: PAR ; Xml, keyName: slice gap ; Slice Gap, type: float ; float, format: ~, units: mm}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
 
   Slice Orientation:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        slice orientation                 ; Slice Orientation
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: slice orientation ; Slice Orientation, type: string ; string, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceOrientation, type: string, format: ~, units: ~}
 
   Slice Thickness:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        slice thickness                   ; Slice Thickness
-          type:           float                             ; float
-          format: ~
-          units: mm
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: SliceThickness
-          type: float
-          format: ~
-          units: mm
+                  where:  {file: PAR ; Xml, keyName: slice thickness ; Slice Thickness, type: float ; float, format: ~, units: mm}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
 
   Spatial Resolution:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        pixel spacing                     ; Pixel Spacing
-          type:           float                             ; float
-          format: ~
-          units: ~
-     viewer:
-          category: MRI parameters
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: pixel spacing  ; Pixel Spacing, type: float ; float, format: ~, units: ~}
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Study Name:
-     where:
-          file:           PAR                               ; Xml
-          keyName:        Examination name                  ; Examination Name
-          type:           string                            ; string
-          format: ~
-          units: ~
-     viewer:
-          category: ~
-     json:
-          tagJson: ~
-          type: ~
-          format: ~
-          units: ~
+                  where:  {file: PAR ; Xml, keyName: Examination name ; Examination Name, type: string ; string, format: ~, units: ~}
+                  viewer: {category: ~}
+                  json:   {tagJson: StudyName, type: string, format: ~, units: ~}

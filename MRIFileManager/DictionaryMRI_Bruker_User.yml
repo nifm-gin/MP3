@@ -15,7 +15,7 @@
 #          file :           subject , visu_pars , method , acqp , reco (for Bruker Paravasion 5 , Paravision 6)
 #          keyName :        $'nameparameter'= (for Bruker)
 #          type :           string, float, int
-#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          format :         "hh:mn:ss dd/MM/yyyy" , "dd/MM/yyyy hh:mn:ss" for date, duree, ... (Put the parameter in quote "" !)
 #                           _nBIT_sgn_type (Bruker data type)
 #          units :          um , mm , cm , m (for distance)
 #                           us , ms , s , mn , h (for time)
@@ -30,95 +30,35 @@
 #          units :          (see before)
 #
 #
-#---------------------------------- Bruker Paravision 5, Paravision 6 ------------------------------------------
+#---------------------------------- Bruker Paravision 5, Paravision 6 ------------------------------------------------------
 dictionaryMRI:
 
   Diffusion Preparation Method:
-     where:  
-          file: method
-          keyName: $PVM_DiffPrepMode=
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
-     json:   
-          tagJson: DiffusionPreparationMethod
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $PVM_DiffPrepMode=, type: string, format: ~, units: ~}
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: DiffusionPreparationMethod, type: string, format: ~, units: ~}
 
   Direction Diffusion Number:
-     where:  
-          file: method
-          keyName: $PVM_DwNDiffDir=
-          type: int
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
-     json:   
-          tagJson: DirectionDiffusionNumber
-          type: int
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $PVM_DwNDiffDir=, type: int, format: ~, units: ~}
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: DirectionDiffusionNumber, type: int, format: ~, units: ~}
 
   Method Diffusion:
-     where:  
-          file: method
-          keyName: $Method=
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
-     json:   
-          tagJson: MethodDiffusion
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $Method=, type: string, format: ~, units: ~}
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: MethodDiffusion, type: string, format: ~, units: ~}
 
   Segment EPI:
-     where:  
-          file: method
-          keyName: $NSegments=
-          type: int
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
-     json:   
-          tagJson: SegmentEPI
-          type: int
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $NSegments=, type: int, format: ~, units: ~}
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: SegmentEPI, type: int, format: ~, units: ~}
 
   PCasl Phi:
-     where:  
-          file: method
-          keyName: $PCASL_PhiSwList=
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: PCasl
-     json:   
-          tagJson: PCaslPhi
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $PCASL_PhiSwList=, type: string, format: ~, units: ~}
+                  viewer: {category: PCasl}
+                  json:   {tagJson: PCaslPhi, type: string, format: ~, units: ~}
 
   PCasl Label:
-     where:  
-          file: method
-          keyName: $PCASL_LabelImages=
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: PCasl
-     json:   
-          tagJson: PCaslLabel
-          type: string
-          format: ~
-          units: ~
+                  where:  {file: method, keyName: $PCASL_LabelImages=, type: string, format: ~, units: ~}
+                  viewer: {category: PCasl}
+                  json:   {tagJson: PCaslLabel, type: string, format: ~, units: ~}

@@ -15,7 +15,7 @@
 #          file :           niftiheader or json
 #          keyName :        tag nifti or json
 #          type :           string, float, int
-#          format :         hh:mn:ss dd/MM/yyyy , dd/MM/yyyy hh:mn:ss (for date, duree)
+#          format :         "hh:mn:ss dd/MM/yyyy" , "dd/MM/yyyy hh:mn:ss" for date, duree, ... (Put the parameter in quote "" !)
 #          units :          um , mm , cm , m (for distance)
 #                           us , ms , s , mn , h (for time)
 #                           degree (for angle)
@@ -28,41 +28,17 @@
 dictionaryMRI:
   
   Diffusion Preparation Method:
-     where:  
-          file: json
-          keyName: DiffusionPreparationMethod
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
+                  where:    {file: json, keyName: DiffusionPreparationMethod, type: string, format: ~, units: ~}
+                  viewer:   {category: Diffusion}
 
   Direction Diffusion Number:
-     where:  
-          file: json
-          keyName: DirectionDiffusionNumber
-          type: int
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
+                  where:    {file: json, keyName: DirectionDiffusionNumber, type: int, format: ~, units: ~}
+                  viewer:   {category: Diffusion}
 
   Method Diffusion:
-     where:  
-          file: json
-          keyName: MethodDiffusion
-          type: string
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion
+                  where:    {file: json, keyName: MethodDiffusion, type: string, format: ~, units: ~}
+                  viewer:   {category: Diffusion}
 
   Segment EPI:
-     where:  
-          file: json
-          keyName: SegmentEPI
-          type: int
-          format: ~
-          units: ~
-     viewer: 
-          category: Diffusion 
+                  where:    {file: json, keyName: SegmentEPI, type: int, format: ~, units: ~}
+                  viewer:   {category: Diffusion}
