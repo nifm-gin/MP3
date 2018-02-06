@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 05-Feb-2018 22:08:18
+% Last Modified by GUIDE v2.5 06-Feb-2018 09:50:47
 
 
 % Begin initialization code - DO NOT EDIT
@@ -6888,10 +6888,6 @@ function MIA_save_database_ClickedCallback(hObject, eventdata, handles)
 MIA_menu_save_database_Callback(hObject, eventdata, handles)
  
 
-
-
-
-
 % --------------------------------------------------------------------
 function MIA_remove_omit_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_remove_omit (see GCBO)
@@ -9026,7 +9022,7 @@ for i = 1:numel(unique(log_file.StudyName))
                        
                    end
                    new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MIA_data_path)), categorical(cellstr(file_name)),...
-                       categorical(cellstr('Scan')), true, categorical(cellstr(seq_name)),...
+                       categorical(cellstr('Scan')), categorical(1), categorical(cellstr(seq_name)),...
                        'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
                    
                    %% add data to the database

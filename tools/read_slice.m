@@ -31,16 +31,16 @@ R = Vref(1).mat(1:3,1:3);
 
 if det(R) == 0 | ~isequal(R(find(R)), sum(R)')
     R_sort = sort(abs(R(:)));
-    R( find( abs(R) < tolerance*min(R_sort(end-2:end)) ) ) = 0;
+    R(find( abs(R) < tolerance*min(R_sort(end-2:end)) ) ) = 0;
 end
 %% weird code to still display non orthogonal images 
 % need to check it !!
-%  There is too much distortion in the loaded image for any non-orthogonal rotation or shearing
-if sum(sum(R==0) ~= [2 2 2]) ~= 3
+% There is too much distortion in the loaded image for any non-orthogonal rotation or shearing
+if sum(sum(R==0) == [2 2 2]) ~= 3
     R = zeros([3,3]);
-    R(1,1) = Vref(1).mat(1,1);
-    R(2,2) = Vref(1).mat(2,2);
-    R(3,3) = Vref(1).mat(3,3);
+    R(1,find(abs(Vref(1).mat(:,1)) ==max(abs(Vref(1).mat(:,1))))) = Vref(1).mat(1,find(abs(Vref(1).mat(:,1)) == max(abs(Vref(1).mat(:,1)))));
+    R(2,find(abs(Vref(1).mat(:,2)) ==max(abs(Vref(1).mat(:,2))))) = Vref(1).mat(2,find(abs(Vref(1).mat(:,2)) == max(abs(Vref(1).mat(:,2)))));
+    R(3,find(abs(Vref(1).mat(:,3)) ==max(abs(Vref(1).mat(:,3))))) = Vref(1).mat(3,find(abs(Vref(1).mat(:,3)) == max(abs(Vref(1).mat(:,3)))));
 end
 
 
