@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 23-Oct-2017 11:00:34
+% Last Modified by GUIDE v2.5 05-Feb-2018 22:08:18
 
 
 % Begin initialization code - DO NOT EDIT
@@ -791,11 +791,11 @@ for x = 1:numel(filename)
         fclose(fid);
         roi_loaded = load(fullfile(directory,filename{x}));
         if ~isfield(roi_loaded, 'uvascroi')
-            warndlg(strcat('Somthing wrong with the ROI file:', {' '},filename{x}),'Warning');
+            warndlg(strcat('something wrong with the ROI file:', {' '},filename{x}),'Warning');
             return
         end
     else
-        warndlg(strcat('Somthing wrong with the ROI file:', {' '},filename{x}),'Warning');
+        warndlg(strcat('something wrong with the ROI file:', {' '},filename{x}),'Warning');
         return
     end
     dlgbox_title =  strcat('File name:', {' '}, filename{x});
@@ -1360,13 +1360,13 @@ elseif strcmp(ext, '.wfml') % need to explore sub directories
             'ListSize', [400 300],...
             'ListString',file_path_svs');
         if ok == 0
-            warndlg('Somthing wrong with the data','Warning');
+            warndlg('something wrong with the data','Warning');
             return
         end
         info = imfinfo(file_path_svs{image_selected});
         histo_image = importdata(file_path_svs{image_selected});
     else
-        warndlg('Somthing wrong with the data','Warning');
+        warndlg('something wrong with the data','Warning');
         return
     end
     
@@ -1378,7 +1378,7 @@ else
         info = imfinfo(fullfile(pathname,file));
         histo_image = imread(fullfile(pathname,file));
     else
-        warndlg('Somthing wrong with the data','Warning');
+        warndlg('something wrong with the data','Warning');
         return
     end
 end
@@ -1423,7 +1423,7 @@ if strcmp(registration, 'New registration') == 1
         scan_ref_loaded = load(fullfile(handles.database(patient).path,handles.database(patient).day(new_time_point).scans_file{scan_ref_nbr}));
         scan_ref = squeeze(scan_ref_loaded.uvascim.image.reco.data(:,:,1,:));
     else
-        warndlg('Somthing wrong with the data','Warning');
+        warndlg('something wrong with the data','Warning');
         return
     end
 end
@@ -1467,7 +1467,7 @@ switch registration
             fclose(fid);
             histo_registered_loaded = load(fullfile(handles.database(patient).path,handles.database(patient).day(new_time_point_histo).scans_file{scan_ref_nbr_histo}));
         else
-            warndlg('Somthing wrong with the data','Warning');
+            warndlg('something wrong with the data','Warning');
             return
         end
         histo_registred.mytform = histo_registered_loaded.uvascim.image.reco.mytform;
@@ -1846,30 +1846,33 @@ cd(path_root);
 
 
 % --------------------------------------------------------------------
-function MIA_rename_scan_Callback(hObject, eventdata, ~)
+function MIA_rename_scan_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_rename_scan (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-patient = get(handles.MIA_name_list, 'Value');
-if ~isfield(handles, 'database') || isempty(handles.database(patient).day(1).date)
+
+if ~isfield(handles, 'database') 
+    return
+end
+data_selected = finddata_selected(handles);
+if numel(data_selected) >1
+    warndlg('Please select only one scan', 'Warning');
     return
 end
 
-timepoint = get(handles.MIA_time_points_list, 'Value');
-scan_name = get(handles.MIA_scans_list, 'Value');
-
-if numel(scan_name) >1
-    warndlg('Please select only one timepoint', 'Warning');
-    return
-end
-
+% if get(handles.MIA_scan_VOIs_button, 'Value')
+%     msgbox('Not coded yet warning') ;
+%     %     name_option = handles.VOIs';
+%     %     old_scan_name = handles.database(patient).day(timepoint).VOIs_file(scan_name);
+%     return
+% else
+%     name_option = [cellstr(unique(handles.database.SequenceName))' 'Other']';
+%     old_scan_name = handles.database.SequenceName(data_selected);
+% end
 if get(handles.MIA_scan_VOIs_button, 'Value')
-    name_option = handles.VOIs';
-    old_scan_name = handles.database(patient).day(timepoint).VOIs_file(scan_name);
+    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
 else
-    name_option = [sort(handles.clips(:,1))' 'Other'];
-    old_scan_name = handles.database(patient).day(timepoint).parameters(scan_name);
+    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
 end
 
 [new_scan_name, ok1] = listdlg('PromptString','Select the new scan name:',...
@@ -1881,118 +1884,160 @@ end
 if ok1 == 0
     return
 end
-if get(handles.MIA_scan_VOIs_button, 'Value')
-    if strcmp('Other', handles.VOIs(new_scan_name)) == 1
-        newparameter = inputdlg('Name of the new VOI ', 'Question?', 1, {''});
-        handles.VOIs=[handles.VOIs(1:end-1), newparameter, handles.VOIs(end-1:end)];
-        new_scan_name = numel(handles.VOIs)-2;
-        handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
-    else
-        handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
-        newparameter = name_option(new_scan_name);
-    end
-else
-    if strcmp('Other',name_option(new_scan_name)) == 1
+ if strcmp('Other',name_option(new_scan_name)) == 1
         newparameter = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
-        handles.database(patient).day(timepoint).parameters(scan_name) = newparameter;
-        if sum(strcmp(newparameter, handles.clips(:,1))) == 0
-            handles.clips(size(handles.clips,1)+1,1) =newparameter;
-            handles.clips(size(handles.clips,1),2) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),2);
-            handles.clips(size(handles.clips,1),3) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),3);
-        end
-    else
-        handles.database(patient).day(timepoint).parameters(scan_name) = name_option(new_scan_name);
-        newparameter = name_option(new_scan_name);
-    end
+ else
+        newparameter =name_option(new_scan_name);
+ end
+ 
+%% update the database with the new name
+% but first check if the new scan name does not exist for this patient and
+% time point
+
+% faire le ROI vs SCAN
+if find(handles.database.Patient == handles.database.Patient(data_selected) &...
+        handles.database.Tp == handles.database.Tp(data_selected) & ...
+        handles.database.SequenceName == newparameter) > 0
+    msgbox('A Scan with the same name already exist for this patient at this time point') ;
+    return
 end
+
+
+new_nii_filename = strrep(cellstr(handles.database.Filename(data_selected)), cellstr(handles.database.SequenceName(data_selected)), newparameter);
 
 % rename the scan file
-if get(handles.MIA_scan_VOIs_button, 'Value')
-    [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{scan_name}]);
-    new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-    if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-            fullfile(PATHSTR,[NAME,EXT]));
+if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0
+    warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+            fullfilename(handles, data_selected, '.nii'));
         msgbox(warning_text, 'rename file warning') ;
-    elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-        user_response = questdlg('The new file name for this ROI exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-        if strcmp(user_response, 'No')
-            return
-        end
-        user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-        % overwrite the file if requested
-        if strcmp(user_response, 'Yes')
-            if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
-            end
-            %% Add for modify name in ROI
-            load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
-            for itRoi = 1 : numel(uvascroi)
-                uvascroi(itRoi).name = newparameter{1};
-            end
-            save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
-        end
-        
-    else
-        movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-        handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
-        %% Add for modify name in ROI
-        load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
-        for itRoi = 1 : numel(uvascroi)
-            uvascroi(itRoi).name = newparameter{1};
-        end
-        save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
-    end
+elseif exist(string(strcat(cellstr(handles.database.Path(data_selected)),new_nii_filename{:},'.nii')), 'file') == 2
+    msgbox('The new .nii file exist already!!') ;
+    
 else
-    [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{scan_name}]);
-    new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-    new_name = strrep(new_name, '*', 'star');
-    if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-            fullfile(PATHSTR,[NAME,EXT]));
-        msgbox(warning_text, 'rename file warning') ;
-    elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-        user_response = questdlg('The new file name exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-        if strcmp(user_response, 'No')
-            return
-        end
-        user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-        % overwrite the file if requested
-        if strcmp(user_response, 'Yes')
-            if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
-            end
-        end
-        
-    else
-        movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-        handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
+    movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
     end
 end
 
+% update the Filename field in the table
+handles.database.SequenceName(data_selected) = newparameter;
+handles.database.Filename(data_selected) = new_nii_filename;
+
+% save the structure
 guidata(hObject, handles);
 
-% check if the old parameter exist somewhere else, if not remove it
-parameters_list = [];
-for i=1:numel(handles.database)
-    for j = 1:numel(handles.database(i).day)
-        parameters_list = [parameters_list handles.database(i).day(j).parameters]; %#ok<AGROW>
-        
-    end
-end
-parameters_list= unique(parameters_list);
-
-if sum(strcmp(old_scan_name, parameters_list')) == 0
-    match = find(strcmp(old_scan_name,handles.clips(:,1)), 1);
-    handles.clips(match,:) = [];
-end
-
-guidata(hObject, handles);
-
-%%% update graph and display
+%% update graph and display
 MIA_update_database_display(hObject, eventdata, handles);
+
+% if get(handles.MIA_scan_VOIs_button, 'Value')
+%     if strcmp('Other', handles.VOIs(new_scan_name)) == 1
+%         newparameter = inputdlg('Name of the new VOI ', 'Question?', 1, {''});
+%         handles.VOIs=[handles.VOIs(1:end-1), newparameter, handles.VOIs(end-1:end)];
+%         new_scan_name = numel(handles.VOIs)-2;
+%         handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
+%     else
+%         handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
+% %         newparameter = name_option(new_scan_name);
+% %     end
+% % else
+% %     if strcmp('Other',name_option(new_scan_name)) == 1
+% %         newparameter = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+% %         handles.database(patient).day(timepoint).parameters(scan_name) = newparameter;
+% %         if sum(strcmp(newparameter, handles.clips(:,1))) == 0
+% %             handles.clips(size(handles.clips,1)+1,1) =newparameter;
+% %             handles.clips(size(handles.clips,1),2) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),2);
+% %             handles.clips(size(handles.clips,1),3) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),3);
+% %         end
+% %     else
+% %         handles.database(patient).day(timepoint).parameters(scan_name) = name_option(new_scan_name);
+% %         newparameter = name_option(new_scan_name);
+% %     end
+% % end
+% 
+% % rename the scan file
+% if get(handles.MIA_scan_VOIs_button, 'Value')
+%     [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{scan_name}]);
+%     new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
+%     if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
+%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+%             fullfile(PATHSTR,[NAME,EXT]));
+%         msgbox(warning_text, 'rename file warning') ;
+%     elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
+%         user_response = questdlg('The new file name for this ROI exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
+%         if strcmp(user_response, 'No')
+%             return
+%         end
+%         user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
+%         % overwrite the file if requested
+%         if strcmp(user_response, 'Yes')
+%             if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
+%                 movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
+%                 handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
+%             end
+%             %% Add for modify name in ROI
+%             load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
+%             for itRoi = 1 : numel(uvascroi)
+%                 uvascroi(itRoi).name = newparameter{1};
+%             end
+%             save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
+%         end
+%         
+%     else
+%         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
+%         handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
+%         %% Add for modify name in ROI
+%         load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
+%         for itRoi = 1 : numel(uvascroi)
+%             uvascroi(itRoi).name = newparameter{1};
+%         end
+%         save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
+%     end
+% else
+%     [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{scan_name}]);
+%     new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
+%     new_name = strrep(new_name, '*', 'star');
+%     if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
+%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+%             fullfile(PATHSTR,[NAME,EXT]));
+%         msgbox(warning_text, 'rename file warning') ;
+%     elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
+%         user_response = questdlg('The new file name exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
+%         if strcmp(user_response, 'No')
+%             return
+%         end
+%         user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
+%         % overwrite the file if requested
+%         if strcmp(user_response, 'Yes')
+%             if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
+%                 movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
+%                 handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
+%             end
+%         end
+%         
+%     else
+%         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
+%         handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
+%     end
+% end
+% 
+% guidata(hObject, handles);
+% 
+% % check if the old parameter exist somewhere else, if not remove it
+% parameters_list = [];
+% for i=1:numel(handles.database)
+%     for j = 1:numel(handles.database(i).day)
+%         parameters_list = [parameters_list handles.database(i).day(j).parameters]; %#ok<AGROW>
+%         
+%     end
+% end
+% parameters_list= unique(parameters_list);
+% 
+% if sum(strcmp(old_scan_name, parameters_list')) == 0
+%     match = find(strcmp(old_scan_name,handles.clips(:,1)), 1);
+%     handles.clips(match,:) = [];
+% end
+
 
 
 
@@ -2082,14 +2127,17 @@ if ~isfield(handles, 'database')
     return
 end
 
-handles = guidata(hObject);
+%handles = guidata(hObject);
 % patient = get(handles.MIA_name_list, 'Value');
-new_patient_directory = uigetdir(pwd, 'Select Directory');
-
+new_patient_directory = uigetdir(handles.database.Properties.UserData.MIA_root_path, 'Select Directory');
+new_patient_directory = strcat(new_patient_directory, filesep);
 if sum(new_patient_directory) == 0
     return
 else
+   handles.database.Path =categorical(strrep(cellstr(handles.database.Path ),...
+       handles.database.Properties.UserData.MIA_root_path, new_patient_directory));
    handles.database.Properties.UserData.MIA_root_path = new_patient_directory;
+   handles.database.Properties.UserData.MIA_data_path = [new_patient_directory 'Raw_data' filesep];
 end
 guidata(hObject, handles);
 
@@ -2193,7 +2241,7 @@ for i = 1:numel(data_selected)
         handles.data_loaded.number_of_ROI = size(handles.data_loaded.ROI,1);
         handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
     else
-        warndlg('Somthing wrong with the data. Nii of json file is missing','Warning');
+        warndlg('something wrong with the data. Nii of json file is missing','Warning');
         return
     end
     guidata(hObject, handles);  
@@ -2223,7 +2271,7 @@ for i = 1:numel(data_selected)
         %% read and load the nii file
         handles.data_loaded.Scan(i).V =spm_vol(fullfilename(handles, data_selected(i), '.nii'));
     else
-        warndlg('Somthing wrong with the data. Nii of json file is missing','Warning');
+        warndlg('something wrong with the data. Nii of json file is missing','Warning');
         return
     end
     clear new
@@ -6837,36 +6885,8 @@ function MIA_save_database_ClickedCallback(hObject, eventdata, handles)
 
 %% check if the database has been saved already. If to goto saveas function
 
-% if ~isfield(handles.database.Properties.UserData, 'db_pathname')
-    MIA_menu_save_database_Callback(hObject, eventdata, handles)
+MIA_menu_save_database_Callback(hObject, eventdata, handles)
  
-% else
-    % if a sub-database is displayed (for instance only the group named
-    % "control"
-%     if isfield(handles, 'database_all')
-%         handles.database_all(1).databaseinfo.VOIs = handles.VOIs;
-%         handles.database_all(1).databaseinfo.clips = handles.clips;
-%         handles.database_all(1).databaseinfo.histo = handles.histo;
-%         %     handles.database_all(1).databaseinfo.day = get(handles.patient_graph1_day_button, 'Value');
-%         database = handles.database_all;
-%     else
-%         handles.database(1).databaseinfo.VOIs = handles.VOIs;
-%         handles.database(1).databaseinfo.clips = handles.clips;
-%         handles.database(1).databaseinfo.histo = handles.histo;
-%         database = handles.database;
-% %     end
-%     
-%     choice = questdlg(['Do you want to overwrite '  fullfile(database(1).databaseinfo.pathname, database(1).databaseinfo.filename) '?'],...
-%         'Question', 'Yes','No','Abort','Abort');
-%     switch choice
-%         case 'Yes'
-%             save(fullfile(database(1).databaseinfo.pathname, database(1).databaseinfo.filename), 'database');
-%         otherwise
-%             return
-%     end
-%     
-% end
-
 
 
 
@@ -9005,7 +9025,7 @@ for i = 1:numel(unique(log_file.StudyName))
                        file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                        
                    end
-                   new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr([handles.database.Properties.UserData.MIA_data_path, 'Raw_data', filesep])), categorical(cellstr(file_name)),...
+                   new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MIA_data_path)), categorical(cellstr(file_name)),...
                        categorical(cellstr('Scan')), true, categorical(cellstr(seq_name)),...
                        'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
                    
