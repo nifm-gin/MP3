@@ -16,9 +16,7 @@ Vi_index_3D_vol=Vi(index_3D_vol);
 
 parfor p = 1:Vref(1).dim(3)
     B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
-%     M = inv(B*(Vref(1).mat\Vi(index_3D_vol).mat));
     M = inv(B*mat_tmp);
-%     d = spm_slice_vol(Vi(index_3D_vol),M,xy,3);
     d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
     Y(:,:,p) = reshape(d,xy);
 end
@@ -27,7 +25,6 @@ end
 %% reorient the matrix (sag, cor, trans)
 tolerance = 1;
 R = Vref(1).mat(1:3,1:3);
-
 
 if det(R) == 0 | ~isequal(R(find(R)), sum(R)')
     R_sort = sort(abs(R(:)));
@@ -66,25 +63,6 @@ end
 
 
 function orient = get_orient(R)
-
-% % orient = [];
-% for i = 1:3
-%     switch find(R(i,:)) * sign(sum(R(i,:))) 
-%         case 1
-%             orient = [orient 5];		% Left to Right
-%         case 2
-%             orient = [orient 4];		% Posterior to Anterior
-%         case 3
-%             orient = [orient 3];		% Inferior to Superior
-%         case -1
-%             orient = [orient 2];		% Right to Left
-%         case -2
-%             orient = [orient 1];		% Anterior to Posterior
-%         case -3
-%             orient = [orient 6];		% Superior to Inferior
-%     end
-% end
-
 
 orient = zeros(1,3);
 parfor i = 1:3
