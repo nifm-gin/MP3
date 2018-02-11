@@ -93,6 +93,10 @@ for i=1:4
     set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
 end
 
+
+% add MRIManager.jar to the classpath (dynamic classpath)
+[dpath, ~, ~] = fileparts(which('sendList.m'));
+javaclasspath(strcat(dpath, filesep, 'MRIManager.jar'))
 % Update handles structure
 guidata(hObject, handles);
 
