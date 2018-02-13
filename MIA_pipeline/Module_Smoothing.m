@@ -99,7 +99,7 @@ if isempty(opt)
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''};
-    user_parameter_type = {'Scan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'};
+    user_parameter_type = {'XScan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'};
     parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'; '1'; ''};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
@@ -110,8 +110,8 @@ if isempty(opt)
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
-    files_in = {''};
-    files_out = {''};
+    files_in.In1 = {''};
+    files_out.In1 = {''};
     return
   
 end
@@ -123,11 +123,11 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
 end
 
 %% Inputs
-if ~ischar(files_in) 
+if ~ischar(files_in.In1{1}) 
     error('files in should be a char');
 end
 
-[path_nii,name_nii,ext_nii] = fileparts(char(files_in));
+[path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
 if ~strcmp(ext_nii, '.nii')
      error('First file need to be a .nii, not a %s. Path : %s, Name : %s, opt.files_in : %s', ext_nii, path_nii, ext_nii, files_in);  
 end
@@ -166,7 +166,7 @@ end
 %end
 
 if strcmp(files_out, '')
-    files_out = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii);
+    files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii)};
 end
 
 %% If the test flag is true, stop here !
@@ -180,9 +180,9 @@ end
 
 
 
-N = niftiread(files_in);
-info = niftiinfo(files_in);
-[path, name, ext] = fileparts(files_in);
+N = niftiread(files_in.In1{1});
+info = niftiinfo(files_in.In1{1});
+[path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 fid = fopen(jsonfile, 'r');
 raw = fread(fid, inf, 'uint8=>char');
@@ -192,25 +192,39 @@ J = jsondecode(raw);
 
 Informations = whos('N');
 FilteredImages = zeros(size(N), Informations.class);
-NbDim = length(size(N));
-if NbDim>4
-    warning('Too much dimensions. This module deals with at most 4 dimensions.')
+Size = size(N);
+NbDim = length(Size);
+
+
+if NbDim >4
+    Dim_To_Merge = Size(4:end);
+    NewDim = prod(Dim_To_Merge);
+    NewN = reshape(N, Size(1), Size(2), Size(3), NewDim);
+else
+    NewN = N;
 end
+
+
+
 h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
-for i=1:size(N,3)
-    for j=1:size(N,4)
-        FilteredImages(:,:,i,j) = imfilter(N(:,:,i,j), h, 'replicate');
+for i=1:size(NewN,3)
+    for j=1:size(NewN,4)
+        FilteredImages(:,:,i,j) = imfilter(NewN(:,:,i,j), h, 'replicate');
     end
 end
 
+
+
+NewFilteredImages = reshape(FilteredImages, Size);
+
 info2 = info;
-info2.Filename = files_out;
+info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
-niftiwrite(FilteredImages, files_out, info2)
+niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
 JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out);
+[path, name, ext] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
 fidmod = fopen(jsonfile, 'w');
 fwrite(fidmod, JMod, 'uint8');
