@@ -949,7 +949,8 @@ switch NbScanInput
         NbJobs = size(NewTable,1);
         %pipeline = struct();
         for i=1:NbJobs
-            pipeline = psom_add_job(pipeline, ['job_', num2str(i)], handles.new_module.module_name, [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'], '', handles.new_module.opt.Module_settings);
+            Files_in.In1 = {[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']};
+            pipeline = psom_add_job(pipeline, ['job_', num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         end
     case 3
         %[Input1 Input2 Input3] = handles.new_module.opt.table.Default{ScanInputs};
