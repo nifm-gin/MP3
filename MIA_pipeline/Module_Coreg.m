@@ -199,10 +199,12 @@ FixedImJSON = jsondecode(raw);
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {[files_in.In1{1}, ',1']};
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
-for i=1:length(files_in.In3)
-    files_in.In3{i}= [files_in.In3{i}, ',1'];
+if ~isempty(files_in.In3)
+    for i=1:length(files_in.In3)
+        files_in.In3{i}= [files_in.In3{i}, ',1'];
+    end
+    matlabbatch{1}.spm.spatial.coreg.estwrite.other = files_in.In3;
 end
-matlabbatch{1}.spm.spatial.coreg.estwrite.other = files_in.In3;
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
