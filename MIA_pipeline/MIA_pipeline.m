@@ -838,6 +838,12 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         %module_parameters_string = handles.new_module.opt.parameter_list;
         ismodule = 1;
+    case '   .Dynamic Susceptibility Contrast'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Susceptibility(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Susceptibility';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        ismodule = 1;
         
         %         parameter_list = {'files_in', 'files_out', 'parameters', '  .DSC_parameter1', '  .DSC_parameter2'};
         
