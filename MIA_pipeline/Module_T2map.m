@@ -97,15 +97,19 @@ if isempty(opt)
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    opt.parameter_list = {'Select a Multi Spin Echo scan as input', 'Parameters', '   .Output filename extension'  '   .Threshold'};
-    opt.parameter_type = {'Scan', '', 'char', 'numeric'};
-    opt.parameter_default = {'', '', '_T2map', 5};
-    opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'threshold', '   .Threshold'};
+    user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
+    user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
+    parameter_default = {''; ''; '_T2map'; 5};
+    psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
-    files_in = {''};
-    files_out = {''};
+    
+    
+    files_in.In1 = {''};
+    files_out.In1 = {''};
     return
   
 end
@@ -117,11 +121,11 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
 end
 
 %% Inputs
-if ~ischar(files_in) 
+if ~ischar(files_in.In1{1}) 
     error('files in should be a char');
 end
 
-[path_nii,name_nii,ext_nii] = fileparts(char(files_in));
+[path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
 if ~strcmp(ext_nii, '.nii')
      error('First file need to be a .nii');  
 end
@@ -136,13 +140,13 @@ if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
 end
 
 %% Options
-fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext'};
-defaults = {5, false, '', '_T2_map'};
-if nargin < 3
-    opt = psom_struct_defaults(struct(),fields,defaults);
-else
-    opt = psom_struct_defaults(opt,fields,defaults);
-end
+% fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext'};
+% defaults = {5, false, '', '_T2_map'};
+% if nargin < 3
+%     opt = psom_struct_defaults(struct(),fields,defaults);
+% else
+%     opt = psom_struct_defaults(opt,fields,defaults);
+% end
 
 %% Check the output files structure
 %fields    = {'filename'};
@@ -154,9 +158,9 @@ if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same 
     opt.folder_out = path_nii;    
 end
 
-%if isempty(files_out.filename)
-%    files_out.filename = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii);
-%end
+if isempty(files_out)
+   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii)};
+end
 
 %% If the test flag is true, stop here !
 if opt.flag_test == 1
@@ -169,17 +173,30 @@ end
 
 
 %% load input Nii file
-data.hdr = spm_vol(files_in{1});
-data.img = spm_read_vols(data.hdr);
+%data.hdr = spm_vol(files_in{1});
+%data.img = spm_read_vols(data.hdr);
 
 %% load input JSON fil
-data.json = spm_jsonread(files_in{2});
+%data.json = spm_jsonread(files_in{2});
 
 % Get information from the JSON data
-EchoTime = data.json.EchoTime;
+%EchoTime = data.json.EchoTime;
+
+N = niftiread(files_in.In1{1});
+info = niftiinfo(files_in.In1{1});
+[path, name, ext] = fileparts(files_in.In1{1});
+jsonfile = [path, '/', name, '.json'];
+fid = fopen(jsonfile, 'r');
+raw = fread(fid, inf, 'uint8=>char');
+fclose(fid);
+%raw = reshape(raw, 1,length(raw));
+J = jsondecode(raw);
+
+EchoTime = J.EchoTime;
 
 % reshape the data to a vector matric (speed the fitting process)
-data_to_fit = reshape(double(data.img), [size(data.img,1)*size(data.img, 2)*size(data.img,3) numel(EchoTime)]);
+%data_to_fit = reshape(double(data.img), [size(data.img,1)*size(data.img, 2)*size(data.img,3) numel(EchoTime)]);
+data_to_fit = reshape(double(N), [size(N,1)*size(N, 2)*size(N,3) numel(EchoTime)]);
 
 %% create empty structures
 T2map_tmp = NaN(size(data_to_fit,1),1);
@@ -223,10 +240,10 @@ end
 % [~,filename,~] = fileparts(MSE_map_filename);
 
 % reshape matrix
-T2map.img=reshape(T2map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-T2map.img(T2map.img < 0) = -1;
-T2map.img(T2map.img > 5000) = -1;
-T2map.img(isnan(T2map.img)) = -1;
+OutputImages=reshape(T2map_tmp,[size(N,1) size(N, 2) size(N,3)]);
+OutputImages(OutputImages < 0) = -1;
+OutputImages(OutputImages > 5000) = -1;
+OutputImages(isnan(OutputImages)) = -1;
 % M0map.img=reshape(M0map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
 % T2_Error_map.img=reshape(T2_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
 % M0_Error_map.img=reshape(M0_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
@@ -237,12 +254,22 @@ T2map.img(isnan(T2map.img)) = -1;
 % spm_write_vol(T2map.hdr, T2map.img);
 
 %% if matlab function is used
-T2map.hdr = niftiinfo(files_in{1});
-T2map.hdr = update_nifti_hdr(T2map.hdr, T2map.img, files_out.filename);
-niftiwrite(single(T2map.img), files_out.filename, T2map.hdr)
+%T2map.hdr = niftiinfo(files_in{1});
+%T2map.hdr = update_nifti_hdr(T2map.hdr, T2map.img, files_out.filename);
+%niftiwrite(single(T2map.img), files_out.filename, T2map.hdr)
 
 %% need to update the json structure here before saving it with the T2map
-spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
+%spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
+
+
+
+niftiwrite(OutputImages, files_out.In1{1});%, info)
+JMod = jsonencode(J);
+[path, name, ext] = fileparts(files_out.In1{1});
+jsonfile = [path, '/', name, '.json'];
+fidmod = fopen(jsonfile, 'w');
+fwrite(fidmod, JMod, 'uint8');
+fclose(fidmod);
 % 
 % % save the M0map map
 % M0map.hdr = spm_vol([MSE_map_filename, ', 1']);
