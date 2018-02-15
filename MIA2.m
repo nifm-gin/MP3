@@ -97,6 +97,9 @@ end
 % add MRIManager.jar to the classpath (dynamic classpath)
 [dpath, ~, ~] = fileparts(which('sendList.m'));
 javaclasspath(strcat(dpath, filesep, 'MRIManager.jar'))
+% save the java skin used
+handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -2016,7 +2019,10 @@ if handles.mode == 1
     handles = MIA_load_axes_single(hObject, eventdata, handles);
 else
     handles = MIA_load_axes_PRM(hObject, eventdata, handles);
-    
+    % if all conditions are not present --> return
+    if ~isfield(handles, 'data_loaded')
+        return
+    end
     list_day = ['-1', string(unique(handles.data_loaded.info_data_loaded.Tp))'];
     set(handles.MIA_PRM_ref_popupmenu, 'String', list_day', 'Value', 2);
     %set MIA_PRM_slider
@@ -2037,28 +2043,7 @@ MIA_update_axes(hObject, eventdata, handles)
 function handles = MIA_load_VOIs(hObject, ~, handles)
 
 data_selected = get_data_selected(handles);
-% get patient's information (already loaded)
-% if handles.mode == 1
-%     patient_loaded = handles.data_selected.patient_info.name_nbr;
-%     timepoint_loaded = handles.data_selected.patient_info.timepoint_nbr;
-% else
-%     patient_loaded = handles.data_selected_for_PRM.patient_info.name_nbr;
-%     timepoint_loaded = handles.data_selected_for_PRM.patient_info.timepoint_nbr;
-% end
-% if patient_loaded ~= patient
-%     user_response = questdlg('Wrong PATIENT selected. Do you still want to open the ROIs?', 'Warning', 'Yes', 'No', 'No');
-%     if strcmp(user_response, 'No')
-%         return
-%     end
-% end
-% if timepoint_loaded ~= time_point
-%     if strcmp(get(hObject, 'Tag'), 'MIA_load_axes')
-%         user_response = questdlg('Wrong TIME POINT selected. Do you still want to open the ROIs?', 'Warning', 'Yes', 'No', 'No');
-%         if strcmp(user_response, 'No')
-%             return
-%         end
-%     end
-% end
+
 handles.data_loaded.info_data_loaded(handles.data_loaded.info_data_loaded.Type == 'ROI',:) =[];
 if isfield(handles.data_loaded, 'ROI')
     handles.data_loaded= rmfield(handles.data_loaded, 'ROI');
@@ -2074,7 +2059,7 @@ for i = 1:numel(data_selected)
         %% read and load the nii file
         handles.data_loaded.ROI(i).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
         handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V);
-        handles.data_loaded.number_of_ROI = size(handles.data_loaded.ROI,1);
+        handles.data_loaded.number_of_ROI = numel(handles.data_loaded.ROI);
         handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
     else
         warndlg('something wrong with the data. Nii of json file is missing','Warning');
@@ -2082,6 +2067,29 @@ for i = 1:numel(data_selected)
     end
     guidata(hObject, handles);
 end
+
+%update MIA_plot1
+%if isfield(handles,'ROI_selected_resized')
+%handles = MIA_find_VOI_coordonates(hObject,handles);
+
+if handles.mode == 1 && handles.display_option.view_plot == 1
+    handles =MIA_update_plot1_single(hObject,handles);
+elseif handles.mode == 2 && handles.display_option.view_plot == 1
+    handles =MIA_update_plot1_PRM(hObject,handles);
+    
+end
+% else
+%     if ~isempty(get(handles.MIA_plot1, 'Children'))
+%         delete(get(handles.MIA_plot1, 'Children'));
+%         legend(handles.MIA_plot1,'off');
+%         hold(handles.MIA_plot1, 'off');
+%         set(handles.MIA_plot1, 'XTick', []);
+%         set(handles.MIA_plot1, 'YTick', []);
+%     end
+%     if isfield(handles, 'data_ploted')
+%         handles = rmfield(handles, 'data_ploted');
+%     end
+% end
 
 
 
@@ -2115,6 +2123,11 @@ end
 
 set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_selected))) '_' char(unique(handles.database.Tp(data_selected)))]);
 set(handles.MIA_orientation_space_popupmenu, 'String',  char(unique(handles.database.SequenceName(data_selected),'stable')), 'Value', 1);
+if numel(data_selected) > 1
+    set(handles.MIA_orientation_space_popupmenu, 'Visible', 'on');
+else
+    set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off'); 
+end
 handles.data_loaded.number_of_scan = numel(data_selected);
 handles.data_loaded.info_data_loaded = handles.database(data_selected,:);
 
@@ -2327,13 +2340,15 @@ if numel(data_selected) ~= 1
     warndlg('In PRM mode you can open only on scan!!', 'Warning');
     return
 end
+
+
 % find indice of the same scan name across each time point to the selected
 % patient
 data_to_load = find(handles.database.Patient == handles.database.Patient(data_selected) &...
     handles.database.SequenceName == handles.database.SequenceName(data_selected));
 
-if data_to_load <2
-    warndlg(strcat({'Need more than one '}, scan_name, ' scan to run the PRM mode') ,'Warning');
+if numel(data_to_load) <2
+    warndlg(strcat({'Need more than one '},  char(handles.database.SequenceName(data_selected)), ' scan to run the PRM mode') ,'Warning');
     return
 end
 
@@ -2358,6 +2373,7 @@ end
 
 set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_to_load))) '_' char(unique(handles.database.Tp(data_selected)))]);
 set(handles.MIA_orientation_space_popupmenu, 'String',  char(unique(handles.database.SequenceName(data_to_load),'stable')), 'Value', 1);
+set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
 handles.data_loaded.number_of_scan = numel(data_to_load);
 handles.data_loaded.info_data_loaded = handles.database(data_to_load,:);
 
@@ -2371,7 +2387,7 @@ for i=1:2
         
     else
         mat_size = handles.data_loaded.Scan(i).V(1).private.dat.dim;
-        eval(['set(handles.MIA_data' stri '_title, ''String'', char(handles.database.SequenceName(data_to_load(i))));']);
+        eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.database.SequenceName(data_to_load(i))) ''_'' char(handles.database.Tp(data_to_load(i)))]);']);
         
         if handles.data_loaded.number_of_scan > i-1 && length(mat_size) < 3 % 2D data
             set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
@@ -2402,6 +2418,15 @@ for i=1:2
         end
     end
 end
+% update MIA_table_pixel_values header
+% guidata(hObject, handles);
+col_header{:,1} = ''; 
+col_header{:,2} = [char(handles.database.SequenceName(data_to_load(1))) '_' char(handles.database.Tp(data_to_load(1)))];
+col_header{:,3} = [char(handles.database.SequenceName(data_to_load(2))) '_' char(handles.database.Tp(data_to_load(2)))];
+
+set(handles.MIA_table_pixel_values, 'ColumnName', col_header);
+set(handles.MIA_table1, 'ColumnName', {'',char(handles.database.SequenceName(data_to_load(1)))});
+
 
 % 
 % 
@@ -2699,26 +2724,29 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
     if isfield(handles.data_loaded, 'ROI')
         handles = MIA_update_VOI_displayed(hObject, eventdata, handles);
     end
-    %update MIA_plot1
-    if isfield(handles,'ROI_selected_resized')
-        handles = MIA_find_VOI_coordonates(hObject,handles);
-        if handles.display_option.view_plot == 1
-            if ~isempty(handles.data_ploted.coordonates)
-                handles =MIA_update_plot1_single(hObject,handles);
-            end
+    %     %update MIA_plot1 if needed
+    if isfield(handles.data_loaded, 'ROI') && ~strcmp(get(hObject, 'Tag'), 'MIA_load_axes') &&...
+            handles.display_option.view_plot == 1
+        if handles.mode == 1
+            handles =MIA_update_plot1_single(hObject,handles);
+        else
+            handles = MIA_update_plot1_PRM(hObject, handles);
         end
-    else
-        if ~isempty(get(handles.MIA_plot1, 'Children'))
-            delete(get(handles.MIA_plot1, 'Children'));
-            legend(handles.MIA_plot1,'off');
-            hold(handles.MIA_plot1, 'off');
-            set(handles.MIA_plot1, 'XTick', []);
-            set(handles.MIA_plot1, 'YTick', []);
-        end
-        if isfield(handles, 'data_ploted')
-            handles = rmfield(handles, 'data_ploted');
-        end
+        
     end
+    
+    %     else
+    %         if ~isempty(get(handles.MIA_plot1, 'Children'))
+    %             delete(get(handles.MIA_plot1, 'Children'));
+%             legend(handles.MIA_plot1,'off');
+%             hold(handles.MIA_plot1, 'off');
+%             set(handles.MIA_plot1, 'XTick', []);
+%             set(handles.MIA_plot1, 'YTick', []);
+%         end
+%         if isfield(handles, 'data_ploted')
+%             handles = rmfield(handles, 'data_ploted');
+%         end
+%     end
     % Update the VOI_cluster matrix (new cluster, resized...)
     if isfield(handles, 'ROI_cluster_resized')
         handles = MIA_update_VOI_cluster_displayed(hObject,handles);
@@ -2763,8 +2791,8 @@ if isfield(handles, 'data_displayed')
             case 1 % image only   
                 % Clip image displayed at the 2 extremum (min, max)
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                image_to_display(image_to_display<prctile(image_to_display(:),1)) = prctile(image_to_display(:),1);
-                image_to_display(image_to_display>prctile(image_to_display(:),99)) = prctile(image_to_display(:),99);
+                image_to_display(image_to_display<prctile(image_to_display(:),0.1)) = prctile(image_to_display(:),0.1);
+                image_to_display(image_to_display>prctile(image_to_display(:),99.9)) = prctile(image_to_display(:),99.9);
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 
                 % apply the colormap selected
@@ -2808,20 +2836,70 @@ if isfield(handles, 'data_displayed')
                 else
                     fillroi = false;
                 end
-                % ROI if on the slice
-                ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
-                for x = 1:numel(handles.data_loaded.ROI)
-                    if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
-                        roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
+                % if ROI on the slice
+                if handles.mode == 1
+                    ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
+                    for x = 1:numel(handles.data_loaded.ROI)
+                        if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
+                            roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
+                            if fillroi
+                                roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+                                image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
+                            else
+                                contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
+                                    'Visible', 'on',...
+                                    'tag','ROI_contour');
+                            end
+                            % calculate the mean value inside the ROI over the
+                            % Slice (mean / SD)
+                            tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
+                            
+                            mean_slice = nanmean(tmp_slice(logical(roi_a_appliquer)));
+                            sd_slice =  nanstd(tmp_slice(logical(roi_a_appliquer)));
+                        else
+                            mean_slice = nan;
+                            sd_slice =  nan;
+                        end
+                        % calculate the mean value inside the ROI over the
+                        % volume (mean / SD)
+                        data_3D = squeeze(handles.data_displayed.image(:,:,:,i)); %(:,:,:,get(handles.(sprintf('MIA_data%d_echo_slider', i)), 'Value'),get(handles.(sprintf('MIA_data%d_expt_slider', i)), 'Value')));
+                        mean_VOI = nanmean(data_3D(logical(handles.data_loaded.ROI(x).nii)));
+                        sd_VOI =  nanstd(data_3D(logical(handles.data_loaded.ROI(x).nii)));
+ 
+                        clear data_slice data_3D
                         
+                        if i == 1
+                            Slice_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-mean']} ;
+                            Slice_values(x*2-1,i+1) = num2cell(mean_slice);
+                            Slice_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-SD']} ;
+                            Slice_values(x*2,i+1) = num2cell(sd_slice);
+                            
+                            VOI_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-mean']} ;
+                            VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
+                            VOI_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-SD']} ;
+                            VOI_values(x*2,i+1) = num2cell(sd_VOI);
+                        else
+                            Slice_values(x*2-1,i+1) = num2cell(mean_slice);
+                            Slice_values(x*2,i+1) = num2cell(sd_slice);
+                            VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
+                            VOI_values(x*2,i+1) = num2cell(sd_VOI);
+                        end
+                    end
+                else
+                    if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
+                        roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
                         if fillroi
-                            roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+                            roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{1}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
                             image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                         else
-                            contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
+                            contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{1}),...
                                 'Visible', 'on',...
                                 'tag','ROI_contour');
                         end
+                        eval(['hold(handles.MIA_data' stri ', ''on'');']);
+                        eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
+                        eval(['hold(handles.MIA_data' stri ', ''off'');']);
+                        
                         % calculate the mean value inside the ROI over the
                         % Slice (mean / SD)
                         tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
@@ -2831,32 +2909,6 @@ if isfield(handles, 'data_displayed')
                     else
                         mean_slice = nan;
                         sd_slice =  nan;
-                    end
-                    % calculate the mean value inside the ROI over the
-                    % volume (mean / SD)
-                    data_3D = squeeze(handles.data_displayed.image(:,:,:,i)); %(:,:,:,get(handles.(sprintf('MIA_data%d_echo_slider', i)), 'Value'),get(handles.(sprintf('MIA_data%d_expt_slider', i)), 'Value')));
-                    mean_VOI = nanmean(data_3D(logical(handles.data_loaded.ROI(x).nii)));
-                    sd_VOI =  nanstd(data_3D(logical(handles.data_loaded.ROI(x).nii)));
-                    
-                   
-                    
-                    clear data_slice data_3D
-                    
-                    if i == 1
-                        Slice_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-mean']} ;
-                        Slice_values(x*2-1,i+1) = num2cell(mean_slice);
-                        Slice_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-SD']} ;
-                        Slice_values(x*2,i+1) = num2cell(sd_slice);
-                        
-                        VOI_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-mean']} ;
-                        VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
-                        VOI_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-SD']} ;
-                        VOI_values(x*2,i+1) = num2cell(sd_VOI);
-                    else
-                        Slice_values(x*2-1,i+1) = num2cell(mean_slice);
-                        Slice_values(x*2,i+1) = num2cell(sd_slice);
-                        VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
-                        VOI_values(x*2,i+1) = num2cell(sd_VOI);
                     end
                 end
                 set(handles.(sprintf('MIA_data%d', i)), 'Visible', 'on', 'XTick' , [], 'YTick', []);
@@ -3084,6 +3136,8 @@ function handles = MIA_update_image_displayed(hObject, eventdata, handles)
 scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 
 switch get(hObject, 'Tag')
+    case {'MIA_new_roi', 'MIA_PRM_slider_trans', 'MIA_PRM_CI'}
+        return
     case {'MIA_data1_echo_slider', 'MIA_data1_expt_slider'}
         
         data1_echo_nbr = get(handles.MIA_data1_echo_slider, 'Value');
@@ -3124,8 +3178,6 @@ switch get(hObject, 'Tag')
         data4_echo_nbr = get(handles.MIA_data4_echo_slider, 'Value');
         data4_expt_nbr = get(handles.MIA_data4_expt_slider, 'Value');
         handles.data_displayed.image(:,:,:,4) = read_slice(handles.data_loaded.Scan(4).V, handles.data_loaded.Scan(scan_of_reference).V, data4_echo_nbr, data4_expt_nbr);
-    case {'MIA_new_roi'}
-        return
     otherwise
         if isfield(handles, 'data_displayed')
             handles = rmfield(handles, 'data_displayed');
@@ -3137,34 +3189,8 @@ switch get(hObject, 'Tag')
                 eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr);']);
-                %      eval(['ima' stri '= squeeze(handles.data_loaded.Scan(i).nii(:,:,:,round(data' stri '_echo_nbr),round(data' stri '_expt_nbr)));']);
-                
-                %     if sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'gray')
-                %         eval(['ima' stri '= squeeze(handles.data_selected_resized.image(i).reco.data(:,:,round(data' stri '_echo_nbr),:,:));']);
-                %     else
-                %         eval(['ima' stri '= squeeze(handles.data_selected_resized.image(i).reco.data(:,:,round(data' stri '_echo_nbr),:,round(data' stri '_expt_nbr)));']);
-                
-                %     end
-                %     if isfield(handles.data_selected_resized.image(i), 'echo_cluster') && ~isempty(handles.data_selected_resized.image(i).reco.echo_cluster)
-                %         eval(['title' stri ' = strcat(handles.data_selected.list_scan{i}, ''-'', handles.data_selected_resized.image(i).reco.echo_cluster{data' stri '_echo_nbr});']);
-                %     else
-                %         eval(['title' stri ' = handles.data_selected.list_scan{i};']);
-                %     end
-                %     eval(['set(handles.MIA_data' stri '_title, ''String'', {title' stri '});']);
-                %eval(['ax(' stri ') = handles.MIA_data' stri ';']);
-                
-                %set clip
-                %     eval(['scan_name = strcmp(handles.clips(:,1)'', title' stri ');']);
-                %     tempclip = handles.clips(scan_name == 1,2:3);
-                %     tempclip =cell2num(tempclip);  %#ok<NASGU>
-                %     eval(['ima' stri '(ima' stri '>tempclip(1,2))=NaN;']);
-                %     eval(['ima' stri '(ima' stri '<tempclip(1,1))=NaN;']);
-                
-                %     if sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'Color')
-                %         handles.data_displayed.image(:,:,:,i,:) = eval(['ima' num2str(i)]);
-                %     else
+               
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
-                %     end
             end
             
         else
@@ -3186,15 +3212,18 @@ switch get(hObject, 'Tag')
                         scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
                     end
                 end
-                
-                
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
                 eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr);']);
                 
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
+                
+                % update title 
+                eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))]);']);
+
             end
+          
         end
         if ~strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp')
             if ~size(handles.data_displayed.image, 3) == 1
@@ -3664,84 +3693,185 @@ if ~isempty(get(handles.MIA_plot1, 'Children'))
     legend(handles.MIA_plot1,'off');
     hold(handles.MIA_plot1, 'off');
 end
-% if handles.data_ploted.coordonates
-%return
-%end
-coordonates = handles.data_ploted.coordonates;
-
-for ii = 1:numel(handles.ROI_selected_resized)
+%coordonates = handles.data_ploted.coordonates;
+for ii = 1:handles.data_loaded.number_of_ROI
     voi_empty = 0;
     strii=num2str(ii);
-    index = findn(coordonates(:,4)== ii);
-    if isempty(index)
-        voi_empty = 1;
-    else
-        voi_data =coordonates(index(:,1),:);
-        if ~isreal(voi_data) % complex data
-            voi_data = abs(voi_data);
-        end
-        
-    end
     if ~isempty(get(handles.MIA_plot1, 'Children'))
         hold(handles.MIA_plot1, 'on');
     end
     if voi_empty == 0
+        ROI_binary = handles.data_loaded.ROI(ii).nii;
+        ROI_binary(abs(ROI_binary)>0) =1;
         switch handles.data_loaded(1).number_of_scan
             case 1
-                nbin = numel(voi_data(:,5))/(numel(voi_data(:,5))/15);
+                VOI_data  = handles.data_displayed.image .* ROI_binary;
+                VOI_data = reshape(VOI_data, [size(VOI_data,1)*size(VOI_data,2)*size(VOI_data,3),1]);
+                VOI_data(VOI_data == 0) =[];
+                %nbin = numel(voi_data(:,5))/(numel(voi_data(:,5))/15);
+                nbin = 15;
                 if ii > 1
                     hold(handles.MIA_plot1, 'on');
                 end
-                [f, xi] = histnorm(voi_data(:,5),nbin);
+                [f, xi] = histnorm(VOI_data,nbin);
                 plot(handles.MIA_plot1,xi,f,...
                     'Color',rgb(handles.colors{ii}),...
                     'Tag', strcat('MIA_plot1_1d', strii));
                 clear f xi
             case 2
-                scatter(handles.MIA_plot1, voi_data(:,5), voi_data(:,6),...
-                    'filled',...
-                    'SizeData', 20,...
-                    'MarkerFaceColor',rgb(handles.colors{ii}),...
-                    'MarkerEdgeColor',rgb(handles.colors{ii}),...
-                    'Visible', 'on',...
-                    'Tag', strcat('MIA_plot1_2d', strii));
+                % find x data
+                VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
+                VOI_data(:,1) = reshape(VOI_data_x, [size(VOI_data_x,1)*size(VOI_data_x,2)*size(VOI_data_x,3),1]);
+                %VOI_data_x(VOI_data_x == 0) =[];
+                % find y data
+                VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
+                VOI_data(:,2) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
+                
+                % keep only voxel which has x and y values
+                VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
+                
+                scatter(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), 10);%,...'filled',...
+%                     'SizeData', 20,...
+%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
+%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
+%                     'Visible', 'on',...
+%                     'Tag', strcat('MIA_plot1_2d', strii));
                 %                 uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
                 
             case 3
-                scatter3(handles.MIA_plot1, voi_data(:,5), voi_data(:,6), voi_data(:,7),...
-                    'filled',...
-                    'SizeData', 20,...
-                    'MarkerFaceColor',rgb(handles.colors{ii}),...
-                    'MarkerEdgeColor',rgb(handles.colors{ii}),...
-                    'Tag', strcat('MIA_plot1_3d', strii));
-                %                 uistack(findobj('Tag', strcat('MIA_plot1_3d', strii)), 'bottom');
+                % find x data
+                VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
+                VOI_data(:,1) = reshape(VOI_data_x, [size(VOI_data_x,1)*size(VOI_data_x,2)*size(VOI_data_x,3),1]);
+                % find y data
+                VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
+                VOI_data(:,2) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
+                % find z data
+                VOI_data_z  = squeeze(handles.data_displayed.image(:,:,:,3)) .* ROI_binary;
+                VOI_data(:,3) = reshape(VOI_data_z, [size(VOI_data_z,1)*size(VOI_data_z,2)*size(VOI_data_z,3),1]);
+                
+                
+                % keep only voxel which has x and y values
+                VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3)) == 0,:) =[];
+
+                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3));%,...
+%                     'filled',...
+%                     'SizeData', 20,...
+%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
+%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
+%                     'Tag', strcat('MIA_plot1_3d', strii));
             case 4
-                color4d = zeros(size(voi_data(:,8),1),3);
+                 % find x data
+                VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
+                VOI_data(:,1) = reshape(VOI_data_x, [size(VOI_data_x,1)*size(VOI_data_x,2)*size(VOI_data_x,3),1]);
+                % find y data
+                VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
+                VOI_data(:,2) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
+                % find z data
+                VOI_data_z  = squeeze(handles.data_displayed.image(:,:,:,3)) .* ROI_binary;
+                VOI_data(:,3) = reshape(VOI_data_z, [size(VOI_data_z,1)*size(VOI_data_z,2)*size(VOI_data_z,3),1]);
+                % find t data
+                VOI_data_t  = squeeze(handles.data_displayed.image(:,:,:,4)) .* ROI_binary;
+                VOI_data(:,4) = reshape(VOI_data_t, [size(VOI_data_t,1)*size(VOI_data_t,2)*size(VOI_data_t,3),1]);
+                
+                % keep only voxel which has x and y values
+                VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3).*VOI_data(:,4)) == 0,:) =[];
+
+                color4d = zeros(size(VOI_data(:,4),1),3);
                 tmp = jet(256);
-                mini=min(voi_data(:,8));
-                maxi=max(voi_data(:,8));
-                for i = 1:size(voi_data(:,8),1)
-                    color4d(i,:) = tmp(round((voi_data(i,8)-mini)/(maxi-mini)*255)+1,:);
+                mini=min(VOI_data(:,4));
+                maxi=max(VOI_data(:,4));
+                for i = 1:size(VOI_data(:,4),1)
+                    color4d(i,:) = tmp(round((VOI_data(i,4)-mini)/(maxi-mini)*255)+1,:);
                 end
                 cbfreeze('del');
-                scatter3(handles.MIA_plot1, voi_data(:,5), voi_data(:,6), voi_data(:,7), 10, color4d, 'filled',...
-                    'SizeData', 30,...
-                    'Marker', handles.markers{ii},...
-                    'MarkerEdgeColor', 'k',...
-                    'Tag', strcat('MIA_plot1_4d', strii));
-                %                 uistack(findobj('Tag', strcat('MIA_plot1_4d', strii)), 'bottom');
+                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3), 10, color4d);%, 'filled',...
+%                     'SizeData', 30,...
+%                     'Marker', handles.markers{ii},...
+%                     'MarkerEdgeColor', 'k',...
+%                     'Tag', strcat('MIA_plot1_4d', strii));
                 if ~strcmp(get(gco, 'Tag'), 'speedy_run_button')
                     colormap(jet);
                     colorbar('peer', handles.MIA_plot1);
-                    %% Due to matlab 2015 I had to comment this lines -BL-
-                    %                     MIA_plot1_colorbar = cbfreeze( h ,'on');
-                    %                     colormap(gray);
-                    %                     set(IA_plot1_colorbar, 'YTickLabel', get(IA_plot1_colorbar, 'YTick').*max(voi_data(:,8)));
-                    %                     set(get(IA_plot1_colorbar, 'YLabel'), 'String', get(handles.MIA_data4_title, 'String'), 'Rotation', -90, 'VerticalAlignment', 'bottom');
                 end
         end
     end
+    clear VOI_data
 end
+    
+    
+% for ii = 1:numel(handles.ROI_selected_resized)
+%     voi_empty = 0;
+%     strii=num2str(ii);
+%     index = findn(coordonates(:,4)== ii);
+%     if isempty(index)
+%         voi_empty = 1;
+%     else
+%         voi_data =coordonates(index(:,1),:);
+%         if ~isreal(voi_data) % complex data
+%             voi_data = abs(voi_data);
+%         end
+%         
+%     end
+%     if ~isempty(get(handles.MIA_plot1, 'Children'))
+%         hold(handles.MIA_plot1, 'on');
+%     end
+%     if voi_empty == 0
+%         switch handles.data_loaded(1).number_of_scan
+%             case 1
+%                 nbin = numel(voi_data(:,5))/(numel(voi_data(:,5))/15);
+%                 if ii > 1
+%                     hold(handles.MIA_plot1, 'on');
+%                 end
+%                 [f, xi] = histnorm(voi_data(:,5),nbin);
+%                 plot(handles.MIA_plot1,xi,f,...
+%                     'Color',rgb(handles.colors{ii}),...
+%                     'Tag', strcat('MIA_plot1_1d', strii));
+%                 clear f xi
+%             case 2
+%                 scatter(handles.MIA_plot1, voi_data(:,5), voi_data(:,6),...
+%                     'filled',...
+%                     'SizeData', 20,...
+%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
+%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
+%                     'Visible', 'on',...
+%                     'Tag', strcat('MIA_plot1_2d', strii));
+%                 %                 uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
+%                 
+%             case 3
+%                 scatter3(handles.MIA_plot1, voi_data(:,5), voi_data(:,6), voi_data(:,7),...
+%                     'filled',...
+%                     'SizeData', 20,...
+%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
+%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
+%                     'Tag', strcat('MIA_plot1_3d', strii));
+%                 %                 uistack(findobj('Tag', strcat('MIA_plot1_3d', strii)), 'bottom');
+%             case 4
+%                 color4d = zeros(size(voi_data(:,8),1),3);
+%                 tmp = jet(256);
+%                 mini=min(voi_data(:,8));
+%                 maxi=max(voi_data(:,8));
+%                 for i = 1:size(voi_data(:,8),1)
+%                     color4d(i,:) = tmp(round((voi_data(i,8)-mini)/(maxi-mini)*255)+1,:);
+%                 end
+%                 cbfreeze('del');
+%                 scatter3(handles.MIA_plot1, voi_data(:,5), voi_data(:,6), voi_data(:,7), 10, color4d, 'filled',...
+%                     'SizeData', 30,...
+%                     'Marker', handles.markers{ii},...
+%                     'MarkerEdgeColor', 'k',...
+%                     'Tag', strcat('MIA_plot1_4d', strii));
+%                 %                 uistack(findobj('Tag', strcat('MIA_plot1_4d', strii)), 'bottom');
+%                 if ~strcmp(get(gco, 'Tag'), 'speedy_run_button')
+%                     colormap(jet);
+%                     colorbar('peer', handles.MIA_plot1);
+%                     %% Due to matlab 2015 I had to comment this lines -BL-
+%                     %                     MIA_plot1_colorbar = cbfreeze( h ,'on');
+%                     %                     colormap(gray);
+%                     %                     set(IA_plot1_colorbar, 'YTickLabel', get(IA_plot1_colorbar, 'YTick').*max(voi_data(:,8)));
+%                     %                     set(get(IA_plot1_colorbar, 'YLabel'), 'String', get(handles.MIA_data4_title, 'String'), 'Rotation', -90, 'VerticalAlignment', 'bottom');
+%                 end
+%         end
+%     end
+% end
 clear index voi_data
 if ii == 1
     hold(handles.MIA_plot1, 'on');
@@ -3752,7 +3882,7 @@ if handles.data_loaded(1).number_of_scan == 1
 else
     set(get(handles.MIA_plot1, 'YLabel'), 'String', get(handles.MIA_data2_title, 'String'));
 end
-legend(handles.MIA_plot1, {handles.ROI_selected_resized.name}', 'Location','NorthEast');
+legend(handles.MIA_plot1, char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan')), 'Location','NorthEast');
 set(get(handles.MIA_plot1, 'XLabel'), 'String', get(handles.MIA_data1_title, 'String'));
 
 set(get(handles.MIA_plot1, 'ZLabel'), 'String', get(handles.MIA_data3_title, 'String'));
@@ -4137,6 +4267,11 @@ end
 function MIA_table1_add_pixel_value(~,handles,pixel_coordinates)
 
 [pixel_coordinates_2d] = [round(pixel_coordinates(1,1)) round(pixel_coordinates(1,2)) round(pixel_coordinates(1,3))];
+if pixel_coordinates_2d(1)<=0 || pixel_coordinates_2d(1) > size(handles.data_displayed.image,2) || ...
+    pixel_coordinates_2d(2)<=0 || pixel_coordinates_2d(2) > size(handles.data_displayed.image,1) || ...
+      pixel_coordinates_2d(3)<=0 || pixel_coordinates_2d(3) > size(handles.data_displayed.image,3)
+    return
+end
 % if pixel_coordinates_2d(1) > handles.resolution_selected || pixel_coordinates_2d(2) > handles.resolution_selected ||...
 %         pixel_coordinates_2d(1) == 0 || pixel_coordinates_2d(2) == 0
 %     return % bug somewhere !!!
@@ -4894,7 +5029,13 @@ end
 if isfield(handles, 'data_ploted')
     handles = rmfield(handles, 'data_ploted');
 end
-set(handles.MIA_table1, 'Data', {'', '', '', '', ''});
+
+% clear voxel table ColumName 
+set(handles.MIA_table_pixel_values, 'ColumnName', {''});
+
+% clear table_1 
+set(handles.MIA_table1, 'ColumnName', {''});
+set(handles.MIA_table1, 'Data', {''});
 set(handles.MIA_patient_information_title, 'String', 'No images');
 
 set(handles.MIA_orientation_space_popupmenu, 'String', 'Select orientation')
@@ -5067,37 +5208,56 @@ if ~isempty(get(handles.MIA_plot1, 'Children'))
     legend(handles.MIA_plot1,'off');
     hold(handles.MIA_plot1, 'off');
 end
-coordonates = handles.data_ploted.coordonates;
+
+%coordonates = handles.data_ploted.coordonates;
+ROI_binary = handles.data_loaded.ROI.nii;
+ROI_binary(abs(ROI_binary)>0) = true;
+
+% create a matrice which contains the coordonates (x,y,z) of each voxel)
+VOI_data = findn(ones(size(ROI_binary)));
+% find x data
+VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
+VOI_data(:,4) = reshape(VOI_data_x, [size(VOI_data_x,1)*size(VOI_data_x,2)*size(VOI_data_x,3),1]);
+
+% find y data
+VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
+VOI_data(:,5) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
+
+
+% keep only voxel which has x and y values
+VOI_data((VOI_data(:,4).*VOI_data(:,5)) == 0,:) =[];
+VOI_data(isnan(VOI_data(:,4)),:)=[];
+VOI_data(isnan(VOI_data(:,5)),:)=[];
+
 % determine PRM+, PRM0 and PRM-
 CI = str2double(get(handles.MIA_PRM_CI, 'String'));
-PRMr = coordonates(:,6) > coordonates(:,5)+CI;
-PRMb = coordonates(:,6) < coordonates(:,5)-CI;
+PRMr = VOI_data(:,5) > VOI_data(:,4)+CI;
+PRMb = VOI_data(:,5) < VOI_data(:,4)-CI;
 PRMg = ~or(PRMr, PRMb);
-% get(handles.MIA_data1)
 
-scatter(handles.MIA_plot1,coordonates(PRMr,5), coordonates(PRMr,6),...
-    'filled',...
-    'SizeData', 20,...
-    'MarkerFaceColor','r',...
-    'MarkerEdgeColor','r',...
-    'Visible', 'on',...
-    'Tag', 'MIA_plot1_PRM_r');
+scatter(handles.MIA_plot1,VOI_data(PRMr,4), VOI_data(PRMr,5), 20, [1 0 0]);%,'r')%...
+        % 'MarkerFaceColor','r');
+%     'filled',...
+%     'SizeData', 20,...
+%     'MarkerEdgeColor','r',...
+%     'Visible', 'on',...
+%     'Tag', 'MIA_plot1_PRM_r');
 hold(handles.MIA_plot1, 'on');
-scatter(handles.MIA_plot1,coordonates(PRMb,5), coordonates(PRMb,6),...
-    'filled',...
-    'SizeData', 20,...
-    'MarkerFaceColor','b',...
-    'MarkerEdgeColor','b',...
-    'Visible', 'on',...
-    'Tag', 'MIA_plot1_PRM_b');
+scatter(handles.MIA_plot1,VOI_data(PRMb,4), VOI_data(PRMb,5), 20, [0 0 1]);
+%     'filled',...
+%     'SizeData', 20,...
+%     'MarkerFaceColor','b',...
+%     'MarkerEdgeColor','b',...
+%     'Visible', 'on',...
+%     'Tag', 'MIA_plot1_PRM_b');
 
-scatter(handles.MIA_plot1,coordonates(PRMg,5), coordonates(PRMg,6),...
-    'filled',...
-    'SizeData', 20,...
-    'MarkerFaceColor','g',...
-    'MarkerEdgeColor','g',...
-    'Visible', 'on',...
-    'Tag', 'MIA_plot1_PRM_g');
+scatter(handles.MIA_plot1,VOI_data(PRMg,4), VOI_data(PRMg,5), 20, [0 1 0]);
+%     'filled',...
+%     'SizeData', 20,...
+%     'MarkerFaceColor','g',...
+%     'MarkerEdgeColor','g',...
+%     'Visible', 'on',...
+%     'Tag', 'MIA_plot1_PRM_g');
 
 % plot CI line
 x_values = get(handles.MIA_plot1, 'XTick');
@@ -5115,42 +5275,42 @@ set(get(handles.MIA_plot1, 'YLabel'), 'String', get(handles.MIA_data2_title, 'St
 hold(handles.MIA_plot1, 'off');
 
 % save data
-if numel(size(handles.ROI_selected_resized.data.value)) == 2
-    handles.ROI_PRM_resized.map=zeros([size(handles.ROI_selected_resized.data.value),1,3]);
+if numel(size(handles.data_loaded.ROI.nii)) == 2
+    handles.data_loaded.PRM.map=zeros([size(handles.data_loaded.ROI.nii),1,3]);
 else
-    handles.ROI_PRM_resized.map=zeros([size(handles.ROI_selected_resized.data.value),3]);
+    handles.data_loaded.PRM.map=zeros([size(handles.data_loaded.ROI.nii),3]);
 end
-
-handles.ROI_PRM_resized.trans=zeros(size(handles.ROI_selected_resized.data.value));
+ 
+handles.data_loaded.PRM.trans=zeros(size(handles.data_loaded.ROI.nii));
 trans = round(get(handles.MIA_PRM_slider_trans, 'Value'))/100;
 for i =1:numel(PRMr)
     if PRMr(i) == 1
-        handles.ROI_PRM_resized.map(coordonates(i,1), coordonates(i,2), coordonates(i,3),:) = [1 0 0];
+        handles.data_loaded.PRM.map(VOI_data(i,1), VOI_data(i,2), VOI_data(i,3),:) = [1 0 0];
     elseif PRMg(i) == 1
-        handles.ROI_PRM_resized.map(coordonates(i,1), coordonates(i,2), coordonates(i,3),:) = [0 1 0];
+        handles.data_loaded.PRM.map(VOI_data(i,1), VOI_data(i,2), VOI_data(i,3),:) = [0 1 0];
     elseif PRMb(i) ==1
-        handles.ROI_PRM_resized.map(coordonates(i,1), coordonates(i,2), coordonates(i,3),:) = [0 0 1];
+        handles.data_loaded.PRM.map(VOI_data(i,1), VOI_data(i,2), VOI_data(i,3),:) = [0 0 1];
     end
-    handles.ROI_PRM_resized.trans(coordonates(i,1), coordonates(i,2), coordonates(i,3)) = trans;
+    handles.data_loaded.PRM.trans(VOI_data(i,1), VOI_data(i,2), VOI_data(i,3)) = trans;
 end
 
 %update table1
-table_data = cell(8,3);
+table_data = cell(8,2);
 table_data(1:8,1) = {'PRMr (%)', 'PRMg (%)', 'PRMb (%)', 'Mean_pre', 'SD_pre', 'Mean_post', 'SD_post', 'Vol (mm3)'};
 
-table_data(1,3) = {sum(PRMr)/numel(coordonates(:,1))*100};
-table_data(2,3) = {sum(PRMg)/numel(coordonates(:,1))*100};
-table_data(3,3) = {sum(PRMb)/numel(coordonates(:,1))*100};
-table_data(4,3) = {mean(coordonates(:,5))};
-table_data(5,3) = {std(coordonates(:,5))};
-table_data(6,3) = {mean(coordonates(:,6))};
-table_data(7,3) = {std(coordonates(:,6))};
+table_data(1,2) = {sum(PRMr)/numel(VOI_data(:,1))*100};
+table_data(2,2) = {sum(PRMg)/numel(VOI_data(:,1))*100};
+table_data(3,2) = {sum(PRMb)/numel(VOI_data(:,1))*100};
+table_data(4,2) = {mean(VOI_data(:,4))};
+table_data(5,2) = {std(VOI_data(:,4))};
+table_data(6,2) = {mean(VOI_data(:,5))};
+table_data(7,2) = {std(VOI_data(:,5))};
 
-voxel_volume = handles.data_selected_for_PRM_resized.image(1).acq.fov(1)/handles.resolution_selected *...
-    handles.data_selected_for_PRM_resized.image(1).acq.fov(1)/handles.resolution_selected*...
-    handles.data_selected_for_PRM_resized.image(1).acq.thickness;
+voxel_volume = abs(handles.data_loaded.Scan(1).V.mat(1,1)*...
+    handles.data_loaded.Scan(1).V.mat(2,2)*...
+    handles.data_loaded.Scan(1).V.mat(3,3));
 
-table_data(8,3) = {numel(coordonates(:,1))*voxel_volume};
+table_data(8,2) = {numel(VOI_data(:,1))*voxel_volume};
 set(handles.MIA_table1, 'Data', table_data);
 
 guidata(hObject, handles);
@@ -5215,11 +5375,11 @@ elseif strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
 elseif isfield(handles, 'brain_extraction_ROI')
     MIA_Brain_Extraction(hObject, eventdata, handles)
 else
-    if isfield(handles, 'data_selected_for_PRM') && isfield(handles, 'ROI_PRM_resized')
+    if isfield(handles.data_loaded, 'PRM') 
         trans = round(get(handles.MIA_PRM_slider_trans, 'Value'))/100;
-        index = findn(handles.ROI_PRM_resized.map ~=0);
+        index = findn(handles.data_loaded.PRM.map ~=0);
         for i = 1: size(index,1)
-            handles.ROI_PRM_resized.trans(index(i,1),index(i,2),index(i,3)) = trans;
+            handles.data_loaded.PRM.trans(index(i,1),index(i,2),index(i,3)) = trans;
         end
         guidata(hObject,handles)
         MIA_update_axes(hObject, eventdata, handles)
@@ -5824,6 +5984,8 @@ end
 if handles.mode == 1
     [x, y, z] = size(handles.data_displayed.image(:,:,:,which_image));
 else
+    warndlg('Please draw your ROI in the single mode (not PRM)', 'Warning');
+    return
     [x, y, ~] = size(handles.data_selected_for_PRM_resized.image(which_image).reco.data);
 end
 
@@ -8442,9 +8604,7 @@ function MIA_menu_load_data_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_menu_load_data (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-%
-%
-% MRIManager.MRIFileManagerFM
+
 if isfield(handles, 'database')
     MIA_root_path = handles.database.Properties.UserData.MIA_root_path;
     %     MIA_data_path = handles.database.Properties.UserData.MIA_data_path ;
@@ -8532,6 +8692,8 @@ clear hObjectb
 clear eventdatab
 clear handlesb
 
+
+%javax.swing.UIManager.setLookAndFeel(newLnF);
 handles = guidata(handles.MIA_GUI);
 MIA_tmp_folder = [handles.database.Properties.UserData.MIA_root_path, 'tmp'];
 log_file =struct2table(jsondecode(char(data_loaded)));
@@ -8562,21 +8724,17 @@ for i = 1:numel(unique(log_file.StudyName))
                         
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName), ''))) == 1
-                            %            idx = find(ismember(handles.database.SequenceName, char(clean_variable_name(char(json_data.ProtocolName), ''))));
-                            idx =  strfind(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')));
-                            nbr_of_seq = sum([idx{:}]);
-                            %             seq_name = handles.database.SequenceName(handles.database.Patient ==  name_selected & handles.database.Tp ==  answer(2) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName), '')));
-                            %             seq_name = handles.database.SequenceName((handles.database.Patient) ==  name_selected & (handles.database.Tp ==  answer(2)) &  startsWith(char(handles.database.SequenceName),char(json_data.ProtocolName)));
+%                             idx =  strfind(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')));
+%                             nbr_of_seq = sum([idx{:}]);
+                            nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
+                                handles.database.Tp ==  char(tp_selected) &...
+                                strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')), length(char(clean_variable_name(char(json_data.ProtocolName), '')))));
                             seq_name = [char(json_data.ProtocolName) '(' num2str(nbr_of_seq+1) ')'];
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
-                            %             new_data = {'Patient','Tp','nii','json','type', 'SequenceName', 'Group';
-                            %                 name_selected,answer(2),fullfile([char(file_name), '.nii']),fullfile([char(file_name), '.json']), 'Scan', seq_name, 'Undefined'};
-                        else
+                         else
                             seq_name = clean_variable_name(char(json_data.ProtocolName), '');
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
-                            %             new_data = {'Patient','Tp','nii','json','type', 'SequenceName', 'Group';
-                            %                 name_selected,answer(2),fullfile([char(file_name), '.nii']),fullfile([char(file_name), '.json']), 'Scan', seq_name, 'Undefined'};
-                        end
+                         end
                     else
                         seq_name = clean_variable_name(char(json_data.ProtocolName), '');
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
@@ -8592,10 +8750,7 @@ for i = 1:numel(unique(log_file.StudyName))
                     %%save the files (nii + json)
                     movefile(fullfile(MIA_tmp_folder, [NAME, '.nii']), [char(handles.database.Path(end)), char(handles.database.Filename(end)), '.nii']);
                     movefile(fullfile(MIA_tmp_folder, [NAME, '.json']), [char(handles.database.Path(end)), char(handles.database.Filename(end)), '.json']);
-                    
-                    %             % update the json file
-                    %             log_file_to_update(index_data_to_import(m),:) = [];
-                    %             spm_jsonwrite(fullfile(MIA_tmp_folder, log_files), table2struct(log_file_to_update));
+                   
                     guidata(hObject, handles);
                 end
             end
@@ -9429,6 +9584,9 @@ scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 % for i=1:handles.data_loaded.number_of_scan
 %      handles.data_loaded.Scan(i).nii = read_volume(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V);
 % end
+if ~isfield(handles, 'data_loaded')
+    return
+end
 if isfield(handles.data_loaded, 'ROI')
     for i=1:numel(handles.data_loaded.ROI)
         handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V);
