@@ -124,9 +124,11 @@ for v=1:nb_vox
     
     %%% Test du point a t0
     t0 = BAT(TMPDATA(trie(trie_score(v)),:));
-    if TMPDATA(trie(trie_score(v)),t0) >= 11*basepre/10
-        warn = warn + 1;
-        scores{v,5+warn} = 'La valeur a t0 du voxel est trop importante';
+    if t0<40
+        if TMPDATA(trie(trie_score(v)),t0) >= 11*basepre/10
+            warn = warn + 1;
+            scores{v,5+warn} = 'La valeur a t0 du voxel est trop importante';
+        end
     end
     
     %%% Test de la longueur de la baseline pre-bolus
