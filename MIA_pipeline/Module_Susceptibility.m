@@ -93,15 +93,15 @@ function [files_in,files_out,opt] = Module_Susceptibility(files_in,files_out,opt
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_ext'};
-    defaults = {'', true, '_DSC'};
+    fields   = {'folder_out', 'flag_test', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
+    defaults = {'', true, '_CBV', '_CBF', '_MTT', '_TMAX', '_TTP', '_T0'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension'; ''; ''};
-    user_parameter_type = {'1Scan'; ''; 'char'; 'logical'; 'char'};
-    parameter_default = {''; ''; '_DSC'; '1'; ''};
-    psom_parameter_list = {''; ''; 'output_filename_ext'; 'flag_test'; 'folder_out'};
+    user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension CBV'; '   .Output filename extension CBF'; '   .Output filename extension MTT'; '   .Output filename extension TMAX'; '   .Output filename extension TTP'; '   .Output filename extension T0'; ''; ''};
+    user_parameter_type = {'1Scan'; ''; 'char'; 'char'; 'char'; 'char'; 'char'; 'char'; 'logical'; 'char'};
+    parameter_default = {''; ''; '_CBV'; '_CBF'; '_MTT'; '_TMAX'; '_TTP'; '_T0'; '1'; ''};
+    psom_parameter_list = {''; ''; 'output_filename_ext_CBV'; 'output_filename_ext_CBF'; 'output_filename_ext_MTT'; 'output_filename_ext_TMAX'; 'output_filename_ext_TTP'; 'output_filename_ext_T0'; 'flag_test'; 'folder_out'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -166,7 +166,12 @@ end
 %end
 
 if strcmp(files_out, '')
-    files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii)};
+    files_out.In1{1} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_CBV,ext_nii);
+    files_out.In1{2} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_CBF,ext_nii);
+    files_out.In1{3} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_MTT,ext_nii);
+    files_out.In1{4} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_TMAX,ext_nii);
+    files_out.In1{5} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_TTP,ext_nii);
+    files_out.In1{6} = cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext_T0,ext_nii);
 end
 
 %% If the test flag is true, stop here !
@@ -205,25 +210,37 @@ Informations = whos('N');
 %     N = reshape(N, Size(1), Size(2), Size(3), NewDim);
 %     FilteredImages = reshape(FilteredImages, size(N));
 % end
-%%
-[~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(data.reco.data(:,:,1,:,:)),data.acq.tr*10^(-3),data.acq.echotime*10^(-3));
+%% Processing
+meansignal = mean(squeeze(N),4);
+volume_mask = meansignal>max(N(:))*0.01;
+[aif,scores] = extraction_aif_volume(squeeze(N),volume_mask);
+
+
+[~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
 maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
+
+
+
+
 
 %% Reshape to the input scan size
 %FilteredImages = reshape(FilteredImages, Size);
 
-info2 = info;
-info2.Filename = files_out.In1{1};
-info2.Filemoddate = char(datetime('now'));
-info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
-niftiwrite(TMAX, files_out.In1{1}, info2)
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+for i=1:length(maps)
+    %info2 = info;
+    %info2.Filename = files_out.In1{i};
+    %info2.Filemoddate = char(datetime('now'));
+    %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
+
+    eval(['niftiwrite(',maps{i},', files_out.In1{i})'])
+    JMod = jsonencode(J);
+    [path, name, ext] = fileparts(files_out.In1{i});
+    jsonfile = [path, '/', name, '.json'];
+    fidmod = fopen(jsonfile, 'w');
+    fwrite(fidmod, JMod, 'uint8');
+    fclose(fidmod);
+end
 
 
 
