@@ -1,4 +1,4 @@
-function [CBV,CBF,MTT,TMAX,TTP,T0,CBVm,CBFm,MTTm,CBV_mask,CBF_mask,MTT_mask,volume_mask] = deconvolution_perfusion_gui(AIF,VOX,TR,TE,handles)
+function [CBV,CBF,MTT,TMAX,TTP,T0,CBVm,CBFm,MTTm,CBV_mask,CBF_mask,MTT_mask,volume_mask] = deconvolution_perfusion_gui(AIF,VOX,TR,TE)
 % function [CBV,CBF,MTT,TMAX,TTP,T0,CBVm,CBFm,MTTm,CBV_mask,CBF_mask,MTT_mask] = deconvolution_perfusion_gui(AIF,VOX,TR,TE,handles)
 % Compute hemodynamics parameters from persufion MRI by deconvolution
 %
@@ -60,7 +60,7 @@ Ca = toeplitz(Caif,[Caif(1) Caif(end:-1:2)]);
 [U,S,V] = svd(Ca);
 
 %%% Compute deconvolution of CVOXpad by Ca (see function below)
-R = devonvolution_osvd(U,S,V,CVOXpad,nb_dyn,OIth,volume_mask,handles);
+R = devonvolution_osvd(U,S,V,CVOXpad,nb_dyn,OIth,volume_mask);
 
 %%% Compute hemodynamics parameters
 T0 = TR.*T0;
@@ -168,7 +168,7 @@ CONC = zeros(size(VOX));
 CONC(repmat(mask_computation,[1 1 1 Dvox])) = -(1/TE).*(log(VOX(repmat(mask_computation,[1 1 1 Dvox]))./BL(repmat(mask_computation,[1 1 1 Dvox]))));
 end
 
-function R = devonvolution_osvd(U,S,V,CVOXpad,N,OIth,mask_computation,handles)
+function R = devonvolution_osvd(U,S,V,CVOXpad,N,OIth,mask_computation)
 % function R = devonvolution_osvd(U,S,V,CVOXpad,OIth,mask_computation)
 % Devonvolution
 %
