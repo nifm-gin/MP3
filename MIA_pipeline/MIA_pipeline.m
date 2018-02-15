@@ -1172,23 +1172,47 @@ for i=1:length(Jobs)
            for j=1:length(Outputs)
                B = getfield(A, Outputs{j});
                D = getfield(C, Outputs{j});
-               for k=1:length(B)
-                   [path_in, name_in, ext_in] = fileparts(D{k});
-                   Vec  = handles.MIA_data.database.Filename == name_in;
-                   Tags_in = handles.MIA_data.database(Vec, :);
-                   Tags_out = Tags_in;
-                   [path_out, name_out, ext_out] = fileparts(B{k});
-                   Tags_out.Filename = categorical(cellstr(name_out));
-                   Tags_out.IsRaw = categorical(0);
-                   if isfield(J.opt, 'output_filename_ext')
-                       Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
-                   elseif isfield(J.opt, 'output_filename_prefix')
-                       Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, char(Tags_in.SequenceName)]));
-                   else
-                       error('No output_filename_ext or output_filename_prefix')
-                   end
-                   handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
+               if length(D) > 1
+                   for k=1:length(B)
+                       [~, name_in, ~] = fileparts(D{k});
+                       Vec  = handles.MIA_data.database.Filename == name_in;
+                       Tags_in = handles.MIA_data.database(Vec, :);
+                       Tags_out = Tags_in;
+                       [~, name_out, ~] = fileparts(B{k});
+                       Tags_out.Filename = categorical(cellstr(name_out));
+                       Tags_out.IsRaw = categorical(0);
+                       if isfield(J.opt, 'output_filename_ext')
+                           Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
+                       elseif isfield(J.opt, 'output_filename_prefix')
+                           Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, char(Tags_in.SequenceName)]));
+                       else
+                           error('No output_filename_ext or output_filename_prefix')
+                       end
+                       handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
+                   end
+               else
+                   for k=1:length(B)
+                       [~, name_in, ~] = fileparts(D{1});
+                       Vec  = handles.MIA_data.database.Filename == name_in;
+                       Tags_in = handles.MIA_data.database(Vec, :);
+                       Tags_out = Tags_in;
+                       [~, name_out, ~] = fileparts(B{k});
+                       Tags_out.Filename = categorical(cellstr(name_out));
+                       Tags_out.IsRaw = categorical(0);
+                       Spl = split(name_out, '_');
+                       Type = Spl{end};
+                       Tags_out.SequenceName = Type;
+%                        if isfield(J.opt, 'output_filename_ext')
+%                            Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
+%                        elseif isfield(J.opt, 'output_filename_prefix')
+%                            Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, char(Tags_in.SequenceName)]));
+%                        else
+%                            error('No output_filename_ext or output_filename_prefix')
+%                        end
+                       handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
+
+                   end
                end
            end
 %            [path_in, name_in, ext_in] = fileparts(J.files_in);
