@@ -94,7 +94,7 @@ if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
     fields   = {'folder_out', 'flag_test', 'output_filename_prefix', 'FinalResolution', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Warpping', 'Masking'};
-    defaults = {'', true, 'Coreg_', 'Unchanged', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap', false};
+    defaults = {'', true, 'Coreg', 'Unchanged', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap', false};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
@@ -169,10 +169,10 @@ if strcmp(files_out, '')
     files_out = files_in;
     files_out = rmfield(files_out, 'In1');
     [path_nii,name_nii,ext_nii] = fileparts(files_in.In2{1});
-    files_out.In2 = {cat(2,path_nii,filesep,opt.output_filename_prefix, name_nii,ext_nii)};
+    files_out.In2 = {cat(2,path_nii,filesep,opt.output_filename_prefix,'_', name_nii,ext_nii)};
     for i=1:length(files_out.In3)
         [path_nii,name_nii,ext_nii] = fileparts(files_in.In3{i});
-        files_out.In3{i}= cat(2,path_nii,filesep,opt.output_filename_prefix, name_nii,ext_nii);
+        files_out.In3{i}= cat(2,path_nii,filesep,opt.output_filename_prefix,'_', name_nii,ext_nii);
     end
 end
 
