@@ -215,12 +215,13 @@ meansignal = mean(squeeze(N),4);
 volume_mask = meansignal>max(N(:))*0.01;
 [aif,scores] = extraction_aif_volume(squeeze(N),volume_mask);
 
+if sum(cell2num(scores(:,5))) > 10
+    error('No computation because the AIF is not good enough');
+else
+    [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
+    maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
 
-[~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
-maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
-
-
-
+end
 
 
 %% Reshape to the input scan size
