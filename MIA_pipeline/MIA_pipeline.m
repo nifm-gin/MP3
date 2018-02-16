@@ -971,26 +971,27 @@ switch NbScanInput
                 A = Input(:,2*j);
                 A = A(~cellfun('isempty',A));
                 ParamsSelected = Input(cell2mat(A),2*j-1);
-                
+                if i==1 && j == 3
+                    PatientsInput1 = Input(cell2mat(A),5);
+                end
                 %NewTable = table();
                 
                 for k = 1:length(ParamsSelected)
                     %TagTableTest = [TagTableTest;NewTable(NewTable{:,Tag}==SelectedValue,:)];
                     %NewTable = [NewTable; FinalInputTable(getfield(FinalInputTable,handles.new_module.opt.ColumnNamesInput1Scan1TPXP{2*j-1}) == categorical(cellstr(ParamsSelected{k})),:)];
                     %NewTable = unique(NewTable);
-                    FinalInputTable{j,k} = ParamsSelected{k};
-                    Test{i,j,k} = ParamsSelected{k};
-                    test2{j,k,i} = ParamsSelected{k};
+                    %FinalInputTable{j,k} = ParamsSelected{k};
+                    Selection{j,k,i} = ParamsSelected{k};
                 end
                 %FinalInputTable = NewTable;
                 
             end
-            All_selected_Files{i} = FinalInputTable;
+            %All_selected_Files{i} = FinalInputTable;
         end
-        [Input1 Input2 Input3] = handles.new_module.opt.table.Default{ScanInputs};
-        A = Input1(:,6);
-        A = A(~cellfun('isempty',A));
-        PatientsInput1 = Input1(cell2mat(A),5);
+        %[Input1 Input2 Input3] = handles.new_module.opt.table.Default{ScanInputs};
+        %A = Input1(:,6);
+        %A = A(~cellfun('isempty',A));
+        %PatientsInput1 = Input1(cell2mat(A),5);
         %A = Input1(:,4);
         %A = A(~cellfun('isempty',A));
         %TPInput1 = Input1(cell2mat(A),3);
@@ -1002,53 +1003,55 @@ switch NbScanInput
         
         if length(PatientsInput1) == 1
             
-            Input1Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,1,1),:);
-            Input1Table = Input1Table(Input1Table.SequenceName == test2(1,1,1),:);
-            Input1Table = Input1Table(Input1Table.Tp == test2(2,1,1),:);
+            Input1Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,1,1),:);
+            Input1Table = Input1Table(Input1Table.SequenceName == Selection(1,1,1),:);
+            Input1Table = Input1Table(Input1Table.Tp == Selection(2,1,1),:);
             if isempty(Input1Table)
                 disp('Impossible to find the file (Input1)');
             end
             File1 = [char(Input1Table.Path), char(Input1Table.Filename), '.nii'];
             %[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']
             
-            Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,1,1),:);
-            Input2Table = Input2Table(Input2Table.SequenceName == test2(1,1,2),:);
-            TpInput2 = Input2Table.Tp;
-            for j=1:length(TpInput2)
-                File2Try = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Filename), '.nii'];
-                if ~strcmp(File2Try, File1)
-                    File2 = File2Try;
-                    
-                    Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,1,1),:);
-                    Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
-                    if size(test2,3) <3
-                        File3 = {};
-                    else
-                        Scans = test2(1,:,3);
-                        Scans = Scans(~cellfun('isempty',Scans));
-                        File3 = cell(length(Scans),1);
-                        for k=1:length(Scans)
-                            File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
-                            if sum(strcmp(File3Test, {File1, File2})) ~= 1
-                                File3{k,1} = File3Test;
+            Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == Selection(1,1,2),:);
+            PatientsInput2 = Input2Table.Patient;
+            for i=1:length(PatientsInput2)
+                Input2TableTmp = Input2Table(Input2Table.Patient == PatientsInput2(i), :);
+                TpInput2 = Input2TableTmp.Tp;
+                for j=1:length(TpInput2)
+                    File2Try = [char(Input2TableTmp(Input2TableTmp.Tp == TpInput2(j),:).Path), char(Input2TableTmp(Input2TableTmp.Tp == TpInput2(j),:).Filename), '.nii'];
+                    if ~strcmp(File2Try, File1)
+                        File2 = File2Try;
+                        Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == PatientsInput2(i),:);
+                        Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
+                        if size(Selection,3) <3
+                            File3 = {};
+                        else
+                            Scans = Selection(1,:,3);
+                            Scans = Scans(~cellfun('isempty',Scans));
+                            File3 = cell(length(Scans),1);
+                            for k=1:length(Scans)
+                                File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
+                                if sum(strcmp(File3Test, {File1, File2})) ~= 1
+                                    File3{k,1} = File3Test;
+                                end
                             end
                         end
+                        %%% ADD JOBS HERE
+                        Files_in.In1 = {File1};
+                        Files_in.In2 = {File2};
+                        Files_in.In3 = File3(~cellfun('isempty',File3));
+                        pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
+                        Compteur = Compteur+1;
                     end
-                    %%% ADD JOBS HERE
-                    Files_in.In1 = {File1};
-                    Files_in.In2 = {File2};
-                    Files_in.In3 = File3;
-                    pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
-                    Compteur = Compteur+1;
                 end
             end
             
             
         else
             for i=1:length(PatientsInput1)
-                Input1Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,i,1),:);
-                Input1Table = Input1Table(Input1Table.SequenceName == test2(1,1,1),:);
-                Input1Table = Input1Table(Input1Table.Tp == test2(2,1,1),:);
+                Input1Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
+                Input1Table = Input1Table(Input1Table.SequenceName == Selection(1,1,1),:);
+                Input1Table = Input1Table(Input1Table.Tp == Selection(2,1,1),:);
                 if isempty(Input1Table)
                     disp('Impossible to find the file (Input1) for');
                     i
@@ -1056,20 +1059,20 @@ switch NbScanInput
                 File1 = [char(Input1Table.Path), char(Input1Table.Filename), '.nii'];
                 %[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']
                 
-                Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,i,1),:);
-                Input2Table = Input2Table(Input2Table.SequenceName == test2(1,1,2),:);
+                Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
+                Input2Table = Input2Table(Input2Table.SequenceName == Selection(1,1,2),:);
                 TpInput2 = Input2Table.Tp;
                 for j=1:length(TpInput2)
                    File2Try = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Filename), '.nii'];
                    if ~strcmp(File2Try, File1)
                        File2 = File2Try;
 
-                       Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == test2(3,i,1),:);
+                       Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
                        Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
-                       if size(test2,3) <3
+                       if size(Selection,3) <3
                            File3 = {};
                        else
-                           Scans = test2(1,:,3);
+                           Scans = Selection(1,:,3);
                            Scans = Scans(~cellfun('isempty',Scans));
                            File3 = cell(length(Scans),1);
                            for k=1:length(Scans)
@@ -1082,7 +1085,7 @@ switch NbScanInput
                        %%% ADD JOBS HERE
                        Files_in.In1 = {File1};
                        Files_in.In2 = {File2};
-                       Files_in.In3 = File3;
+                       Files_in.In3 = File3(~cellfun('isempty',File3));
                        pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
                        Compteur = Compteur+1;
                    end
