@@ -93,13 +93,13 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext'};
-    defaults = {5, true, '', '_T2_map'};
+    defaults = {5, true, '', 'T2_map'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
     user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
-    parameter_default = {''; ''; '_T2map'; 5};
+    parameter_default = {''; ''; 'T2_map'; 5};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -159,7 +159,7 @@ if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same 
 end
 
 if isempty(files_out)
-   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii)};
+   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename_ext,ext_nii)};
 end
 
 %% If the test flag is true, stop here !

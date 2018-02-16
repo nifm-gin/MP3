@@ -94,13 +94,13 @@ if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
     fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'Type', 'HSize', 'Sigma'};
-    defaults = {'', true, '_Smooth', 'gaussian', '3', '1'};
+    defaults = {'', true, 'Smooth', 'gaussian', '3', '1'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension';  '   .Type';  '   .HSize';  '   .Sigma'; ''; ''};
     user_parameter_type = {'XScan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'; 'logical'; 'char'};
-    parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'; '1'; ''};
+    parameter_default = {''; ''; 'Smooth'; {'gaussian'}; '3'; '1'; '1'; ''};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'; 'flag_test'; 'folder_out'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
@@ -166,7 +166,7 @@ end
 %end
 
 if strcmp(files_out, '')
-    files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,opt.output_filename_ext,ext_nii)};
+    files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename_ext,ext_nii)};
 end
 
 %% If the test flag is true, stop here !
