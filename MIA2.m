@@ -270,7 +270,7 @@ if numel(patient_id)~= 1
 end
 
 Patient_filter = handles.database.Patient== id_listing(patient_id);
-tp_listing = unique(handles.database.Tp(Patient_filter));
+tp_listing = unique(handles.database.Tp(Patient_filter), 'stable');
 set(handles.MIA_time_points_list, 'String', char(tp_listing));
 
 if get(handles.MIA_scan_VOIs_button, 'Value') == 0 %display parameters list
@@ -2097,7 +2097,6 @@ end
 function handles = MIA_load_axes_single(hObject, ~, handles)
 
 data_selected = get_data_selected(handles);
-
 
 if numel(data_selected) > 4  % select only the 4 first scan
     data_selected = data_selected(1:4);
@@ -6608,56 +6607,85 @@ function MIA_cloneScanVoi_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-patient = get(handles.MIA_name_list, 'Value');
-time_point= get(handles.MIA_time_points_list, 'Value');
-scan = get(handles.MIA_scans_list, 'Value');
-Scan_VOI_option = get(handles.MIA_scan_VOIs_button, 'Value');
-% Clone scan else clone VOI
-if Scan_VOI_option == 0
-    file_name = handles.database(patient).day(time_point).scans_file{scan};
-    new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
-    parameter_name =  handles.database(patient).day(time_point).parameters(scan);
-    new_parameter_name = strcat(parameter_name, '-cloned');
-    % update databas
-    handles.database(patient).day(time_point).scans_file = [handles.database(patient).day(time_point).scans_file {new_file_name}];
-    handles.database(patient).day(time_point).parameters = [handles.database(patient).day(time_point).parameters new_parameter_name];
-    
-    % Check if this new parameter exist already
-    % if not update the handles.clip  fields
-    if sum(strcmp(handles.clips(:,1), new_parameter_name)) == 0
-        % clone the clips value
-        match_clip = find(strcmp(handles.clips(:,1)', parameter_name) == 1);
-        handles.clips(numel(handles.clips(:,1))+1,1) = new_parameter_name;
-        handles.clips(numel(handles.clips(:,1)),2:3) =  handles.clips(match_clip,2:3); %#ok<FNDSB>
+if ~isfield(handles, 'database')
+    return
+end
+data_selected = finddata_selected(handles);
+if numel(data_selected) >1
+    warndlg('Please select only one scan', 'Warning');
+    return
+end
+new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
+
+fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
+if fid_nii>0 
+     fclose(fid_nii);
+    % update the database
+    new_scan = handles.database(data_selected,:);
+    new_scan.SequenceName = new_parameter_name;
+    new_scan.Filename =  strrep(char(new_scan.Filename), char(handles.database.SequenceName(data_selected)), new_parameter_name);
+    handles.database(size(handles.database,1)+1,:) = new_scan;
+    % create the new files
+    copyfile(fullfilename(handles, data_selected, '.nii'), fullfilename(handles, size(handles.database,1), '.nii'), 'f');
+    if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
+        copyfile(fullfilename(handles, data_selected, '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
     end
 else
-    file_name = handles.database(patient).day(time_point).VOIs_file{scan};
-    new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
-    parameter_name =  handles.database(patient).day(time_point).VOIs(scan);
-    new_parameter_name = strcat(parameter_name, '-cloned');
-    % update databas
-    handles.database(patient).day(time_point).VOIs_file = [handles.database(patient).day(time_point).VOIs_file {new_file_name}];
-    handles.database(patient).day(time_point).VOIs = [handles.database(patient).day(time_point).VOIs new_parameter_name];
-    
-    % Check if this new VOI exist already
-    % if not update the handles.VOIs field
-    if sum(strcmp(handles.VOIs', new_parameter_name)) == 0
-        handles.VOIs =  [handles.VOIs(1:end-1) new_parameter_name handles.VOIs(end-1:end)];
-    end
-end
-% create the new file
-copyfile([handles.database(patient).path file_name], [handles.database(patient).path new_file_name], 'f');
-% rename the ROI name in the uvascroi sturcture
-if Scan_VOI_option == 1
-    load([handles.database(patient).path new_file_name])
-    for i=1:numel(uvascroi) %#ok<NODEF>
-        uvascroi(i).name = char(new_parameter_name); %#ok<AGROW>
-    end
-    save([handles.database(patient).path new_file_name],'uvascroi');
+    warndlg('something is wrong this the data',  'Warning');
 end
 % save handles and update display
 guidata(hObject, handles)
 MIA_update_database_display(hObject, eventdata, handles)
+% patient = get(handles.MIA_name_list, 'Value');
+% time_point= get(handles.MIA_time_points_list, 'Value');
+% scan = get(handles.MIA_scans_list, 'Value');
+% Scan_VOI_option = get(handles.MIA_scan_VOIs_button, 'Value');
+% % Clone scan else clone VOI
+% if Scan_VOI_option == 0
+%     file_name = handles.database(patient).day(time_point).scans_file{scan};
+%     new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
+%     parameter_name =  handles.database(patient).day(time_point).parameters(scan);
+%     new_parameter_name = strcat(parameter_name, '-cloned');
+%     % update databas
+%     handles.database(patient).day(time_point).scans_file = [handles.database(patient).day(time_point).scans_file {new_file_name}];
+%     handles.database(patient).day(time_point).parameters = [handles.database(patient).day(time_point).parameters new_parameter_name];
+%     
+%     % Check if this new parameter exist already
+%     % if not update the handles.clip  fields
+%     if sum(strcmp(handles.clips(:,1), new_parameter_name)) == 0
+%         % clone the clips value
+%         match_clip = find(strcmp(handles.clips(:,1)', parameter_name) == 1);
+%         handles.clips(numel(handles.clips(:,1))+1,1) = new_parameter_name;
+%         handles.clips(numel(handles.clips(:,1)),2:3) =  handles.clips(match_clip,2:3); %#ok<FNDSB>
+%     end
+% else
+%     file_name = handles.database(patient).day(time_point).VOIs_file{scan};
+%     new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
+%     parameter_name =  handles.database(patient).day(time_point).VOIs(scan);
+%     new_parameter_name = strcat(parameter_name, '-cloned');
+%     % update databas
+%     handles.database(patient).day(time_point).VOIs_file = [handles.database(patient).day(time_point).VOIs_file {new_file_name}];
+%     handles.database(patient).day(time_point).VOIs = [handles.database(patient).day(time_point).VOIs new_parameter_name];
+%     
+%     % Check if this new VOI exist already
+%     % if not update the handles.VOIs field
+%     if sum(strcmp(handles.VOIs', new_parameter_name)) == 0
+%         handles.VOIs =  [handles.VOIs(1:end-1) new_parameter_name handles.VOIs(end-1:end)];
+%     end
+% end
+% % create the new file
+% copyfile([handles.database(patient).path file_name], [handles.database(patient).path new_file_name], 'f');
+% % rename the ROI name in the uvascroi sturcture
+% if Scan_VOI_option == 1
+%     load([handles.database(patient).path new_file_name])
+%     for i=1:numel(uvascroi) %#ok<NODEF>
+%         uvascroi(i).name = char(new_parameter_name); %#ok<AGROW>
+%     end
+%     save([handles.database(patient).path new_file_name],'uvascroi');
+% end
+% % % save handles and update display
+% guidata(hObject, handles)
+% MIA_update_database_display(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
