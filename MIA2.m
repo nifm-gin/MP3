@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 06-Feb-2018 09:50:47
+% Last Modified by GUIDE v2.5 16-Feb-2018 16:53:45
 
 
 % Begin initialization code - DO NOT EDIT
@@ -9612,13 +9612,13 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in MIA_pipeline_creator.
-function MIA_pipeline_creator_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_creator (see GCBO)
+% --- Executes on button press in MIA_pipeline_Manager.
+function MIA_pipeline_Manager_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Manager (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of MIA_pipeline_creator
+% Hint: get(hObject,'Value') returns toggle state of MIA_pipeline_Manager
 if ~isfield(handles, 'database')
     warndlg('No database loaded', 'Warning');
     return

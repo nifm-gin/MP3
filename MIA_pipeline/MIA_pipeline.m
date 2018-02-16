@@ -65,10 +65,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'SPM', '   .SPM: Coreg', '   .SPM: Reslice','   .SPM: Realign', ...
      'Spatial', '   .Smoothing'...
      };
- handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
  
- handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
  
 %  
 %  {'Arithmetic', 'Mean slices', 'Smooth', 'Add slices', ...
@@ -77,6 +76,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
 %     'T2starcorr3D', 'ASL_InvEff',
 
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
+handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
 set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
 set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 handles.Source_selected = handles.Tags_listing{1};
@@ -101,7 +101,7 @@ guidata(hObject, handles);
 
 
 % UIWAIT makes MIA_pipeline wait for user response (see UIRESUME)
-% uiwait(handles.MIA_pipeline_creator_GUI);
+% uiwait(handles.MIA_pipeline_manager_GUI);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -178,7 +178,7 @@ end
 handles.biograph_obj = psom_visu_dependencies(handles.pipeline);
 set(0, 'ShowHiddenHandles', 'on')
 handles.biograph_fig = gcf;
-set(handles.biograph_fig, 'Name', 'MIA pipeline creator');
+set(handles.biograph_fig, 'Name', 'MIA pipeline manager');
 guidata(hObject, handles);
 
 
@@ -207,21 +207,21 @@ function PrintMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to PrintMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-printdlg(handles.MIA_pipeline_creator_GUI)
+printdlg(handles.MIA_pipeline_manager_GUI)
 
 % --------------------------------------------------------------------
 function CloseMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to CloseMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-selection = questdlg(['Close ' get(handles.MIA_pipeline_creator_GUI,'Name') '?'],...
-                     ['Close ' get(handles.MIA_pipeline_creator_GUI,'Name') '...'],...
+selection = questdlg(['Close ' get(handles.MIA_pipeline_manager_GUI,'Name') '?'],...
+                     ['Close ' get(handles.MIA_pipeline_manager_GUI,'Name') '...'],...
                      'Yes','No','Yes');
 if strcmp(selection,'No')
     return;
 end
 
-delete(handles.MIA_pipeline_creator_GUI)
+delete(handles.MIA_pipeline_manager_GUI)
 
 
 
@@ -535,7 +535,7 @@ end
 guidata(hObject, handles);
 function edge_callbacks(hObject, eventdata, handles)
 eventdata = [];
-handles = guidata(findobj('Tag', 'MIA_pipeline_creator_GUI'));
+handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
 module_list = get(handles.MIA_pipeline_module_popupmenu, 'String');
 get(hObject, 'ID')
 % sub_module = strfind(hObject.ID, '_');
@@ -550,7 +550,7 @@ get(hObject, 'ID')
 
 function node_callbacks(hObject, eventdata, handles)
 eventdata = [];
-handles = guidata(findobj('Tag', 'MIA_pipeline_creator_GUI'));
+handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
 module_list = get(handles.MIA_pipeline_module_popupmenu, 'String');
 
 sub_module = strfind(hObject.ID, '_');
@@ -573,8 +573,8 @@ set(handles.MIA_pipeline_module_popupmenu, 'Value', idx)
 % handles.biograph_obj = psom_visu_dependencies(handles.pipeline);
 % set(0, 'ShowHiddenHandles', 'on')
 % handles.biograph_fig = gcf;
-% set(handles.biograph_fig, 'Name', 'MIA pipeline creator');
-% guidata(findobj('Tag', 'MIA_pipeline_creator_GUI'), handles);
+% set(handles.biograph_fig, 'Name', 'MIA pipeline manager');
+% guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 %%%%
 handles.new_module = handles.pipeline.(char(hObject.ID));
@@ -899,7 +899,7 @@ end
    
 
 %% save the data
-guidata(findobj('Tag', 'MIA_pipeline_creator_GUI'), handles);
+guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 
 
@@ -1242,7 +1242,7 @@ if update
 %handles2.database = handles.MIA_data.database;
 
     MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
-    close('MIA pipeline Creator')
+    close('MIA pipeline manager')
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
@@ -1449,6 +1449,30 @@ function MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_push_Database (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
+set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
+
+handles.Source_selected = handles.Tags_listing{1};
+
+
+handles.Remove_Tags_listing = {'NoMoreTags'};
+handles.Remove_selected = handles.Remove_Tags_listing{1};
+handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
+
+handles.FilterParameters = {};
+
+handles.MIA_pipeline_Unique_Values_Selection = {};
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+guidata(hObject, handles);
+
 
 
 % --- Executes during object creation, after setting all properties.
