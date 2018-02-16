@@ -270,7 +270,7 @@ if numel(patient_id)~= 1
 end
 
 Patient_filter = handles.database.Patient== id_listing(patient_id);
-tp_listing = unique(handles.database.Tp(Patient_filter), 'stable');
+tp_listing = unique(handles.database.Tp(Patient_filter));
 set(handles.MIA_time_points_list, 'String', char(tp_listing));
 
 if get(handles.MIA_scan_VOIs_button, 'Value') == 0 %display parameters list
@@ -2023,7 +2023,7 @@ else
     if ~isfield(handles, 'data_loaded')
         return
     end
-    list_day = ['-1', string(unique(handles.data_loaded.info_data_loaded.Tp))'];
+    list_day = ['-1', string(handles.data_loaded.info_data_loaded.Tp)'];
     set(handles.MIA_PRM_ref_popupmenu, 'String', list_day', 'Value', 2);
     %set MIA_PRM_slider
     set(handles.MIA_PRM_slider_tp, 'Max', handles.data_loaded.number_of_scan);
@@ -2345,7 +2345,8 @@ end
 % patient
 data_to_load = find(handles.database.Patient == handles.database.Patient(data_selected) &...
     handles.database.SequenceName == handles.database.SequenceName(data_selected));
-
+[~, idx] =sort(handles.database.Tp(data_to_load));
+data_to_load = data_to_load(idx);
 if numel(data_to_load) <2
     warndlg(strcat({'Need more than one '},  char(handles.database.SequenceName(data_selected)), ' scan to run the PRM mode') ,'Warning');
     return
@@ -2370,8 +2371,7 @@ for i = 1:numel(data_to_load)
     clear new
 end
 
-set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_to_load))) '_' char(unique(handles.database.Tp(data_selected)))]);
-set(handles.MIA_orientation_space_popupmenu, 'String',  char(unique(handles.database.SequenceName(data_to_load),'stable')), 'Value', 1);
+set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_to_load))) '_' char(unique(handles.database.SequenceName(data_to_load)))]);
 set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
 handles.data_loaded.number_of_scan = numel(data_to_load);
 handles.data_loaded.info_data_loaded = handles.database(data_to_load,:);
@@ -2790,8 +2790,9 @@ if isfield(handles, 'data_displayed')
             case 1 % image only   
                 % Clip image displayed at the 2 extremum (min, max)
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                image_to_display(image_to_display<prctile(image_to_display(:),0.1)) = prctile(image_to_display(:),0.1);
-                image_to_display(image_to_display>prctile(image_to_display(:),99.9)) = prctile(image_to_display(:),99.9);
+                image_to_display = autocontrast(image_to_display);
+                %image_to_display(image_to_display<prctile(image_to_display(:),0.1)) = prctile(image_to_display(:),0.1);
+               % image_to_display(image_to_display>prctile(image_to_display(:),99.9)) = prctile(image_to_display(:),99.9);
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 
                 % apply the colormap selected
