@@ -304,7 +304,13 @@ else %display VOIs list
     
     
 end
-
+% if the pipeline Manager is open, update the information : patient selected 
+% update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
+if ~isempty(findobj('Tag', 'MIA_pipeline_pushMIASelection'))
+    data_selected = get_data_selected(handles);
+    set(findobj('Tag', 'MIA_pipeline_pushMIASelection'), 'String', [char(handles.database.Patient(data_selected)) '-' char(handles.database.Tp(data_selected)) ' only'])
+    set(findobj('Tag', 'MIA_pipeline_pushMIATPSelection'), 'String', ['All time point of :' char(handles.database.Patient(data_selected))])
+end
 
 
 % --- Executes on selection change in MIA_time_points_list.

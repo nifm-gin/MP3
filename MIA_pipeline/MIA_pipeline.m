@@ -84,7 +84,7 @@ handles.Source_selected = handles.Tags_listing{1};
 handles.MIA_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
-handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+%handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
 
 handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
@@ -95,6 +95,11 @@ handles.FilterParameters = {};
 %MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
 % Update handles structure
 handles.MIA_pipeline_Unique_Values_Selection = {};
+
+% update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
+data_selected =  MIA2('get_data_selected',handles.MIA_data);
+set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected)) '-' char(handles.MIA_data.database.Tp(data_selected)) ' only'])
+set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected))])
 guidata(hObject, handles);
 
 
@@ -798,7 +803,7 @@ function MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
 
 
 % set(handles.MIA_pipeline_parameter_setup, 'Value', 1);
-% set(handles.MIA_pipeline_module_parameters, 'Value', 1);
+set(handles.MIA_pipeline_module_parameters, 'Value', 1);
 module_selected = get(handles.MIA_pipeline_module_listbox, 'Value');
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
@@ -1423,6 +1428,24 @@ function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% If there is an filter loaded remove them all  
+if ~isempty(handles.Remove_Tags_listing)
+    MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
+    handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
+end
+% define which patient is selected
+data_selected =  MIA2('get_data_selected',handles.MIA_data);
+% add the patient filter
+handles.Source_selected = 'Patient';
+handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected))}; 
+MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+% retrieve UI data
+handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
+
+% Add the time point filter
+handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_data.database.Tp(data_selected))}; 
+handles.Source_selected = 'Tp';
+MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 
 % --- Executes on selection change in MIA_pipeline_remove_tag_popupmenu.
 function MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
@@ -1442,6 +1465,16 @@ function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_pushMIATPSelection (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if ~isempty(handles.Remove_Tags_listing)
+    MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
+    handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
+end
+% define which patient is selected
+data_selected =  MIA2('get_data_selected',handles.MIA_data);
+% add the patient filter
+handles.Source_selected = 'Patient';
+handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected))}; 
+MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on button press in MIA_pipeline_push_Database.
