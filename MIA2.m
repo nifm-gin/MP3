@@ -2789,18 +2789,15 @@ if isfield(handles, 'data_displayed')
         stri = num2str(i);
         % store current contrast
         current_contrast = get(handles.(sprintf('MIA_data%d', i)), 'Clim');
-        if     ~isempty(get(handles.(sprintf('MIA_data%d', i)), 'Children'));
+        if     ~isempty(get(handles.(sprintf('MIA_data%d', i)), 'Children'))
             delete(get(handles.(sprintf('MIA_data%d', i)), 'Children'));
         end
         switch number_of_data_to_displayed
-            case 1 % image only   
-                % Clip image displayed at the 2 extremum (min, max)
+            case 1 % image only
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                image_to_display = autocontrast(image_to_display);
-                %image_to_display(image_to_display<prctile(image_to_display(:),0.1)) = prctile(image_to_display(:),0.1);
-               % image_to_display(image_to_display>prctile(image_to_display(:),99.9)) = prctile(image_to_display(:),99.9);
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
-                
+                % Exlude the 2 extremum (min, max) of the Clim
+                set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
@@ -4020,11 +4017,10 @@ function MIA_clic_on_image(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-return
+
 handles = guidata(hObject);
 
 if ~strcmp(get(handles.MIA_GUI,'SelectionType'),'normal')
-    %     G=get(handles.MIA_GUI,'userdata');
     G.initpnt=get(gca,'currentpoint');
     G.initClim = get(gca,'Clim');
     set(handles.MIA_GUI,'userdata',G);
@@ -4032,7 +4028,7 @@ if ~strcmp(get(handles.MIA_GUI,'SelectionType'),'normal')
     
     return
 end
-
+return
 if handles.mode == 1
     if size(handles.data_selected_resized.image(1).reco.data,3) == 1 && ...
             size(handles.data_selected_resized.image(1).reco.data, 5) == 1
@@ -8480,10 +8476,10 @@ try
         case 'alt' %right-click,ctrl+left button,
             %             'alt'
             set(gca,'Clim',G.clim);
-    end;
+    end
 catch
     
-end;
+end
 
 
 
@@ -8752,24 +8748,23 @@ for i = 1:numel(unique(log_file.StudyName))
             for m=1:numel(index_data_to_import)
                 NAME = char(log_file.NameFile(index_data_to_import(m),:));
                 if exist(fullfile(MIA_tmp_folder, [NAME, '.json']), 'file')
-                    
-                    
                     json_data = spm_jsonread(fullfile(MIA_tmp_folder, [NAME, '.json']));
+                    if isempty(char(json_data.ProtocolName))
+                        json_data.ProtocolName = {'Undefined'};
+                    end
                     if ~isempty(handles.database)
-                        
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName), ''))) == 1
-%                             idx =  strfind(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')));
-%                             nbr_of_seq = sum([idx{:}]);
                             nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
                                 handles.database.Tp ==  char(tp_selected) &...
                                 strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')), length(char(clean_variable_name(char(json_data.ProtocolName), '')))));
                             seq_name = [char(json_data.ProtocolName) '(' num2str(nbr_of_seq+1) ')'];
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
-                         else
+                        else
+                            
                             seq_name = clean_variable_name(char(json_data.ProtocolName), '');
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
-                         end
+                        end
                     else
                         seq_name = clean_variable_name(char(json_data.ProtocolName), '');
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
