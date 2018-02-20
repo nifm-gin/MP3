@@ -934,7 +934,7 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
 else
     [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
     if status == false
-        error('Cannot create the PSOM folder to ssave the pipeline logs.')
+        error('Cannot create the PSOM folder to save the pipeline logs.')
     end
 end
 Types = handles.new_module.opt.table.Type;
