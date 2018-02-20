@@ -134,6 +134,13 @@ switch selection
     case 'No'
         return
 end
+
+if ~isempty(findobj('type', 'figure', 'name', 'MIA pipeline Manager'))
+    close((findobj('type', 'figure', 'name', 'MIA pipeline Manager')));
+end
+
+
+
 delete(hObject);
 
 
