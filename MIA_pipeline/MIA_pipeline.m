@@ -929,8 +929,14 @@ function MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handle
 % hObject    handle to MIA_pipeline_exectute_module_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') == 7
+    opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
+else
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
+    if status == false
+        error('Cannot create the PSOM folder to ssave the pipeline logs.')
+    end
+end
 Types = handles.new_module.opt.table.Type;
 ScanInputs = find(contains(Types, 'Scan'));
 NbScanInput = length(ScanInputs);
@@ -1180,7 +1186,7 @@ for i=1:length(Jobs)
            for j=1:length(Outputs)
                B = getfield(A, Outputs{j});
                D = getfield(C, Outputs{j});
-               if length(D) > 1
+               if length(D) == length(B)
                    for k=1:length(B)
                        [~, name_in, ~] = fileparts(D{k});
                        Vec  = handles.MIA_data.database.Filename == name_in;
@@ -1190,12 +1196,13 @@ for i=1:length(Jobs)
                        Tags_out.Filename = categorical(cellstr(name_out));
                        Tags_out.IsRaw = categorical(0);
                        if isfield(J.opt, 'output_filename_ext')
-                           Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
+                           Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), '_', J.opt.output_filename_ext]));
                        elseif isfield(J.opt, 'output_filename_prefix')
-                           Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, char(Tags_in.SequenceName)]));
+                           Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, '_',char(Tags_in.SequenceName)]));
                        else
                            error('No output_filename_ext or output_filename_prefix')
                        end
+                       Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
                    end
@@ -1218,6 +1225,7 @@ for i=1:length(Jobs)
 %                        else
 %                            error('No output_filename_ext or output_filename_prefix')
 %                        end
+                       Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
                    end
@@ -1247,7 +1255,7 @@ if update
 %handles2.database = handles.MIA_data.database;
 
     MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
-    close('MIA pipeline manager')
+    close('MIA pipeline Manager')
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
