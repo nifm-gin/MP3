@@ -100,6 +100,7 @@ handles.MIA_pipeline_Unique_Values_Selection = {};
 data_selected =  MIA2('finddata_selected',handles.MIA_data);
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected)) '-' char(handles.MIA_data.database.Tp(data_selected)) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected))])
+
 guidata(hObject, handles);
 
 
@@ -1202,7 +1203,7 @@ for i=1:length(Jobs)
                        else
                            error('No output_filename_ext or output_filename_prefix')
                        end
-                       %handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+
                        %Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 

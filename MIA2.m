@@ -67,7 +67,7 @@ end
 handles.VOIs = {'Other'};
 handles.histo = {'Other'}; %{'Pimo', 'ColIV', 'Tc+I_cerveau', 'Tc+I_ref'};
 handles.resolution = [1 64 112 128 192 256 384 512 3000];
-handles.colors ={'b', 'g', 'y', 'm', 'c', 'r', 'k', 'w', 'navy',...
+handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
     'u5',	'orange',	'u6',	'u7',	'u8',	'gray'};
@@ -95,8 +95,8 @@ end
 
 
 % add MRIManager.jar to the classpath (dynamic classpath)
-[dpath, ~, ~] = fileparts(which('sendList.m'));
-javaclasspath(strcat(dpath, filesep, 'MRIManager.jar'))
+[filepath,name,ext] = fileparts(which('MRIManager.jar'));
+javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
 
@@ -427,7 +427,7 @@ function MIA_path_file_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_path_file (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+return
 if ~isfield(handles, 'database')
     return
 end
@@ -444,7 +444,7 @@ function MIA_add_name_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % global uvascim uvascroi
-
+disp('MIA_add_name_Callback')
 if strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') == 1 ||...
         strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') == 1 ||...
         strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') == 1 ||...
@@ -1783,12 +1783,19 @@ new_patient_directory = uigetdir(handles.database.Properties.UserData.MIA_data_p
 if sum(new_patient_directory) == 0
     return
 else
+    
     new_patient_directory = strcat(new_patient_directory, filesep);
-    % update the path in the table
-    handles.database.Path = categorical(strrep(cellstr(handles.database.Path),handles.database.Properties.UserData.MIA_data_path, new_patient_directory));
-    handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
-    handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
-    handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI', filesep];
+    if ~isdir([new_patient_directory, 'Raw_data', filesep])
+        warndlg('Please select Root directory of your project (which contains the subdirectories Raw_data, ROI...)','Warning');
+    else
+        handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
+        handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
+        handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI', filesep];
+        % update the path in the table
+        handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MIA_Raw_data_path;
+        handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
+    end
+
 end
 guidata(hObject, handles);
 
@@ -2283,7 +2290,7 @@ if isfield(handles, 'data_displayed')
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
                 if sum(image_to_display(:)) ~= 0
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),2) prctile(image_to_display(:),98)]);
                 end
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -2304,7 +2311,7 @@ if isfield(handles, 'data_displayed')
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                  % Exlude the 2 extremum (min, max) of the Clim
                 if sum(image_to_display(:)) ~= 0
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),2) prctile(image_to_display(:),98)]);
                 end
 
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -2589,7 +2596,7 @@ if isfield(handles, 'data_displayed')
         set(get(handles.(sprintf('MIA_data%d', i)), 'Children'), 'ButtonDownFcn', @MIA_clic_on_image);
         % update contrast using the values stored (if it is not a new scan
         % loaded)
-        if handles.display_option.manual_contrast == 1
+        if handles.display_option.manual_contrast == 1 && strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
             set(handles.(sprintf('MIA_data%d', i)), 'Clim', current_contrast );
         end
         
@@ -2935,13 +2942,13 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
                 
-                scatter(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), 10);%,...'filled',...
-%                     'SizeData', 20,...
-%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
-%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
-%                     'Visible', 'on',...
-%                     'Tag', strcat('MIA_plot1_2d', strii));
-                %                 uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
+                scatter(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), 'filled',...
+                    'SizeData', 20,...
+                    'MarkerFaceColor',rgb(handles.colors{ii}),...
+                    'MarkerEdgeColor',rgb(handles.colors{ii}),...
+                    'Visible', 'on',...
+                    'Tag', strcat('MIA_plot1_2d', strii));
+                                uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
                 
             case 3
                 % find x data
@@ -2958,12 +2965,12 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3)) == 0,:) =[];
 
-                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3));%,...
-%                     'filled',...
-%                     'SizeData', 20,...
-%                     'MarkerFaceColor',rgb(handles.colors{ii}),...
-%                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
-%                     'Tag', strcat('MIA_plot1_3d', strii));
+                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3),...
+                    'filled',...
+                    'SizeData', 20,...
+                    'MarkerFaceColor',rgb(handles.colors{ii}),...
+                    'MarkerEdgeColor',rgb(handles.colors{ii}),...
+                    'Tag', strcat('MIA_plot1_3d', strii));
             case 4
                  % find x data
                 VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
@@ -2989,11 +2996,9 @@ for ii = 1:handles.data_loaded.number_of_ROI
                     color4d(i,:) = tmp(round((VOI_data(i,4)-mini)/(maxi-mini)*255)+1,:);
                 end
                 cbfreeze('del');
-                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3), 10, color4d);%, 'filled',...
-%                     'SizeData', 30,...
-%                     'Marker', handles.markers{ii},...
-%                     'MarkerEdgeColor', 'k',...
-%                     'Tag', strcat('MIA_plot1_4d', strii));
+                scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3), 20, color4d, 'filled',...
+                    'Marker', handles.markers{ii},...
+                    'Tag', strcat('MIA_plot1_4d', strii));
                 if ~strcmp(get(gco, 'Tag'), 'speedy_run_button')
                     colormap(jet);
                     colorbar('peer', handles.MIA_plot1);
@@ -3148,12 +3153,6 @@ position_data4 = get(handles.MIA_data4, 'Position');
 % currPt in percentage of the MIA_GUI size
 currPt=get(handles.MIA_GUI,'CurrentPoint');
 
-% this code worked until 09-2016.... but not anymore, weird?! BL
-% GUI_size = get(handles.MIA_GUI, 'Position');
-% currPt(1) = currPt(1)/GUI_size(3);
-% currPt(2) = currPt(2)/GUI_size(4);
-%
-
 if ~isempty(findobj('Tag', 'Pixel_contour'))
     delete(findobj('Tag', 'Pixel_contour'))
 end
@@ -3230,238 +3229,295 @@ if ~strcmp(get(handles.MIA_GUI,'SelectionType'),'normal')
     
     return
 end
-return
-if handles.mode == 1
-    if size(handles.data_selected_resized.image(1).reco.data,3) == 1 && ...
-            size(handles.data_selected_resized.image(1).reco.data, 5) == 1
-        return
-    end
-else
-    if size(handles.data_selected_for_PRM_resized.image(1).reco.data,3) == 1 && ...
-            size(handles.data_selected_for_PRM_resized.image(1).reco.data, 5) == 1
-        return
-    end
+% cannot plot anything in PRM mode (yet)
+if handles.mode == 2
+    return
 end
+% check if a 4d data is loaded
+dimension_size = zeros([size(handles.data_displayed.image,4),7]);
+for i=1:size(handles.data_displayed.image,4)
+    dimension_size(i,1:numel(handles.data_loaded.Scan(i).V(1).private.dat.dim)) = handles.data_loaded.Scan(i).V(1).private.dat.dim;
+end
+%remove x, y and Z dimensions 
+dimension_size(:,1:3) =[];
+% find only the 4D data (exclude < and > of 4d data)
+fourD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 1);
+if isempty(fourD_data)
+    return
+end
+
+% get pixel coordonates
 slice_nbre = get(handles.MIA_slider_slice, 'Value');
 tag = get(get(hObject, 'Children'), 'Tag');
-match_roi = [] ;
-if ~ischar(tag)
-    for i = 1:numel(tag)
-        if strfind(tag{i}, 'data')
-            match_data = i;
-        elseif strfind(tag{i}, 'ROI_contour')
-            match_roi = [match_roi i];
-        end
-    end
-    currPt_on_axe=eval(['get(handles.MIA_' tag{match_data} ',''CurrentPoint'');']);
-else
-    currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']);
-end
-
-
+currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']);
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
-
 voxel = pixel_coordinates_2d(1:2);
 if voxel(1) == 0 || voxel(2)==0
-    return  %bug somewhere
+     return  %bug somewhere
 end
-
+% clean old plot (if needed)
 if ~isempty(get(handles.MIA_plot1, 'Children'))
     delete(get(handles.MIA_plot1, 'Children'));
     legend(handles.MIA_plot1,'off');
     hold(handles.MIA_plot1, 'off');
 end
-legende_txt = [];
-if handles.mode == 1
-    % single mode
-    if size(handles.data_selected_resized.image(1).reco.data,3) > 1 && ...
-            size(handles.data_selected_resized.image(1).reco.data, 5) > 1
-        
-        % select repetition or echoes
-    elseif size(handles.data_selected_resized.image(1).reco.data,3) > 1
-        % plot echoes
-        for i=1:handles.data_loaded(1).number_of_scan
-            y_data = []; x_data = [];
-            strii = num2str(i);
-            if ~isempty(get(handles.MIA_plot1, 'Children'))
-                hold(handles.MIA_plot1, 'on');
-            end
-            if match_roi > 0
-                % plot ROI
-                for x = 1:numel(match_roi)
-                    roi = []; tmp = [];
-                    tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, :, slice_nbre, 1));
-                    roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
-                    roi(roi == 0) = NaN;
-                    for ii = 1:size(tmp,3)
-                        y_data(x,ii) = nanmean(nanmean((tmp(:,:,ii).*roi)));
-                    end
-                end
-            else
-                y_data(1,:) = squeeze(handles.data_selected_resized.image(i).reco.data(voxel(2), voxel(1), :, slice_nbre, 1));
-            end
-            y_data(isnan(y_data)) = [];
-            if ~isempty(y_data) && numel(y_data) ~= 1
-                if ~isfield(handles.data_selected_resized.image(i).reco, 'echotime')
-                    if (~isfield(handles.data_selected_resized.image(i).reco, 'Had'))
-                        x_data = 1:size(handles.data_selected_resized.image(i).reco.data,3);
-                    else
-                        continue
-                    end
-                else
-                    if  ((~isempty(regexpi(handles.data_selected_resized.image(1).acq.ppl_name,'\w*dpcasl\w*')))|| (~isempty(regexpi(handles.data_selected_resized.image(1).acq.ppl_name,'\w*Had\w*'))))
-                        x_data = 1:size(handles.data_selected_resized.image(i).reco.data,3);
-                    else
-                        x_data = handles.data_selected_resized.image(i).reco.echotime;
-                    end
-                end
-                %                 user_response = questdlg('Plot by?', 'Bip', 'VOI', 'Voxels', 'Cancel', 'Cancel');
-                %                 if strcmp(user_response, 'Cancel') ==1
-                %                     return
-                %                 end
-                user_response = 'VOI';
-                
-                if strcmp(user_response, 'Voxels') ==1
-                    for x = 1:numel(match_roi)
-                        roi = []; tmp = [];
-                        tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, :, slice_nbre, 1));
-                        roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
-                        roi(roi == 0) = NaN;
-                        y_data= tmp(:,:,:).*repmat(roi, [1 1 size(tmp,3)]);
-                        indice_xy = findn(~isnan(roi) == 1);
-                        for y = 1:size(indice_xy,1)
-                            if ~isempty(get(handles.MIA_plot1, 'Children'))
-                                hold(handles.MIA_plot1, 'on');
-                            end
-                            plot(handles.MIA_plot1,x_data,squeeze(y_data(indice_xy(y,1),indice_xy(y,2),:))',...
-                                'Color',rgb(handles.colors{x}),...
-                                'Tag', strcat('MIA_plot1_1d', strii));
-                            hold(handles.MIA_plot1, 'on');
-                        end
-                    end
-                else
-                    for x = 1:size(y_data,1)
-                        if ~isempty(get(handles.MIA_plot1, 'Children'))
-                            hold(handles.MIA_plot1, 'on');
-                        end
-                        plot(handles.MIA_plot1,x_data,y_data(x,:), 'Color',rgb(handles.colors{numel(get(handles.MIA_plot1, 'Children'))+1}),...
-                            'Tag', strcat('MIA_plot1_1d', strii));
-                        hold(handles.MIA_plot1, 'on');
-                        if match_roi > 0
-                            legende_txt = [legende_txt strcat(handles.data_selected.list_scan(i), '-', handles.ROI_selected_resized(x).name)];
-                        else
-                            legende_txt = [legende_txt handles.data_selected.list_scan(i)];
-                        end
-                        if size(y_data,1) == 1
-                            tmp2(i,1:numel(y_data)) =  y_data;
-                        end
-                    end
-                end
-                
-            end
-            hold(handles.MIA_plot1, 'off');
-        end
-        %plot ratio
-        %         if exist('tmp2', 'var') && size(tmp2,1) == 2
-        %             figure; plot(x_data, tmp2(2,:)./tmp2(1,:));
-        %         end
-        %
-        if ~isempty(legende_txt)
-            legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
-        end
-    elseif size(handles.data_selected_resized.image(1).reco.data, 5) > 1
-        % plot repetition
-        for i=1:handles.data_loaded(1).number_of_scan
-            strii = num2str(i);
-            if ~isempty(get(handles.MIA_plot1, 'Children'))
-                hold(handles.MIA_plot1, 'on');
-            end
-            if match_roi > 0
-                % plot ROI
-                for x = 1:numel(match_roi)
-                    roi = []; tmp = [];
-                    tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, 1, slice_nbre, :));
-                    roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
-                    roi(roi == 0) = NaN;
-                    for ii = 1:size(tmp,3)
-                        y_data(x,ii) = nanmean(nanmean((tmp(:,:,ii).*roi)));
-                    end
-                end
-            else
-                % plot voxel
-                clear y_data
-                y_data(1,:) = squeeze(handles.data_selected_resized.image(i).reco.data(voxel(2), voxel(1), 1, slice_nbre, 1:eval(['get(handles.MIA_data' strii '_expt_slider, ''max'')'])));
-            end
-            if ~isempty(y_data) && numel(y_data) ~= 1
-                if isfield(handles.data_selected_resized.image(i), 'texte')
-                    if strcmp(handles.data_selected.image(i).texte(1:27),'# === DATA DESCRIPTION FILE')
-                        timing = strfind(handles.data_selected.image(i).texte,'Scan Duration [sec]');
-                        duree_tot =str2double(handles.data_selected.image(i).texte(1,timing+38:timing+41));
-                        TR = duree_tot /handles.data_selected_resized.image(i).reco.no_expts;
-                        x_data =TR:TR:duree_tot;
-                    elseif isfield(handles.data_selected_resized.image(i).reco, 'paramQuantif')
-                        method = scan_acqp('CASL scan info',handles.data_selected_resized.image(i).reco.paramQuantif,2);
-                        if ~isempty(strfind(method,'PhSw'))
-                            pCASL_PhaseStart=scan_acqp('CASL_PhaseStart_Deg=',handles.data_selected_resized.image(i).texte,1);
-                            pCASL_PhaseEnd=scan_acqp('CASL_PhaseEnd_Deg=',handles.data_selected_resized.image(i).texte,1);
-                            pCASL_PhaseInc=scan_acqp('CASL_PhaseInc_Deg=',handles.data_selected_resized.image(i).texte,1);
-                            pCASL_Phase = pCASL_PhaseStart:pCASL_PhaseInc:pCASL_PhaseEnd-1;
-                            %x_data = pCASL_Phase(2:end);      %exp 1 is a dummy scan
-                            %x_data = mod(x_data,360);
-                            x_data = 0:15:360;
-                            %y_data=y_data(:,2:end);
-                            %y_data=horzcat(y_data(:,26:end),y_data(:,8:26));
-                            y_data=horzcat((y_data(:,2:7)+y_data(:,26:end))/2,y_data(:,8:26));
-                            %y_data=horzcat(y_data(:,2),y_data(:,27:end),y_data(:,8:26));
-                        else
-                            timing = sscanf(scan_acqp('##$PVM_ScanTimeStr=',handles.data_selected_resized.image(i).texte,2),'%dh%dm%ds%dms');
-                            duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
-                            TR = duree_tot / handles.data_selected_resized.image(i).reco.no_expts;
-                            x_data = TR:TR:duree_tot;
-                        end
-                    else
-                        timing = sscanf(scan_acqp('##$PVM_ScanTimeStr=',handles.data_selected_resized.image(i).texte,2),'%dh%dm%ds%dms');
-                        duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
-                        TR = duree_tot / handles.data_selected_resized.image(i).reco.no_expts;
-                        x_data = TR:TR:duree_tot;
-                    end
-                else
-                    x_data = handles.data_selected_resized.image(i).acq.tr:handles.data_selected_resized.image(i).acq.tr:handles.data_selected_resized.image(i).acq.tr*...
-                        handles.data_selected_resized.image(i).acq.no_expts;
-                end
-                for x = 1:size(y_data,1)
-                    if ~isempty(get(handles.MIA_plot1, 'Children'))
-                        hold(handles.MIA_plot1, 'on');
-                    end
-                    plot(handles.MIA_plot1,x_data,y_data(x,:), 'Color',rgb(handles.colors{i}),...
-                        'Tag', strcat('MIA_plot1_1d', strii));
-                    hold(handles.MIA_plot1, 'off');
-                end
-                legende_txt = [legende_txt strcat(handles.data_selected.list_scan(i), '-x', num2str(voxel(2)), '-y', num2str(voxel(1)), '-z', num2str(slice_nbre))];
-            end
-            if isfield(handles.data_selected_resized.image(i).reco, 'paramQuantif')
-                method = scan_acqp('CASL scan info',handles.data_selected_resized.image(i).reco.paramQuantif,2);
-                if ~isempty(strfind(method,'PhSw'))
-                    hold(handles.MIA_plot1, 'on');
-                    controlPhStart = str2double(scan_acqp('CASL_PhaseCorrC=',handles.data_selected_resized.image(i).texte,0));
-                    plot(handles.MIA_plot1,rem(360-controlPhStart,360),(max(y_data(x,:))+min(y_data(x,:)))/2,'+','Color','r','Linewidth',2);
-                    hold(handles.MIA_plot1, 'off');
-                    figure, plot(x_data,y_data);
-                    hold on, plot(rem(360-controlPhStart,360),(max(y_data(x,:))+min(y_data(x,:)))/2,'+','Color','r','Linewidth',2);
-                    hold off
-                end
-            end
-            
-        end
-        if ~isempty(legende_txt)
-            legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
-        end
-    end
+% display a waiting symbol
+set(handles.MIA_GUI, 'pointer', 'watch');
+drawnow;
+
+scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
+legende_txt = cell(numel(fourD_data),1);
+for i = 1:numel(fourD_data)
+    strii = num2str(i);
+    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V);
+    y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
+    x_data = 1:size(tmp,4);
+    plot(handles.MIA_plot1,x_data,y_data,...
+        'Color',rgb(handles.colors{i}),...
+        'Tag', strcat('MIA_plot1_1d', strii));
+    hold(handles.MIA_plot1, 'on');
+    legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
     
-else
-    % PRM mode
-    warndlg('The click function for the PRM mode is not coded yet', 'Warning');
 end
+% add the legend
+if ~isempty(legende_txt)
+    legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
+end
+
+set(handles.MIA_GUI, 'pointer', 'arrow');
+
+% 
+% if handles.mode == 1
+%     if size(handles.data_selected_resized.image(1).reco.data,3) == 1 && ...
+%             size(handles.data_selected_resized.image(1).reco.data, 5) == 1
+%         return
+%     end
+% else
+%     if size(handles.data_selected_for_PRM_resized.image(1).reco.data,3) == 1 && ...
+%             size(handles.data_selected_for_PRM_resized.image(1).reco.data, 5) == 1
+%         return
+%     end
+% end
+% slice_nbre = get(handles.MIA_slider_slice, 'Value');
+% tag = get(get(hObject, 'Children'), 'Tag');
+% match_roi = [] ;
+% if ~ischar(tag)
+%     for i = 1:numel(tag)
+%         if strfind(tag{i}, 'data')
+%             match_data = i;
+%         elseif strfind(tag{i}, 'ROI_contour')
+%             match_roi = [match_roi i];
+%         end
+%     end
+%     currPt_on_axe=eval(['get(handles.MIA_' tag{match_data} ',''CurrentPoint'');']);
+% else
+%     currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']);
+% end
+% 
+% 
+% [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
+% 
+% voxel = pixel_coordinates_2d(1:2);
+% if voxel(1) == 0 || voxel(2)==0
+%     return  %bug somewhere
+% end
+% 
+% if ~isempty(get(handles.MIA_plot1, 'Children'))
+%     delete(get(handles.MIA_plot1, 'Children'));
+%     legend(handles.MIA_plot1,'off');
+%     hold(handles.MIA_plot1, 'off');
+% end
+% legende_txt = [];
+% if handles.mode == 1
+%     % single mode
+%     if size(handles.data_selected_resized.image(1).reco.data,3) > 1 && ...
+%             size(handles.data_selected_resized.image(1).reco.data, 5) > 1
+%         
+%         % select repetition or echoes
+%     elseif size(handles.data_selected_resized.image(1).reco.data,3) > 1
+%         % plot echoes
+%         for i=1:handles.data_loaded(1).number_of_scan
+%             y_data = []; x_data = [];
+%             strii = num2str(i);
+%             if ~isempty(get(handles.MIA_plot1, 'Children'))
+%                 hold(handles.MIA_plot1, 'on');
+%             end
+%             if match_roi > 0
+%                 % plot ROI
+%                 for x = 1:numel(match_roi)
+%                     roi = []; tmp = [];
+%                     tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, :, slice_nbre, 1));
+%                     roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
+%                     roi(roi == 0) = NaN;
+%                     for ii = 1:size(tmp,3)
+%                         y_data(x,ii) = nanmean(nanmean((tmp(:,:,ii).*roi)));
+%                     end
+%                 end
+%             else
+%                 y_data(1,:) = squeeze(handles.data_selected_resized.image(i).reco.data(voxel(2), voxel(1), :, slice_nbre, 1));
+%             end
+%             y_data(isnan(y_data)) = [];
+%             if ~isempty(y_data) && numel(y_data) ~= 1
+%                 if ~isfield(handles.data_selected_resized.image(i).reco, 'echotime')
+%                     if (~isfield(handles.data_selected_resized.image(i).reco, 'Had'))
+%                         x_data = 1:size(handles.data_selected_resized.image(i).reco.data,3);
+%                     else
+%                         continue
+%                     end
+%                 else
+%                     if  ((~isempty(regexpi(handles.data_selected_resized.image(1).acq.ppl_name,'\w*dpcasl\w*')))|| (~isempty(regexpi(handles.data_selected_resized.image(1).acq.ppl_name,'\w*Had\w*'))))
+%                         x_data = 1:size(handles.data_selected_resized.image(i).reco.data,3);
+%                     else
+%                         x_data = handles.data_selected_resized.image(i).reco.echotime;
+%                     end
+%                 end
+%                 %                 user_response = questdlg('Plot by?', 'Bip', 'VOI', 'Voxels', 'Cancel', 'Cancel');
+%                 %                 if strcmp(user_response, 'Cancel') ==1
+%                 %                     return
+%                 %                 end
+%                 user_response = 'VOI';
+%                 
+%                 if strcmp(user_response, 'Voxels') ==1
+%                     for x = 1:numel(match_roi)
+%                         roi = []; tmp = [];
+%                         tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, :, slice_nbre, 1));
+%                         roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
+%                         roi(roi == 0) = NaN;
+%                         y_data= tmp(:,:,:).*repmat(roi, [1 1 size(tmp,3)]);
+%                         indice_xy = findn(~isnan(roi) == 1);
+%                         for y = 1:size(indice_xy,1)
+%                             if ~isempty(get(handles.MIA_plot1, 'Children'))
+%                                 hold(handles.MIA_plot1, 'on');
+%                             end
+%                             plot(handles.MIA_plot1,x_data,squeeze(y_data(indice_xy(y,1),indice_xy(y,2),:))',...
+%                                 'Color',rgb(handles.colors{x}),...
+%                                 'Tag', strcat('MIA_plot1_1d', strii));
+%                             hold(handles.MIA_plot1, 'on');
+%                         end
+%                     end
+%                 else
+%                     for x = 1:size(y_data,1)
+%                         if ~isempty(get(handles.MIA_plot1, 'Children'))
+%                             hold(handles.MIA_plot1, 'on');
+%                         end
+%                         plot(handles.MIA_plot1,x_data,y_data(x,:), 'Color',rgb(handles.colors{numel(get(handles.MIA_plot1, 'Children'))+1}),...
+%                             'Tag', strcat('MIA_plot1_1d', strii));
+%                         hold(handles.MIA_plot1, 'on');
+%                         if match_roi > 0
+%                             legende_txt = [legende_txt strcat(handles.data_selected.list_scan(i), '-', handles.ROI_selected_resized(x).name)];
+%                         else
+%                             legende_txt = [legende_txt handles.data_selected.list_scan(i)];
+%                         end
+%                         if size(y_data,1) == 1
+%                             tmp2(i,1:numel(y_data)) =  y_data;
+%                         end
+%                     end
+%                 end
+%                 
+%             end
+%             hold(handles.MIA_plot1, 'off');
+%         end
+%         %plot ratio
+%         %         if exist('tmp2', 'var') && size(tmp2,1) == 2
+%         %             figure; plot(x_data, tmp2(2,:)./tmp2(1,:));
+%         %         end
+%         %
+%         if ~isempty(legende_txt)
+%             legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
+%         end
+%     elseif size(handles.data_selected_resized.image(1).reco.data, 5) > 1
+%         % plot repetition
+%         for i=1:handles.data_loaded(1).number_of_scan
+%             strii = num2str(i);
+%             if ~isempty(get(handles.MIA_plot1, 'Children'))
+%                 hold(handles.MIA_plot1, 'on');
+%             end
+%             if match_roi > 0
+%                 % plot ROI
+%                 for x = 1:numel(match_roi)
+%                     roi = []; tmp = [];
+%                     tmp = squeeze(handles.data_selected_resized.image(i).reco.data(:, :, 1, slice_nbre, :));
+%                     roi = handles.ROI_selected_resized(x).data.value(:,:,slice_nbre);
+%                     roi(roi == 0) = NaN;
+%                     for ii = 1:size(tmp,3)
+%                         y_data(x,ii) = nanmean(nanmean((tmp(:,:,ii).*roi)));
+%                     end
+%                 end
+%             else
+%                 % plot voxel
+%                 clear y_data
+%                 y_data(1,:) = squeeze(handles.data_selected_resized.image(i).reco.data(voxel(2), voxel(1), 1, slice_nbre, 1:eval(['get(handles.MIA_data' strii '_expt_slider, ''max'')'])));
+%             end
+%             if ~isempty(y_data) && numel(y_data) ~= 1
+%                 if isfield(handles.data_selected_resized.image(i), 'texte')
+%                     if strcmp(handles.data_selected.image(i).texte(1:27),'# === DATA DESCRIPTION FILE')
+%                         timing = strfind(handles.data_selected.image(i).texte,'Scan Duration [sec]');
+%                         duree_tot =str2double(handles.data_selected.image(i).texte(1,timing+38:timing+41));
+%                         TR = duree_tot /handles.data_selected_resized.image(i).reco.no_expts;
+%                         x_data =TR:TR:duree_tot;
+%                     elseif isfield(handles.data_selected_resized.image(i).reco, 'paramQuantif')
+%                         method = scan_acqp('CASL scan info',handles.data_selected_resized.image(i).reco.paramQuantif,2);
+%                         if ~isempty(strfind(method,'PhSw'))
+%                             pCASL_PhaseStart=scan_acqp('CASL_PhaseStart_Deg=',handles.data_selected_resized.image(i).texte,1);
+%                             pCASL_PhaseEnd=scan_acqp('CASL_PhaseEnd_Deg=',handles.data_selected_resized.image(i).texte,1);
+%                             pCASL_PhaseInc=scan_acqp('CASL_PhaseInc_Deg=',handles.data_selected_resized.image(i).texte,1);
+%                             pCASL_Phase = pCASL_PhaseStart:pCASL_PhaseInc:pCASL_PhaseEnd-1;
+%                             %x_data = pCASL_Phase(2:end);      %exp 1 is a dummy scan
+%                             %x_data = mod(x_data,360);
+%                             x_data = 0:15:360;
+%                             %y_data=y_data(:,2:end);
+%                             %y_data=horzcat(y_data(:,26:end),y_data(:,8:26));
+%                             y_data=horzcat((y_data(:,2:7)+y_data(:,26:end))/2,y_data(:,8:26));
+%                             %y_data=horzcat(y_data(:,2),y_data(:,27:end),y_data(:,8:26));
+%                         else
+%                             timing = sscanf(scan_acqp('##$PVM_ScanTimeStr=',handles.data_selected_resized.image(i).texte,2),'%dh%dm%ds%dms');
+%                             duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
+%                             TR = duree_tot / handles.data_selected_resized.image(i).reco.no_expts;
+%                             x_data = TR:TR:duree_tot;
+%                         end
+%                     else
+%                         timing = sscanf(scan_acqp('##$PVM_ScanTimeStr=',handles.data_selected_resized.image(i).texte,2),'%dh%dm%ds%dms');
+%                         duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
+%                         TR = duree_tot / handles.data_selected_resized.image(i).reco.no_expts;
+%                         x_data = TR:TR:duree_tot;
+%                     end
+%                 else
+%                     x_data = handles.data_selected_resized.image(i).acq.tr:handles.data_selected_resized.image(i).acq.tr:handles.data_selected_resized.image(i).acq.tr*...
+%                         handles.data_selected_resized.image(i).acq.no_expts;
+%                 end
+%                 for x = 1:size(y_data,1)
+%                     if ~isempty(get(handles.MIA_plot1, 'Children'))
+%                         hold(handles.MIA_plot1, 'on');
+%                     end
+%                     plot(handles.MIA_plot1,x_data,y_data(x,:), 'Color',rgb(handles.colors{i}),...
+%                         'Tag', strcat('MIA_plot1_1d', strii));
+%                     hold(handles.MIA_plot1, 'off');
+%                 end
+%                 legende_txt = [legende_txt strcat(handles.data_selected.list_scan(i), '-x', num2str(voxel(2)), '-y', num2str(voxel(1)), '-z', num2str(slice_nbre))];
+%             end
+%             if isfield(handles.data_selected_resized.image(i).reco, 'paramQuantif')
+%                 method = scan_acqp('CASL scan info',handles.data_selected_resized.image(i).reco.paramQuantif,2);
+%                 if ~isempty(strfind(method,'PhSw'))
+%                     hold(handles.MIA_plot1, 'on');
+%                     controlPhStart = str2double(scan_acqp('CASL_PhaseCorrC=',handles.data_selected_resized.image(i).texte,0));
+%                     plot(handles.MIA_plot1,rem(360-controlPhStart,360),(max(y_data(x,:))+min(y_data(x,:)))/2,'+','Color','r','Linewidth',2);
+%                     hold(handles.MIA_plot1, 'off');
+%                     figure, plot(x_data,y_data);
+%                     hold on, plot(rem(360-controlPhStart,360),(max(y_data(x,:))+min(y_data(x,:)))/2,'+','Color','r','Linewidth',2);
+%                     hold off
+%                 end
+%             end
+%             
+%         end
+%         if ~isempty(legende_txt)
+%             legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
+%         end
+%     end
+%     
+% else
+%     % PRM mode
+%     warndlg('The click function for the PRM mode is not coded yet', 'Warning');
+% end
 
 
 
@@ -4173,6 +4229,9 @@ if isfield(handles, 'data_loaded')
     set(handles.MIA_data3_title, 'String', '');
     set(handles.MIA_data4_title, 'String', '');
 end
+% reset the pointer
+set(handles.MIA_GUI, 'pointer', 'arrow');
+
 % reset every cluster for now
 handles.table1.cluster = [];
 handles.table1.cluster_row = [];
@@ -4691,6 +4750,7 @@ function MIA_speedy_mode_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_speedy_mode (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+return
 if ~isfield(handles, 'database')
     warndlg('No database loaded', 'Warning');
     return
@@ -4770,7 +4830,7 @@ function MIA_table1_load_cluster_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_table1_load_cluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+return
 if ~isfield(handles, 'data_loaded')
     return
 end
@@ -5925,10 +5985,11 @@ function MIA_menu_image_information_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_menu_image_information (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+return
 if ~isfield(handles, 'data_displayed')
     return
 end
+
 if handles.mode == 1
     time_point =  handles.data_selected.patient_info.timepoint_nbr;
     patient =  handles.data_selected.patient_info.name_nbr;
@@ -6888,280 +6949,58 @@ function MIA_menu_delete_from_database_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_menu_delete_from_database (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 if ~isfield(handles, 'database')
     return
 end
+
 selection = questdlg('What do you want to delete?',...
     'Warning',...
     'Parameters','VOIs', 'Cancel', 'Cancel');
-switch selection,
-    case 'Parameters'
-        listing = [];
-        for i=1:numel(get(handles.MIA_name_list, 'String'))
-            for j = 1:numel(handles.database(i).day)
-                listing = [listing handles.database(i).day(j).parameters];
-            end
+
+switch selection
+    case 'Parameters' 
+        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
+         if isempty(name_option)
+             warndlg('There are no Scan in the database', 'Warning');
+             return
         end
-        listing = unique(listing);
     case 'VOIs'
-        listing = [];
-        for i=1:numel(get(handles.MIA_name_list, 'String'))
-            for j = 1:numel(handles.database(i).day)
-                listing = [listing handles.database(i).day(j).VOIs]; %#ok<AGROW>
-            end
-        end
-        listing = unique(listing);
-        if isempty(listing)
-            listing = {''};
-        end
+        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
+        if isempty(name_option)
+             warndlg('There are no ROI in the database', 'Warning');
+             return
+        end        
     case 'Cancel'
         return
 end
 
-[list_to_remove,ok] = listdlg('Name', 'Question?', 'ListString', listing','ListSize', [300 400],...
-    'PromptString', 'Select the parameters/VOIs you want to remove');
-if ok == 0 || isempty(list_to_remove)
+[ScansToRemove, ok1] = listdlg('PromptString','Select the new scan name:',...
+    'Name', 'Select a Name',...
+    'SelectionMode','Multiple',...
+    'ListSize', [400 300],...
+    'ListString',name_option);
+
+if ok1 == 0
     return
 end
 
-user_response = questdlg('Do you want to delete the corresponding file(s) too (.mat)??', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
-if strcmp(user_response, 'Cancel')
+user_response = questdlg('Do you really want to delete every data ?', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
 end
-if strcmp(user_response, 'Yes')
-    user_response = questdlg('Do you REALLY want to delete the corresponding file(s) (.mat)??', 'Warning', 'No', 'Yes', 'Cancel', 'Cancel');
-end
-% define all the scan available
-for i = 1:numel(handles.database)
-    for j = 1:numel(handles.database(i).day)
-        for ii = 1:numel(list_to_remove)
-            switch selection,
-                case 'Parameters'
-                    if strcmp(user_response, 'Yes')
-                        if sum(strcmp(handles.database(i).day(j).parameters, listing{list_to_remove(ii)}))>0
-                            old_path = pwd;
-                            cd(handles.database(i).path);
-                            delete(handles.database(i).day(j).scans_file{strcmp(handles.database(i).day(j).parameters, listing{list_to_remove(ii)})});
-                            cd(old_path);
-                        end
-                    end
-                    handles.database(i).day(j).scans_file(strcmp(handles.database(i).day(j).parameters, listing{list_to_remove(ii)})) = [];
-                    handles.database(i).day(j).parameters(strcmp(handles.database(i).day(j).parameters, listing{list_to_remove(ii)})) = [];
-                case 'VOIs'
-                    if strcmp(user_response, 'Yes')
-                        if sum(strcmp(handles.database(i).day(j).VOIs_file, listing{list_to_remove(ii)}))>0
-                            old_path = pwd;
-                            cd(handles.database(i).path);
-                            delete(handles.database(i).day(j).VOIs_file{strcmp(handles.database(i).day(j).parameters, listing{list_to_remove(ii)})});
-                            cd(old_path);
-                        end
-                    end
-                    handles.database(i).day(j).VOIs_file(strcmp(handles.database(i).day(j).VOIs, listing{list_to_remove(ii)})) = [];
-                    handles.database(i).day(j).VOIs(strcmp(handles.database(i).day(j).VOIs, listing{list_to_remove(ii)})) = [];
-            end
-        end
-    end
-end
-for ii = 1:numel(list_to_remove)
-    switch selection
-        case 'Parameters'
-            handles.clips(strcmp(handles.clips(:,1),listing{list_to_remove(ii)}),:) = [];
-        case 'VOIs'
-            handles.VOIs(strcmp(handles.VOIs,listing{list_to_remove(ii)})) = [];
-    end
+
+ScansToRemove =name_option(ScansToRemove);
+nii_index = [];
+for i=numel(ScansToRemove)
+    nii_index = [nii_index find(handles.database.SequenceName == ScansToRemove(i))];
 end
 
-guidata(hObject, handles)
-MIA_update_database_display(hObject, eventdata, handles)
+
+MIA_remove_scan(hObject, eventdata, handles, nii_index)
+
 msgbox('Done', 'Message') ;
 
-
-% --------------------------------------------------------------------
-function MIA_menu_define_mask_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_menu_define_mask (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if ~isfield(handles, 'data_displayed')
-    msgbox('Please load 1 scan', 'Message') ;
-    return
-end
-if handles.data_loaded(1).number_of_scan ~=1
-    msgbox('Please load 1 scan only', 'Message') ;
-    return
-end
-if strcmp(get(handles.MIA_menu_define_mask, 'Checked'), 'off')
-    set(handles.MIA_menu_define_mask, 'Checked', 'on')
-    handles.disk_strel = strel('disk',5);
-    handles.image_resize_original = handles.data_selected_resized.image.reco.data;
-    guidata(hObject, handles)
-else
-    
-    listing = handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).parameters;
-    [scan_list,ok] = listdlg('Name', 'Question?', 'ListString', listing','ListSize', [300 400],...
-        'PromptString', 'Select select the scans to mask');
-    if ok == 0 || isempty(scan_list)
-        handles.data_selected_resized.image.reco.data = handles.image_resize_original;
-        if isfield(handles, 'color_mask3d')
-            handles= rmfield(handles, 'color_mask3d');
-            handles= rmfield(handles, 'disk_strel');
-            handles= rmfield(handles, 'image_resize_original');
-        end
-        set(handles.MIA_menu_define_mask, 'Checked', 'off')
-        guidata(hObject, handles)
-        MIA_update_axes(hObject, eventdata, handles)
-        return
-    end
-    
-    selection_overwrite = questdlg('Do you want to overwrite the files (.mat) with the scan masked?',...
-        'Warning',...
-        'Yes','No', 'Cancel', 'Cancel');
-    if strcmp(selection_overwrite, 'Yes')
-        selection_overwrite = questdlg('Do you REALLY want to overwrite the files(.mat) with the scan masked?',...
-            'Warning',...
-            'No','Yes', 'Cancel', 'Cancel');
-    end
-    mask = double(squeeze(handles.color_mask3d(:,:,1,:,1)));
-    mask(mask==0) = NaN;
-    logbook = {};
-    for i = 1:numel(scan_list)
-        load(fullfile(handles.database(handles.data_selected.patient_info.name_nbr).path,...
-            handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).scans_file{scan_list(i)}));
-        [x, y, echo, slice, repet]=size(uvascim.image.reco.data);
-        if slice ~= size(mask, 3)
-            logbook{numel(logbook)+1} =[handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).scans_file{scan_list(i)}...
-                '-mask -Skip (not the same slice nbr)'];
-            continue
-        end
-        mask3d_resized=  imresize(mask, [x, y],'bilinear');
-        mask5d = repmat(mask3d_resized,[1 1 1 echo repet]);
-        mask5d = permute(mask5d, [1 2 4 3 5]);
-        
-        uvascim.image.reco.data=uvascim.image.reco.data.* mask5d;
-        switch selection_overwrite
-            case 'Yes'
-                % save file
-                [path, name, ext] = fileparts(fullfile(handles.database(handles.data_selected.patient_info.name_nbr).path,...
-                    handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).scans_file{scan_list(i)}));
-                scan_name = [name ext];
-                save(fullfile([path, scan_name]),'uvascim');
-                MIA_update_database_display(hObject, eventdata, handles);
-                clear uvascim;
-            case 'No'
-                % save file
-                [path, name, ext] = fileparts(fullfile(handles.database(handles.data_selected.patient_info.name_nbr).path,...
-                    handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).scans_file{scan_list(i)}));
-                scan_name = [name '-masked' ext];
-                save(fullfile(path, scan_name),'uvascim');
-                % add to the database and update handles.clips
-                handles =  MIA_add_new_scan_to_database(handles, uvascim.image, handles.data_selected.patient_info.name_nbr, handles.data_selected.patient_info.timepoint_nbr,...
-                    [handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).parameters{scan_list(i)} '-masked'], [name '-masked' ext]);
-                guidata(hObject, handles)
-                MIA_update_database_display(hObject, eventdata, handles);
-                clear uvascim;
-            case 'Cancel'
-                handles= rmfield(handles, 'color_mask3d');
-                set(handles.MIA_menu_define_mask, 'Checked', 'off')
-                handles= rmfield(handles, 'disk_strel');
-                handles.data_selected_resized.image.reco.data = handles.image_resize_original;
-                handles= rmfield(handles, 'image_resize_original');
-                guidata(hObject, handles)
-                MIA_update_axes(hObject, eventdata, handles)
-                return
-        end
-        logbook{numel(logbook)+1} =[handles.database(handles.data_selected.patient_info.name_nbr).name...
-            handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).date...
-            [handles.database(handles.data_selected.patient_info.name_nbr).day(handles.data_selected.patient_info.timepoint_nbr).scans_file{scan_list(i)}...
-            '-mask'] '-Done'];
-    end
-    
-    handles= rmfield(handles, 'image_resize_original');
-    handles= rmfield(handles, 'color_mask3d');
-    set(handles.MIA_menu_define_mask, 'Checked', 'off')
-    handles= rmfield(handles, 'disk_strel');
-    guidata(hObject, handles)
-    if ~isempty(logbook)
-        listdlg('ListString', logbook', 'ListSize',[400 500], 'Name', 'logbook');
-    else
-        msgbox('Done', 'logbook') ;
-    end
-    return
-end
-
-% retrieve value of clip for min and max of slider
-ListClips = handles.clips;
-SelectedScan = handles.data_selected.list_scan;
-IndxScanClip = strcmp(SelectedScan,ListClips);
-[min,maxval] = ListClips{IndxScanClip,2:3};
-
-% Ask for value of min and max
-prompt = {'Min','Max'};
-dlg_title = 'Please initate the min and max values?';
-num_lines = 1;
-def = {sprintf('%d',min),sprintf('%d',maxval)};
-options.Resize='on';
-options.WindowStyle='normal';
-options.Interpreter='tex';
-
-answer = inputdlg(prompt,dlg_title,num_lines,def, options);
-if isempty(answer)
-    return
-end
-
-min = str2double(answer{1});
-maxval =str2double(answer{2});
-
-set(handles.MIA_PRM_slider_trans,'Value',(maxval-min)/2);
-set(handles.MIA_PRM_slider_trans,'max',maxval);
-set(handles.MIA_PRM_slider_trans,'min',min);
-MIA_mask(hObject, eventdata, handles, (maxval-min)/2)
-
-function MIA_mask(hObject, eventdata, handles, tolerance)
-
-if isfield(handles, 'color_mask3d')
-    handles= rmfield(handles, 'color_mask3d');
-end
-[x, y, echo, slice, repet]=size(handles.data_selected_resized.image.reco.data);
-
-n_echoes = get(handles.MIA_data1_echo_slider, 'Value');
-n_slices = get(handles.MIA_slider_slice, 'Value');
-n_expts = get(handles.MIA_data1_expt_slider, 'Value');
-color_mask3d = false([x y 1 n_slices 1]);
-for j = 1:slice,
-    im = handles.image_resize_original(:,:,n_echoes,j,n_expts);
-    % coordinates of a list of reference point
-    %     list_ind = 1;
-    %Create the binary mask
-    g = double(im);
-    %     max_ref = max(g(list_ind));
-    max_ref =  min(g(:));
-    color_mask = (g-max_ref) <= tolerance;
-    % Connected component labelling and brain selection
-    color_mask = ~color_mask;
-    label = bwlabel(color_mask, 4);
-    STATS = regionprops(label, 'Area'); %#ok<MRPBW>
-    
-    [taille_du_plus_grans_label,plus_grand_label] = max([STATS.Area]); %#ok<ASGLU>
-    
-    if ~isempty(plus_grand_label)
-        color_mask (label ~= plus_grand_label) = 0;
-    end;
-    color_mask = imerode(color_mask,handles.disk_strel);
-    color_mask = imdilate(color_mask,handles.disk_strel);
-    warning('off');
-    color_mask = imclose(color_mask,handles.disk_strel);
-    warning('on'); %#ok<WNON>
-    handles.color_mask3d(:,:,1,j,1) = color_mask;
-end
-if length(size(handles.image_resize_original)) == 4
-    color_mask5d = repmat(handles.color_mask3d,[1 1 echo 1]);
-else
-    color_mask5d = repmat(handles.color_mask3d,[1 1 echo 1 repet]);
-end
-
-handles.data_selected_resized.image.reco.data=handles.image_resize_original .* color_mask5d;
-guidata(hObject, handles)
-MIA_update_axes(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function MIA_sort_name_Callback(hObject, eventdata, handles)
@@ -7609,9 +7448,9 @@ msgbox('Done', 'Message') ;
 
 function MIA_AdjWL(varargin)
 fh=varargin{1};
-
 G=get(fh,'userdata');
 G.cp=get(gca,'currentpoint');
+
 G.x=G.cp(1,1);
 G.y=G.cp(1,2);
 G.xinit = G.initpnt(1,1);
@@ -8690,7 +8529,8 @@ MIA_update_axes(hObject, eventdata, handles)
 % set(handles.MIA_GUI,'WindowButtonMotionFcn',{@MIA_slider_on_move,handles})
 % set(handles.MIA_GUI,'WindowButtonUpFcn',{@MIA_slider_release_click,handles})
 % set(handles.MIA_GUI,'WindowButtonMotionFcn', @(hObject,eventdata)MIA2('MIA_slider_on_move',hObject,eventdata,guidata(hObject)))
-% set(handles.MIA_GUI,'WindowButtonUpFcn',   @(hObject,eventdata)MIA2('MIA_slider_release_click',hObject,eventdata,guidata(hObject)));
+% set(handles.MIA_GUI,'WindowButtonUpFcn',
+% @(hObject,eventdata)MIA2('MIA_slider_release_click',hObject,eventdata,guidata(hObject)));b
 %
 %
 % function MIA_slider_on_move(hObject, eventdata, handles)
@@ -8817,15 +8657,17 @@ function MIA_remove_scan(hObject, eventdata, handles, nii_index)
 for i=1:numel(nii_index)
     % delete the nii file
     delete(fullfilename(handles, nii_index(i), '.nii'))
-    % delete the json file
-    delete(fullfilename(handles, nii_index(i), '.json'))
+    % delete the json file if it exist
+    if exist(fullfilename(handles, nii_index(i), '.json'), 'file') == 2
+        delete(fullfilename(handles, nii_index(i), '.json'))
+    end
 end
 
 
 % remove the scan from the database
 handles.database(nii_index,:) = [];
 switch get(hObject, 'Tag')
-    case 'MIA_remove_scan'
+    case {'MIA_remove_scan', 'MIA_menu_delete_from_database'}
         set(handles.MIA_scans_list, 'Value', 1);
     case 'MIA_remove_time_point'
         set(handles.MIA_scans_list, 'Value', 1);
