@@ -130,7 +130,7 @@ selection = questdlg('Do you want to close (did you save you database)?',...
 if isempty(selection)
     return
 end
-switch selection,
+switch selection
     case 'No'
         return
 end
@@ -258,6 +258,14 @@ handles = guidata(handles.MIA_GUI);
 if ~isfield(handles, 'database')
     return
 end
+if isempty(handles.database)
+    % if the table is empty, clear all lists
+    set(handles.MIA_name_list, 'String', '', 'Value', 1);
+    set(handles.MIA_time_points_list, 'String', '', 'Value', 1);
+    set(handles.MIA_scans_list, 'String', '', 'Value', 1);
+    set(handles.MIA_file_list, 'String', '', 'Value', 1);
+    return
+end
 
 patient_id = get(handles.MIA_name_list, 'Value');
 time_point = get(handles.MIA_time_points_list, 'Value');
@@ -307,9 +315,13 @@ end
 % if the pipeline Manager is open, update the information : patient selected 
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
 if ~isempty(findobj('Tag', 'MIA_pipeline_pushMIASelection'))
-    data_selected = get_data_selected(handles);
-    set(findobj('Tag', 'MIA_pipeline_pushMIASelection'), 'String', [char(handles.database.Patient(data_selected)) '-' char(handles.database.Tp(data_selected)) ' only'])
-    set(findobj('Tag', 'MIA_pipeline_pushMIATPSelection'), 'String', ['All time point of :' char(handles.database.Patient(data_selected))])
+    data_selected = finddata_selected(handles); 
+    if size(char(handles.database.Patient(data_selected)),1) > 1 
+        return
+    else
+    set(findobj('Tag', 'MIA_pipeline_pushMIASelection'), 'String', [char(handles.database.Patient(data_selected(1))) '-' char(handles.database.Tp(data_selected(1))) ' only'])
+    set(findobj('Tag', 'MIA_pipeline_pushMIATPSelection'), 'String', ['All time point of :' char(handles.database.Patient(data_selected(1)))])
+    end
 end
 
 
@@ -412,7 +424,7 @@ function MIA_path_file_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 % contents = cellstr(get(handles.MIA_file_list,'String'));
 % FileNameLoad = contents{get(hObject,'Value')};
 fprintf('\nload(''%s'')\n',handles.database.nii(data_selected));
@@ -870,109 +882,80 @@ end
 
 
 % --------------------------------------------------------------------
-function MIA_rename_name_Callback(hObject, ~, handles)
+function MIA_rename_name_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_rename_name (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 if ~isfield(handles, 'database')
     return
 end
-
-handles = guidata(hObject);
-
-patient = get(handles.MIA_name_list, 'Value');
-old_patient_name = handles.database(patient).name;
-if numel(patient) >1
-    warndlg('Please select only one timepoint', 'Warning');
+data_selected = finddata_selected(handles);
+if numel(data_selected) >1
+    warndlg('Please select only one Patient', 'Warning');
     return
 end
 
-new_patient_name = inputdlg('Enter the new patient name',...
-    old_patient_name, 1, {old_patient_name});
-if isempty(new_patient_name)
+name_option = [cellstr(unique(handles.database.Patient(handles.database.Type == 'Scan')))' 'Other']';
+
+[new_Patient_name, ok1] = listdlg('PromptString','Select the new scan name:',...
+    'Name', 'Select a Name',...
+    'SelectionMode','single',...
+    'ListSize', [400 300],...
+    'ListString',name_option);
+
+if ok1 == 0
+    return
+end
+if strcmp('Other',name_option(new_Patient_name)) == 1
+    NewPatient = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+else
+    NewPatient =name_option(new_Patient_name);
+end
+
+%% update the database with the new name
+% but first check if the new scan name does not exist for this patient and
+% time point
+
+if find(handles.database.Patient == handles.database.Patient(data_selected) &...
+        handles.database.Tp == handles.database.Tp(data_selected) & ...
+        handles.database.SequenceName == NewPatient) > 0
+    msgbox('A Scan with the same name already exist for this patient at this time point') ;
     return
 end
 
-if isfield(handles, 'database_all') && numel(handles.database) ~= numel(handles.database_all)
-    size = length(handles.database(patient).name);
-    %     num_patient = find(strncmp(handles.database(patient).name, {handles.database_all.name}', size) == 1);
-    num_patient = strncmp(handles.database(patient).name, {handles.database_all.name}', size) == 1;
-    handles.database_all(num_patient).name = new_patient_name{:};
-end
-
-handles.database(patient).name = new_patient_name{:};
-
-% rename each parameter files
-for timepoint = 1:numel(handles.database(patient).day)
-    for i = 1:numel(handles.database(patient).day(timepoint).scans_file)
-        [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{i}]);
-        new_name = [new_patient_name{:}  '-' handles.database(patient).day(timepoint).date '-' handles.database(patient).day(timepoint).parameters{i}];
-        if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-            warning_text = sprintf('##$ Can not rename this file because it do not exist\n##$ %s',...
-                fullfile(PATHSTR,[NAME,EXT]));
-            msgbox(warning_text, 'rename file warning') ;
-        elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-            user_response = questdlg('The new file name for this scan exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-            if strcmp(user_response, 'No')
-                return
-            end
-            user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-            % overwrite the file if requested
-            if strcmp(user_response, 'Yes')
-                if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                    movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                    handles.database(patient).day(timepoint).scans_file{i} = [new_name,EXT];
-                end
-            end
-            
-        else
-            movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-            handles.database(patient).day(timepoint).scans_file{i} = [new_name,EXT];
+idx_scan_to_rename = find(handles.database.Patient == handles.database.Patient(data_selected));
+for i=1:numel(idx_scan_to_rename)
+    new_nii_filename = strrep(cellstr(handles.database.Filename(idx_scan_to_rename(i))), cellstr(handles.database.Patient(idx_scan_to_rename(i))), NewPatient);
+    
+    % rename the scan file
+    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0
+        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+            fullfilename(handles, idx_scan_to_rename(i), '.nii'));
+        msgbox(warning_text, 'rename file warning') ;
+    elseif exist(string(strcat(cellstr(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii')), 'file') == 2
+        msgbox('The new .nii file exist already!!') ;
+        
+    else
+        movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.json'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.json'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.json'), 'f');
         end
     end
-end
-% rename each ROI files
-for timepoint = 1:numel(handles.database(patient).day)
-    for i = 1:numel(handles.database(patient).day(timepoint).VOIs_file)
-        [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{i}]);
-        new_name = [new_patient_name{:} '-' handles.database(patient).day(timepoint).date '-' handles.database(patient).day(timepoint).VOIs{i}];
-        if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-            warning_text = sprintf('##$ Can not rename this file because it do not exist\n##$ %s',...
-                fullfile(PATHSTR,[NAME,EXT]));
-            msgbox(warning_text, 'rename file warning') ;
-        elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-            user_response = questdlg('The new file name for this scan exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-            if strcmp(user_response, 'No')
-                return
-            end
-            user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-            % Overwrite the file if requested
-            if strcmp(user_response, 'Yes')
-                if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                    movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                    handles.database(patient).day(timepoint).VOIs_file{i} = [new_name,EXT];
-                end
-            end
-            
-        else
-            movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-            handles.database(patient).day(timepoint).VOIs_file{i} = [new_name,EXT];
-        end
-    end
+    
+    % update the Filename field in the table
+    handles.database.Patient(idx_scan_to_rename(i)) = NewPatient;
+    handles.database.Filename(idx_scan_to_rename(i)) = new_nii_filename;
 end
 
 
-
-
-
-
+% save the structure
 guidata(hObject, handles);
 
-%%% update graph and display
+% update graph and display
 MIA_update_database_display(hObject, eventdata, handles);
 
 
-% --------------------------------------------------------------------
 function MIA_remove_name_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_remove_name (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -980,7 +963,7 @@ function MIA_remove_name_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 patient_name = unique(handles.database.Patient(data_selected));
 user_response = questdlg(['Do you want to delete every data of ' char(patient_name) '??'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
@@ -1079,7 +1062,7 @@ if isfield(handles, 'database')
     selection = questdlg('Have you saved the present database?',...
         'Warning',...
         'Yes','No','Yes');
-    switch selection,
+    switch selection
         case 'No'
             return
     end
@@ -1144,156 +1127,82 @@ function MIA_time_points_right_click_Callback(~, ~, ~)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --------------------------------------------------------------------
-function MIA_add_time_points_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_add_time_points (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if isempty(get(handles.MIA_name_list, 'String'))
-    return
-end
-patient = get(handles.MIA_name_list, 'Value');
-new_time_point = inputdlg({'New time point'}, 'Add time point');
-if  isempty(new_time_point)
-    return
-end
-numero = numel(handles.database(patient).day);
-if numero == 1 && isempty(handles.database(patient).day(1).date)
-    handles.database(patient).day(numero).date = new_time_point{:};
-else
-    handles.database(patient).day(numero+1).date = new_time_point{:};
-end
-%update display
-guidata(hObject, handles);
-MIA_update_database_display(hObject, eventdata, handles);
-
 
 % --------------------------------------------------------------------
 function MIA_rename_time_point_Callback(hObject, eventdata,handles)
 % hObject    handle to MIA_rename_time_point (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-patient = get(handles.MIA_name_list, 'Value');
-if ~isfield(handles, 'database') || isempty(handles.database(patient).day(1).date)
+
+if ~isfield(handles, 'database')
+    return
+end
+data_selected = finddata_selected(handles);
+if numel(data_selected) >1
+    warndlg('Please select only one Time point', 'Warning');
     return
 end
 
+name_option = [cellstr(unique(handles.database.Tp(handles.database.Type == 'Scan')))' 'Other']';
 
-timepoint = get(handles.MIA_time_points_list, 'Value');
-old_timepoint_name = handles.database(patient).day(timepoint).date;
+[new_TP_name, ok1] = listdlg('PromptString','Select the new scan name:',...
+    'Name', 'Select a Name',...
+    'SelectionMode','single',...
+    'ListSize', [400 300],...
+    'ListString',name_option);
 
-if numel(timepoint) >1
-    warndlg('Please select only one timepoint', 'Warning');
+if ok1 == 0
+    return
+end
+if strcmp('Other',name_option(new_TP_name)) == 1
+    NewTp = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+else
+    NewTp =name_option(new_TP_name);
+end
+
+%% update the database with the new name
+% but first check if the new scan name does not exist for this patient and
+% time point
+
+% faire le ROI vs SCAN
+if find(handles.database.Patient == handles.database.Patient(data_selected) &...
+        handles.database.Tp == handles.database.Tp(data_selected) & ...
+        handles.database.SequenceName == NewTp) > 0
+    msgbox('A Scan with the same name already exist for this patient at this time point') ;
     return
 end
 
-new_timepoint_name = inputdlg('Enter the new time point name',...
-    old_timepoint_name, 1, {old_timepoint_name});
-if isempty(new_timepoint_name)
-    return
-end
-handles.database(patient).day(timepoint).date = new_timepoint_name{:};
-% rename each parameter files
-warning_text = {};
-
-for i = 1:numel(handles.database(patient).day(timepoint).scans_file)
-    [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{i}]);
-    cd(PATHSTR);
-    new_name = [handles.database(patient).name '-' new_timepoint_name{:} '-' handles.database(patient).day(timepoint).parameters{i}];
-    new_name = strrep(new_name, '*', 'star');
-    if strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT])) == 1
-        continue
-    end
-    %     if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-    %         warning_text{numel(warning_text)+1} = sprintf('##$ Can not rename this file because it do not exist\n##$ %s',...
-    %             fullfile(PATHSTR,[NAME,EXT]));
-    %
-    %     elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-    %         user_response = questdlg('The new file name for this scan exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-    %         if strcmp(user_response, 'No')
-    %             return
-    %         end
-    %         user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-    %         % Overwrite the file if requested
-    %         if strcmp(user_response, 'Yes')
-    % %             movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-    %             dos(['rename "' [NAME EXT] '" "' [new_name EXT] '"']);
-    %             handles.database(patient).day(timepoint).scans_file{i} = [new_name,EXT];
-    %         end
-    %
-    %     else
-    %         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
+idx_scan_to_rename = find(handles.database.Patient == handles.database.Patient(data_selected) & handles.database.Tp == handles.database.Tp(data_selected));
+for i=1:numel(idx_scan_to_rename)
+    new_nii_filename = strrep(cellstr(handles.database.Filename(idx_scan_to_rename(i))), cellstr(handles.database.Tp(idx_scan_to_rename(i))), NewTp);
     
-    if ispc
-        dos(['rename "' [NAME EXT] '" "' [new_name EXT] '"']);
-    elseif isunix
-        movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f')
-    end
-    handles.database(patient).day(timepoint).scans_file{i} = [new_name,EXT];
-    %     end
-    % save database after each file renamed
-    path_root = pwd;
-    cd(handles.database(1).databaseinfo.pathname);
-    database = handles.database; %#ok<NASGU>
-    save(handles.database(1).databaseinfo.filename, 'database');
-    cd(path_root);
-    
-    guidata(hObject, handles);
-    %%% update graph and display
-    MIA_update_database_display(hObject, eventdata, handles);
-end
-% rename each ROI files
-for i = 1:numel(handles.database(patient).day(timepoint).VOIs_file)
-    [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{i}]);
-    cd(PATHSTR);
-    new_name = [handles.database(patient).name '-' new_timepoint_name{:} '-' handles.database(patient).day(timepoint).VOIs{i}];
-    if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-        warning_text{numel(warning_text)+1}  = sprintf('##$ Can not rename this file because it do not exist\n##$ %s',...
-            fullfile(PATHSTR,[NAME,EXT]));
-        %         msgbox(warning_text, 'rename file warning') ;
-    elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-        user_response = questdlg('The new file name for this scan exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-        if strcmp(user_response, 'No')
-            return
-        end
-        user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-        % overwrite the file if requested
-        if strcmp(user_response, 'Yes')
-            %             movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-            if ispc
-                dos(['rename "' [NAME EXT] '" "' [new_name EXT] '"']);
-            elseif isunix
-                movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f')
-            end
-            handles.database(patient).day(timepoint).VOIs_file{i} = [new_name,EXT];
-        end
+    % rename the scan file
+    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0
+        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+            fullfilename(handles, idx_scan_to_rename(i), '.nii'));
+        msgbox(warning_text, 'rename file warning') ;
+    elseif exist(string(strcat(cellstr(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii')), 'file') == 2
+        msgbox('The new .nii file exist already!!') ;
         
     else
-        
-        %         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-        if ispc
-            dos(['rename "' [NAME EXT] '" "' [new_name EXT] '"']);
-        elseif isunix
-            movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f')
+        movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.json'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.json'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.json'), 'f');
         end
-        handles.database(patient).day(timepoint).VOIs_file{i} = [new_name,EXT];
-        
     end
-    % save database after each file renamed
     
-    path_root = pwd;
-    cd(handles.database(1).databaseinfo.pathname);
-    database = handles.database; %#ok<NASGU>
-    save(handles.database(1).databaseinfo.filename, 'database');
-    cd(path_root);
-    
-    guidata(hObject, handles);
-    %%% update graph and display
-    MIA_update_database_display(hObject, eventdata, handles);
+    % update the Filename field in the table
+    handles.database.Tp(idx_scan_to_rename(i)) = NewTp;
+    handles.database.Filename(idx_scan_to_rename(i)) = new_nii_filename;
 end
-msgbox(warning_text, 'rename file warning') ;
-% msgbox('Done', 'Message') ;
+
+
+% save the structure
+guidata(hObject, handles);
+
+%% update graph and display
+MIA_update_database_display(hObject, eventdata, handles);
+
 
 
 % --------------------------------------------------------------------
@@ -1711,15 +1620,6 @@ if numel(data_selected) >1
     return
 end
 
-% if get(handles.MIA_scan_VOIs_button, 'Value')
-%     msgbox('Not coded yet warning') ;
-%     %     name_option = handles.VOIs';
-%     %     old_scan_name = handles.database(patient).day(timepoint).VOIs_file(scan_name);
-%     return
-% else
-%     name_option = [cellstr(unique(handles.database.SequenceName))' 'Other']';
-%     old_scan_name = handles.database.SequenceName(data_selected);
-% end
 if get(handles.MIA_scan_VOIs_button, 'Value')
     name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
 else
@@ -1781,114 +1681,6 @@ guidata(hObject, handles);
 %% update graph and display
 MIA_update_database_display(hObject, eventdata, handles);
 
-% if get(handles.MIA_scan_VOIs_button, 'Value')
-%     if strcmp('Other', handles.VOIs(new_scan_name)) == 1
-%         newparameter = inputdlg('Name of the new VOI ', 'Question?', 1, {''});
-%         handles.VOIs=[handles.VOIs(1:end-1), newparameter, handles.VOIs(end-1:end)];
-%         new_scan_name = numel(handles.VOIs)-2;
-%         handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
-%     else
-%         handles.database(patient).day(timepoint).VOIs(scan_name) = handles.VOIs(new_scan_name);
-% %         newparameter = name_option(new_scan_name);
-% %     end
-% % else
-% %     if strcmp('Other',name_option(new_scan_name)) == 1
-% %         newparameter = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
-% %         handles.database(patient).day(timepoint).parameters(scan_name) = newparameter;
-% %         if sum(strcmp(newparameter, handles.clips(:,1))) == 0
-% %             handles.clips(size(handles.clips,1)+1,1) =newparameter;
-% %             handles.clips(size(handles.clips,1),2) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),2);
-% %             handles.clips(size(handles.clips,1),3) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),3);
-% %         end
-% %     else
-% %         handles.database(patient).day(timepoint).parameters(scan_name) = name_option(new_scan_name);
-% %         newparameter = name_option(new_scan_name);
-% %     end
-% % end
-%
-% % rename the scan file
-% if get(handles.MIA_scan_VOIs_button, 'Value')
-%     [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{scan_name}]);
-%     new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-%     if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-%             fullfile(PATHSTR,[NAME,EXT]));
-%         msgbox(warning_text, 'rename file warning') ;
-%     elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-%         user_response = questdlg('The new file name for this ROI exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-%         if strcmp(user_response, 'No')
-%             return
-%         end
-%         user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-%         % overwrite the file if requested
-%         if strcmp(user_response, 'Yes')
-%             if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-%                 movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-%                 handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
-%             end
-%             %% Add for modify name in ROI
-%             load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
-%             for itRoi = 1 : numel(uvascroi)
-%                 uvascroi(itRoi).name = newparameter{1};
-%             end
-%             save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
-%         end
-%
-%     else
-%         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-%         handles.database(patient).day(timepoint).VOIs_file{scan_name} = [new_name,EXT];
-%         %% Add for modify name in ROI
-%         load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}])
-%         for itRoi = 1 : numel(uvascroi)
-%             uvascroi(itRoi).name = newparameter{1};
-%         end
-%         save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{scan_name}],'uvascroi')
-%     end
-% else
-%     [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{scan_name}]);
-%     new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-%     new_name = strrep(new_name, '*', 'star');
-%     if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-%             fullfile(PATHSTR,[NAME,EXT]));
-%         msgbox(warning_text, 'rename file warning') ;
-%     elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-%         user_response = questdlg('The new file name exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-%         if strcmp(user_response, 'No')
-%             return
-%         end
-%         user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-%         % overwrite the file if requested
-%         if strcmp(user_response, 'Yes')
-%             if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-%                 movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-%                 handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
-%             end
-%         end
-%
-%     else
-%         movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-%         handles.database(patient).day(timepoint).scans_file{scan_name} = [new_name,EXT];
-%     end
-% end
-%
-% guidata(hObject, handles);
-%
-% % check if the old parameter exist somewhere else, if not remove it
-% parameters_list = [];
-% for i=1:numel(handles.database)
-%     for j = 1:numel(handles.database(i).day)
-%         parameters_list = [parameters_list handles.database(i).day(j).parameters]; %#ok<AGROW>
-%
-%     end
-% end
-% parameters_list= unique(parameters_list);
-%
-% if sum(strcmp(old_scan_name, parameters_list')) == 0
-%     match = find(strcmp(old_scan_name,handles.clips(:,1)), 1);
-%     handles.clips(match,:) = [];
-% end
-
 
 
 
@@ -1901,7 +1693,7 @@ if ~isfield(handles, 'database')
     return
 end
 
-nii_index = get_data_selected(handles);
+nii_index = finddata_selected(handles);
 user_response = questdlg('Do you want to delete these data ??', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
@@ -1916,7 +1708,7 @@ function MIA_remove_time_point_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 Time_point_selected = unique(handles.database.Tp(data_selected));
 patient_selected = unique(handles.database.Patient(data_selected));
 user_response = questdlg(['Do you want to delete every data of ' char(Time_point_selected) '??'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
@@ -1980,15 +1772,16 @@ end
 
 %handles = guidata(hObject);
 % patient = get(handles.MIA_name_list, 'Value');
-new_patient_directory = uigetdir(handles.database.Properties.UserData.MIA_root_path, 'Select Directory');
-new_patient_directory = strcat(new_patient_directory, filesep);
+new_patient_directory = uigetdir(handles.database.Properties.UserData.MIA_data_path, 'Select Directory');
 if sum(new_patient_directory) == 0
     return
 else
-    handles.database.Path =categorical(strrep(cellstr(handles.database.Path ),...
-        handles.database.Properties.UserData.MIA_root_path, new_patient_directory));
-    handles.database.Properties.UserData.MIA_root_path = new_patient_directory;
-    handles.database.Properties.UserData.MIA_data_path = [new_patient_directory 'Raw_data' filesep];
+    new_patient_directory = strcat(new_patient_directory, filesep);
+    % update the path in the table
+    handles.database.Path = categorical(strrep(cellstr(handles.database.Path),handles.database.Properties.UserData.MIA_data_path, new_patient_directory));
+    handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
+    handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI', filesep];
 end
 guidata(hObject, handles);
 
@@ -2048,7 +1841,7 @@ MIA_update_axes(hObject, eventdata, handles)
 
 function handles = MIA_load_VOIs(hObject, ~, handles)
 
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 
 handles.data_loaded.info_data_loaded(handles.data_loaded.info_data_loaded.Type == 'ROI',:) =[];
 if isfield(handles.data_loaded, 'ROI')
@@ -2102,7 +1895,7 @@ end
 
 function handles = MIA_load_axes_single(hObject, ~, handles)
 
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 
 if numel(data_selected) > 4  % select only the 4 first scan
     data_selected = data_selected(1:4);
@@ -2267,13 +2060,6 @@ else
 end
 
 % update MIA_table_pixel_values header
-% guidata(hObject, handles);
-%col_header(:,1) = {'','','','',''};
-% if size(handles.database(patient).day(time_point).parameters(scan),2)>=4
-%     col_header(2:5,1) = handles.database(patient).day(time_point).parameters(scan(1:4))';
-% else
-%col_header(2:size(handles.database(patient).day(time_point).parameters(scan),2)+1,1) = handles.database(patient).day(time_point).parameters(scan)';
-% end
 col_header(:,1) = {'','','','',''};
 col_header(2:numel(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'))+1,1)=cellstr(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan')');
 set(handles.MIA_table_pixel_values, 'ColumnName', col_header);
@@ -2288,59 +2074,12 @@ if ~isempty(findobj('Tag', 'Colorbar'))
 end
 guidata(hObject, handles);
 
-% Update table1 with the scan loaded and the clip values
-% for i=1:handles.data_loaded(1).number_of_scan
-%     scan_name= strcmp(handles.clips(:,1)', handles.database(patient).day(time_point).parameters(scan(i)));
-%     scan_name = find(scan_name ==1);
-%     if ~isempty(scan_name)
-%         if numel(scan_name) == 1
-%             handles.table1.clips(i,:) = handles.clips(scan_name(1),:);
-%         else
-%             handles.clips(scan_name(2:end),:) = [];
-%             handles.table1.clips(i,:) = handles.clips(scan_name(1),:);
-%         end
-%     else
-%         handles.clips(size(handles.clips,1)+1,1)= handles.database(patient).day(time_point).parameters(scan(i));
-%         handles.clips(size(handles.clips,1),2)= {handles.data_selected(i).image.reco.globalmin};
-%         handles.clips(size(handles.clips,1),3)= {handles.data_selected(i).image.reco.globalmax};
-%         handles.table1.clips(i,:) = handles.clips(size(handles.clips,1),:);
-%     end
-%
-%
-% end
-% if handles.data_loaded(1).number_of_scan < 4
-%     for i = handles.data_loaded(1).number_of_scan+1:4
-%         handles.table1.clips{i,1} = {'NaN'};
-%         handles.table1.clips(i,2:3) = {0 0};
-%     end
-% end
-
-% update MIA_table_pixel_values header
-% guidata(hObject, handles);
-% col_header(:,1) = {'','','','',''};
-% if size(handles.database(patient).day(time_point).parameters(scan),2)>=4
-%     col_header(2:5,1) = handles.database(patient).day(time_point).parameters(scan(1:4))';
-% else
-%     col_header(2:size(handles.database(patient).day(time_point).parameters(scan),2)+1,1) = handles.database(patient).day(time_point).parameters(scan)';
-% end
-% set(handles.MIA_table_pixel_values, 'ColumnName', col_header);
-% set(handles.MIA_table1, 'ColumnName', col_header);
-
-% % reset MIA_plot1
-% set(get(handles.MIA_plot1, 'XLabel'), 'String', '');
-% set(get(handles.MIA_plot1, 'YLabel'), 'String', '');
-% set(get(handles.MIA_plot1, 'ZLabel'), 'String', '');
-% if ~isempty(findobj('Tag', 'Colorbar'))
-%     cbfreeze('del');
-% end
-% guidata(hObject, handles);
-
 
 function handles = MIA_load_axes_PRM(hObject, ~, handles)
 % PRM mode i.e. need to open the one parameter (diffusion
 % or perfusion or...) for every time point
 
-data_selected = get_data_selected(handles);
+data_selected = finddata_selected(handles);
 if numel(data_selected) ~= 1
     warndlg('In PRM mode you can open only on scan!!', 'Warning');
     return
@@ -2432,267 +2171,6 @@ col_header{:,3} = [char(handles.database.SequenceName(data_to_load(2))) '_' char
 set(handles.MIA_table_pixel_values, 'ColumnName', col_header);
 set(handles.MIA_table1, 'ColumnName', {'',char(handles.database.SequenceName(data_to_load(1)))});
 
-
-% 
-% 
-% % 
-% % scan_selected = 0;
-% % scan_name = handles.database(patient).day(time_point).parameters(scan);
-% % for ii = 1:numel(handles.database(patient).day)
-% %     match = find(strcmp(scan_name, handles.database(patient).day(ii).parameters')==1);
-% %     if numel(match) > 1
-% %         % the warning message is coded in the MIA_load_axes_Callback
-% %         warndlg(['There are more than 1 ' scan_name{:} ' for day ' handles.database(patient).day(ii).date],'Warning');
-% %         return
-% %     end
-% %     if numel(match) == 1
-% %         %         tmp_tp = find(match==1);
-% %         fid=fopen(fullfile(handles.database(patient).path,handles.database(patient).day(ii).scans_file{match}) ,'r');
-% %         if fid>0
-% %             fclose(fid);
-% %             new = load(fullfile(handles.database(patient).path,handles.database(patient).day(ii).scans_file{match}));
-% %             clear tmp;
-% %         else
-% %             warndlg('No data file in this folder','Warning');
-% %             return
-% %         end
-% %         scan_selected = scan_selected+1;
-% %         if scan_selected == 1
-% %             handles.data_selected_for_PRM = new.uvascim;
-% %             handles.data_selected_for_PRM.image.day = handles.database(patient).day(ii).date;
-% %             
-% %         else
-% %             tmp = new.uvascim.image;
-% %             tmp.day = handles.database(patient).day(ii).date;
-% %             handles.data_selected_for_PRM.image(scan_selected) = tmp;
-% %             
-% %             clear tmp
-% %         end
-% %     end
-% % end
-% % if scan_selected <2
-% %     warndlg(strcat({'Need more than one '}, scan_name, ' scan to run the PRM mode') ,'Warning');
-% %     return
-% % end
-% % handles.data_selected_for_PRM.scan_number = numel(handles.data_selected_for_PRM.image);
-% % 
-% % % recover information for each scan selected (x, y , echo, slice, expt, z_min, z_max)
-% % data_selected_for_PRM_info(1:numel(handles.data_selected_for_PRM.image),1:5) = 1;
-% % handles.data_selected_for_PRM.list_scan(1:4) = {''};
-% % handles.data_selected_for_PRM.list_scan(1:numel(handles.data_selected_for_PRM.image)) = handles.database(patient).day(time_point).parameters(scan);
-% % z_offset = [];
-% % 
-% % for i=1:numel(handles.data_selected_for_PRM.image)
-% %     data_selected_for_PRM_info(i,1:size(size(handles.data_selected_for_PRM.image(i).reco.data),2))=size(handles.data_selected_for_PRM.image(i).reco.data);
-% %     tmp_z_min = min(handles.data_selected_for_PRM.image(i).reco.fov_offsets(3,1,:));
-% %     tmp_z_max = max(handles.data_selected_for_PRM.image(i).reco.fov_offsets(3,1,:));
-% %     data_selected_for_PRM_info(i,6:7) = [tmp_z_min tmp_z_max];
-% %     data_selected_for_PRM_info(i,8) = handles.data_selected_for_PRM.image(i).reco.thickness;
-% %     data_selected_for_PRM.scan_z_offset(i).values = data_selected_for_PRM_info(i,6):data_selected_for_PRM_info(i,8):data_selected_for_PRM_info(i,7);
-% %     data_selected_for_PRM.scan_z_offset(i).values = round(data_selected_for_PRM.scan_z_offset(i).values*100)/100;
-% %     if numel(data_selected_for_PRM.scan_z_offset(i).values) ~= size(handles.data_selected_for_PRM.image(i).reco.data,4)
-% %         data_selected_for_PRM.scan_z_offset(i).values =  round(squeeze(handles.data_selected_for_PRM.image(i).reco.fov_offsets(3,1,:))'*100)/100;
-% %     end
-% %     z_offset = [z_offset data_selected_for_PRM.scan_z_offset(i).values]; %#ok<AGROW>
-% % end
-% % 
-% % z_offset = sort(unique(round(z_offset*100)/100));
-% % slice_nbr = numel(z_offset);
-% % 
-% % if slice_nbr > max(data_selected_for_PRM_info(:,4))
-% %     data_selected_for_PRM_info(:,4) =  slice_nbr;
-% % else
-% %     data_selected_for_PRM_info(:,4) =max(data_selected_for_PRM_info(:,4));
-% % end
-% % 
-% % data_selected_for_PRM_info(:,3) = max(data_selected_for_PRM_info(:,3));
-% % data_selected_for_PRM_info(:,5) = max(data_selected_for_PRM_info(:,5));
-% % 
-% % handles.data_selected_for_PRM.scan_info = data_selected_for_PRM_info;
-% % handles.data_selected_for_PRM.z_offset = z_offset;
-% % handles.data_selected_for_PRM.scan_z_offset = data_selected_for_PRM.scan_z_offset;
-% % 
-% % % save patient information
-% % handles.data_selected_for_PRM.patient_info.name_nbr = patient;
-% % handles.data_selected_for_PRM.patient_info.name = handles.database(patient).name;
-% % handles.data_selected_for_PRM.patient_info.timepoint_nbr = time_point;
-% % handles.data_selected_for_PRM.patient_info.timepoint = handles.database(patient).day(time_point).date;
-% % handles.data_selected_for_PRM.patient_info.group =  handles.database(patient).group;
-% % set(handles.MIA_patient_information_title, 'String', [handles.data_selected_for_PRM.patient_info.name '_' handles.data_selected_for_PRM.patient_info.timepoint]);
-% % 
-% % % resize data
-% % res_option = get(handles.MIA_resolution_popupmenu, 'Value');
-% % handles.resolution_selected = handles.resolution(res_option);
-% % % "Original" resolution selected
-% % if  handles.resolution_selected == 1
-% %     handles.resolution_selected = max(handles.data_selected_for_PRM.scan_info(:,1));
-% % else
-% %     handles.resolution_selected = handles.resolution(res_option);
-% % end
-% % handles.data_selected_for_PRM_resized =  handles.data_selected_for_PRM;
-% % for ii=1:handles.data_selected_for_PRM.scan_number
-% %     imgsize = data_selected_for_PRM_info(ii,:);
-% %     factor = [handles.resolution_selected/handles.data_selected_for_PRM.scan_info(ii,1) handles.resolution_selected/handles.data_selected_for_PRM.scan_info(ii,2)];
-% %     data = zeros([ceil(factor(1)*imgsize(1)),ceil(factor(2)*imgsize(2)),imgsize(3:5)]);
-% %     
-% %     for a=1:size(handles.data_selected_for_PRM.image(ii).reco.data,3)
-% %         for b=1:size(handles.data_selected_for_PRM.image(ii).reco.data,4)
-% %             for c=1:size(handles.data_selected_for_PRM.image(ii).reco.data,5)
-% %                 data(:,:,a,b,c) = imresize(handles.data_selected_for_PRM.image(ii).reco.data(:,:,a,b,c),[size(data, 1) size(data,2)],'bilinear');
-% %             end
-% %         end
-% %     end
-% %     handles.data_selected_for_PRM_resized.image(ii).reco.data =  data;
-% % end
-% % 
-% % % recover information for each scan selected and resized (x, y , echo, slice, expt, z_min, z_max)
-% % data_selected_for_PRM_resized_info(1:numel(handles.data_selected_for_PRM_resized.image),1:7) = 1;
-% % for i=1:handles.data_selected_for_PRM.scan_number
-% %     data_selected_for_PRM_resized_info(i,1:size(size(handles.data_selected_for_PRM_resized.image(i).reco.data),2))=size(handles.data_selected_for_PRM_resized.image(i).reco.data);
-% %     data_selected_for_PRM_resized_info(i,6:8) = data_selected_for_PRM_info(i, 6:8);
-% %     
-% % end
-% % handles.data_selected_for_PRM_resized.scan_info = data_selected_for_PRM_resized_info;
-% % 
-% % % Align slices
-% % if handles.data_selected_for_PRM.scan_number > 1
-% %     thickness_sorted = sort(data_selected_for_PRM_resized_info(:,8));
-% %     slice_to_remove = [];
-% %     for i=1:numel(unique(thickness_sorted))
-% %         match_scan = abs(data_selected_for_PRM_resized_info(:,8) - thickness_sorted(i)) < 0.00001;
-% %         match_scan = find(match_scan== 1);
-% %         for j = 1:numel(match_scan)
-% %             scan_nbr = match_scan(j);
-% %             matrix_size = size(handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data);
-% %             if size(matrix_size,2) == 2
-% %                 matrix_size(3) = 1;
-% %             end
-% %             matrix_size(4) = numel(handles.data_selected_for_PRM_resized.z_offset);
-% %             tmp=NaN(matrix_size);
-% %             % first data (smaller slice thickness)
-% %             if i == 1 && j == 1
-% %                 for jj = 1:numel(data_selected_for_PRM.scan_z_offset(scan_nbr).values)
-% %                     match =  abs(handles.data_selected_for_PRM_resized.z_offset - data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)) <  1e-3;
-% %                     match_1 = find(match== 1);
-% %                     tmp(:,:,:,match_1,:,:) = handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data(:,:,:,jj,:,:); %#ok<FNDSB>
-% %                 end
-% %             else
-% %                 old_match = 0;
-% %                 for jj = 1:size(handles.data_selected_for_PRM.image(scan_nbr).reco.data, 4)
-% %                     match =  abs(handles.data_selected_for_PRM_resized.z_offset - data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)) <  1e-3;
-% %                     match_1 = find(match== 1);
-% %                     if match_1 ~= old_match+1
-% %                         for x = (old_match+1):match_1-1
-% %                             if (data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)-data_selected_for_PRM_resized_info(scan_nbr,8)/2 < handles.data_selected_for_PRM_resized.z_offset(x) - min(data_selected_for_PRM_resized_info(:,8))/2) ||...
-% %                                     abs((data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)-data_selected_for_PRM_resized_info(scan_nbr,8)/2)- (handles.data_selected_for_PRM_resized.z_offset(x) - min(data_selected_for_PRM_resized_info(:,8))/2)) <  1e-3
-% %                                 tmp(:,:,:,x,:,:) = handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data(:,:,:,jj,:,:);
-% %                                 slice_to_remove = [slice_to_remove match_1];
-% %                             end
-% %                         end
-% %                         tmp(:,:,:,match_1,:,:) = handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data(:,:,:,jj,:,:);
-% %                     else
-% %                         tmp(:,:,:,match_1,:,:) = handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data(:,:,:,jj,:,:);
-% %                     end
-% %                     for xx = match_1:numel(handles.data_selected_for_PRM_resized.z_offset)
-% %                         if (data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)+data_selected_for_PRM_resized_info(scan_nbr,8)/2 > handles.data_selected_for_PRM_resized.z_offset(xx)+  min(data_selected_for_PRM_resized_info(:,8))/2) ||...
-% %                                 abs((data_selected_for_PRM.scan_z_offset(scan_nbr).values(jj)+data_selected_for_PRM_resized_info(scan_nbr,8)/2) - (handles.data_selected_for_PRM_resized.z_offset(xx)+  min(data_selected_for_PRM_resized_info(:,8))/2)) <  1e-3
-% %                             tmp(:,:,:,xx,:,:) = handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data(:,:,:,jj,:,:);
-% %                         end
-% %                     end
-% %                     old_match = match_1;
-% %                 end
-% %             end
-% %             handles.data_selected_for_PRM_resized.image(scan_nbr).reco.data = tmp;
-% %         end
-% %         
-% %     end
-% %     if ~isempty(slice_to_remove)
-% %         slice_to_remove = unique(slice_to_remove);
-% %         for i = 1 : numel(handles.data_selected_for_PRM_resized.image)
-% %             handles.data_selected_for_PRM_resized.image(i).reco.data(:,:,:,slice_to_remove,:,:) = [];
-% %         end
-% %         handles.data_selected_for_PRM_resized.z_offset(slice_to_remove) = [];
-% %         handles.data_selected_for_PRM_resized.scan_info(:,4) = handles.data_selected_for_PRM_resized.scan_info(1,4) - numel(slice_to_remove);
-% %     end
-% % end
-% % 
-% 
-% 
-% 
-% % %set popupmenu(s) (echo and expt for each axes) and clear Axes if needed
-% % for i=1:2
-% %     stri = num2str(i);
-% %     if numel(handles.data_selected_for_PRM.image) > i-1 && size(handles.data_selected_for_PRM.image(i).reco.data, 3) > 1 %numel(scan)
-% %         set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max', size(handles.data_selected_for_PRM.image(i).reco.data, 3),...
-% %             'SliderStep',[1/(size(handles.data_selected_for_PRM.image(i).reco.data, 3)-1) min(5/(size(handles.data_selected_for_PRM.image(i).reco.data, 3)-1),1)]);
-% %     else
-% %         set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
-% %         set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Value', 1);
-% %         %  and clear Axes unused
-% %         eval(['cla(handles.MIA_data' stri ');']);
-% %         eval(['set(handles.MIA_data' stri '_title, ''String'', '''');']);
-% %     end
-% %     if numel(handles.data_selected_for_PRM.image) > i-1 && size(handles.data_selected_for_PRM.image(i).reco.data, 5) > 1 %numel(scan)
-% %         set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max', size(handles.data_selected_for_PRM.image(i).reco.data, 5),...
-% %             'SliderStep',[1/(size(handles.data_selected_for_PRM.image(i).reco.data, 5)-1) min(5/(size(handles.data_selected_for_PRM.image(i).reco.data, 5)-1),1)]);
-% %     else
-% %         set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
-% %         set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
-% %         
-% %     end
-% % end
-% 
-% % resize windows handles.MIA_data1
-% set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
-% 
-% 
-% set(handles.MIA_data2, 'Visible', 'on');
-% set(handles.MIA_data2_title, 'Visible', 'on');
-% set(handles.MIA_data3, 'Visible', 'off');
-% set(handles.MIA_data3_title, 'Visible', 'off');
-% set(handles.MIA_data4, 'Visible', 'off');
-% set(handles.MIA_data4_title, 'Visible', 'off');
-% 
-% 
-% % set MIA_slider_slice
-% % set(handles.MIA_slider_slice, 'Max', data_selected_for_PRM_info(1,4));
-% % set(handles.MIA_slider_slice,'Value',1);
-% % set(handles.MIA_slider_slice,'Min',1);
-% % if data_selected_for_PRM_info(1,4) == 1
-% %     set(handles.MIA_slider_slice,'Visible', 'off');
-% % else
-% %     set(handles.MIA_slider_slice,'Visible', 'on');
-% %     set(handles.MIA_slider_slice,'SliderStep',[1/(data_selected_for_PRM_info(1,4)-1) min(5/(data_selected_for_PRM_info(1,4)-1),1)]);
-% % end
-% 
-% % % save clips info of data loaded
-% % result = strcmp(handles.clips(:,1), handles.database(patient).day(time_point).parameters(scan(1)));
-% % handles.table1.clips{1,1} =  handles.clips(find(result, 1),1);
-% % handles.table1.clips(1,2:3) =  handles.clips(find(result, 1),2:3);
-% % 
-% % % update MIA_table_pixel_values header
-% % guidata(hObject, handles);
-% % col_header(:,1) = {'','','','',''};
-% % if size(handles.database(patient).day(time_point).parameters(scan),2)>=4
-% %     col_header(2:5,1) = handles.database(patient).day(time_point).parameters(scan(1:4))';
-% % else
-% %     col_header(2,1) = strcat(handles.data_selected_for_PRM_resized.image(1).day, '-', handles.database(patient).day(time_point).parameters(scan)');
-% %     col_header(3,1) = strcat(handles.data_selected_for_PRM_resized.image(2).day, '-', handles.database(patient).day(time_point).parameters(scan)');
-% %     
-% % end
-% % 
-% % set(handles.MIA_table_pixel_values, 'ColumnName', col_header);
-% % set(handles.MIA_table1, 'ColumnName', col_header);
-% % 
-% % % reset MIA_plot1
-% % set(get(handles.MIA_plot1, 'XLabel'), 'String', '');
-% % set(get(handles.MIA_plot1, 'YLabel'), 'String', '');
-% % set(get(handles.MIA_plot1, 'ZLabel'), 'String', '');
-% % if ~isempty(findobj('Tag', 'Colorbar'))
-% %     cbfreeze('del');
-% % end
-% 
-% guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2797,7 +2275,9 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
-                set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                if sum(image_to_display(:)) ~= 0
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                end
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
@@ -2814,11 +2294,11 @@ if isfield(handles, 'data_displayed')
             case 2 % image + ROI
                  % Clip image displayed at the 2 extremum (min, max)
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                image_to_display(image_to_display<prctile(image_to_display(:),0.1)) = prctile(image_to_display(:),0.1);
-                image_to_display(image_to_display>prctile(image_to_display(:),99.9)) = prctile(image_to_display(:),99.9);
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
-                
-                %image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1)),'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag','data1');
+                 % Exlude the 2 extremum (min, max) of the Clim
+                if sum(image_to_display(:)) ~= 0
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                end
 
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
@@ -3244,266 +2724,6 @@ guidata(hObject, handles);
 
 
 
-
-% function MIA_update_axes_PRM(hObject, eventdata, handles)
-% handles = guidata(hObject);
-% if ~isfield(handles, 'data_selected_for_PRM')
-%     return
-% end
-% slice_nbr = get(handles.MIA_slider_slice, 'Value');
-% 
-% 
-% %save data displayed
-% if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
-%     if isfield(handles, 'data_displayed')
-%         handles = rmfield(handles, 'data_displayed');
-%     end
-%     % Update image_displayed matrix
-%     if isfield(handles, 'data_selected_for_PRM')
-%         handles = MIA_update_image_displayed_PRM(hObject, eventdata, handles);
-%     end
-%     % update the ROI matrix (new ROI, resized...)
-%     if isfield(handles, 'ROI_selected_resized')
-%         handles = MIA_update_VOI_displayed_PRM(hObject, eventdata, handles);
-%     end
-%     %update MIA_plot1
-%     if isfield(handles,'ROI_selected_resized')
-%         handles = MIA_find_VOI_coordonates(hObject,handles);
-%         if ~isempty(handles.data_ploted.coordonates)
-%             handles =MIA_update_plot1_PRM(hObject,handles);
-%         end
-%     else
-%         if ~isempty(get(handles.MIA_plot1, 'Children'))
-%             delete(get(handles.MIA_plot1, 'Children'));
-%             legend(handles.MIA_plot1,'off');
-%             hold(handles.MIA_plot1, 'off');
-%             set(handles.MIA_plot1, 'XTick', []);
-%             set(handles.MIA_plot1, 'YTick', []);
-%         end
-%         if isfield(handles, 'data_ploted')
-%             handles = rmfield(handles, 'data_ploted');
-%         end
-%     end
-%     % Update the PRM matrix (new cluster, resized...)
-%     if isfield(handles, 'ROI_PRM_resized')
-%         handles = MIA_update_PRM_Overlay_map(hObject,handles);
-%     end
-% end
-% 
-% % is zommed?
-% if get(handles.MIA_data1, 'Children')~=0
-%     origInfo = getappdata(handles.MIA_data1, 'matlab_graphics_resetplotview');
-%     if isempty(origInfo)
-%         isZoomed = false;
-%     elseif isequal(get(handles.MIA_data1,'XLim'), origInfo.XLim) && ...
-%             isequal(get(handles.MIA_data1,'YLim'), origInfo.YLim) %&& ...
-%         isZoomed = false;
-%     else
-%         isZoomed = true;
-%         XLim_zoomed = get(handles.MIA_data1,'XLim'); %#ok<NASGU>
-%         YLim_zoomed = get(handles.MIA_data1,'YLim'); %#ok<NASGU>
-%     end
-% else
-%     isZoomed = false;
-% end
-% % if the resolution is changed go back unzoomed!
-% if strcmp(get(hObject, 'Tag'), 'MIA_resolution_popupmenu')
-%     isZoomed = false;
-% end
-% 
-% 
-% % display every data available (image, ROI, cluster...)
-% if isfield(handles, 'data_displayed')
-%     number_of_data_to_displayed = numel(fieldnames(handles.data_displayed));
-%     for i=1:2
-%         stri = num2str(i);
-%         if eval(['~isempty(get(handles.MIA_data' stri ', ''Children''))']);
-%             eval(['delete(get(handles.MIA_data' stri ', ''Children''));']);
-%         end
-%         switch number_of_data_to_displayed
-%             case 1 % image only
-%                 if( max(~isreal(handles.data_displayed.image(:)))==1 )    % complex data
-%                     eval(['image(squeeze(abs(handles.data_displayed.image(:,:,slice_nbr,i))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 else    % real data
-%                     eval(['image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i)),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 end
-%                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-%                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
-%                 %                 eval(['colormap(handles.MIA_data' stri ', ''gray'');']);
-%                 eval(['set(handles.MIA_data' stri ', ''Visible'', ''on'', ''XTick'' , [], ''YTick'', []);']);
-%                 % if image zoomed applay zoom
-%                 if isZoomed == true
-%                     eval(['set(handles.MIA_data' stri ',''XLim'', XLim_zoomed);']);
-%                     eval(['set(handles.MIA_data' stri ',''YLim'', YLim_zoomed);']);
-%                 end
-%             case 2 % image + ROI -- never used !!
-%                 % image
-%                 if( max(~isreal(handles.data_displayed.image(:)))==1 )    % complex data
-%                     eval(['image(squeeze(abs(handles.data_displayed.image(:,:,slice_nbr,i))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 else    % real data
-%                     eval(['image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i)),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 end
-%                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-%                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
-%                 %                 eval(['colormap(handles.MIA_data' stri ', ''gray'');']);
-%                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                 % ROI if on the slice
-%                 for x = 1:numel(handles.ROI_selected_resized)
-%                     if findn(handles.ROI_selected_resized(x).data.value(:,:,slice_nbr)==1)
-%                         for j = 1:size(handles.data_displayed.ROI.data,1)
-%                             roi_contour = handles.data_displayed.ROI.data{j,slice_nbr};
-%                             line(roi_contour(1,2:end)', roi_contour(2,2:end)',...
-%                                 'parent', eval(['handles.MIA_data' stri]),...
-%                                 'Color',rgb(handles.colors{j}),...
-%                                 'Visible', 'on',...
-%                                 'tag','ROI_contour');
-%                         end
-%                     end
-%                 end
-%                 eval(['set(handles.MIA_data' stri ', ''Visible'', ''on'', ''XTick'' , [], ''YTick'', []);']);
-%                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%             case 3 % image + ROI + cluster
-%                 % image
-%                 if( max(~isreal(handles.data_displayed.image(:)))==1 )    % complex data
-%                     eval(['image(squeeze(abs(handles.data_displayed.image(:,:,slice_nbr,i))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 else    % real data
-%                     eval(['image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i)),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%                 end
-%                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-%                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
-%                 %                 eval(['colormap(handles.MIA_data' stri ', ''gray'');']);
-%                 eval(['set(handles.MIA_data' stri ', ''Visible'', ''on'', ''XTick'' , [], ''YTick'', []);']);
-%                 
-%                 % if image zoomed applay zoom
-%                 if isZoomed == true
-%                     eval(['set(handles.MIA_data' stri ',''XLim'', XLim_zoomed);']);
-%                     eval(['set(handles.MIA_data' stri ',''YLim'', YLim_zoomed);']);
-%                 end
-%                 % ROI if on the slice
-%                 % Not useful in PRM mode
-%                 
-%                 % cluster
-%                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                 eval(['image(squeeze(handles.data_displayed.PRM.data(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_displayed.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
-%                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%         end
-%         
-%         axe(i) = eval(['handles.MIA_data' stri]);
-%         
-%         %%%%%%%% activate clic on graph MIA_dataXX_ButtonDownFcn
-%         eval(['set(get(handles.MIA_data' stri ', ''Children''), ''HitTest'', ''off'');']);
-%         eval(['set(handles.MIA_data' stri ',''ButtonDownFcn'', @MIA_clic_on_image);']);
-%         eval(['set(get(handles.MIA_data' stri ', ''Children''), ''ButtonDownFcn'', @MIA_clic_on_image);']);
-%     end
-% end
-% linkaxes(axe, 'xy');
-% guidata(hObject, handles);
-
-% function handles = MIA_update_image_displayed_PRM(hObject, eventdata, handles)
-% 
-% % Display data
-% for i=1:2
-%     stri = num2str(i);
-%     eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
-%     eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
-%     if i == 1 % select pre-scan
-%         scan_number = get(handles.MIA_PRM_ref_popupmenu, 'Value');
-%         if scan_number > 1
-%             scan_number = scan_number-1;
-%         else %scan number dynamic 1 prior post-time point
-%             scan_number = get(handles.MIA_PRM_slider_tp, 'Value') -1;
-%             if scan_number == 0  % case PRM_ref = -1 and slider = 1
-%                 scan_number = 1;
-%             end
-%         end
-%     else % select post-scan
-%         if  handles.data_selected_for_PRM_resized.scan_number ==2
-%             scan_number = 2;
-%         else
-%             scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
-%         end
-%     end
-%     if( max(~isreal(handles.data_selected_for_PRM_resized.image(:)))==1 )    % complex data
-%         eval(['ima' stri '= squeeze(abs(handles.data_selected_for_PRM_resized.image(scan_number).reco.data(:,:,data' stri '_echo_nbr,:,data' stri '_expt_nbr)));']);
-%     else    % real data
-%         eval(['ima' stri '= squeeze(handles.data_selected_for_PRM_resized.image(scan_number).reco.data(:,:,data' stri '_echo_nbr,:,data' stri '_expt_nbr));']);
-%     end
-%     if isfield(handles.data_selected_for_PRM_resized.image(i), 'echo_cluster') && ~isempty(handles.data_selected_for_PRM_resized.image(i).reco.echo_cluster)
-%         eval(['title' stri ' = strcat(handles.data_selected_for_PRM.list_scan{i}, ''-'', handles.data_selected_resized_for_PRM.image(i).reco.echo_cluster{data' stri '_echo_nbr});']);
-%     else
-%         eval(['title' stri ' = handles.data_selected_for_PRM.list_scan{i};']);
-%     end
-%     eval(['set(handles.MIA_data' stri '_title, ''String'', {title' stri '});']);
-%     eval(['ax(' stri ') = handles.MIA_data' stri ';']);
-%     
-%     % Update clip
-%     eval(['scan_name = strcmp(handles.clips(:,1)'', title' stri ');']);
-%     tempclip = handles.clips(scan_name == 1,2:3);
-%     tempclip =cell2num(tempclip);  %#ok<NASGU>
-%     eval(['ima' stri '(ima' stri '>tempclip(1,2))=NaN;']);
-%     eval(['ima' stri '(ima' stri '<tempclip(1,1))=NaN;']);
-%     
-%     handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
-% end
-% 
-% % linkaxes(ax, 'xy');
-% 
-% %set title with time point
-% tp1 = get(handles.MIA_PRM_ref_popupmenu, 'Value')-1;
-% if  handles.data_selected_for_PRM_resized.scan_number ==2
-%     tp2 = 2;
-% else
-%     tp2 = get(handles.MIA_PRM_slider_tp, 'Value');
-% end
-% if tp1 == 0
-%     tp1 = tp2 - 1;
-%     if tp1 == 0
-%         tp1 = 1;
-%     end
-% end
-% set(handles.MIA_data1_title, 'String', strcat(handles.data_selected_for_PRM_resized.image(tp1).day, '-',get(handles.MIA_data1_title, 'String')));
-% set(handles.MIA_data2_title, 'String', strcat(handles.data_selected_for_PRM_resized.image(tp2).day, '-',get(handles.MIA_data2_title, 'String')));
-
-
-
-% % Display ROI
-% if isfield(handles, 'ROI_selected_resized')
-%     handles = MIA_update_VOI_displayed_PRM(hObject, eventdata, handles);
-% end
-%
-% %save data displayed
-% if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
-%     if isfield(handles, 'data_displayed')
-%         handles = rmfield(handles, 'data_displayed');
-%     end
-%     handles.data_displayed.image(:,:,:,1) = eval(['ima' num2str(1)]);
-%     handles.data_displayed.image(:,:,:,2) = eval(['ima' num2str(2)]);
-%
-%     %update MIA_plot1 or plot_PRM depending of the mode selected
-%     guidata(hObject, handles);
-%     if isfield(handles,'ROI_selected_resized')
-%         handles = MIA_find_VOI_coordonates(hObject,handles);
-%         MIA_update_plot1_PRM(hObject, handles)
-%     else % reset MIA_plot1
-%         if ~isempty(get(handles.MIA_plot1, 'Children'))
-%             delete(get(handles.MIA_plot1, 'Children'));
-%             legend(handles.MIA_plot1,'off');
-%             hold(handles.MIA_plot1, 'off');
-%         end
-%         set(handles.MIA_plot1, 'XTick', []);
-%         set(handles.MIA_plot1, 'YTick', []);
-%         if isfield(handles, 'data_ploted')
-%             handles = rmfield(handles, 'data_ploted');
-%         end
-%         guidata(hObject, handles);
-%     end
-% end
-%
-% % Display PRM colormap if mode PRM selected
-% if isfield(handles,'ROI_selected_resized')
-% MIA_update_PRM_Overlay_map(hObject,handles)
-% end
-
 function handles = MIA_update_VOI_displayed(hObject, eventdata, handles)
 % slice_nbr = get(handles.MIA_slider_slice, 'Value');
 for i = 1:numel(handles.data_loaded.ROI)
@@ -3519,34 +2739,9 @@ for i = 1:numel(handles.data_loaded.ROI)
     end
 end
 
-% function handles = MIA_update_VOI_displayed_PRM(hObject, eventdata, handles)
-% 
-% for i = 1:numel(handles.ROI_selected_resized)
-%     for slice_nbr=1:get(handles.MIA_slider_slice, 'Max');
-%         roi_a_appliquer=handles.ROI_selected_resized(i).data.value(:,:,slice_nbr);
-%         roi_contour=contourc(double(roi_a_appliquer),1);
-%         handles.data_displayed.ROI.data(i,slice_nbr) = {roi_contour};
-%     end
-% end
 
-% for i = 1:numel(handles.ROI_selected_resized)
-%     roi_a_appliquer=handles.ROI_selected_resized(i).data.value(:,:,slice_nbr);
-%     roi_contour=contourc(double(roi_a_appliquer),1);
-%     if size(roi_contour,2) ~=0
-%         for j = 1:2
-%             strj = num2str(j);
-%             handles.ROI_selected_resized(i).data.hdl_contour= line(roi_contour(1,2:end)', roi_contour(2,2:end)',...
-%                 'parent', eval(['handles.MIA_data' strj]),...
-%                 'Color',rgb(handles.colors{i}),...
-%                 'tag','ROI_contour');
-%         end
-%     else
-%         handles.ROI_selected_resized(i).data.hdl_contour = [];
-%     end
-% end
-% guidata(hObject, handles);
 
-function handles = MIA_find_VOI_coordonates(hObject,handles)
+function handles = MIA_find_VOI_coordonates(~,handles)
 
 handles.data_ploted.coordonates = [];
 if handles.mode == 1
@@ -5939,13 +5134,13 @@ if ~isfield(handles.database.Properties.UserData , 'db_filename')
         return
     end
     handles.database.Properties.UserData.db_filename = filename;
-    handles.database.Properties.UserData.MIA_root_path = pathname;
+    handles.database.Properties.UserData.MIA_data_path = pathname;
 end
 
 handles.database.Properties.UserData.VOIs = handles.VOIs;
 handles.database.Properties.UserData.histo = handles.histo;
 database = handles.database; %#ok<NASGU>
-save(fullfile(handles.database.Properties.UserData.MIA_root_path, handles.database.Properties.UserData.db_filename), 'database');
+save(fullfile(handles.database.Properties.UserData.MIA_data_path, handles.database.Properties.UserData.db_filename), 'database');
 
 % save handles
 guidata(hObject, handles)
@@ -6639,57 +5834,6 @@ end
 % save handles and update display
 guidata(hObject, handles)
 MIA_update_database_display(hObject, eventdata, handles)
-% patient = get(handles.MIA_name_list, 'Value');
-% time_point= get(handles.MIA_time_points_list, 'Value');
-% scan = get(handles.MIA_scans_list, 'Value');
-% Scan_VOI_option = get(handles.MIA_scan_VOIs_button, 'Value');
-% % Clone scan else clone VOI
-% if Scan_VOI_option == 0
-%     file_name = handles.database(patient).day(time_point).scans_file{scan};
-%     new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
-%     parameter_name =  handles.database(patient).day(time_point).parameters(scan);
-%     new_parameter_name = strcat(parameter_name, '-cloned');
-%     % update databas
-%     handles.database(patient).day(time_point).scans_file = [handles.database(patient).day(time_point).scans_file {new_file_name}];
-%     handles.database(patient).day(time_point).parameters = [handles.database(patient).day(time_point).parameters new_parameter_name];
-%     
-%     % Check if this new parameter exist already
-%     % if not update the handles.clip  fields
-%     if sum(strcmp(handles.clips(:,1), new_parameter_name)) == 0
-%         % clone the clips value
-%         match_clip = find(strcmp(handles.clips(:,1)', parameter_name) == 1);
-%         handles.clips(numel(handles.clips(:,1))+1,1) = new_parameter_name;
-%         handles.clips(numel(handles.clips(:,1)),2:3) =  handles.clips(match_clip,2:3); %#ok<FNDSB>
-%     end
-% else
-%     file_name = handles.database(patient).day(time_point).VOIs_file{scan};
-%     new_file_name = [spm_str_manip(file_name,'r'),'-cloned.mat'];
-%     parameter_name =  handles.database(patient).day(time_point).VOIs(scan);
-%     new_parameter_name = strcat(parameter_name, '-cloned');
-%     % update databas
-%     handles.database(patient).day(time_point).VOIs_file = [handles.database(patient).day(time_point).VOIs_file {new_file_name}];
-%     handles.database(patient).day(time_point).VOIs = [handles.database(patient).day(time_point).VOIs new_parameter_name];
-%     
-%     % Check if this new VOI exist already
-%     % if not update the handles.VOIs field
-%     if sum(strcmp(handles.VOIs', new_parameter_name)) == 0
-%         handles.VOIs =  [handles.VOIs(1:end-1) new_parameter_name handles.VOIs(end-1:end)];
-%     end
-% end
-% % create the new file
-% copyfile([handles.database(patient).path file_name], [handles.database(patient).path new_file_name], 'f');
-% % rename the ROI name in the uvascroi sturcture
-% if Scan_VOI_option == 1
-%     load([handles.database(patient).path new_file_name])
-%     for i=1:numel(uvascroi) %#ok<NODEF>
-%         uvascroi(i).name = char(new_parameter_name); %#ok<AGROW>
-%     end
-%     save([handles.database(patient).path new_file_name],'uvascroi');
-% end
-% % % save handles and update display
-% guidata(hObject, handles)
-% MIA_update_database_display(hObject, eventdata, handles)
-
 
 % --------------------------------------------------------------------
 function MIA_save_database_ClickedCallback(hObject, eventdata, handles)
@@ -8637,7 +7781,7 @@ function MIA_menu_load_data_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if isfield(handles, 'database')
-    MIA_root_path = handles.database.Properties.UserData.MIA_root_path;
+    MIA_data_path = handles.database.Properties.UserData.MIA_data_path;
     %     MIA_data_path = handles.database.Properties.UserData.MIA_data_path ;
 else
     MIA_root_path = uigetdir(pwd, 'Select the directory to save the your new projet');
@@ -8667,17 +7811,16 @@ else
     
     
     %% create the database structure
-    % create the database structure
     handles.database =  table;%
     handles.database = cell2table(cell(0,8));
     handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
-    handles.database.Properties.UserData.MIA_root_path = MIA_root_path;
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
-    
+    handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI', filesep];
     
 end
 %% create the tmp folder
-MIA_tmp_folder = [MIA_root_path, 'tmp'];
+MIA_tmp_folder = [MIA_data_path, 'tmp'];
 if exist(MIA_tmp_folder, 'dir') ~= 7
     status = mkdir(MIA_tmp_folder);
     if status == 0
@@ -8726,7 +7869,7 @@ clear handlesb
 
 %javax.swing.UIManager.setLookAndFeel(newLnF);
 handles = guidata(handles.MIA_GUI);
-MIA_tmp_folder = [handles.database.Properties.UserData.MIA_root_path, 'tmp'];
+MIA_tmp_folder = [handles.database.Properties.UserData.MIA_data_path, 'tmp'];
 log_file =struct2table(jsondecode(char(data_loaded)));
 
 % log_file_to_update = log_file;
@@ -8770,7 +7913,7 @@ for i = 1:numel(unique(log_file.StudyName))
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         
                     end
-                    new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MIA_data_path)), categorical(cellstr(file_name)),...
+                    new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MIA_Raw_data_path)), categorical(cellstr(file_name)),...
                         categorical(cellstr('Scan')), categorical(1), categorical(cellstr(seq_name)),...
                         'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
                     
@@ -9655,9 +8798,12 @@ if ~isfield(handles, 'database')
 end
 MIA_pipeline(hObject, eventdata, handles)
 
+
 function nii_json_fullfilename = fullfilename(handles, nii_index, ext)
 
 nii_json_fullfilename = [char(handles.database.Path(nii_index)) char(handles.database.Filename(nii_index)) ext];
+
+
 
 function MIA_remove_scan(hObject, eventdata, handles, nii_index)
 % delete the file (nii/json) from the hard drive
