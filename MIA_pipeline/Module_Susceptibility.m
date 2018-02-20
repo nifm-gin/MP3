@@ -186,6 +186,7 @@ end
 
 
 N = niftiread(files_in.In1{1});
+N = double(N);
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
@@ -220,6 +221,7 @@ if sum(cell2num(scores(:,5))) > 10
 else
     [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
     maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
+    mapsVar = {CBV, CBF, MTT, TMAX, TTP, T0};
 
 end
 
@@ -229,12 +231,27 @@ end
 
 
 for i=1:length(maps)
+    info2 = info;
+    info2.Filename = files_out.In1{i};
+    info2.Filemoddate = char(datetime('now'));
+    info2.Datatype = class(mapsVar{i});
+    info2.PixelDimensions = info.PixelDimensions(1:length(size(mapsVar{i})));
+    %info2.raw.datatype = 16;
+    %info2.BitsPerPixel = 32;
+    info2.ImageSize = size(mapsVar{i});
+    %info2.raw.dim(1) = 3;
+    %info2.raw.dim(5) = 1;
+    %info2.raw.bitpix = 32;
+    %info2.raw = struct();
+    info2.Description = [info.Description, 'Modified by Susceptibility Module'];
+    niftiwrite(mapsVar{i}, files_out.In1{i}, info2)
+    
     %info2 = info;
     %info2.Filename = files_out.In1{i};
     %info2.Filemoddate = char(datetime('now'));
     %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
 
-    eval(['niftiwrite(',maps{i},', files_out.In1{i})'])
+    %eval(['niftiwrite(',maps{i},', files_out.In1{i})'])
     JMod = jsonencode(J);
     [path, name, ext] = fileparts(files_out.In1{i});
     jsonfile = [path, '/', name, '.json'];

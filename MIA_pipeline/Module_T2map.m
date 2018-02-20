@@ -93,13 +93,13 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext'};
-    defaults = {5, true, '', 'T2_map'};
+    defaults = {5, true, '', 'T2map'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
     user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
-    parameter_default = {''; ''; 'T2_map'; 5};
+    parameter_default = {''; ''; 'T2map'; 5};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -261,9 +261,23 @@ OutputImages(isnan(OutputImages)) = -1;
 %% need to update the json structure here before saving it with the T2map
 %spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
 
+info2 = info;
+info2.Filename = files_out.In1{1};
+info2.Filemoddate = char(datetime('now'));
+info2.Datatype = class(OutputImages);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
+%info2.raw.datatype = 16;
+%info2.BitsPerPixel = 32;
+info2.ImageSize = size(OutputImages);
+%info2.raw.dim(1) = 3;
+%info2.raw.dim(5) = 1;
+%info2.raw.bitpix = 32;
+%info2.raw = struct();
+info2.Description = [info.Description, 'Modified by T2map Module'];
 
 
-niftiwrite(OutputImages, files_out.In1{1});%, info)
+
+niftiwrite(OutputImages, files_out.In1{1}, info2);
 JMod = jsonencode(J);
 [path, name, ext] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
