@@ -93,15 +93,15 @@ function [files_in,files_out,opt] = Module_Susceptibility(files_in,files_out,opt
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
-    defaults = {'', true, 'CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
+    fields   = {'folder_out', 'flag_test', 'OutputSequenceName', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
+    defaults = {'', true, 'AllName','CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension CBV'; '   .Output filename extension CBF'; '   .Output filename extension MTT'; '   .Output filename extension TMAX'; '   .Output filename extension TTP'; '   .Output filename extension T0'; ''; ''};
-    user_parameter_type = {'1Scan'; ''; 'char'; 'char'; 'char'; 'char'; 'char'; 'char'; 'logical'; 'char'};
-    parameter_default = {''; ''; 'CBV'; 'CBF'; 'MTT'; 'TMAX'; 'TTP'; 'T0'; '1'; ''};
-    psom_parameter_list = {''; ''; 'output_filename_ext_CBV'; 'output_filename_ext_CBF'; 'output_filename_ext_MTT'; 'output_filename_ext_TMAX'; 'output_filename_ext_TTP'; 'output_filename_ext_T0'; 'flag_test'; 'folder_out'};
+    user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension CBV'; '   .Output filename extension CBF'; '   .Output filename extension MTT'; '   .Output filename extension TMAX'; '   .Output filename extension TTP'; '   .Output filename extension T0'};%; ''; ''};
+    user_parameter_type = {'1Scan'; ''; 'char'; 'char'; 'char'; 'char'; 'char'; 'char'};%; 'logical'; 'char'};
+    parameter_default = {''; ''; 'CBV'; 'CBF'; 'MTT'; 'TMAX'; 'TTP'; 'T0'};%; '1'; ''};
+    psom_parameter_list = {''; ''; 'output_filename_ext_CBV'; 'output_filename_ext_CBF'; 'output_filename_ext_MTT'; 'output_filename_ext_TMAX'; 'output_filename_ext_TTP'; 'output_filename_ext_T0'};%; 'flag_test'; 'folder_out'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -196,7 +196,7 @@ fclose(fid);
 %raw = reshape(raw, 1,length(raw));
 J = jsondecode(raw);
 
-Informations = whos('N');
+%Informations = whos('N');
 
 
 
@@ -220,7 +220,7 @@ if sum(cell2num(scores(:,5))) > 10
     error('No computation because the AIF is not good enough');
 else
     [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
-    maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
+    %maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
     mapsVar = {CBV, CBF, MTT, TMAX, TTP, T0};
 
 end
@@ -230,7 +230,7 @@ end
 %FilteredImages = reshape(FilteredImages, Size);
 
 
-for i=1:length(maps)
+for i=1:length(mapsVar)
     info2 = info;
     info2.Filename = files_out.In1{i};
     info2.Filemoddate = char(datetime('now'));

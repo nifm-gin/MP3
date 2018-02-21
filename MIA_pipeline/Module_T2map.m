@@ -92,8 +92,8 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 %% Initialize the module's parameters with default values 
 if isempty(opt)
     % define every option needed to run this module
-    fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext'};
-    defaults = {5, true, '', 'T2map'};
+    fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
+    defaults = {5, true, '', 'T2map', 'AllName'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
@@ -206,7 +206,6 @@ T2map_tmp = NaN(size(data_to_fit,1),1);
 
 % define the threshold and variables
 maxim=max(data_to_fit(:)) * opt.threshold/100;
-
 t2init_Cte = EchoTime(1) - EchoTime(end-1);
 
 

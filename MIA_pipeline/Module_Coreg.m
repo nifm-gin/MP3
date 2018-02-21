@@ -93,15 +93,15 @@ function [files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_prefix', 'FinalResolution', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Warpping', 'Masking'};
-    defaults = {'', true, 'Coreg', 'Unchanged', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap', false};
+    fields   = {'folder_out', 'flag_test', 'output_filename_prefix', 'OutputSequenceName', 'FinalResolution', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Warpping', 'Masking'};
+    defaults = {'', true, 'Coreg', 'Prefix','Unchanged', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap', false};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one scan or more as input reference image'; 'Select one scan as input to compute and apply the coreg on'; 'Select one scan or more as input image to apply the coreg on'; 'Parameters'; '   .Output filename prefix';  '   .FinalResolution';  '   .Function';  '   .Separation'; '   .Tolerence'; '   .Hist_Smooth'; '   .Interpolation'; '   .Warpping'; '   .Masking'; ''; ''};
-    user_parameter_type = {'1Scan1TPXP'; '1Scan'; 'XScan'; ''; 'char'; 'cell'; 'cell'; 'char';'numeric';'numeric';'cell';'cell';'logical'; 'logical'; 'char'};
-    parameter_default = {'';'';''; ''; ''; {'Unchanged', 'Same as Ref', '64', '112', '128', '192', '256', '384', '512'}; {'mi','ncc', 'nmi', 'ecc'}; ''; ''; ''; {'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'}; {'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'}; ''; 'Dont Show';'Dont Show'};
-    psom_parameter_list = {'';'';''; ''; 'output_filename_prefix'; 'FinalResolution'; 'Function'; 'Separation';'Tolerence' ; 'Hist_Smooth';'Interpolation'; 'Warpping'; 'Masking';'flag_test'; 'folder_out' };
+    user_parameter_list = {'Select one scan or more as input reference image'; 'Select one scan as input to compute and apply the coreg on'; 'Select one scan or more as input image to apply the coreg on'; 'Parameters'; '   .Output filename prefix';  '   .FinalResolution';  '   .Function';  '   .Separation'; '   .Tolerence'; '   .Hist_Smooth'; '   .Interpolation'; '   .Warpping'; '   .Masking'};%; ''; ''};
+    user_parameter_type = {'1Scan1TPXP'; '1Scan'; 'XScan'; ''; 'char'; 'cell'; 'cell'; 'char';'numeric';'numeric';'cell';'cell';'logical'};%; 'logical'; 'char'};
+    parameter_default = {'';'';''; ''; ''; {'Unchanged', 'Same as Ref', '64', '112', '128', '192', '256', '384', '512'}; {'mi','ncc', 'nmi', 'ecc'}; ''; ''; ''; {'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'}; {'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'}; ''};%; 'Dont Show';'Dont Show'};
+    psom_parameter_list = {'';'';''; ''; 'output_filename_prefix'; 'FinalResolution'; 'Function'; 'Separation';'Tolerence' ; 'Hist_Smooth';'Interpolation'; 'Warpping'; 'Masking'};%;'flag_test'; 'folder_out' };
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -169,7 +169,7 @@ if strcmp(files_out, '')
     files_out = files_in;
     files_out = rmfield(files_out, 'In1');
     [path_nii,name_nii,ext_nii] = fileparts(files_in.In2{1});
-    files_out.In2 = {cat(2,path_nii,filesep,opt.output_filename_prefix,'_', name_nii,ext_nii)};
+    files_out.In2 = {cat(2,path_nii,filesep,opt.output_filename_prefix, '_', name_nii,ext_nii)};
     for i=1:length(files_out.In3)
         [path_nii,name_nii,ext_nii] = fileparts(files_in.In3{i});
         files_out.In3{i}= cat(2,path_nii,filesep,opt.output_filename_prefix,'_', name_nii,ext_nii);
@@ -187,7 +187,7 @@ end
 
 FixedImInfo = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
-FixedImJsonfile = [path, '/', name, '.json'];
+FixedImJsonfile = [path, filesep, name, '.json'];
 fid = fopen(FixedImJsonfile, 'r');
 raw = fread(fid, inf, 'uint8=>char');
 fclose(fid);
@@ -282,9 +282,17 @@ spm_jobman('run', jobs, inputs{:});
 % end
 
 
+
+
 %% JSON de l'input 2
 [path, name, ext] = fileparts(files_in.In2{1});
-jsonfile = [path, '/', name, '.json'];
+SpmOutputFile  = [path, filesep, opt.output_filename_prefix, name, ext];
+if exist(SpmOutputFile, 'file') ~=2
+    error('Cannot find the file %s', SpmOutputFile);
+end
+movefile(SpmOutputFile,files_out.In2{1});
+
+jsonfile = [path, filesep, name, '.json'];
 fid = fopen(jsonfile, 'r');
 raw = fread(fid, inf, 'uint8=>char');
 fclose(fid);
@@ -293,7 +301,7 @@ J = jsondecode(raw);
 
 JMod = jsonencode(J);
 [path, name, ext] = fileparts(files_out.In2{1});
-jsonfile = [path, '/', name, '.json'];
+jsonfile = [path, filesep, name, '.json'];
 fidmod = fopen(jsonfile, 'w');
 fwrite(fidmod, JMod, 'uint8');
 fclose(fidmod);
@@ -301,7 +309,12 @@ fclose(fidmod);
 %% JSON de l'input 3
 for i=1:length(files_out.In3)
     [path, name, ext] = fileparts(files_in.In3{i});
-    jsonfile = [path, '/', name, '.json'];
+    SpmOutputFile  = [path, filesep, opt.output_filename_prefix, name, '.nii'];
+    if exist(SpmOutputFile, 'file') ~=2
+        error('Cannot find the file %s', SpmOutputFile);
+    end
+    movefile(SpmOutputFile,files_out.In3{i})
+    jsonfile = [path, filesep, name, '.json'];
     fid = fopen(jsonfile, 'r');
     raw = fread(fid, inf, 'uint8=>char');
     fclose(fid);
@@ -309,7 +322,7 @@ for i=1:length(files_out.In3)
 
     JMod = jsonencode(J);
     [path, name, ext] = fileparts(files_out.In3{i});
-    jsonfile = [path, '/', name, '.json'];
+    jsonfile = [path, filesep, name, '.json'];
     fidmod = fopen(jsonfile, 'w');
     fwrite(fidmod, JMod, 'uint8');
     fclose(fidmod);
