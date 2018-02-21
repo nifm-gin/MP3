@@ -2251,7 +2251,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
 end
 slice_nbr = get(handles.MIA_slider_slice, 'Value');
 % is zommed?
-if get(handles.MIA_data1, 'Children')~=0
+if numel(get(handles.MIA_data1, 'Children')) ~=0 && ~strcmp(get(hObject, 'Tag'), 'MIA_orientation_space_popupmenu')
     origInfo = getappdata(handles.MIA_data1, 'matlab_graphics_resetplotview');
     if isempty(origInfo)
         isZoomed = false;
