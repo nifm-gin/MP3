@@ -97,9 +97,10 @@ handles.FilterParameters = {};
 handles.MIA_pipeline_Unique_Values_Selection = {};
 
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
-data_selected =  MIA2('get_data_selected',handles.MIA_data);
-set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
-set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
+data_selected =  MIA2('finddata_selected',handles.MIA_data);
+set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected)) '-' char(handles.MIA_data.database.Tp(data_selected)) ' only'])
+set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected))])
+
 guidata(hObject, handles);
 
 
@@ -1202,6 +1203,7 @@ for i=1:length(Jobs)
                        else
                            error('No output_filename_ext or output_filename_prefix')
                        end
+
                        %Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
@@ -1225,7 +1227,7 @@ for i=1:length(Jobs)
 %                        else
 %                            error('No output_filename_ext or output_filename_prefix')
 %                        end
-                       Tags_out.IsRaw = double(Tags_out.IsRaw);
+                       %Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
                    end

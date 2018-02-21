@@ -134,6 +134,13 @@ switch selection
     case 'No'
         return
 end
+
+if ~isempty(findobj('type', 'figure', 'name', 'MIA pipeline Manager'))
+    close((findobj('type', 'figure', 'name', 'MIA pipeline Manager')));
+end
+
+
+
 delete(hObject);
 
 
@@ -4230,7 +4237,7 @@ handles.table1.cluster = [];
 handles.table1.cluster_row = [];
 
 %uncheck the mask option
-set(handles.MIA_menu_define_mask, 'Checked', 'off');
+%set(handles.MIA_menu_define_mask, 'Checked', 'off');
 
 % restore the manual contrast to 0;
 handles.display_option.manual_contrast = 0;
