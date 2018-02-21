@@ -554,7 +554,7 @@ get(hObject, 'ID')
 % set(handles.MIA_pipeline_module_popupmenu, 'Value', idx)
 
 
-function node_callbacks(hObject, eventdata, handles)
+function node_callbacks(hObject, ~, handles)
 eventdata = [];
 handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
 module_list = get(handles.MIA_pipeline_module_popupmenu, 'String');
@@ -930,14 +930,13 @@ function MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handle
 % hObject    handle to MIA_pipeline_exectute_module_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') == 7
-    opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
-else
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
 end
+opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
 Types = handles.new_module.opt.table.Type;
 ScanInputs = find(contains(Types, 'Scan'));
 NbScanInput = length(ScanInputs);
@@ -969,15 +968,31 @@ switch NbScanInput
         %pipeline = struct();
         for i=1:NbJobs
             Files_in.In1 = {[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']};
-            pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
+            switch handles.new_module.opt.Module_settings.OutputSequenceName
+                case 'Suffix'
+                    Files_out.In1 = {[char(NewTable.Path(i)), char(NewTable.Patient(i)), '_',char(NewTable.Tp(i)),'_',char(NewTable.SequenceName(i)),'_',handles.new_module.opt.Module_settings.output_filename_ext, '.nii']};
+                case 'Prefix'
+                    Files_out.In1 = {[char(NewTable.Path(i)), char(NewTable.Patient(i)), '_',char(NewTable.Tp(i)),'_', handles.new_module.opt.Module_settings.output_filename_prefix,'_',char(NewTable.SequenceName(i)), '.nii']};
+                case 'AllName'
+                    if isfield(handles.new_module.opt.Module_settings,'output_filename_ext')
+                        Files_out.In1 = {[char(NewTable.Path(i)), char(NewTable.Patient(i)), '_',char(NewTable.Tp(i)),'_', handles.new_module.opt.Module_settings.output_filename_ext, '.nii']};
+                    else
+                        FN = fieldnames(handles.new_module.opt.Module_settings);
+                        extensions = FN(contains(FN, 'output_filename_ext'));
+                        for ii=1:length(extensions)
+                           Files_out.In1{ii} =  [char(NewTable.Path(i)), char(NewTable.Patient(i)), '_',char(NewTable.Tp(i)),'_', getfield(handles.new_module.opt.Module_settings, extensions{ii}), '.nii'];
+                        end
+                    end
+            end
+            pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
         end
     case 3
         %[Input1 Input2 Input3] = handles.new_module.opt.table.Default{ScanInputs};
-        All_selected_Files = cell(3,1);
+        %All_selected_Files = cell(3,1);
         for i=1:length(ScanInputs)
             Input = handles.new_module.opt.table.Default{ScanInputs(i)};
             NbParameters = size(Input,2)/2;
-            FinalInputTable = {};
+            %FinalInputTable = {};
             %FinalInputTable = handles.MIA_pipeline_Filtered_Table;
             for j=1:NbParameters
                 A = Input(:,2*j);
@@ -1031,28 +1046,51 @@ switch NbScanInput
                 TpInput2 = Input2TableTmp.Tp;
                 for j=1:length(TpInput2)
                     File2Try = [char(Input2TableTmp(Input2TableTmp.Tp == TpInput2(j),:).Path), char(Input2TableTmp(Input2TableTmp.Tp == TpInput2(j),:).Filename), '.nii'];
+                   switch handles.new_module.opt.Module_settings.OutputSequenceName
+                   case 'Suffix'
+                        File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).SequenceName), '_',handles.new_module.opt.Module_settings.output_filename_ext, '.nii'];
+                   case 'Prefix'
+                        File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path),char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_prefix, '_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).SequenceName),'.nii'];
+                   case 'AllName'
+                        File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path),char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_ext,'.nii'];
+                   end
                     if ~strcmp(File2Try, File1)
                         File2 = File2Try;
                         Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == PatientsInput2(i),:);
                         Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
                         if size(Selection,3) <3
                             File3 = {};
+                            File3Out = {};
                         else
                             Scans = Selection(1,:,3);
                             Scans = Scans(~cellfun('isempty',Scans));
                             File3 = cell(length(Scans),1);
+                            File3Out = cell(length(Scans),1);
                             for k=1:length(Scans)
-                                File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
-                                if sum(strcmp(File3Test, {File1, File2})) ~= 1
-                                    File3{k,1} = File3Test;
-                                end
+                               File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
+                               if ~strcmp(File3Test, '.nii')
+                                   switch handles.new_module.opt.Module_settings.OutputSequenceName
+                                       case 'Suffix'
+                                           File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).SequenceName), '_',handles.new_module.opt.Module_settings.output_filename_ext, '.nii'];
+                                       case 'Prefix'
+                                           File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_prefix, '_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).SequenceName),'.nii'];
+                                       case 'AllName'
+                                           File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_ext,'.nii'];
+                                   end
+                                   if sum(strcmp(File3Test, {File1, File2})) ~= 1
+                                       File3{k,1} = File3Test;
+                                       File3Out{k,1} = File3Outtmp;
+                                   end
+                               end
                             end
                         end
                         %%% ADD JOBS HERE
                         Files_in.In1 = {File1};
                         Files_in.In2 = {File2};
+                        Files_out.In2 = {File2Out};
                         Files_in.In3 = File3(~cellfun('isempty',File3));
-                        pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
+                        Files_out.In3 = File3Out(~cellfun('isempty',File3Out));
+                        pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
                         Compteur = Compteur+1;
                     end
                 end
@@ -1067,46 +1105,71 @@ switch NbScanInput
                 if isempty(Input1Table)
                     disp('Impossible to find the file (Input1) for');
                     i
+                else
+                    File1 = [char(Input1Table.Path), char(Input1Table.Filename), '.nii'];
+                    %[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']
+                    
+                    Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
+                    Input2Table = Input2Table(Input2Table.SequenceName == Selection(1,1,2),:);
+                    TpInput2 = Input2Table.Tp;
+                    for j=1:length(TpInput2)
+                        File2Try = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Filename), '.nii'];
+                        switch handles.new_module.opt.Module_settings.OutputSequenceName
+                            case 'Suffix'
+                                File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).SequenceName), '_',handles.new_module.opt.Module_settings.output_filename_ext, '.nii'];
+                            case 'Prefix'
+                                File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_prefix, '_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).SequenceName),'.nii'];
+                            case 'AllName'
+                                File2Out = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Patient),'_',char(Input2Table(Input2Table.Tp == TpInput2(j),:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_ext,'.nii'];
+                        end
+                        if ~strcmp(File2Try, File1)
+                            File2 = File2Try;
+                            
+                            Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
+                            Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
+                            if size(Selection,3) <3
+                                File3 = {};
+                                File3Out = {};
+                            else
+                                Scans = Selection(1,:,3);
+                                Scans = Scans(~cellfun('isempty',Scans));
+                                File3 = cell(length(Scans),1);
+                                File3Out = cell(length(Scans),1);
+                                for k=1:length(Scans)
+                                    File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
+                                    switch handles.new_module.opt.Module_settings.OutputSequenceName
+                                        case 'Suffix'
+                                            File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).SequenceName), '_',handles.new_module.opt.Module_settings.output_filename_ext, '.nii'];
+                                        case 'Prefix'
+                                            File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_prefix, '_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).SequenceName),'.nii'];
+                                        case 'AllName'
+                                            File3Outtmp = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path),char(Input3Table(Input3Table.SequenceName == Scans{k},:).Patient),'_',char(Input3Table(Input3Table.SequenceName == Scans{k},:).Tp), '_',handles.new_module.opt.Module_settings.output_filename_ext,'.nii'];
+                                    end
+                                    if sum(strcmp(File3Test, {File1, File2})) ~= 1
+                                        File3{k,1} = File3Test;
+                                        File3Out{k,1} = File3Outtmp;
+                                    end
+                                end
+                            end
+                            %%% ADD JOBS HERE
+                            Files_in.In1 = {File1};
+                            Files_in.In2 = {File2};
+                            Files_out.In2 = {File2Out};
+                            Files_in.In3 = File3(~cellfun('isempty',File3));
+                            Files_out.In3 = File3Out(~cellfun('isempty',File3Out));
+                            
+                            pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
+                            Compteur = Compteur+1;
+                        end
+                    end
+                    
+                    
+                    
                 end
-                File1 = [char(Input1Table.Path), char(Input1Table.Filename), '.nii'];
-                %[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']
-                
-                Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
-                Input2Table = Input2Table(Input2Table.SequenceName == Selection(1,1,2),:);
-                TpInput2 = Input2Table.Tp;
-                for j=1:length(TpInput2)
-                   File2Try = [char(Input2Table(Input2Table.Tp == TpInput2(j),:).Path), char(Input2Table(Input2Table.Tp == TpInput2(j),:).Filename), '.nii'];
-                   if ~strcmp(File2Try, File1)
-                       File2 = File2Try;
-
-                       Input3Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Patient == Selection(3,i,1),:);
-                       Input3Table = Input3Table(Input3Table.Tp == TpInput2(j),:);
-                       if size(Selection,3) <3
-                           File3 = {};
-                       else
-                           Scans = Selection(1,:,3);
-                           Scans = Scans(~cellfun('isempty',Scans));
-                           File3 = cell(length(Scans),1);
-                           for k=1:length(Scans)
-                               File3Test = [char(Input3Table(Input3Table.SequenceName == Scans{k},:).Path), char(Input3Table(Input3Table.SequenceName == Scans{k},:).Filename), '.nii'];
-                               if sum(strcmp(File3Test, {File1, File2})) ~= 1
-                                   File3{k,1} = File3Test;
-                               end
-                           end
-                       end                   
-                       %%% ADD JOBS HERE
-                       Files_in.In1 = {File1};
-                       Files_in.In2 = {File2};
-                       Files_in.In3 = File3(~cellfun('isempty',File3));
-                       pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
-                       Compteur = Compteur+1;
-                   end
-                end
-                
                 
             end
         end
-            
+        
             
 %             switch Types{ScanInputs(i)}
 %                 case '1Scan'
@@ -1196,13 +1259,21 @@ for i=1:length(Jobs)
                        [~, name_out, ~] = fileparts(B{k});
                        Tags_out.Filename = categorical(cellstr(name_out));
                        Tags_out.IsRaw = categorical(0);
-                       if isfield(J.opt, 'output_filename_ext')
-                           Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), '_', J.opt.output_filename_ext]));
-                       elseif isfield(J.opt, 'output_filename_prefix')
-                           Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, '_',char(Tags_in.SequenceName)]));
-                       else
-                           error('No output_filename_ext or output_filename_prefix')
+                       switch J.opt.OutputSequenceName
+                           case 'AllName'
+                               Tags_out.SequenceName = categorical(cellstr(J.opt.output_filename_ext));
+                           case 'Prefix'
+                               Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, char(Tags_in.SequenceName)]));
+                           case 'Suffix'
+                               Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
                        end
+                       %if isfield(J.opt, 'output_filename_ext')
+                       %    Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), '_', J.opt.output_filename_ext]));
+                       %elseif isfield(J.opt, 'output_filename_prefix')
+                       %    Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix, '_',char(Tags_in.SequenceName)]));
+                       %else
+                       %    error('No output_filename_ext or output_filename_prefix')
+                       %end
 
                        %Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
@@ -1217,9 +1288,23 @@ for i=1:length(Jobs)
                        [~, name_out, ~] = fileparts(B{k});
                        Tags_out.Filename = categorical(cellstr(name_out));
                        Tags_out.IsRaw = categorical(0);
-                       Spl = split(name_out, '_');
-                       Type = Spl{end};
-                       Tags_out.SequenceName = Type;
+                       %Spl = split(name_out, '_');
+                       %Type = Spl{end};
+                       switch J.opt.OutputSequenceName
+                           case 'AllName'
+                               if isfield(handles.new_module.opt.Module_settings,'output_filename_ext')
+                                   Tags_out.SequenceName = categorical(cellstr(J.opt.output_filename_ext));
+                               else
+                                   Tags_out.SequenceName = categorical(cellstr(getfield(handles.new_module.opt.Module_settings, extensions{k})));
+                                   %Files_out.In1{ii} =  [char(NewTable.Path(i)), char(NewTable.Patient(i)), '_',char(NewTable.Tp(i)),'_', getfield(handles.new_module.opt.Module_settings, extensions{ii}), '.nii'];
+                               end
+                               
+                           case 'Prefix'
+                               Tags_out.SequenceName = categorical(cellstr([J.opt.output_filename_prefix,'_',char(Tags_in.SequenceName)]));
+                           case 'Suffix'
+                               Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), '_',J.opt.output_filename_ext]));
+                       end
+                       %Tags_out.SequenceName = Type;
 %                        if isfield(J.opt, 'output_filename_ext')
 %                            Tags_out.SequenceName = categorical(cellstr([char(Tags_in.SequenceName), J.opt.output_filename_ext]));
 %                        elseif isfield(J.opt, 'output_filename_prefix')
