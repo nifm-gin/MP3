@@ -244,6 +244,14 @@ function MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 switch handles.new_module.opt.table.Type{parameter_selected}
+    case 'Text'
+        
+        Text = handles.new_module.opt.table.Default{1}';
+        
+        table.ColumnFormat = {'char'};
+        table.data = Text;
+        table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
+        table.editable = false;
     case '1Scan1TPXP'
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
