@@ -1231,10 +1231,23 @@ end
 % end
 
 
+if handles.MIA_pipeline_radiobuttonPSOM.Value
+    psom_run_pipeline(pipeline, opt_pipe)
 
-psom_run_pipeline(pipeline, opt_pipe)
-
-Result = load([opt_pipe.path_logs, '/PIPE_status_backup.mat']);
+    Result = load([opt_pipe.path_logs, '/PIPE_status_backup.mat']);
+else
+    Modules = fieldnames(pipeline);
+    Result = struct();
+    for i=1:length(Modules)
+        Module = getfield(pipeline, Modules{i});
+        files_in = Module.files_in;
+        files_out = Module.files_out;
+        opt = Module.opt;
+        eval(Module.command)
+        Result = setfield(Result, Modules{i}, 'finished');
+        
+    end
+end
 Jobs = fieldnames(pipeline);
 update = false;
 for i=1:length(Jobs)
