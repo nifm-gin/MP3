@@ -2289,8 +2289,8 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),2) prctile(image_to_display(:),98)]);
+                if sum(image_to_display(:)) ~= 0 && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 end
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -2310,8 +2310,8 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                  % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),2) prctile(image_to_display(:),98)]);
+                if sum(image_to_display(:)) ~= 0 && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 end
 
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -2628,8 +2628,6 @@ guidata(hObject, handles);
 
 function handles = MIA_update_image_displayed(hObject, eventdata, handles)
 
-
-%%
 scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 
 switch get(hObject, 'Tag')
