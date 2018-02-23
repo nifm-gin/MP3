@@ -2286,7 +2286,7 @@ if isfield(handles, 'data_displayed')
         end
         switch number_of_data_to_displayed
             case 1 % image only
-                image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
+                image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
                 if sum(image_to_display(:)) ~= 0 && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
@@ -7744,8 +7744,8 @@ for i = 1:numel(unique(log_file.StudyName))
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName), ''))) == 1
                             nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
                                 handles.database.Tp ==  char(tp_selected) &...
-                                strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')), length(char(clean_variable_name(char(json_data.ProtocolName), '')))));
-                            seq_name = [char(json_data.ProtocolName) '(' num2str(nbr_of_seq+1) ')'];
+                                strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')), length(char(clean_variable_name(char(json_data.ProtocolName), '')))-1));
+                            seq_name = [char(clean_variable_name(char(json_data.ProtocolName), '')) '(' num2str(nbr_of_seq+1) ')'];
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         else
                             

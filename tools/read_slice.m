@@ -1,7 +1,7 @@
 function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr)
 % Fonction used to rotate Vi to the voxel space of Vo
 % Vi = image to move
-% Vo = reference image (voxel space)
+% Vref = reference image (voxel space)
 %-Loop over planes reading to Y
 
 			
@@ -9,16 +9,18 @@ function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr)
 Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
 
 xy = Vref(1).dim(1:2);
-index_3D_vol = echo_nbr*expt_nbr ;
-
+index_3D_vol = echo_nbr*expt_nbr;
+% compute the transformation to apply between the Vi and the Vref
 mat_tmp = Vref(1).mat\Vi(index_3D_vol).mat;
+
 Vi_index_3D_vol=Vi(index_3D_vol);
 
 parfor p = 1:Vref(1).dim(3)
     B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
     M = inv(B*mat_tmp);
-    d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
-    Y(:,:,p) = reshape(d,xy);
+%     d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
+%     Y(:,:,p) = reshape(d,xy);
+    Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
 end
 
 
@@ -34,10 +36,15 @@ end
 % need to check it !!
 % There is too much distortion in the loaded image for any non-orthogonal rotation or shearing
 if sum(sum(R==0) == [2 2 2]) ~= 3
-    R = zeros([3,3]);
-    R(1,find(abs(Vref(1).mat(:,1)) ==max(abs(Vref(1).mat(:,1))))) = Vref(1).mat(1,find(abs(Vref(1).mat(:,1)) == max(abs(Vref(1).mat(:,1)))));
-    R(2,find(abs(Vref(1).mat(:,2)) ==max(abs(Vref(1).mat(:,2))))) = Vref(1).mat(2,find(abs(Vref(1).mat(:,2)) == max(abs(Vref(1).mat(:,2)))));
-    R(3,find(abs(Vref(1).mat(:,3)) ==max(abs(Vref(1).mat(:,3))))) = Vref(1).mat(3,find(abs(Vref(1).mat(:,3)) == max(abs(Vref(1).mat(:,3)))));
+    Rnew = zeros([3,3]);
+    R = Vref(1).mat(1:3,1:3);
+% %     Rnew(1,find(abs(Vref(1).mat(:,1)) ==max(abs(Vref(1).mat(:,1))))) = Vref(1).mat(1,find(abs(Vref(1).mat(1:3,1)) == max(abs(Vref(1).mat(1:3,1)))));
+% %     Rnew(2,find(abs(Vref(1).mat(:,2)) ==max(abs(Vref(1).mat(:,2))))) = Vref(1).mat(2,find(abs(Vref(1).mat(1:3,2)) == max(abs(Vref(1).mat(1:3,2)))));
+% %     Rnew(3,find(abs(Vref(1).mat(:,3)) ==max(abs(Vref(1).mat(:,3))))) = Vref(1).mat(3,find(abs(Vref(1).mat(1:3,3)) == max(abs(Vref(1).mat(1:3,3)))));
+    Rnew(abs(R(1:3,1)) == max(abs(R(1:3,1))),1)  =  R(abs(R(1:3,1)) == max(abs(R(1:3,1))),1);%max(abs(R(1:3,1)));
+    Rnew(abs(R(1:3,2)) == max(abs(R(1:3,2))),2)  =  R(abs(R(1:3,2)) == max(abs(R(1:3,2))),2);%max(abs(R(1:3,2)));
+    Rnew(abs(R(1:3,3)) == max(abs(R(1:3,3))),3)  =  R(abs(R(1:3,3)) == max(abs(R(1:3,3))),3);%max(abs(R(1:3,3)));
+    R =   Rnew;
 end
 
 
@@ -65,7 +72,7 @@ end
 function orient = get_orient(R)
 
 orient = zeros(1,3);
-parfor i = 1:3
+for i = 1:3
     switch find(R(i,:)) * sign(sum(R(i,:))) 
         case 1
             orient(i) = 5;		% Left to Right

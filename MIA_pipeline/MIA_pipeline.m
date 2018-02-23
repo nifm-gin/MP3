@@ -1040,7 +1040,7 @@ switch NbScanInput
             %[char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']
             
             Input2Table = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == Selection(1,1,2),:);
-            PatientsInput2 = Input2Table.Patient;
+            PatientsInput2 = unique(Input2Table.Patient);
             for i=1:length(PatientsInput2)
                 Input2TableTmp = Input2Table(Input2Table.Patient == PatientsInput2(i), :);
                 TpInput2 = Input2TableTmp.Tp;
@@ -1231,6 +1231,8 @@ end
 % end
 
 
+% Module_Coreg(pipeline.Module_Coreg0.files_in, pipeline.Module_Coreg0.files_out, pipeline.Module_Coreg0.opt)
+% Module_Coreg(pipeline.Module_Coreg1.files_in, pipeline.Module_Coreg1.files_out, pipeline.Module_Coreg1.opt)
 
 psom_run_pipeline(pipeline, opt_pipe)
 
