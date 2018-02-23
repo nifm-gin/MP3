@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 24-Jan-2018 11:20:20
+% Last Modified by GUIDE v2.5 23-Feb-2018 14:08:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -125,67 +125,42 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_add_module_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-module_selected = get(handles.MIA_pipeline_module_popupmenu,'Value');
-module_list = get(handles.MIA_pipeline_module_popupmenu,'String');
-if isfield(handles, 'biograph_fig')
-    if ~isempty(findobj('Tag', 'BioGraphTool'))
-        close(handles.biograph_fig);
-    end
-    handles = rmfield(handles, 'biograph_fig');
-    handles = rmfield(handles, 'biograph_obj');
-end
-if isfield(handles, 'pipeline')
-    if sum(strcmp(fieldnames(handles.pipeline), char(module_list(module_selected))))
-        module_nbr = strfind(fieldnames(handles.pipeline), char(module_list(module_selected)));
-        module_nbr = sum([module_nbr{:}]);
-        module_name = [char(module_list(module_selected)), '_' num2str(module_nbr+1)];
-        eval(['handles.pipeline.' module_name '= handles.new_module;']);      
-    else
-        eval(['handles.pipeline.' char(module_list(module_selected)) '= handles.new_module;']);
-    end
+
+[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles);
+
+if isfield(handles, 'psom')
+    pipeline = handles.psom.pipeline;
 else
-    eval(['handles.pipeline.' char(module_list(module_selected)) '= handles.new_module;']);
-    
+    pipeline = struct();
 end
 
-% for i = 1:size(handles.new_module.files_in,1)
-%     files_in.(['subject' num2str(i)]).file1 = handles.new_module.files_in(i,:);
-% end
-% pipeline = struct();
-% % Get the list of subjects from files_in
-% list_subject = fieldnames(files_in);
-% 
-% opt.folder_out = '/test/';
-% 
-% % [files_in,files_out,opt] = brick_name(files_in,opt.folder_out,opt);
-% 
-% % Loop over subjects
-% for num_s = 1:length(list_subject)
-%     % Plug the ?fmri? input files of the subjects in the job
-%     job_in = files_in.(list_subject{num_s,:}).file1;
-%     % Use the default output name
-%     job_out = '';
-%     % Force a specific folder organization for outputs
-%     opt.test_brick.folder_out = [opt.folder_out list_subject{num_s} filesep];
-%     % Give a name to the jobs
-%     job_name = ['test_brick_' list_subject{num_s}];
-%     % The name of the employed brick
-%     brick = 'test_brick';
-%     % Add the job to the pipeline
-%     pipeline = psom_add_job(pipeline, job_name,brick,job_in,job_out,opt.test_brick);
-%     % The outputs of this brick are just
-%     % intermediate outputs :biograph_obj
-%     % clean these up as soon as possible
-% %     pipeline = psom_add_clean(pipeline, [job_name ...
-% %         '_clean'],pipeline.(job_name).files_out);
-% end
+handles.psom.pipeline = new_pipeline;
+module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
+set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 
 % display the pipeline
-handles.biograph_obj = psom_visu_dependencies(handles.pipeline);
-set(0, 'ShowHiddenHandles', 'on')
-handles.biograph_fig = gcf;
-set(handles.biograph_fig, 'Name', 'MIA pipeline manager');
+if exist('biograph') == 2
+    
+    [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
+    bg = biograph(graph_deps,list_jobs);
+    
+    
+    % dolayout(bg);
+    %% add editable functions to interact with the biograph
+    set(bg, 'NodeCallbacks', @(hObject,eventdata)MIA_pipeline('node_callbacks',hObject));
+    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MIA_pipeline('edge_callbacks',hObject));
+    view(bg) %, which will bring up the display in a different window.
+    set(0, 'ShowHiddenHandles', 'on')
+    
+    handles.psom.biograph_fig = gcf;
+    %set(handles.psom.biograph_ob, 'Name', 'MIA pipeline manager');
+    
+    
+end
 guidata(hObject, handles);
+
+%MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
+
 
 
 
@@ -532,21 +507,24 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in MIA_pipeline_clear_modules_button.
-function MIA_pipeline_clear_modules_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_clear_modules_button (see GCBO)
+% --- Executes on button press in MIA_pipeline_clear_pipeline_button.
+function MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_clear_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles, 'pipeline')
-    handles = rmfield(handles, 'pipeline');
+if isfield(handles, 'psom')
+    set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
     if ~isempty(findobj('Tag', 'BioGraphTool'))
-        close(handles.biograph_fig);
+        close(findobj('Tag', 'BioGraphTool'));
     end
-    handles = rmfield(handles, 'biograph_fig');
-    handles = rmfield(handles, 'biograph_obj');
+        handles = rmfield(handles, 'psom');
+
 end
 guidata(hObject, handles);
+
+
+
 function edge_callbacks(hObject, eventdata, handles)
 eventdata = [];
 handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
@@ -565,16 +543,15 @@ get(hObject, 'ID')
 function node_callbacks(hObject, ~, handles)
 eventdata = [];
 handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
-module_list = get(handles.MIA_pipeline_module_popupmenu, 'String');
 
-sub_module = strfind(hObject.ID, '_');
-if ~isempty(sub_module)
-    module_name = hObject.ID(1:sub_module-1);
-else
-    module_name =hObject.ID;
-end
-idx = find(ismember(module_list, module_name));
-set(handles.MIA_pipeline_module_popupmenu, 'Value', idx)
+pipeline_module_names = fieldnames(handles.psom.pipeline);
+idx = strcmp(pipeline_module_names,hObject.ID);
+module_selected = handles.psom.pipeline.(pipeline_module_names{idx});
+module_selected.files_in
+%% update handles.MIA_pipeline_module_parameters using the information the module_selected
+
+
+
 
 %% test delete node
 % handles.pipeline = rmfield(handles.pipeline, (char(hObject.ID)));
@@ -591,8 +568,8 @@ set(handles.MIA_pipeline_module_popupmenu, 'Value', idx)
 % guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 %%%%
-handles.new_module = handles.pipeline.(char(hObject.ID));
-update_setting_windows(hObject, eventdata, handles)
+%handles.new_module = handles.pipeline.(char(hObject.ID));
+%update_setting_windows(hObject, eventdata, handles)
 
 
 % switch node.ID
@@ -744,7 +721,7 @@ guidata(hObject, handles);
         %
         %             set(handles.MIA_pipeline_parameter_setup,  'String', cellstr(handles.MIA_data.database.nii));
 
-function output_file_names = generate_file_name(handles, database_indexes, output_extention)
+function output_file_names = MIA_pipeline_generate_file_name(handles, database_indexes, output_extention)
 
 output_file_names = [...
     char(handles.MIA_data.database.Patient(database_indexes)) ...
@@ -933,32 +910,15 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in MIA_pipeline_exectute_module_button.
-function MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_exectute_module_button (see GCBO)
+
+function [new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
-    if status == false
-        error('Cannot create the PSOM folder to save the pipeline logs.')
-    end
-end
-opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
+pipeline = struct();
 Types = handles.new_module.opt.table.Type;
 ScanInputs = find(contains(Types, 'Scan'));
 NbScanInput = length(ScanInputs);
-% opt = struct();
-% for i=1:size(handles.new_module.opt.table,1)
-%     if isempty(handles.new_module.opt.table.PSOM_Fields{i})
-%         
-%     else
-%         opt = setfield(opt, handles.new_module.opt.table.PSOM_Fields{i}, handles.new_module.opt.table.Default{i});
-%     end
-% end
-%opt.flag_test = 0;
-pipeline = struct();
-
 switch NbScanInput
     case 1
         Scans = handles.new_module.opt.table.Default{ScanInputs};
@@ -992,6 +952,7 @@ switch NbScanInput
                         end
                     end
             end
+            
             pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
         end
     case 3
@@ -1169,79 +1130,32 @@ switch NbScanInput
                             pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(Compteur)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
                             Compteur = Compteur+1;
                         end
-                    end
-                    
-                    
-                    
-                end
-                
+                    end    
+                end               
             end
-        end
-        
-            
-%             switch Types{ScanInputs(i)}
-%                 case '1Scan'
-%                     ScanSelected = Input(cell2mat(Input(:,2)),1);
-%                     NewTable = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == ScanSelected{i},:);
-%                 case 'XScan'
-%                     ScansSelected = Input(cell2mat(Input(:,2)),1);
-%                     NewTable = table();
-%                     for i = 1:length(ScansSelected)
-%                         NewTable = [NewTable; handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == ScansSelected{i},:)];
-%                     end
-%                     NewTable = unique(NewTable);
-%                 case '1Scan1TPXP'
-%                     ScansSelected = Input(cell2mat(Input(:,2)),1);
-%                     TpSelected = Input(cell2mat(Input(:,2)),1)
-%                 
-%             end
+        end       
 end
-
+new_pipeline = pipeline;
+output_database = [];
     
-% %answer = inputdlg({'Where do you want to save the reporting files of the pipeline ?'}, 'Save reporting files', 1, {[pwd, '/LogsPSOM']});
-% 
-% 
-% 
-% % ScansSelected = Scans(cell2mat(Scans(:,2)),1);
-% % NewTable = table();
-% % for i = 1:length(ScansSelected)
-% %     NewTable = [NewTable; handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.SequenceName == ScansSelected{i},:)];
-% % end
-% % NewTable = unique(NewTable);
-% 
-% %extnii = repmat('.nii', size(NewTable, 1), 1);
-% handles.new_module.files_in = struct();
-% % for i=1:size(NewTable, 1)
-% %     %handles.new_module.files_in{i,1} = [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'];
-% %     handles.new_module.files_in = setfield(handles.new_module.files_in, ['Scan', num2str(i)], [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii']);
-% % end
-% handles.new_module.files_out = '';
-% 
-% handles.new_module.opt2 = handles.new_module.opt;
-% handles.new_module.opt = handles.new_module.opt2.Module_settings;
-% handles.new_module.opt.flag_test = 0;
-% %handles.new_module.opt.restart = {'new_module'};
-% 
-% 
-% 
-% for i=1:length(handles.new_module.opt2.parameter_link_psom)
-%     NameGUI = handles.new_module.opt2.parameter_link_psom{i, 2};
-%     NameField = handles.new_module.opt2.parameter_link_psom{i, 1};
-%     Vec = contains(handles.new_module.opt2.parameter_list, NameGUI);
-%     DefaultValue = handles.new_module.opt2.parameter_default{Vec};
-%     handles.new_module.opt = setfield(handles.new_module.opt, NameField, DefaultValue);
-% end
-% %pipeline.new_module = handles.new_module;
-% %list_fields = fieldnames(handles.new_module.files_in);
-% pipeline = struct();
-% for i=1:size(NewTable, 1)
-%     pipeline = psom_add_job(pipeline, ['job_Scan', num2str(i)], handles.new_module.module_name, [char(NewTable.Path(i)), char(NewTable.Filename(i)), '.nii'], handles.new_module.files_out, handles.new_module.opt);
-% end
 
 
+function MIA_pipeline_execute_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_execute_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
+    if status == false
+        error('Cannot create the PSOM folder to save the pipeline logs.')
+    end
+end
+opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
+
+
+%% exectute the pipeline
 if handles.MIA_pipeline_radiobuttonPSOM.Value
     psom_run_pipeline(pipeline, opt_pipe)
-
     Result = load([opt_pipe.path_logs, '/PIPE_status_backup.mat']);
 else
     Modules = fieldnames(pipeline);
@@ -1256,6 +1170,8 @@ else
         
     end
 end
+
+% check the status and update MIA database
 Jobs = fieldnames(pipeline);
 update = false;
 for i=1:length(Jobs)
@@ -1296,7 +1212,6 @@ for i=1:length(Jobs)
                        %    error('No output_filename_ext or output_filename_prefix')
                        %end
 
-                       %Tags_out.IsRaw = double(Tags_out.IsRaw);
                        handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
 
                    end
@@ -1334,7 +1249,7 @@ for i=1:length(Jobs)
 %                            error('No output_filename_ext or output_filename_prefix')
 %                        end
                        %Tags_out.IsRaw = double(Tags_out.IsRaw);
-                       handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
+                       hg Tags_out]);
 
                    end
                end
@@ -1350,6 +1265,7 @@ for i=1:length(Jobs)
 %            handles.MIA_data.database = unique([handles.MIA_data.database ; Tags_out]);
    end
 end
+% update MIA database if needed
 if update
     handles2 = guidata(handles.MIA_data.MIA_GUI);
     handles2.database = handles.MIA_data.database;
@@ -1668,3 +1584,56 @@ handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Propertie
 handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 guidata(hObject, handles);
+
+
+% --- Executes on selection change in MIA_pipeline_module_listbox.
+function popupmenu5_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_module_listbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_module_listbox
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in MIA_pipeline_pipeline_listbox.
+function MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_pipeline_listbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_pipeline_listbox
+
+
+% --- Executes during object creation, after setting all properties.
+function MIA_pipeline_pipeline_listbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in MIA_pipeline_exectute_pipeline_button.
+function MIA_pipeline_exectute_pipeline_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_exectute_pipeline_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
