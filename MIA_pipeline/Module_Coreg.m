@@ -90,18 +90,35 @@ function [files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)
 %% Initialization and syntax checks %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
+
+
+help = {
+    'Within-subject registration using a rigid-body model and image reslicing.'
+    ''
+    'The registration method used here is based on work by Collignon et al.'
+    'The original interpolation method described in this paper has been changed in order to give a smoother cost function.'
+    'The images are also smoothed slightly, as is the histogram.  This is all in order to make the cost function as smooth as possible, to give faster convergence and less chance of local minima.'
+    ''
+    'At the end of coregistration, the voxel-to-voxel affine transformation matrix is displayed, along with the histograms for the images in the original orientations, and the final orientations.'
+    'The registered images are displayed at the bottom.'
+    ''
+    'Registration parameters are stored in the headers of the "source" and the "other" images. These images are also resliced to match the source image voxel-for-voxel.'
+    }';
+
+
+
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_prefix', 'OutputSequenceName', 'FinalResolution', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Warpping', 'Masking'};
-    defaults = {'', true, 'Coreg', 'Prefix','Unchanged', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap', false};
+    fields   = {'folder_out', 'flag_test', 'Execution_Mode','output_filename_prefix', 'OutputSequenceName', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Wrapping'};
+    defaults = {'', true, 'All Database','Coreg', 'Prefix', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one scan or more as input reference image'; 'Select one scan as input to compute and apply the coreg on'; 'Select one scan or more as input image to apply the coreg on'; 'Parameters'; '   .Output filename prefix';  '   .FinalResolution';  '   .Function';  '   .Separation'; '   .Tolerence'; '   .Hist_Smooth'; '   .Interpolation'; '   .Warpping'; '   .Masking'};%; ''; ''};
-    user_parameter_type = {'1Scan1TPXP'; '1Scan'; 'XScan'; ''; 'char'; 'cell'; 'cell'; 'char';'numeric';'numeric';'cell';'cell';'logical'};%; 'logical'; 'char'};
-    parameter_default = {'';'';''; ''; ''; {'Unchanged', 'Same as Ref', '64', '112', '128', '192', '256', '384', '512'}; {'mi','ncc', 'nmi', 'ecc'}; ''; ''; ''; {'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'}; {'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'}; ''};%; 'Dont Show';'Dont Show'};
-    psom_parameter_list = {'';'';''; ''; 'output_filename_prefix'; 'FinalResolution'; 'Function'; 'Separation';'Tolerence' ; 'Hist_Smooth';'Interpolation'; 'Warpping'; 'Masking'};%;'flag_test'; 'folder_out' };
+    user_parameter_list = {'Description';'Execution Mode';'Select one scan or more as input reference image'; 'Select one scan as input to compute and apply the coreg on'; 'Select one scan or more as input image to apply the coreg on'; 'Parameters'; '   .Output filename prefix';  '    Estimation Options';'       .Objective Function';  '       .Separation'; '       .Tolerances'; '       .Histogram Smoothing'; '    Reslice options';'       .Interpolation'; '       .Wrapping'};%; ''; ''};
+    user_parameter_type = {'Text'; 'cell';'1Scan1TPXP'; '1Scan'; 'XScan'; ''; 'char'; '';'cell'; 'char';'numeric';'numeric';'';'cell';'cell'};%; 'logical'; 'char'};
+    parameter_default = {help;{'All Database','Through all sessions of one Patient','Through Each Session'};'';'';''; ''; '';''; {'mi','ncc', 'nmi', 'ecc'}; ''; ''; ''; '';{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'}; {'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'}};%; 'Dont Show';'Dont Show'};
+    psom_parameter_list = {'';'Execution_Mode';'';'';''; ''; 'output_filename_prefix'; '';'Function'; 'Separation';'Tolerence' ; 'Hist_Smooth';'';'Interpolation'; 'Wrapping'};%;'flag_test'; 'folder_out' };
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
@@ -236,7 +253,7 @@ switch opt.Interpolation
         matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.interp = 7;
 end
 %  Type of Warpping
-switch opt.Warpping
+switch opt.Wrapping
     case 'No wrap'
         matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = [0 0 0];
     case 'Warp X'
@@ -254,13 +271,7 @@ switch opt.Warpping
     case 'Warp X,Y&Z'
         matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.wrap = [1 1 1];
 end
-%  Mask?
-switch opt.Masking
-    case 'Dont mask images'
-        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask= 0;
-    case 'Mask image'
-        matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask = 1;
-end
+
 %% always set mask to 0
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask= 0;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_prefix;
