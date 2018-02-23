@@ -91,21 +91,38 @@ function [files_in,files_out,opt] = Module_Susceptibility(files_in,files_out,opt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
 if isempty(opt)
-    % define every option needed to run this module
-    %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'OutputSequenceName', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
-    defaults = {'', true, 'AllName','CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
-    opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-    
-    % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension CBV'; '   .Output filename extension CBF'; '   .Output filename extension MTT'; '   .Output filename extension TMAX'; '   .Output filename extension TTP'; '   .Output filename extension T0'};%; ''; ''};
-    user_parameter_type = {'1Scan'; ''; 'char'; 'char'; 'char'; 'char'; 'char'; 'char'};%; 'logical'; 'char'};
-    parameter_default = {''; ''; 'CBV'; 'CBF'; 'MTT'; 'TMAX'; 'TTP'; 'T0'};%; '1'; ''};
-    psom_parameter_list = {''; ''; 'output_filename_ext_CBV'; 'output_filename_ext_CBF'; 'output_filename_ext_MTT'; 'output_filename_ext_TMAX'; 'output_filename_ext_TTP'; 'output_filename_ext_T0'};%; 'flag_test'; 'folder_out'};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
-    %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
-    %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+     % define every option needed to run this module
+      %%   % define every option needed to run this module
+    % --> module_option(1,:) = field names
+    % --> module_option(2,:) = defaults values
+    module_option(:,1)   = {'folder_out',''};
+    module_option(:,2)   = {'flag_test',true};
+    module_option(:,3)   = {'OutputSequenceName','AllName'};
+    module_option(:,4)   = {'output_filename_ext_CBV','CBV'};
+    module_option(:,5)   = {'output_filename_ext_CBF','CBF'};
+    module_option(:,6)   = {'output_filename_ext_MTT','MTT'};
+    module_option(:,7)   = {'output_filename_ext_TMAX','TMAX'};
+    module_option(:,8)   = {'output_filename_ext_TTP','v'};
+    module_option(:,9)   = {'output_filename_ext_T0','TTP'}; 
+    opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+
+ %% list of everything displayed to the user associated to their 'type'
+     % --> user_parameter(1,:) = user_parameter_list
+     % --> user_parameter(2,:) = user_parameter_type
+     % --> user_parameter(3,:) = parameter_default
+     % --> user_parameter(4,:) = psom_parameter_list
+     % --> user_parameter(5,:) = Help : text data which describe the parameter (it
+     % will be display to help the user)
+    user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',''};
+    user_parameter(:,2)   = {'Parameters','','','',''};
+    user_parameter(:,3)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV',''};
+    user_parameter(:,4)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF',''};
+    user_parameter(:,5)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT',''};
+    user_parameter(:,6)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX',''};
+    user_parameter(:,7)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP',''};
+    user_parameter(:,8)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0',''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', 'VariableNames', VariableNames);
     
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
