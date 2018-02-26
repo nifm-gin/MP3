@@ -275,24 +275,38 @@ if isempty(handles.database)
 end
 
 patient_id = get(handles.MIA_name_list, 'Value');
-time_point = get(handles.MIA_time_points_list, 'Value');
-scan = get(handles.MIA_scans_list, 'Value');
 
-id_listing = unique(handles.database.Patient);
+id_listing = unique(handles.database.Patient,'stable');
 set(handles.MIA_name_list, 'String', char(id_listing));
 if numel(patient_id)~= 1
     return
 end
 
 Patient_filter = handles.database.Patient== id_listing(patient_id);
-tp_listing = unique(handles.database.Tp(Patient_filter));
-set(handles.MIA_time_points_list, 'String', char(tp_listing));
+tp_listing = unique(handles.database.Tp(Patient_filter),'stable');
+% check if the new time point listing is not shorter than the old one. If
+% so update MIA_time_points_list 'Value'
+if numel(tp_listing) < get(handles.MIA_time_points_list, 'Value')
+    set(handles.MIA_time_points_list, 'String', char(tp_listing), 'Value', numel(tp_listing));
+else
+    set(handles.MIA_time_points_list, 'String', char(tp_listing));
+end
+time_point = get(handles.MIA_time_points_list, 'Value');
 
 if get(handles.MIA_scan_VOIs_button, 'Value') == 0 %display parameters list
     is_scan =  handles.database.Type == 'Scan';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
-    set(handles.MIA_scans_list, 'String', char(sequence_listing));
+    
+    % check if the sequence listing is not shorter than the old one. If
+    % so update MIA_scans_list 'Value'
+    if numel(sequence_listing) < get(handles.MIA_scans_list, 'Value')
+        set(handles.MIA_scans_list, 'String', char(sequence_listing), 'Value', numel(sequence_listing));
+    else
+        set(handles.MIA_scans_list, 'String', char(sequence_listing));
+    end
+    scan = get(handles.MIA_scans_list, 'Value');
+    
     file_text= cell(1, numel(sequence_listing(scan)));
     for i=1:numel(sequence_listing(scan))
         sequence_filter =  handles.database.SequenceName== sequence_listing(scan(i));
@@ -1850,7 +1864,13 @@ else
     end
 end
 
+% display a waiting symbol
+set(handles.MIA_GUI, 'pointer', 'watch');
+drawnow;
+
 MIA_update_axes(hObject, eventdata, handles)
+
+set(handles.MIA_GUI, 'pointer', 'arrow');
 
 
 function handles = MIA_load_VOIs(hObject, ~, handles)
@@ -2214,7 +2234,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MIA_load_axes') && get(handles.MIA_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
-        handles = MIA_update_image_displayed(hObject, eventdata, handles);
+        handles = MIA_update_image_displayed(hObject, eventdata, handles);        
     end
     
     % update the ROI matrix (new ROI, resized...)
@@ -7013,20 +7033,18 @@ function MIA_sort_name_up_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles = guidata(hObject);
 if ~isfield(handles, 'database')
     return
 end
-namelist = {handles.database(:).name};
-namelist_up = sort(namelist);
-for i = 1:numel(handles.database)
-    match = strmatch(namelist_up(i), {handles.database(:).name}', 'exact');
-    database_tmp(i) = handles.database(match);
-end
-handles.database = database_tmp;
-
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{1} =  'ascend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
 
 % --------------------------------------------------------------------
 function MIA_sort_name_down_Callback(hObject, eventdata, handles)
@@ -7034,21 +7052,16 @@ function MIA_sort_name_down_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles = guidata(hObject);
-
 if ~isfield(handles, 'database')
     return
 end
-namelist = {handles.database(:).name};
-namelist_up = sort(namelist);
-patient_number = numel(handles.database)+1;
-for i = 1:numel(handles.database)
-    match = strmatch(namelist_up(i), {handles.database(:).name}', 'exact');
-    database_tmp(patient_number-i) = handles.database(match);
-end
-handles.database = database_tmp;
-
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{1} =  'descend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
 
 % --------------------------------------------------------------------
@@ -7071,21 +7084,19 @@ function MIA_sort_time_point_up_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles = guidata(hObject);
 if ~isfield(handles, 'database')
     return
 end
-patient = get(handles.MIA_name_list, 'Value');
-time_point_list = {handles.database(patient).day.date};
-time_point_list_up = sort(time_point_list);
-for i = 1:numel(handles.database(patient).day)
-    match = strmatch(time_point_list_up(i), {handles.database(patient).day.date}', 'exact');
-    database_tmp(i) = handles.database(patient).day(match);
-end
-handles.database(patient).day = database_tmp;
 
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{2} =  'ascend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
 
 % --------------------------------------------------------------------
 function MIA_sort_time_point_down_Callback(hObject, eventdata, handles)
@@ -7093,23 +7104,19 @@ function MIA_sort_time_point_down_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles = guidata(hObject);
-
 if ~isfield(handles, 'database')
     return
 end
-patient = get(handles.MIA_name_list, 'Value');
-time_point_list = {handles.database(patient).day.date};
-time_point_list_up = sort(time_point_list);
-time_point_number = numel(handles.database(patient).day)+1;
-for i = 1:numel(handles.database(patient).day)
-    match = strmatch(time_point_list_up(i), {handles.database(patient).day.date}', 'exact');
-    database_tmp(time_point_number-i) = handles.database(patient).day(match);
-end
-handles.database(patient).day = database_tmp;
 
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{2} =  'descend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
 
 % --------------------------------------------------------------------
 function MIA_sort_scan_up_Callback(hObject, eventdata, handles)
@@ -7117,53 +7124,18 @@ function MIA_sort_scan_up_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-handles = guidata(hObject);
 if ~isfield(handles, 'database')
     return
 end
-patient = get(handles.MIA_name_list, 'Value');
-time_point = get(handles.MIA_time_points_list, 'Value');
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    parameters_list = handles.database(patient).day(time_point).parameters;
-else
-    parameters_list = handles.database(patient).day(time_point).VOIs;
-end
-parameters_list_up = sort(parameters_list);
-
-
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    for i = 1:numel(handles.database(patient).day(time_point).parameters)
-        match = strmatch(parameters_list_up(i), handles.database(patient).day(time_point).parameters', 'exact');
-        if numel(match) > 1
-            MIA_warning_duplicate_scan_fcn(handles, parameters_list_up(i),patient,time_point)
-            return
-        end
-        database_tmp_parameters(i) = handles.database(patient).day(time_point).parameters(match);
-        database_tmp_scans_file(i)= handles.database(patient).day(time_point).scans_file(match);
-    end
-else
-    for i = 1:numel(handles.database(patient).day(time_point).VOIs)
-        match = strmatch(parameters_list_up(i), handles.database(patient).day(time_point).VOIs', 'exact');
-        if numel(match) > 1
-            MIA_warning_duplicate_VOI_fcn(handles, parameters_list_up(i),patient,time_point)
-            return
-        end
-        database_tmp_VOIs(i) = handles.database(patient).day(time_point).VOIs(match);
-        database_tmp_VOIs_file(i)= handles.database(patient).day(time_point).VOIs_file(match);
-    end
-end
-
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    handles.database(patient).day(time_point).parameters = database_tmp_parameters;
-    handles.database(patient).day(time_point).scans_file = database_tmp_scans_file;
-else
-    handles.database(patient).day(time_point).VOIs =database_tmp_VOIs;
-    handles.database(patient).day(time_point).VOIs_file = database_tmp_VOIs_file;
-end
-
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{3} =  'ascend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
 
 
 % --------------------------------------------------------------------
@@ -7177,40 +7149,16 @@ handles = guidata(hObject);
 if ~isfield(handles, 'database')
     return
 end
-patient = get(handles.MIA_name_list, 'Value');
-time_point = get(handles.MIA_time_points_list, 'Value');
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    parameters_list = handles.database(patient).day(time_point).parameters;
-else
-    parameters_list = handles.database(patient).day(time_point).VOIs;
-end
-parameters_list_up = sort(parameters_list);
 
-time_point_number = length(parameters_list_up)+1;
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    for i = 1:numel(handles.database(patient).day(time_point).parameters)
-        match = strmatch(parameters_list_up(i), handles.database(patient).day(time_point).parameters', 'exact');
-        database_tmp_parameters(time_point_number-i) = handles.database(patient).day(time_point).parameters(match);
-        database_tmp_scans_file(time_point_number-i)= handles.database(patient).day(time_point).scans_file(match);
-    end
-else
-    for i = 1:numel(handles.database(patient).day(time_point).VOIs)
-        match = strmatch(parameters_list_up(i), handles.database(patient).day(time_point).VOIs', 'exact');
-        database_tmp_VOIs(time_point_number-i) = handles.database(patient).day(time_point).VOIs(match);
-        database_tmp_VOIs_file(time_point_number-i)= handles.database(patient).day(time_point).VOIs_file(match);
-    end
-end
-
-if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-    handles.database(patient).day(time_point).parameters = database_tmp_parameters;
-    handles.database(patient).day(time_point).scans_file = database_tmp_scans_file;
-else
-    handles.database(patient).day(time_point).VOIs =database_tmp_VOIs;
-    handles.database(patient).day(time_point).VOIs_file = database_tmp_VOIs_file;
-end
-
+% store the information of the new order
+handles.database.Properties.UserData.Order_data_display{3} =  'descend';
+%update the database
+handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+% store the newdatabase
 guidata(hObject, handles);
+%update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
 
 
 % --------------------------------------------------------------------
@@ -7661,6 +7609,7 @@ else
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
     handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
     handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI', filesep];
+    handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
 end
 %% create the tmp folder
