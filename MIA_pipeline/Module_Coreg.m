@@ -90,9 +90,34 @@ function [files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)
 %% Initialization and syntax checks %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
-
-
-help = {
+if isempty(opt)
+ 
+    %%   % define every option needed to run this module
+    % --> module_option(1,:) = field names
+    % --> module_option(2,:) = defaults values
+    module_option(:,1)   = {'folder_out',''};
+    module_option(:,2)   = {'flag_test',true};
+    module_option(:,3)   = {'Execution_Mode','All Database'};
+    module_option(:,4)   = {'OutputSequenceName','Prefix'};
+    module_option(:,5)   = {'Function','nmi'};
+    module_option(:,6)   = {'Separation','4 2'};
+    module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
+    module_option(:,8)   = {'Hist_Smooth','7 7'};
+    module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
+    module_option(:,10)   = {'Wrapping','No wrap'};
+    module_option(:,11)   = {'Masking','Dont mask images'};
+    module_option(:,12)   = {'output_filename_prefix','Coreg'};
+    opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+  
+    %% list of everything displayed to the user associated to their 'type'
+     % --> user_parameter(1,:) = user_parameter_list
+     % --> user_parameter(2,:) = user_parameter_type
+     % --> user_parameter(3,:) = parameter_default
+     % --> user_parameter(4,:) = psom_parameter_list
+     % --> user_parameter(5,:) = Help : text data which describe the parameter (it
+     % will be display to help the user)
+    user_parameter(:,1)   = {'Description','Text','','',...
+        {
     'Within-subject registration using a rigid-body model and image reslicing.'
     ''
     'The registration method used here is based on work by Collignon et al.'
@@ -103,7 +128,7 @@ help = {
     'The registered images are displayed at the bottom.'
     ''
     'Registration parameters are stored in the headers of the "source" and the "other" images. These images are also resliced to match the source image voxel-for-voxel.'
-    }';
+    }'};
 
 
 
@@ -124,6 +149,43 @@ if isempty(opt)
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+
+    %% Benjamin Modifications
+%     }'};
+%     user_parameter(:,2)   = {'Execution Mode','cell',{'All Database','Through all sessions of one Patient','Through Each Session'},'Execution_Mode',...
+%         'Please select the excecution mode for the coreg module'};
+%     user_parameter(:,3)   = {'Reference Image','1Scan1TPXP','','',...
+%         'This is the image that is assumed to remain stationary (sometimes known as the target or template image), while the source image is moved to match it.'};
+%     user_parameter(:,4)   = {'Source Image','1Scan','','',...
+%         'This is the image that is jiggled about to best match the reference.'};
+%     user_parameter(:,5)   = {'Other Images','XScan','','',...
+%         'These are any images that need to remain in alignment with the source image.'};
+%     user_parameter(:,6)   = {'Parameters','','','',''};
+%     user_parameter(:,7)   = {'    Estimation Options','', '','',...
+%         'Various registration options, which are passed to the Powell optimisation algorithm.'};
+%     user_parameter(:,8)   = {'       .Objective Function','cell',{'mi','ncc', 'nmi', 'ecc'},'Function',...
+%         'Registration involves finding parameters that either maximise or minimise some objective function. For inter-modal registration, use Mutual Information, Normalised Mutual Information, or Entropy Correlation Coefficient. For within modality, you could also use Normalised Cross Correlation.'};
+%     user_parameter(:,9)   = {'       .Tolerances','char','','Separation',...
+%         'The average distance between sampled points (in mm).  Can be a vector to allow a coarse registration followed by increasingly fine ones.'};
+%     user_parameter(:,10)  = {'       .Separation','numeric','','Tolerence',...
+%         'The accuracy for each parameter.  Iterations stop when differences between successive estimates are less than the required tolerance.'};
+%     user_parameter(:,11)  = {'       .Histogram Smoothing','numeric','','Hist_Smooth',...
+%         'Gaussian smoothing to apply to the 256x256 joint histogram. Other information theoretic coregistration methods use fewer bins, but Gaussian smoothing seems to be more elegant.'};
+%     user_parameter(:,12)  = {'    Reslice options','','','',...
+%         'These images are resliced to the same dimensions, voxel sizes, orientation etc as the space defining image.'};
+%     user_parameter(:,13)  = {'       .Interpolation','cell',{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'},'Interpolation',...
+%         'The method by which the images are sampled when being written in a different space. Nearest Neighbour is fastest, but not normally recommended. It can be useful for re-orienting images while preserving the original intensities (e.g. an image consisting of labels). Trilinear Interpolation is OK for PET, or realigned and re-sliced fMRI. If subject movement (from an fMRI time series) is included in the transformations then it may be better to use a higher degree approach. Note that higher degree B-spline interpolation is slower because it uses more neighbours.'};
+%     user_parameter(:,14)  = {'       .Masking','cell',{'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'},'Wrapping',...
+%         'These are typically: No wrapping - for PET or images that have already been spatially transformed.  Wrap in  Y  - for (un-resliced) MRI where phase encoding is in the Y direction (voxel space).'};
+%    user_parameter(:,15)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking',...
+%        'Because of subject motion, different images are likely to have different patterns of zeros from where it was not possible to sample data. With masking enabled, the program searches through the whole time series looking for voxels which need to be sampled from outside the original images. Where this occurs, that voxel is set to zero for the whole set of images (unless the image format can represent NaN, in which case NaNs are used where possible).'};         
+%     user_parameter(:,16)  = {'       .Filename prefix','char','','output_filename_prefix',...
+%         'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''Coreg''.'};
+% 
+% 
+%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Help'};
+%     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', 'VariableNames', VariableNames);
+%%
     
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file

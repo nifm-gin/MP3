@@ -107,6 +107,36 @@ if isempty(opt)
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+
+%% Benjamin Modifications
+%       %%   % define every option needed to run this module
+%     % --> module_option(1,:) = field names
+%     % --> module_option(2,:) = defaults values
+%     module_option(:,1)   = {'folder_out',''};
+%     module_option(:,2)   = {'flag_test',true};
+%     module_option(:,3)   = {'output_filename_ext','Smooth'};
+%     module_option(:,4)   = {'OutputSequenceName','Suffix'};
+%     module_option(:,5)   = {'Type','gaussian'};
+%     module_option(:,6)   = {'HSize',3};
+%     module_option(:,7)   = {'Sigma',1};
+%     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+% 
+%     %% list of everything displayed to the user associated to their 'type'
+%      % --> user_parameter(1,:) = user_parameter_list
+%      % --> user_parameter(2,:) = user_parameter_type
+%      % --> user_parameter(3,:) = parameter_default
+%      % --> user_parameter(4,:) = psom_parameter_list
+%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
+%      % will be display to help the user)
+%     user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',''};
+%     user_parameter(:,2)   = {'Parameters','','','Execution_Mode',''};
+%     user_parameter(:,3)   = {'   .Output filename extension','char','Smooth','output_filename_ext',''};
+%     user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type',''};
+%     user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize',''};
+%     user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma',''};
+%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Help'};
+%     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', 'VariableNames', VariableNames);
+%%
     
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
@@ -134,7 +164,7 @@ if ~strcmp(ext_nii, '.nii')
 end
 
 if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
-    opt.threshold = str2double(opt.threshold);
+    opt.threshold = opt.threshold;
     if isnan(opt.threshold)
         disp('The threshold used was not a number')
         return
@@ -207,7 +237,7 @@ end
 
 
 
-h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
+h = fspecial(opt.Type,str2double(opt.HSize), opt.Sigma);
 for i=1:size(NewN,3)
     for j=1:size(NewN,4)
         FilteredImages(:,:,i,j) = imfilter(NewN(:,:,i,j), h, 'replicate');
