@@ -237,7 +237,7 @@ end
 
 
 
-h = fspecial(opt.Type,str2double(opt.HSize), opt.Sigma);
+h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
 for i=1:size(NewN,3)
     for j=1:size(NewN,4)
         FilteredImages(:,:,i,j) = imfilter(NewN(:,:,i,j), h, 'replicate');

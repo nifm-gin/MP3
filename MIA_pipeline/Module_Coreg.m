@@ -90,47 +90,47 @@ function [files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)
 %% Initialization and syntax checks %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
-if isempty(opt)
- 
-    %%   % define every option needed to run this module
-    % --> module_option(1,:) = field names
-    % --> module_option(2,:) = defaults values
-    module_option(:,1)   = {'folder_out',''};
-    module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'Execution_Mode','All Database'};
-    module_option(:,4)   = {'OutputSequenceName','Prefix'};
-    module_option(:,5)   = {'Function','nmi'};
-    module_option(:,6)   = {'Separation','4 2'};
-    module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
-    module_option(:,8)   = {'Hist_Smooth','7 7'};
-    module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
-    module_option(:,10)   = {'Wrapping','No wrap'};
-    module_option(:,11)   = {'Masking','Dont mask images'};
-    module_option(:,12)   = {'output_filename_prefix','Coreg'};
-    opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
-  
-    %% list of everything displayed to the user associated to their 'type'
-     % --> user_parameter(1,:) = user_parameter_list
-     % --> user_parameter(2,:) = user_parameter_type
-     % --> user_parameter(3,:) = parameter_default
-     % --> user_parameter(4,:) = psom_parameter_list
-     % --> user_parameter(5,:) = Help : text data which describe the parameter (it
-     % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','',...
-        {
-    'Within-subject registration using a rigid-body model and image reslicing.'
-    ''
-    'The registration method used here is based on work by Collignon et al.'
-    'The original interpolation method described in this paper has been changed in order to give a smoother cost function.'
-    'The images are also smoothed slightly, as is the histogram.  This is all in order to make the cost function as smooth as possible, to give faster convergence and less chance of local minima.'
-    ''
-    'At the end of coregistration, the voxel-to-voxel affine transformation matrix is displayed, along with the histograms for the images in the original orientations, and the final orientations.'
-    'The registered images are displayed at the bottom.'
-    ''
-    'Registration parameters are stored in the headers of the "source" and the "other" images. These images are also resliced to match the source image voxel-for-voxel.'
-    }'};
-
-
+% if isempty(opt)
+%  
+%     %%   % define every option needed to run this module
+%     % --> module_option(1,:) = field names
+%     % --> module_option(2,:) = defaults values
+%     module_option(:,1)   = {'folder_out',''};
+%     module_option(:,2)   = {'flag_test',true};
+%     module_option(:,3)   = {'Execution_Mode','All Database'};
+%     module_option(:,4)   = {'OutputSequenceName','Prefix'};
+%     module_option(:,5)   = {'Function','nmi'};
+%     module_option(:,6)   = {'Separation','4 2'};
+%     module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
+%     module_option(:,8)   = {'Hist_Smooth','7 7'};
+%     module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
+%     module_option(:,10)   = {'Wrapping','No wrap'};
+%     module_option(:,11)   = {'Masking','Dont mask images'};
+%     module_option(:,12)   = {'output_filename_prefix','Coreg'};
+%     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+%   
+%     %% list of everything displayed to the user associated to their 'type'
+%      % --> user_parameter(1,:) = user_parameter_list
+%      % --> user_parameter(2,:) = user_parameter_type
+%      % --> user_parameter(3,:) = parameter_default
+%      % --> user_parameter(4,:) = psom_parameter_list
+%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
+%      % will be display to help the user)
+%     user_parameter(:,1)   = {'Description','Text','','',...
+%         {
+%     'Within-subject registration using a rigid-body model and image reslicing.'
+%     ''
+%     'The registration method used here is based on work by Collignon et al.'
+%     'The original interpolation method described in this paper has been changed in order to give a smoother cost function.'
+%     'The images are also smoothed slightly, as is the histogram.  This is all in order to make the cost function as smooth as possible, to give faster convergence and less chance of local minima.'
+%     ''
+%     'At the end of coregistration, the voxel-to-voxel affine transformation matrix is displayed, along with the histograms for the images in the original orientations, and the final orientations.'
+%     'The registered images are displayed at the bottom.'
+%     ''
+%     'Registration parameters are stored in the headers of the "source" and the "other" images. These images are also resliced to match the source image voxel-for-voxel.'
+%     };
+% 
+% 
 
 if isempty(opt)
     % define every option needed to run this module
