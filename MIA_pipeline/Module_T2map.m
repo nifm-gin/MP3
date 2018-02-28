@@ -92,21 +92,22 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 %% Initialize the module's parameters with default values 
 if isempty(opt)
     % define every option needed to run this module
-    fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
-    defaults = {5, true, '', 'T2map', 'AllName'};
+    fields   = {'RefInput', 'InputToReshape','NbInput', 'NbOutput', 'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
+    defaults = {1,1, 1, 1, 5, true, '', 'T2map', 'AllName'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
-    user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
+    user_parameter_type = {'XScan'; ''; 'char'; 'numeric'};
     parameter_default = {''; ''; 'T2map'; 5};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    scans_input_DOF = {{'SequenceName'}; ''; ''; ''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
-    
+    opt.NameOutFiles = {'T2map'};
     
     files_in.In1 = {''};
     files_out.In1 = {''};
@@ -114,7 +115,7 @@ if isempty(opt)
   
 end
 %%%%%%%%
-
+opt.NameOutFiles = {opt.output_filename_ext};
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('T2map:brick','Bad syntax, type ''help %s'' for more info.',mfilename)

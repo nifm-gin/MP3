@@ -93,20 +93,23 @@ function [files_in,files_out,opt] = Module_Susceptibility(files_in,files_out,opt
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'OutputSequenceName', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
-    defaults = {'', true, 'AllName','CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
+    fields   = {'RefInput', 'InputToReshape', 'NbInput', 'NbOutput', 'folder_out', 'flag_test', 'OutputSequenceName', 'output_filename_ext_CBV', 'output_filename_ext_CBF', 'output_filename_ext_MTT', 'output_filename_ext_TMAX', 'output_filename_ext_TTP', 'output_filename_ext_T0'};
+    defaults = {1,1,1,6,'', true, 'AllName','CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
+    
+    %opt.NameOutFiles = {opt.output_filename_ext_CBV, output_filename_ext_CBF, output_filename_ext_MTT, output_filename_ext_TMAX, output_filename_ext_TTP, output_filename_ext_T0};
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select one PERF scan as input'; 'Parameters'; '   .Output filename extension CBV'; '   .Output filename extension CBF'; '   .Output filename extension MTT'; '   .Output filename extension TMAX'; '   .Output filename extension TTP'; '   .Output filename extension T0'};%; ''; ''};
     user_parameter_type = {'1Scan'; ''; 'char'; 'char'; 'char'; 'char'; 'char'; 'char'};%; 'logical'; 'char'};
     parameter_default = {''; ''; 'CBV'; 'CBF'; 'MTT'; 'TMAX'; 'TTP'; 'T0'};%; '1'; ''};
     psom_parameter_list = {''; ''; 'output_filename_ext_CBV'; 'output_filename_ext_CBF'; 'output_filename_ext_MTT'; 'output_filename_ext_TMAX'; 'output_filename_ext_TTP'; 'output_filename_ext_T0'};%; 'flag_test'; 'folder_out'};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    scans_input_DOF = {{'SequenceName'}; ''; ''; '';''; '';'';''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF,'VariableNames', VariableNames);
     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
-    
+    opt.NameOutFiles = {'CBV', 'CBF', 'MTT', 'TMAX', 'TTP', 'T0'};
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
@@ -116,7 +119,7 @@ if isempty(opt)
   
 end
 %%%%%%%%
-
+opt.NameOutFiles = {opt.output_filename_ext_CBV, opt.output_filename_ext_CBF, opt.output_filename_ext_MTT, opt.output_filename_ext_TMAX, opt.output_filename_ext_TTP, opt.output_filename_ext_T0};
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Smoothing:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
@@ -150,6 +153,8 @@ end
 % else
 %     opt = psom_struct_defaults(opt,fields,defaults);
 % end
+
+
 
 %% Check the output files structure
 %fields    = {'filename'};

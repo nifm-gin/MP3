@@ -93,18 +93,19 @@ function [files_in,files_out,opt] = Module_Smoothing(files_in,files_out,opt)
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'output_filename_ext', 'OutputSequenceName','Type', 'HSize', 'Sigma'};
-    defaults = {'', true, 'Smooth', 'Suffix', 'gaussian', '3', '1'};
+    fields   = {'RefInput', 'InputToReshape', 'NbInput', 'NbOutput', 'folder_out', 'flag_test', 'output_filename_ext', 'OutputSequenceName','Type', 'HSize', 'Sigma'};
+    defaults = {1,1,1,1,'', true, '_Smooth', 'Extension', 'gaussian', '3', '1'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
     user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension'; '   .Type';  '   .HSize';  '   .Sigma'};%; ''; ''};
     user_parameter_type = {'XScan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'};%; 'logical'; 'char'};
-    parameter_default = {''; ''; 'Smooth'; {'gaussian'}; '3'; '1'};%; '1'; ''};
+    parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'};%; '1'; ''};
     psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'};%; 'flag_test'; 'folder_out'};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    scans_input_DOF = {{'SequenceName'}; ''; ''; ''; ''; ''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
     
     % So for no input file is selected and therefore no output

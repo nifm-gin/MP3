@@ -110,8 +110,8 @@ help = {
 if isempty(opt)
     % define every option needed to run this module
     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'folder_out', 'flag_test', 'Execution_Mode','output_filename_prefix', 'OutputSequenceName', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Wrapping'};
-    defaults = {'', true, 'All Database','Coreg', 'Prefix', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap'};
+    fields   = {'RefInput', 'InputToReshape', 'NbInput', 'NbOutput', 'folder_out', 'flag_test', 'Execution_Mode','output_filename_ext', 'OutputSequenceName', 'Function', 'Separation', 'Tolerence', 'Hist_Smooth', 'Interpolation', 'Wrapping'};
+    defaults = {2,1, -1, -1, '', true, 'All Database','_Coreg', 'Extension', 'mi', 'Auto= [slice thickness voxel_size voxel_size/2]', '0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001', '7 7', '4th Degree B-Spline', 'No wrap'};
     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
     
     % list of everything displayed to the user associated to their 'type'
@@ -119,9 +119,10 @@ if isempty(opt)
     user_parameter_type = {'Text'; 'cell';'1Scan1TPXP'; '1Scan'; 'XScan'; ''; 'char'; '';'cell'; 'char';'numeric';'numeric';'';'cell';'cell'};%; 'logical'; 'char'};
     parameter_default = {help;{'All Database','Through all sessions of one Patient','Through Each Session'};'';'';''; ''; '';''; {'mi','ncc', 'nmi', 'ecc'}; ''; ''; ''; '';{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'}; {'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'}};%; 'Dont Show';'Dont Show'};
     psom_parameter_list = {'';'Execution_Mode';'';'';''; ''; 'output_filename_prefix'; '';'Function'; 'Separation';'Tolerence' ; 'Hist_Smooth';'';'Interpolation'; 'Wrapping'};%;'flag_test'; 'folder_out' };
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
+    scans_input_DOF = {''; '';{'SequenceName', 'Tp', 'Patient'}; {'SequenceName'}; {'SequenceName'}; ''; ''; '';''; '';'';'';'';'';''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
+    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
     
     % So for no input file is selected and therefore no output
