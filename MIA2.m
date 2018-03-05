@@ -95,14 +95,15 @@ end
 
 
 % add MRIManager.jar to the classpath (dynamic classpath)
-[filepath,name,ext] = fileparts(which('MRIManager.jar'));
+[filepath,name,ext] = fileparts(which('MRIManagerJ8.jar'));
 javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
-lookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
-lookAndFeel = extractAfter(lookAndFeel," - ");
-lookAndFeel = extractBefore(lookAndFeel,"]");
-lookAndFeel = strcat('[LookAndFeel] ',lookAndFeel)
+handles.original_Java_LookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
+handles.original_Java_LookAndFeel = extractAfter(handles.original_Java_LookAndFeel," - ");
+handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel,"]");
+handles.original_Java_LookAndFeel = strcat('[LookAndFeel] ',handles.original_Java_LookAndFeel);
+handles.original_Java_LookAndFeel
 
 % Update handles structure
 guidata(hObject, handles);
@@ -7643,7 +7644,7 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMIA]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport lookAndFeel}) %add lookAndFeel option
+MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel}) %add lookAndFeel option
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MIA_tmp_folder_for_java, {' '}, namExport)));
