@@ -99,6 +99,10 @@ end
 javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
+lookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
+lookAndFeel = extractAfter(lookAndFeel," - ");
+lookAndFeel = extractBefore(lookAndFeel,"]");
+lookAndFeel = strcat('[LookAndFeel] ',lookAndFeel)
 
 % Update handles structure
 guidata(hObject, handles);
@@ -7642,7 +7646,7 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMIA]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport})
+MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport lookAndFeel}) %add lookAndFeel option
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MIA_tmp_folder_for_java, {' '}, namExport)));
