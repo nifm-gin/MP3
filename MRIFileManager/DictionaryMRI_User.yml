@@ -1,0 +1,100 @@
+# Dictionary MRI by IRMaGe - Grenoble, 2017 July.
+#
+#
+#
+#  YAML validator online :    see http://yaml-online-parser.appspot.com/ , copy all this text (Ctrl-A and Ctrl-C) and paste in the left case (Ctrl-V) of the web page.
+#                                           if the Output case don't show red error message, it's ok !
+#
+# the structure is as follows :
+#
+#
+#dictionaryMRI:
+#
+#  Label MRI:
+#     where'Constructor':
+#          file :           'subject' , 'visu_pars' , 'method' , 'acqp' or 'reco' (for Bruker Paravasion 5 , Paravision 6)
+#                           'par , xml' (for Philips Achieva PAR 4.2 , Xml)
+#                           'Dirfile, DicomDir or ~ (for Dicom)
+#                           'niftiheader' or 'json' (for Nifti)
+#                            
+#          keyName :        $'nameparameter'= (for Bruker)
+#                           tag without [],(),<> and its elements which are inside (for Philips)
+#                           tag (for Dicom)
+#                           tag (for Nifti)
+#                            
+#          type :           string, float, int
+#          format :         "HH:mm:ss dd/MM/yyyy" , "dd/MM/yyyy HH:mm:ss" ,"SSS" (ms) for date, duree,... (Put the parameter in quote "" !)
+#          units : (not yet operational)
+#                           um , mm , cm , m (for distance)
+#                           us , ms , s , mn , h (for time)
+#                           degree (for angle)
+#                           mHz , Hz , KHz , MHz , GHz (for frequency)         
+#    viewer:
+#          category :       (category of your choice)
+#
+#    json:
+#          tagJson :        same tag as Dicom if it exists , a tag of your choice otherwise
+#          type :           (see before)
+#          format :         (see before)
+#          units :          (not yet operational)
+#
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dictionaryMRI:
+
+  Coding Scheme Designator:
+                   whereDicom:  {file: ~, keyName: Coding Scheme Designator, type: string, format: ~, units: ~}
+                   
+                   viewer: {category: Specification}
+                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+
+  Diffusion Preparation Method:
+                  whereBruker:  {file: method, keyName: $PVM_DiffPrepMode=, type: string, format: ~, units: ~}
+                  whereNifti:    {file: json, keyName: DiffusionPreparationMethod, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: DiffusionPreparationMethod, type: string, format: ~, units: ~}
+
+  Diffusion AP_FH_RL:
+                  wherePhilips:  {file: PAR ; Xml, keyName: diffusion ; Diffusion AP, type: ~ ; ~, format: ~, units: ~}          
+                  
+                  viewer: {category: Diffusion} 
+                  json:   {tag_Json: ~, type: ~, format: ~, units: ~}
+  
+  Direction Diffusion Number:
+                  whereBruker:  {file: method, keyName: $PVM_DwNDiffDir=, type: int, format: ~, units: ~}
+                  whereNifti:    {file: json, keyName: DirectionDiffusionNumber, type: int, format: ~, units: ~}
+
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: DirectionDiffusionNumber, type: int, format: ~, units: ~}
+
+  Method Diffusion:
+                  whereBruker:  {file: method, keyName: $Method=, type: string, format: ~, units: ~}
+                  whereNifti:    {file: json, keyName: MethodDiffusion, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: MethodDiffusion, type: string, format: ~, units: ~}
+
+  PCasl Phi:
+                  whereBruker:  {file: method, keyName: $PCASL_PhiSwList=, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: PCasl}
+                  json:   {tagJson: PCaslPhi, type: string, format: ~, units: ~}
+
+  PCasl Label:
+                  whereBruker:  {file: method, keyName: $PCASL_LabelImages=, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: PCasl}
+                  json:   {tagJson: PCaslLabel, type: string, format: ~, units: ~}
+                  
+  Segment EPI:
+                  whereBruker:  {file: method, keyName: $NSegments=, type: int, format: ~, units: ~}
+                  whereNifti:    {file: json, keyName: SegmentEPI, type: int, format: ~, units: ~}
+
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: SegmentEPI, type: int, format: ~, units: ~}
+  
+  Specific Character:
+                   whereDicom:  {file: ~, keyName: Specific Character Set, type: string, format: ~, units: ~}
+                   
+                   viewer: {category: Specification}
+                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
