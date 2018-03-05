@@ -2735,7 +2735,7 @@ switch get(hObject, 'Tag')
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
                 
                 % update title 
-                eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))]);']);
+                eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))], ''Visible'', ''on'');']);
 
             end
           
@@ -4648,10 +4648,7 @@ function MIA_PRM_slider_trans_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 
-if strcmp(get(handles.MIA_menu_define_mask, 'Checked'), 'on')
-    tolerance=get(handles.MIA_PRM_slider_trans, 'Value');
-    MIA_mask(hObject, eventdata, handles, tolerance);
-elseif strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
+if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
     MIA_update_axes(hObject, eventdata, handles)
 elseif isfield(handles, 'brain_extraction_ROI')
     MIA_Brain_Extraction(hObject, eventdata, handles)
