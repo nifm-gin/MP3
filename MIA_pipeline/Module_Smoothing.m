@@ -92,34 +92,40 @@ function [files_in,files_out,opt] = Module_Smoothing(files_in,files_out,opt)
 %% Initialize the module's parameters with default values 
 if isempty(opt)
     % define every option needed to run this module
-    %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
-    fields   = {'RefInput', 'InputToReshape', 'NbInput', 'NbOutput', 'folder_out', 'flag_test', 'output_filename_ext', 'OutputSequenceName','Type', 'HSize', 'Sigma'};
-    defaults = {1,1,1,1,'', true, '_Smooth', 'Extension', 'gaussian', '3', '1'};
-    opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-    
-    % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension'; '   .Type';  '   .HSize';  '   .Sigma'};%; ''; ''};
-    user_parameter_type = {'XScan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'};%; 'logical'; 'char'};
-    parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'};%; '1'; ''};
-    psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'};%; 'flag_test'; 'folder_out'};
-    scans_input_DOF = {{'SequenceName'}; ''; ''; ''; ''; ''};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
-    %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
-    %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
+%     %fields   = {'Type', 'HSize', 'Sigma', 'flag_test' , 'folder_out', 'output_filename_ext'};
+%     fields   = {'RefInput', 'InputToReshape', 'NbInput', 'NbOutput', 'folder_out', 'flag_test', 'output_filename_ext', 'OutputSequenceName','Type', 'HSize', 'Sigma'};
+%     defaults = {1,1,1,1,'', true, '_Smooth', 'Extension', 'gaussian', '3', '1'};
+%     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
+%     
+%     % list of everything displayed to the user associated to their 'type'
+%     user_parameter_list = {'Select one scan or more as input'; 'Parameters'; '   .Output filename extension'; '   .Type';  '   .HSize';  '   .Sigma'};%; ''; ''};
+%     user_parameter_type = {'XScan'; ''; 'char'; 'cell'; 'numeric'; 'numeric'};%; 'logical'; 'char'};
+%     parameter_default = {''; ''; '_Smooth'; {'gaussian'}; '3'; '1'};%; '1'; ''};
+%     psom_parameter_list = {''; ''; 'output_filename_ext'; 'Type'; 'HSize'; 'Sigma'};%; 'flag_test'; 'folder_out'};
+%     scans_input_DOF = {{'SequenceName'}; ''; ''; ''; ''; ''};
+%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
+%     %opt.table = table(categorical(user_parameter_list), categorical(user_parameter_type), categorical(parameter_default), categorical(psom_parameter_list), 'VariableNames', VariableNames);
+%     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
+%     %opt.parameter_link_psom = {'output_filename_ext', '   .Output filename extension'; 'Type', '   .Type'; 'HSize','   .HSize'; 'Sigma', '   .Sigma'};
 
 %% Benjamin Modifications
 %       %%   % define every option needed to run this module
 %     % --> module_option(1,:) = field names
 %     % --> module_option(2,:) = defaults values
-%     module_option(:,1)   = {'folder_out',''};
-%     module_option(:,2)   = {'flag_test',true};
-%     module_option(:,3)   = {'output_filename_ext','Smooth'};
-%     module_option(:,4)   = {'OutputSequenceName','Suffix'};
-%     module_option(:,5)   = {'Type','gaussian'};
-%     module_option(:,6)   = {'HSize',3};
-%     module_option(:,7)   = {'Sigma',1};
-%     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+    module_option(:,1)   = {'folder_out',''};
+    module_option(:,2)   = {'flag_test',true};
+    module_option(:,3)   = {'output_filename_ext','Smooth'};
+    module_option(:,4)   = {'OutputSequenceName','Extension'};
+    module_option(:,5)   = {'Type','gaussian'};
+    module_option(:,6)   = {'HSize',3};
+    module_option(:,7)   = {'Sigma',1};
+    module_option(:,8)   = {'RefInput',1};
+    module_option(:,9)   = {'InputToReshape',1};
+    module_option(:,10)   = {'NbInput',1};
+    module_option(:,11)   = {'NbOutput',1};
+    module_option(:,12)   = {'Table_in', table()};
+    module_option(:,13)   = {'Table_out', table()};
+    opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
 %     %% list of everything displayed to the user associated to their 'type'
 %      % --> user_parameter(1,:) = user_parameter_list
@@ -128,14 +134,14 @@ if isempty(opt)
 %      % --> user_parameter(4,:) = psom_parameter_list
 %      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
-%     user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',''};
-%     user_parameter(:,2)   = {'Parameters','','','Execution_Mode',''};
-%     user_parameter(:,3)   = {'   .Output filename extension','char','Smooth','output_filename_ext',''};
-%     user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type',''};
-%     user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize',''};
-%     user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma',''};
-%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Help'};
-%     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', 'VariableNames', VariableNames);
+    user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',{'SequenceName'}, ''};
+    user_parameter(:,2)   = {'Parameters','','','Execution_Mode','', ''};
+    user_parameter(:,3)   = {'   .Output filename extension','char','Smooth','output_filename_ext','', ''};
+    user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', ''};
+    user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize','', ''};
+    user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma','', ''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
 %%
     
     % So for no input file is selected and therefore no output
@@ -147,6 +153,28 @@ if isempty(opt)
   
 end
 %%%%%%%%
+
+
+if isempty(files_out)
+    opt.Table_out = opt.Table_in;
+    opt.Table_out.IsRaw = categorical(0);   
+    opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
+    if strcmp(opt.OutputSequenceName, 'AllName')
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+    elseif strcmp(opt.OutputSequenceName, 'Extension')
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+    end
+    opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
+    f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
+    files_out.In1{1} = f_out;
+end
+
+
+
+
+
+
+
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
@@ -237,7 +265,7 @@ end
 
 
 
-h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
+h = fspecial(opt.Type, opt.HSize, opt.Sigma);
 for i=1:size(NewN,3)
     for j=1:size(NewN,4)
         FilteredImages(:,:,i,j) = imfilter(NewN(:,:,i,j), h, 'replicate');

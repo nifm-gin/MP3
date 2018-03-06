@@ -92,18 +92,18 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 %% Initialize the module's parameters with default values 
 if isempty(opt)
     % define every option needed to run this module
-    fields   = {'RefInput', 'InputToReshape','NbInput', 'NbOutput', 'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
-    defaults = {1,1, 1, 1, 5, true, '', 'T2map', 'AllName'};
-    opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-    
-    % list of everything displayed to the user associated to their 'type'
-    user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
-    user_parameter_type = {'XScan'; ''; 'char'; 'numeric'};
-    parameter_default = {''; ''; 'T2map'; 5};
-    psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
-    scans_input_DOF = {{'SequenceName'}; ''; ''; ''};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
-    opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
+%     fields   = {'RefInput', 'InputToReshape','NbInput', 'NbOutput', 'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
+%     defaults = {1,1, 1, 1, 5, true, '', 'T2map', 'AllName'};
+%     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
+%     
+%     % list of everything displayed to the user associated to their 'type'
+%     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
+%     user_parameter_type = {'XScan'; ''; 'char'; 'numeric'};
+%     parameter_default = {''; ''; 'T2map'; 5};
+%     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
+%     scans_input_DOF = {{'SequenceName'}; ''; ''; ''};
+%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
+%     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
     % So for no input file is selected and therefore no output
 
 %% Benjamin Modifications
@@ -111,12 +111,18 @@ if isempty(opt)
 %       %%   % define every option needed to run this module
 %     % --> module_option(1,:) = field names
 %     % --> module_option(2,:) = defaults values
-%     module_option(:,1)   = {'folder_out',''};
-%     module_option(:,2)   = {'flag_test',true};
-%     module_option(:,3)   = {'threshold',5};
-%     module_option(:,4)   = {'output_filename_ext','T2map'};
-%     module_option(:,5)   = {'OutputSequenceName','AllName'};
-%     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
+    module_option(:,1)   = {'folder_out',''};
+    module_option(:,2)   = {'flag_test',true};
+    module_option(:,3)   = {'threshold',5};
+    module_option(:,4)   = {'output_filename_ext','T2map'};
+    module_option(:,5)   = {'OutputSequenceName','AllName'};
+    module_option(:,6)   = {'RefInput',1};
+    module_option(:,7)   = {'InputToReshape',1};
+    module_option(:,8)   = {'NbInput',1};
+    module_option(:,9)   = {'NbOutput',1};
+    module_option(:,10)   = {'Table_in', table()};
+    module_option(:,11)   = {'Table_out', table()};
+    opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
 % %     % define every option needed to run this module
 % %     fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
@@ -130,13 +136,13 @@ if isempty(opt)
 %      % --> user_parameter(4,:) = psom_parameter_list
 %      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
-%     user_parameter(:,1)   = {'Select a Multi Spin Echo scan as input','1Scan','','',''};
-%     user_parameter(:,2)   = {'Parameters','','','',''};
-%     user_parameter(:,3)   = {'   .Output filename extension','char','T2map','output_filename_ext',''};
-%     user_parameter(:,4)   = {'   .Threshold','numeric', 5,'threshold',''};
-%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Help'};
-%     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', 'VariableNames', VariableNames);
-% 
+    user_parameter(:,1)   = {'Select a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, ''};
+    user_parameter(:,2)   = {'Parameters','','','','', ''};
+    user_parameter(:,3)   = {'   .Output filename extension','char','T2map','output_filename_ext','', ''};
+    user_parameter(:,4)   = {'   .Threshold','numeric', 5,'threshold','', ''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
+
 % %     % list of everything displayed to the user associated to their 'type'
 % %     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
 % %     user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
@@ -158,6 +164,24 @@ if isempty(opt)
 end
 %%%%%%%%
 opt.NameOutFiles = {opt.output_filename_ext};
+
+
+
+
+if isempty(files_out)
+    opt.Table_out = opt.Table_in;
+    opt.Table_out.IsRaw = categorical(0);   
+    opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
+    if strcmp(opt.OutputSequenceName, 'AllName')
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+    elseif strcmp(opt.OutputSequenceName, 'Extension')
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+    end
+    opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
+    f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
+    files_out.In1{1} = f_out;
+end
+
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('T2map:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
