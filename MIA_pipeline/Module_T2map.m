@@ -118,10 +118,8 @@ if isempty(opt)
     module_option(:,5)   = {'OutputSequenceName','AllName'};
     module_option(:,6)   = {'RefInput',1};
     module_option(:,7)   = {'InputToReshape',1};
-    module_option(:,8)   = {'NbInput',1};
-    module_option(:,9)   = {'NbOutput',1};
-    module_option(:,10)   = {'Table_in', table()};
-    module_option(:,11)   = {'Table_out', table()};
+    module_option(:,8)   = {'Table_in', table()};
+    module_option(:,9)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
 % %     % define every option needed to run this module

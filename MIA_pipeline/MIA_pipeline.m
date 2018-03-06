@@ -948,42 +948,11 @@ for i=1:NbModules
                 end
             end
         end
-% <<<<<<< HEAD
         handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data'];
         handles.new_module.opt.Module_settings.Table_in = unique(table_in);
         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
         output_database = [output_database; Mod_Struct.opt.Table_out];
-% =======
-%         %         Files_in.In1{1} = FinalMat{1}{i};
-%         %         Files_in.In2{1} = FinalMat{2}{i};
-%         %         Files_in.In3{1,:} = FinalMat{3}{i,:};
-%         %         %Files_in.In3{2} = FinalMat{3}{i,2};
-%         if handles.new_module.opt.Module_settings.NbOutput > handles.new_module.opt.Module_settings.NbInput
-%             for j=1:handles.new_module.opt.Module_settings.NbOutput
-%                 [PATHSTR,NAME,EXT] = fileparts(Files_in.In1{1});
-%                 databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
-%                 databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
-%                 assert(size(databtmp, 1) == 1);
-%                 OutTags = databtmp(1,:);
-%                 OutTags.IsRaw = categorical(0);
-%                 if strcmp(handles.new_module.opt.Module_settings.OutputSequenceName, 'AllName')
-%                     OutTags.SequenceName = categorical(cellstr(handles.new_module.opt.NameOutFiles{j}));
-%                 elseif strcmp(handles.new_module.opt.Module_settings.OutputSequenceName, 'Extension')
-%                     OutTags.SequenceName = categorical([char(OutTags.SequenceName), handles.new_module.opt.Module_settings.output_filename_ext]);
-%                 end
-%                 OutTags.Path = categorical(cellstr([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data', filesep]));
-%                 OutTags.Filename = categorical(cellstr([char(OutTags.Patient), '_', char(OutTags.Tp), '_', char(OutTags.SequenceName)]));
-%                 f_out = [char(OutTags.Path), char(OutTags.Patient), '_', char(OutTags.Tp), '_', char(OutTags.SequenceName), EXT];
-%                 Files_out.In1{j} = f_out;
-%                 output_database = [output_database;OutTags];
-%             end
-%         elseif handles.new_module.opt.Module_settings.NbOutput < handles.new_module.opt.Module_settings.NbInput
-%             error('This case is not implemented');
-%         end
-%         
-%         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
-% >>>>>>> 926e881d02f386d22610d9ee1e7434c843d37f00
     end
 end
 output_database = unique(output_database);

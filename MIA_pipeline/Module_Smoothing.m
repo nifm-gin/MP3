@@ -114,17 +114,15 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'output_filename_ext','Smooth'};
+    module_option(:,3)   = {'output_filename_ext','_Smooth'};
     module_option(:,4)   = {'OutputSequenceName','Extension'};
     module_option(:,5)   = {'Type','gaussian'};
     module_option(:,6)   = {'HSize',3};
     module_option(:,7)   = {'Sigma',1};
     module_option(:,8)   = {'RefInput',1};
     module_option(:,9)   = {'InputToReshape',1};
-    module_option(:,10)   = {'NbInput',1};
-    module_option(:,11)   = {'NbOutput',1};
-    module_option(:,12)   = {'Table_in', table()};
-    module_option(:,13)   = {'Table_out', table()};
+    module_option(:,10)   = {'Table_in', table()};
+    module_option(:,11)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
 %     %% list of everything displayed to the user associated to their 'type'
@@ -136,7 +134,7 @@ if isempty(opt)
 %      % will be display to help the user)
     user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',{'SequenceName'}, ''};
     user_parameter(:,2)   = {'Parameters','','','Execution_Mode','', ''};
-    user_parameter(:,3)   = {'   .Output filename extension','char','Smooth','output_filename_ext','', ''};
+    user_parameter(:,3)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', ''};
     user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', ''};
     user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize','', ''};
     user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma','', ''};

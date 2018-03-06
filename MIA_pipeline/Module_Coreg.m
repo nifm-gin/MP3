@@ -106,13 +106,11 @@ if isempty(opt)
     module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
     module_option(:,10)   = {'Wrapping','No wrap'};
     module_option(:,11)   = {'Masking','Dont mask images'};
-    module_option(:,12)   = {'output_filename_prefix','Coreg'};
+    module_option(:,12)   = {'output_filename_ext','Coreg'};
     module_option(:,13)   = {'RefInput',2};
     module_option(:,14)   = {'InputToReshape',1};
-    module_option(:,15)   = {'NbInput',-1};
-    module_option(:,16)   = {'NbOutput',-1};
-    module_option(:,17)   = {'Table_in', table()};
-    module_option(:,18)   = {'Table_out', table()};
+    module_option(:,15)   = {'Table_in', table()};
+    module_option(:,16)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
 %     %% list of everything displayed to the user associated to their 'type'
@@ -193,7 +191,7 @@ if isempty(opt)
         'These are typically: No wrapping - for PET or images that have already been spatially transformed.  Wrap in  Y  - for (un-resliced) MRI where phase encoding is in the Y direction (voxel space).'};
    user_parameter(:,15)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking','',...
        'Because of subject motion, different images are likely to have different patterns of zeros from where it was not possible to sample data. With masking enabled, the program searches through the whole time series looking for voxels which need to be sampled from outside the original images. Where this occurs, that voxel is set to zero for the whole set of images (unless the image format can represent NaN, in which case NaNs are used where possible).'};         
-    user_parameter(:,16)  = {'       .Filename prefix','char','','output_filename_prefix','',...
+    user_parameter(:,16)  = {'       .Filename prefix','char','','output_filename_ext','',...
         'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''Coreg''.'};
 
 
@@ -220,7 +218,7 @@ if strcmp(files_out, '')
     tags_out_In2 = tags2;
     tags_out_In2.IsRaw = categorical(0);
     tags_out_In2.Path = categorical(cellstr([opt.folder_out, filesep]));
-    tags_out_In2.SequenceName = categorical(cellstr([opt.output_filename_prefix, char(tags_out_In2.SequenceName)]));
+    tags_out_In2.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In2.SequenceName)]));
     tags_out_In2.Filename = categorical(cellstr([char(tags_out_In2.Patient), '_', char(tags_out_In2.Tp), '_', char(tags_out_In2.SequenceName)]));
     f_out = [char(tags_out_In2.Path), char(tags_out_In2.Patient), '_', char(tags_out_In2.Tp), '_', char(tags_out_In2.SequenceName), '.nii'];
     files_out.In2{1} = f_out;
@@ -234,7 +232,7 @@ if strcmp(files_out, '')
             tags_out_In3 = tags3;
             tags_out_In3.IsRaw = categorical(0);
             tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-            tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_prefix, char(tags_out_In3.SequenceName)]));
+            tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
             tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName)]));
             f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName), '.nii'];
             files_out.In3{i} = f_out;
@@ -386,7 +384,7 @@ end
 
 %% always set mask to 0
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask= 0;
-matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_prefix;
+matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_ext;
 
 [SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
 jobs = repmat(matlabbatch, 1, 1);
@@ -408,7 +406,7 @@ spm_jobman('run', jobs, inputs{:});
 
 %% JSON de l'input 2
 [path, name, ext] = fileparts(files_in.In2{1});
-SpmOutputFile  = [path, filesep, opt.output_filename_prefix, name, ext];
+SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, ext];
 if exist(SpmOutputFile, 'file') ~=2
     error('Cannot find the file %s', SpmOutputFile);
 end
@@ -432,7 +430,7 @@ fclose(fidmod);
 if isfield(files_out, 'In3')
     for i=1:length(files_out.In3)
         [path, name, ext] = fileparts(files_in.In3{i});
-        SpmOutputFile  = [path, filesep, opt.output_filename_prefix, name, '.nii'];
+        SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, '.nii'];
         if exist(SpmOutputFile, 'file') ~=2
             error('Cannot find the file %s', SpmOutputFile);
         end

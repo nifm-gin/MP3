@@ -126,10 +126,8 @@ if isempty(opt)
     module_option(:,9)   = {'output_filename_ext_T0','T0'}; 
     module_option(:,10)   = {'RefInput', 1};
     module_option(:,11)   = {'InputToReshape',1};
-    module_option(:,12)   = {'NbInput',1};
-    module_option(:,13)   = {'NbOutput',6}; 
-    module_option(:,14)   = {'Table_in', table()};
-    module_option(:,15)   = {'Table_out', table()};
+    module_option(:,12)   = {'Table_in', table()};
+    module_option(:,13)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
     opt.NameOutFiles = {opt.Module_settings.output_filename_ext_CBV, opt.Module_settings.output_filename_ext_CBF, opt.Module_settings.output_filename_ext_MTT, opt.Module_settings.output_filename_ext_TMAX, opt.Module_settings.output_filename_ext_TTP, opt.Module_settings.output_filename_ext_T0};
