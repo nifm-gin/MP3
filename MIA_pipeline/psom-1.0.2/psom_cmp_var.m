@@ -145,6 +145,24 @@ else
                 end
 
             end
+        case 'table'
+            if all(size(var1) ~= size(var2))
+                flag_equal = false;
+                return
+            end
+            
+            A = table2cell(var1);
+            B = table2cell(var2);
+            flag_equal = true;
+            for i=1:size(A,1)
+                for j=1:size(A,2)
+                    if ~psom_cmp_var(char(A{i,j}), char(B{i,j}), opt)
+                        flag_equal = false;
+                        return
+                    end
+                end
+            end
+            
     end
 end
 
@@ -163,6 +181,8 @@ elseif iscell(var)
     type_var = 'cell';
 elseif isstruct(var)
     type_var = 'struct';
+elseif istable(var)
+    type_var = 'table';
 else
     var
     error('I could not determine the type of the preceeding variable')
