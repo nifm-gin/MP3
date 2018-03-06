@@ -95,10 +95,15 @@ end
 
 
 % add MRIManager.jar to the classpath (dynamic classpath)
-[filepath,name,ext] = fileparts(which('MRIManager.jar'));
+[filepath,name,ext] = fileparts(which('MRIManagerJ8.jar'));
 javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
+handles.original_Java_LookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
+handles.original_Java_LookAndFeel = extractAfter(handles.original_Java_LookAndFeel," - ");
+handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel,"]");
+handles.original_Java_LookAndFeel = strcat('[LookAndFeel] ',handles.original_Java_LookAndFeel);
+handles.original_Java_LookAndFeel
 
 % Update handles structure
 guidata(hObject, handles);
@@ -2735,7 +2740,7 @@ switch get(hObject, 'Tag')
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
                 
                 % update title 
-                eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))]);']);
+                eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))], ''Visible'', ''on'');']);
 
             end
           
@@ -4648,10 +4653,7 @@ function MIA_PRM_slider_trans_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 
-if strcmp(get(handles.MIA_menu_define_mask, 'Checked'), 'on')
-    tolerance=get(handles.MIA_PRM_slider_trans, 'Value');
-    MIA_mask(hObject, eventdata, handles, tolerance);
-elseif strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
+if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
     MIA_update_axes(hObject, eventdata, handles)
 elseif isfield(handles, 'brain_extraction_ROI')
     MIA_Brain_Extraction(hObject, eventdata, handles)
@@ -7642,7 +7644,7 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMIA]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport})
+MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel}) %add lookAndFeel option
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MIA_tmp_folder_for_java, {' '}, namExport)));

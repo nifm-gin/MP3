@@ -700,15 +700,6 @@ end
 
 ismodule = 0;
 switch char(handles.Modules_listing(module_selected))
-%     {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .T2*map',...
-%                 '   .deltaR2', '   .deltaR2*',...
-%     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Vessel Size Imaging (steady-state)', ...
-%                 '   .Vessel Densisty (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
-%      'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
-%      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
-%      'MRFingerprint', '   .Vascular MRFingerprint'...
-%      'SPM', '   .SPM: Coreg', '   .SPM: Realign&Coreg', '   .SPM: Reslice','   .SPM: Realign', ...
-%      };
     case handles.Module_groups	
         module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
     case '   .SPM: Coreg'
@@ -721,16 +712,13 @@ switch char(handles.Modules_listing(module_selected))
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_T2map';
-        %module_parameters_string = handles.new_module.opt.parameter_list;
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         ismodule = 1;
     case '   .Smoothing'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
-%         handles.new_module.command = '[files_in,files_out,opt] = module_Smooting(char(pipeline.new_module.files_in),pipeline.new_module.files_out,pipeline.new_module.opt)';
         handles.new_module.command = '[files_in,files_out,opt] = Module_Smoothing(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Smoothing';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
-        %module_parameters_string = handles.new_module.opt.parameter_list;
         ismodule = 1;
     case '   .Dynamic Susceptibility Contrast'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
@@ -738,37 +726,12 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_Susceptibility';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         ismodule = 1;
-        
-        %         parameter_list = {'files_in', 'files_out', 'parameters', '  .DSC_parameter1', '  .DSC_parameter2'};
-        
-%         
-%         handles.new_module.command = 'T2_module(files_in,files_out,parameter)';
-%         handles.new_module.files_in_index = 1:size(handles.MIA_data.database.Patient);
-%         handles.new_module.files_in = cellstr(handles.MIA_data.database.Filename);
-%         handles.new_module.files_in_filter_name = {'Patient Name', '', 'Time Point','', 'Sequence Name',''};
-%         Patient_listing = unique(handles.MIA_data.database.Patient);
-%         Tp_listing = unique(handles.MIA_data.database.Tp);
-%         SequenceName_listing = unique(handles.MIA_data.database.SequenceName);
-%         handles.new_module.files_in_filter_data = {'all', false, 'all', false, char(SequenceName_listing(1)),false};
-%         handles.new_module.files_in_filter_data(1:numel(Patient_listing)+1,1) = ['all' cellstr(Patient_listing)'];
-%         handles.new_module.files_in_filter_data(1,2) = {true};
-%         handles.new_module.files_in_filter_data(2:numel(Patient_listing)+1,2) = {false};
-%         
-%         handles.new_module.files_in_filter_data(1:numel(Tp_listing)+1,3) = ['all' cellstr(Tp_listing)'];
-%         handles.new_module.files_in_filter_data(1,4) = {true};
-%         handles.new_module.files_in_filter_data(2:numel(Patient_listing)+1,4) = {false};
-%         
-%         handles.new_module.files_in_filter_data(1:numel(SequenceName_listing),5) = cellstr(SequenceName_listing)';
-%         handles.new_module.files_in_filter_data(1:numel(SequenceName_listing),6) = {false};
-%         
-%         handles.new_module.files_in_filter_format = {'char', 'logical','char', 'logical','char', 'logical' };
-%         handles.new_module.files_in_filter_editable = [0 1 0 1 0 1];
-%         
-%         handles.new_module.SequenceName = 'T2map';
-%         handles.new_module.files_out = generate_file_name(handles, handles.new_module.files_in_index,  handles.new_module.SequenceName);
-%         handles.new_module.opt.threshold = 5;
-%         handles.new_module.opt.flag_test =1;
-%         parameter_list ={'files_in', 'files_out', 'parameters', '  .threshold'};
+    case '   .T1map (Multi Angles)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MultiAngles('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MultiAngles(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_T1map_MultiAngles';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        ismodule = 1;
         
     otherwise
         module_parameters_string = 'Not Implemented yet!!';     
@@ -985,11 +948,42 @@ for i=1:NbModules
                 end
             end
         end
+% <<<<<<< HEAD
         handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data'];
         handles.new_module.opt.Module_settings.Table_in = unique(table_in);
         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
         output_database = [output_database; Mod_Struct.opt.Table_out];
+% =======
+%         %         Files_in.In1{1} = FinalMat{1}{i};
+%         %         Files_in.In2{1} = FinalMat{2}{i};
+%         %         Files_in.In3{1,:} = FinalMat{3}{i,:};
+%         %         %Files_in.In3{2} = FinalMat{3}{i,2};
+%         if handles.new_module.opt.Module_settings.NbOutput > handles.new_module.opt.Module_settings.NbInput
+%             for j=1:handles.new_module.opt.Module_settings.NbOutput
+%                 [PATHSTR,NAME,EXT] = fileparts(Files_in.In1{1});
+%                 databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
+%                 databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
+%                 assert(size(databtmp, 1) == 1);
+%                 OutTags = databtmp(1,:);
+%                 OutTags.IsRaw = categorical(0);
+%                 if strcmp(handles.new_module.opt.Module_settings.OutputSequenceName, 'AllName')
+%                     OutTags.SequenceName = categorical(cellstr(handles.new_module.opt.NameOutFiles{j}));
+%                 elseif strcmp(handles.new_module.opt.Module_settings.OutputSequenceName, 'Extension')
+%                     OutTags.SequenceName = categorical([char(OutTags.SequenceName), handles.new_module.opt.Module_settings.output_filename_ext]);
+%                 end
+%                 OutTags.Path = categorical(cellstr([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data', filesep]));
+%                 OutTags.Filename = categorical(cellstr([char(OutTags.Patient), '_', char(OutTags.Tp), '_', char(OutTags.SequenceName)]));
+%                 f_out = [char(OutTags.Path), char(OutTags.Patient), '_', char(OutTags.Tp), '_', char(OutTags.SequenceName), EXT];
+%                 Files_out.In1{j} = f_out;
+%                 output_database = [output_database;OutTags];
+%             end
+%         elseif handles.new_module.opt.Module_settings.NbOutput < handles.new_module.opt.Module_settings.NbInput
+%             error('This case is not implemented');
+%         end
+%         
+%         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, Files_out, handles.new_module.opt.Module_settings);
+% >>>>>>> 926e881d02f386d22610d9ee1e7434c843d37f00
     end
 end
 output_database = unique(output_database);
@@ -1264,13 +1258,13 @@ end
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
 handles.Source_selected = 'Patient';
-handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected))}; 
+handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected(1)))}; 
 MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 % retrieve UI data
 handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
 
 % Add the time point filter
-handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_data.database.Tp(data_selected))}; 
+handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_data.database.Tp(data_selected(1)))}; 
 handles.Source_selected = 'Tp';
 MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 
