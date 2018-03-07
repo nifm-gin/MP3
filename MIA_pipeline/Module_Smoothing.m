@@ -130,7 +130,8 @@ if isempty(opt)
 %      % --> user_parameter(2,:) = user_parameter_type
 %      % --> user_parameter(3,:) = parameter_default
 %      % --> user_parameter(4,:) = psom_parameter_list
-%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
+%      % --> user_parameter(5,:) = Scans_Input_DOF
+%      % --> user_parameter(6,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
     user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',{'SequenceName'}, ''};
     user_parameter(:,2)   = {'Parameters','','','Execution_Mode','', ''};
