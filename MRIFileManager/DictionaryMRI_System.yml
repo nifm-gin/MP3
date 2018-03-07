@@ -374,6 +374,13 @@ dictionaryMRI:
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+  
+  Scaling slope and intercept:
+                  whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}                  
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+  
   Scan Mode:
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreDim=, type: float, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Scan mode ; Scan Mode, type: string ; string, format: ~, units: ms}
