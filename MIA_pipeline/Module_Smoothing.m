@@ -133,7 +133,7 @@ if isempty(opt)
 %      % --> user_parameter(5,:) = Scans_Input_DOF
 %      % --> user_parameter(6,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
-    user_parameter(:,1)   = {'Select one scan or more as input','XScan','','',{'SequenceName'}, ''};
+    user_parameter(:,1)   = {'Select one scan or more as input','1Scan','','',{'SequenceName'}, ''};
     user_parameter(:,2)   = {'Parameters','','','Execution_Mode','', ''};
     user_parameter(:,3)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', ''};
     user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', ''};
