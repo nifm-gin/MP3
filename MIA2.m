@@ -98,12 +98,21 @@ end
 [filepath,name,ext] = fileparts(which('MRIManagerJ8.jar'));
 javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
+
+% handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
+% handles.original_Java_LookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
+% handles.original_Java_LookAndFeel = extractAfter(handles.original_Java_LookAndFeel," - ");
+% handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel,"]");
+% handles.original_Java_LookAndFeel = strcat('[LookAndFeel] ',handles.original_Java_LookAndFeel);
+% handles.original_Java_LookAndFeel
+
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
 handles.original_Java_LookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
-handles.original_Java_LookAndFeel = extractAfter(handles.original_Java_LookAndFeel," - ");
-handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel,"]");
-handles.original_Java_LookAndFeel = strcat('[LookAndFeel] ',handles.original_Java_LookAndFeel);
+handles.original_Java_LookAndFeel = split(handles.original_Java_LookAndFeel," - ");
+handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel{end},"]");
+handles.original_Java_LookAndFeel = ['[LookAndFeel] ',handles.original_Java_LookAndFeel];
 handles.original_Java_LookAndFeel
+
 
 % Update handles structure
 guidata(hObject, handles);
