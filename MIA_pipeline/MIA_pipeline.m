@@ -128,6 +128,11 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 
 [new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles);
 
+if isempty(fieldnames(new_pipeline)) && isempty(output_database)
+    return
+end
+
+
 if isfield(handles, 'tmp_database')
     handles.tmp_database = [handles.tmp_database ; output_database];
 else
@@ -135,16 +140,37 @@ else
 end
     
 if isfield(handles, 'psom')
-    pipeline = handles.psom.pipeline;
+    old_pipeline = handles.psom.pipeline;
 else
-    pipeline = struct();
+    old_pipeline = struct();
 end
 
 
+ModToRename = intersect(fieldnames(old_pipeline), fieldnames(new_pipeline));
+for i=1:length(ModToRename)
+    if psom_cmp_var(old_pipeline.(ModToRename{i}), new_pipeline.(ModToRename{i}))
+        warndlg('The module %s already exist. This new occurence has been deleted.', ModToRename{i})
+        new_pipeline = rmfield(new_pipeline, ModToRename{i});
+    else
+        j=1;
+        New_Name = [ModToRename{i},'_' num2str(j)];
+        while isfield(new_pipeline, New_Name) || isfield(old_pipeline, New_Name)
+            j = j+1;
+            New_Name = [ModToRename{i},'_' num2str(j)];
+        end
+        new_pipeline = renameStructField(new_pipeline, ModToRename{i}, New_Name);
+    end
+    
+end
+ModToRename = intersect(fieldnames(old_pipeline), fieldnames(new_pipeline));
+assert(isempty(ModToRename));
 
+% names = [fieldnames(old_pipeline); fieldnames(new_pipeline)];
+% merged_struct = cell2struct([struct2cell(old_pipeline); struct2cell(new_pipeline)], names, 1);
+merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
-
-handles.psom.pipeline = new_pipeline;
+%handles.psom.pipeline = new_pipeline;
+handles.psom.pipeline = merged_struct;
 module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 
@@ -818,6 +844,12 @@ for i=1:NbScanInput
         else
             EmptyParams{i} = EmptyParams{i} +1;
         end
+    end
+    if ~exist('Databtmp', 'var')
+        output_database = table();
+        pipeline = struct();
+        warndlg('Please select at least one parameter.')
+        return
     end
     DatabaseInput{i} = Databtmp;
     UTag2 = unique(getfield(Datab, Tag2));
