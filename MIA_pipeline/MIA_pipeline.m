@@ -86,10 +86,12 @@ handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
 %handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
 
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
-handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
+
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 handles.FilterParameters = {};
 %MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
@@ -120,32 +122,7 @@ function varargout = MIA_pipeline_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-% --- Executes on button press in MIA_pipeline_add_module_button.
-function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_add_module_button (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles);
-
-if isempty(fieldnames(new_pipeline)) && isempty(output_database)
-    return
-end
-
-
-if isfield(handles, 'tmp_database')
-    handles.tmp_database = [handles.tmp_database ; output_database];
-else
-    handles.tmp_database = output_database;
-end
-    
-if isfield(handles, 'psom')
-    old_pipeline = handles.psom.pipeline;
-else
-    old_pipeline = struct();
-end
-
-
+function merged_struct = smart_pipeline_merge(old_pipeline, new_pipeline)
 ModToRename = intersect(fieldnames(old_pipeline), fieldnames(new_pipeline));
 for i=1:length(ModToRename)
     if psom_cmp_var(old_pipeline.(ModToRename{i}), new_pipeline.(ModToRename{i}))
@@ -165,12 +142,78 @@ end
 ModToRename = intersect(fieldnames(old_pipeline), fieldnames(new_pipeline));
 assert(isempty(ModToRename));
 
-% names = [fieldnames(old_pipeline); fieldnames(new_pipeline)];
-% merged_struct = cell2struct([struct2cell(old_pipeline); struct2cell(new_pipeline)], names, 1);
 merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
+
+
+
+% --- Executes on button press in MIA_pipeline_add_module_button.
+function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_add_module_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles);
+
+if isempty(fieldnames(new_pipeline)) && isempty(output_database)
+    return
+end
+
+
+% if isfield(handles, 'tmp_database')
+%     handles.tmp_database = [handles.tmp_database ; output_database];
+% else
+%     handles.tmp_database = output_database;
+% end
+    
+if isfield(handles, 'psom')
+    old_modules = handles.psom.Modules;
+    old_databases = handles.psom.Output_databases;
+    %old_pipeline = handles.psom.pipeline;
+else
+    old_modules = struct();
+    old_databases = struct();
+    %old_pipeline = struct();
+end
+
+%merged_pipe = smart_pipeline_merge(old_pipeline, new_pipeline);
+
+
 %handles.psom.pipeline = new_pipeline;
-handles.psom.pipeline = merged_struct;
+NbMod = length(fieldnames(old_modules));
+handles.psom.Output_databases = setfield(old_databases, ['Module_', num2str(NbMod+1)], output_database);
+handles.psom.Modules = setfield(old_modules, ['Module_', num2str(NbMod+1)], new_pipeline);
+
+
+%handles.MIA_pipeline_Filtered_Table = [handles.MIA_pipeline_Filtered_Table ; output_database];
+%handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+%handles.psom.pipeline = merged_pipe;
+handles.MIA_pipeline_TmpDatabase = [handles.MIA_pipeline_TmpDatabase ; output_database];
+
+
+
+NewTable = handles.MIA_pipeline_TmpDatabase;
+for i=1:length(handles.FilterParameters)
+    Tag = handles.FilterParameters{1,i}{1};
+    TagTable = table();
+    for j=2:length(handles.FilterParameters{1,i})
+        SelectedValue = handles.FilterParameters{1,i}{j};
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+        TagTable = unique(TagTable);
+    end
+    NewTable = TagTable;
+end
+
+handles.MIA_pipeline_Filtered_Table = NewTable;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+
+
+
+
+%guidata(hObject, handles);
+%MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+%MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
+
 module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 
@@ -1011,6 +1054,16 @@ end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
 
 
+%% Create the pipeline from the modules.
+Names_Mod = fieldnames(handles.psom.Modules);
+Pipeline = handles.psom.Modules.(Names_Mod{1});
+for i=2:length(Names_Mod)
+    Pipeline = smart_pipeline_merge(Pipeline, handles.psom.Modules.(Names_Mod{i}));
+end
+
+handles.psom.pipeline = Pipeline;
+
+
 %% exectute the pipeline
 if handles.MIA_pipeline_radiobuttonPSOM.Value
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
@@ -1102,7 +1155,7 @@ if length(handles.MIA_pipeline_Unique_Values_Selection) <= 1
 end
 
 handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
-NewTable = handles.MIA_data.database;
+NewTable = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
     TagTable = table();
@@ -1175,7 +1228,7 @@ for i=1:length(handles.FilterParameters)
 end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
 
-NewTable = handles.MIA_data.database;
+NewTable = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
     TagTable = table();
@@ -1259,13 +1312,13 @@ end
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
 handles.Source_selected = 'Patient';
-handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected(1)))}; 
+handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))}; 
 MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 % retrieve UI data
 handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
 
 % Add the time point filter
-handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_data.database.Tp(data_selected(1)))}; 
+handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_pipeline_TmpDatabase.Tp(data_selected(1)))}; 
 handles.Source_selected = 'Tp';
 MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 
@@ -1295,7 +1348,7 @@ end
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
 handles.Source_selected = 'Patient';
-handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_data.database.Patient(data_selected))}; 
+handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected))}; 
 MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 
 
@@ -1306,7 +1359,7 @@ function MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
+handles.Tags_listing = handles.MIA_pipeline_TmpDatabase.Properties.VariableNames;
 set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
 set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 
@@ -1315,12 +1368,13 @@ handles.Source_selected = handles.Tags_listing{1};
 
 handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
-handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+handles.MIA_pipeline_TmpDatabase.IsRaw = categorical(handles.MIA_pipeline_TmpDatabase.IsRaw);
 
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_data.database{:,handles.MIA_pipeline_TagsToPrint});
+handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
-handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
+
 
 handles.FilterParameters = {};
 
