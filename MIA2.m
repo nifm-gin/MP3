@@ -95,7 +95,7 @@ end
 
 
 % add MRIManager.jar to the classpath (dynamic classpath)
-[filepath,name,ext] = fileparts(which('MRIManagerJ8.jar'));
+[filepath,name,ext] = fileparts(which('MRIManager.jar'));
 javaclasspath(fullfile(filepath,[name,ext]));
 % save the java skin used
 
