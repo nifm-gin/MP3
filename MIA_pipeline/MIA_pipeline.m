@@ -144,6 +144,29 @@ assert(isempty(ModToRename));
 
 merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
+function MIA_pipeline_UpdateTables(hObject, eventdata, handles)
+%% Update of Filtering/Filtered Tables
+NewTable = handles.MIA_pipeline_TmpDatabase;
+for i=1:length(handles.FilterParameters)
+    Tag = handles.FilterParameters{1,i}{1};
+    TagTable = table();
+    for j=2:length(handles.FilterParameters{1,i})
+        SelectedValue = handles.FilterParameters{1,i}{j};
+        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+        TagTable = unique(TagTable);
+    end
+    NewTable = TagTable;
+end
+
+handles.MIA_pipeline_Filtered_Table = NewTable;
+handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+%% Update of Unique Values
+TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
+handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
+
+%% Update of modules parameters
+MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
+guidata(hObject, handles);
 
 
 
@@ -181,41 +204,32 @@ end
 
 %handles.psom.pipeline = new_pipeline;
 NbMod = length(fieldnames(old_modules));
-handles.psom.Output_databases = setfield(old_databases, ['Module_', num2str(NbMod+1)], output_database);
-handles.psom.Modules = setfield(old_modules, ['Module_', num2str(NbMod+1)], new_pipeline);
+Name_New_Mod = handles.new_module.module_name;
+j=2;
+while ~isempty(intersect(fieldnames(old_modules), Name_New_Mod))
+    Name_New_Mod = [handles.new_module.module_name, '_', num2str(j)];
+    j=j+1;
+end
+handles.psom.Output_databases = setfield(old_databases, Name_New_Mod, output_database);
+handles.psom.Modules = setfield(old_modules, Name_New_Mod, new_pipeline);
 
 
 %handles.MIA_pipeline_Filtered_Table = [handles.MIA_pipeline_Filtered_Table ; output_database];
 %handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 %handles.psom.pipeline = merged_pipe;
-handles.MIA_pipeline_TmpDatabase = [handles.MIA_pipeline_TmpDatabase ; output_database];
+handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
 
 
 
-NewTable = handles.MIA_pipeline_TmpDatabase;
-for i=1:length(handles.FilterParameters)
-    Tag = handles.FilterParameters{1,i}{1};
-    TagTable = table();
-    for j=2:length(handles.FilterParameters{1,i})
-        SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-        TagTable = unique(TagTable);
-    end
-    NewTable = TagTable;
-end
-
-handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-
-
-
-
+MIA_pipeline_UpdateTables(hObject, eventdata, handles)
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 %MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
 
-module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
-set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
+
+%module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
+%set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
+set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.psom.Modules));
 
 % display the pipeline
 if exist('biograph') == 2
@@ -492,6 +506,8 @@ if isfield(handles, 'psom')
 end
 
 handles.tmp_database = table();
+handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+MIA_pipeline_UpdateTables(hObject, eventdata, handles)
 guidata(hObject, handles);
 
 
@@ -1099,7 +1115,7 @@ for i=1:length(Jobs)
                for k=1:length(B)
                    [path_out, name_out, ~] = fileparts(B{k});
                    path_out = [path_out, filesep];
-                   outdb = handles.tmp_database(handles.tmp_database.Path == path_out, :);
+                   outdb = handles.MIA_pipeline_TmpDatabase(handles.MIA_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
                    handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                end
