@@ -91,26 +91,11 @@ function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
 if isempty(opt)
-    % define every option needed to run this module
-%     fields   = {'RefInput', 'InputToReshape','NbInput', 'NbOutput', 'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
-%     defaults = {1,1, 1, 1, 5, true, '', 'T2map', 'AllName'};
-%     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-%     
-%     % list of everything displayed to the user associated to their 'type'
-%     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
-%     user_parameter_type = {'XScan'; ''; 'char'; 'numeric'};
-%     parameter_default = {''; ''; 'T2map'; 5};
-%     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
-%     scans_input_DOF = {{'SequenceName'}; ''; ''; ''};
-%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
-%     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
-    % So for no input file is selected and therefore no output
-
-%% Benjamin Modifications
-%      % define every option needed to run this module
-%       %%   % define every option needed to run this module
-%     % --> module_option(1,:) = field names
-%     % --> module_option(2,:) = defaults values
+  
+     % define every option needed to run this module
+      %%   % define every option needed to run this module
+    % --> module_option(1,:) = field names
+    % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'threshold',5};
@@ -121,19 +106,15 @@ if isempty(opt)
     module_option(:,8)   = {'Table_in', table()};
     module_option(:,9)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
-% 
-% %     % define every option needed to run this module
-% %     fields   = {'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
-% %     defaults = {5, true, '', 'T2map', 'AllName'};
-% %     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-%     
-% %% list of everything displayed to the user associated to their 'type'
-%      % --> user_parameter(1,:) = user_parameter_list
-%      % --> user_parameter(2,:) = user_parameter_type
-%      % --> user_parameter(3,:) = parameter_default
-%      % --> user_parameter(4,:) = psom_parameter_list
-%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
-%      % will be display to help the user)
+    
+% list of everything displayed to the user associated to their 'type'
+     % --> user_parameter(1,:) = user_parameter_list
+     % --> user_parameter(2,:) = user_parameter_type
+     % --> user_parameter(3,:) = parameter_default
+     % --> user_parameter(4,:) = psom_parameter_list
+     % --> user_parameter(5,:) = Scans_Input_DOF (degree-of-freedom)
+     % --> user_parameter(6,:) = Help : text data which describe the parameter (it
+     % will be display to help the user)
     user_parameter(:,1)   = {'Select a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, ''};
     user_parameter(:,2)   = {'Parameters','','','','', ''};
     user_parameter(:,3)   = {'   .Output filename extension','char','T2map','output_filename_ext','', ''};
@@ -141,16 +122,8 @@ if isempty(opt)
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
 
-% %     % list of everything displayed to the user associated to their 'type'
-% %     user_parameter_list = {'Select a Multi Spin Echo scan as input'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
-% %     user_parameter_type = {'1Scan'; ''; 'char'; 'numeric'};
-% %     parameter_default = {''; ''; 'T2map'; 5};
-% %     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
-% %     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields'};
-% %     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, 'VariableNames', VariableNames);
-%    
-% % So for no input file is selected and therefore no output
-%%
+% So far no input file is selected and therefore no output
+%
     % The output file will be generated automatically when the input file
     % will be selected by the user
     opt.NameOutFiles = {'T2map'};
@@ -238,25 +211,14 @@ end
 
 
 %% load input Nii file
-%data.hdr = spm_vol(files_in{1});
-%data.img = spm_read_vols(data.hdr);
+N = niftiread(files_in.In1{1});
+% load nifti info
+info = niftiinfo(files_in.In1{1});
 
-%% load input JSON fil
-%data.json = spm_jsonread(files_in{2});
+%% load input JSON file
+J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 % Get information from the JSON data
-%EchoTime = data.json.EchoTime;
-
-N = niftiread(files_in.In1{1});
-info = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
-jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
-
 EchoTime = J.EchoTime;
 
 % reshape the data to a vector matric (speed the fitting process)
@@ -265,9 +227,7 @@ data_to_fit = reshape(double(N), [size(N,1)*size(N, 2)*size(N,3) numel(EchoTime)
 
 %% create empty structures
 T2map_tmp = NaN(size(data_to_fit,1),1);
-% M0map_tmp = NaN(size(data_to_fit,1),1);
-% T2_Error_map_tmp = NaN(size(data_to_fit,1),1);
-% M0_Error_map_tmp = NaN(size(data_to_fit,1),1);
+
 
 % define the threshold and variables
 maxim=max(data_to_fit(:)) * opt.threshold/100;
@@ -308,63 +268,30 @@ OutputImages=reshape(T2map_tmp,[size(N,1) size(N, 2) size(N,3)]);
 OutputImages(OutputImages < 0) = -1;
 OutputImages(OutputImages > 5000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
-% M0map.img=reshape(M0map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% T2_Error_map.img=reshape(T2_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% M0_Error_map.img=reshape(M0_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% save the T2 map
-%% if spm_function is used
-% T2map.hdr = spm_vol([files_in{1}, ', 1']);
-% T2map.hdr.fname = files_out.filename;
-% spm_write_vol(T2map.hdr, T2map.img);
 
-%% if matlab function is used
-%T2map.hdr = niftiinfo(files_in{1});
-%T2map.hdr = update_nifti_hdr(T2map.hdr, T2map.img, files_out.filename);
-%niftiwrite(single(T2map.img), files_out.filename, T2map.hdr)
 
 %% need to update the json structure here before saving it with the T2map
 %spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
 
+% save the new files (.nii & .json)
+% update the header before saving the new .nii
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages);
 info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
-%info2.raw.datatype = 16;
-%info2.BitsPerPixel = 32;
 info2.ImageSize = size(OutputImages);
-%info2.raw.dim(1) = 3;
-%info2.raw.dim(5) = 1;
-%info2.raw.bitpix = 32;
-%info2.raw = struct();
 info2.Description = [info.Description, 'Modified by T2map Module'];
 
-
-
+% save the new .nii file
 niftiwrite(OutputImages, files_out.In1{1}, info2);
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+
+% so far copy the .json file of the first input
+copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
 % 
-% % save the M0map map
-% M0map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% M0map.hdr.fname = char(strcat(filename, '-M0map.nii'));
-% M0map.img(isnan(M0map.img)) = -1;
-% spm_write_vol(M0map.hdr, M0map.img);
-% 
-% % save the T2_Error_map 
-% T2_Error_map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% T2_Error_map.hdr.fname = char(strcat(filename, '-T2_Error.nii'));
-% T2_Error_map.img(T2_Error_map.img < 0) = -1;
-% T2_Error_map.img(T2_Error_map.img > 50) = -1;
-% T2_Error_map.img(isnan(T2_Error_map.img)) = -1;
-% spm_write_vol(T2_Error_map.hdr, T2_Error_map.img);
-% 
-% % save the M0_Error_map map
-% M0_Error_map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% M0_Error_map.hdr.fname = char(strcat(filename, '-M0_Error.nii'));
-% M0_Error_map.img(isnan(M0_Error_map.img)) = -1;
-% spm_write_vol(M0_Error_map.hdr, M0_Error_map.img);
+% JMod = jsonencode(J);
+% [path, name, ext] = fileparts(files_out.In1{1});
+% jsonfile = [path, '/', name, '.json'];
+% fidmod = fopen(jsonfile, 'w');
+% fwrite(fidmod, JMod, 'uint8');
+% fclose(fidmod);
