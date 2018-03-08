@@ -211,25 +211,14 @@ end
 
 
 %% load input Nii file
-%data.hdr = spm_vol(files_in{1});
-%data.img = spm_read_vols(data.hdr);
+N = niftiread(files_in.In1{1});
+% load nifti info
+info = niftiinfo(files_in.In1{1});
 
-%% load input JSON fil
-%data.json = spm_jsonread(files_in{2});
+%% load input JSON file
+J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 % Get information from the JSON data
-%EchoTime = data.json.EchoTime;
-
-N = niftiread(files_in.In1{1});
-info = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
-jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
-
 EchoTime = J.EchoTime;
 
 % reshape the data to a vector matric (speed the fitting process)
@@ -238,9 +227,7 @@ data_to_fit = reshape(double(N), [size(N,1)*size(N, 2)*size(N,3) numel(EchoTime)
 
 %% create empty structures
 T2map_tmp = NaN(size(data_to_fit,1),1);
-% M0map_tmp = NaN(size(data_to_fit,1),1);
-% T2_Error_map_tmp = NaN(size(data_to_fit,1),1);
-% M0_Error_map_tmp = NaN(size(data_to_fit,1),1);
+
 
 % define the threshold and variables
 maxim=max(data_to_fit(:)) * opt.threshold/100;
@@ -281,63 +268,30 @@ OutputImages=reshape(T2map_tmp,[size(N,1) size(N, 2) size(N,3)]);
 OutputImages(OutputImages < 0) = -1;
 OutputImages(OutputImages > 5000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
-% M0map.img=reshape(M0map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% T2_Error_map.img=reshape(T2_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% M0_Error_map.img=reshape(M0_Error_map_tmp,[size(data.img,1) size(data.img, 2) size(data.img,3)]);
-% save the T2 map
-%% if spm_function is used
-% T2map.hdr = spm_vol([files_in{1}, ', 1']);
-% T2map.hdr.fname = files_out.filename;
-% spm_write_vol(T2map.hdr, T2map.img);
 
-%% if matlab function is used
-%T2map.hdr = niftiinfo(files_in{1});
-%T2map.hdr = update_nifti_hdr(T2map.hdr, T2map.img, files_out.filename);
-%niftiwrite(single(T2map.img), files_out.filename, T2map.hdr)
 
 %% need to update the json structure here before saving it with the T2map
 %spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
 
+% save the new files (.nii & .json)
+% update the header before saving the new .nii
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages);
 info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
-%info2.raw.datatype = 16;
-%info2.BitsPerPixel = 32;
 info2.ImageSize = size(OutputImages);
-%info2.raw.dim(1) = 3;
-%info2.raw.dim(5) = 1;
-%info2.raw.bitpix = 32;
-%info2.raw = struct();
 info2.Description = [info.Description, 'Modified by T2map Module'];
 
-
-
+% save the new .nii file
 niftiwrite(OutputImages, files_out.In1{1}, info2);
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+
+% so far copy the .json file of the first input
+copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
 % 
-% % save the M0map map
-% M0map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% M0map.hdr.fname = char(strcat(filename, '-M0map.nii'));
-% M0map.img(isnan(M0map.img)) = -1;
-% spm_write_vol(M0map.hdr, M0map.img);
-% 
-% % save the T2_Error_map 
-% T2_Error_map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% T2_Error_map.hdr.fname = char(strcat(filename, '-T2_Error.nii'));
-% T2_Error_map.img(T2_Error_map.img < 0) = -1;
-% T2_Error_map.img(T2_Error_map.img > 50) = -1;
-% T2_Error_map.img(isnan(T2_Error_map.img)) = -1;
-% spm_write_vol(T2_Error_map.hdr, T2_Error_map.img);
-% 
-% % save the M0_Error_map map
-% M0_Error_map.hdr = spm_vol([MSE_map_filename, ', 1']);
-% M0_Error_map.hdr.fname = char(strcat(filename, '-M0_Error.nii'));
-% M0_Error_map.img(isnan(M0_Error_map.img)) = -1;
-% spm_write_vol(M0_Error_map.hdr, M0_Error_map.img);
+% JMod = jsonencode(J);
+% [path, name, ext] = fileparts(files_out.In1{1});
+% jsonfile = [path, '/', name, '.json'];
+% fidmod = fopen(jsonfile, 'w');
+% fwrite(fidmod, JMod, 'uint8');
+% fclose(fidmod);
