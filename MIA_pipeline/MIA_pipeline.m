@@ -144,7 +144,7 @@ assert(isempty(ModToRename));
 
 merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
-function MIA_pipeline_UpdateTables(hObject, eventdata, handles)
+function [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles)
 %% Update of Filtering/Filtered Tables
 NewTable = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
@@ -203,7 +203,6 @@ end
 
 
 %handles.psom.pipeline = new_pipeline;
-NbMod = length(fieldnames(old_modules));
 Name_New_Mod = handles.new_module.module_name;
 j=2;
 while ~isempty(intersect(fieldnames(old_modules), Name_New_Mod))
@@ -221,7 +220,7 @@ handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; ou
 
 
 
-MIA_pipeline_UpdateTables(hObject, eventdata, handles)
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 %MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
@@ -507,7 +506,7 @@ end
 
 handles.tmp_database = table();
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
-MIA_pipeline_UpdateTables(hObject, eventdata, handles)
+MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -1022,15 +1021,23 @@ output_database = table();
 for i=1:NbModules
     table_in = table();
     Files_in = struct();
-    if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
+    for l=1:NbScanInput
+        A = {FinalMat{l}{i,:}};
+        B(l) = any(cellfun('isempty', A));
+    end
+    if ~any(B)
+    %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
         for j=1:NbScanInput
+            %A = {FinalMat{j}{i,:}};
+            %B = cellfun('isempty', A);
+            %if all(B)
             for k=1:size(FinalMat{j},2)
                 if isempty(FinalMat{j}{i,k})
                     FinalMat{j}{i,k} = '';
                 end
                 eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                 if ~isempty(FinalMat{j}{i,k})
-                    [PATHSTR,NAME,EXT] = fileparts(FinalMat{j}{i,k});
+                    [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
                     databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
                     databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
                     assert(size(databtmp, 1) == 1);
@@ -1061,13 +1068,22 @@ function MIA_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
 end
-opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'];
+opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM'];
+
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'Derived_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'Derived_data']);
+    if status == false
+        error('Cannot create the Derived_Data folder to save the results of the computed maps.')
+    end
+end
+
+
 
 
 %% Create the pipeline from the modules.
