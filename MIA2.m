@@ -337,6 +337,7 @@ else %display VOIs list
         set(handles.MIA_scans_list, 'String', '');
         return
     end
+    scan = get(handles.MIA_scans_list, 'Value');
     set(handles.MIA_scans_list, 'String', char(sequence_listing));
     file_text= cell(1, numel(sequence_listing(scan)));
     for i=1:numel(sequence_listing(scan))
@@ -7677,7 +7678,18 @@ clear handlesb
 %javax.swing.UIManager.setLookAndFeel(newLnF);
 handles = guidata(handles.MIA_GUI);
 MIA_tmp_folder = [handles.database.Properties.UserData.MIA_data_path, 'tmp'];
-log_file =struct2table(jsondecode(char(data_loaded)));
+
+try
+    log_file =struct2table(jsondecode(char(data_loaded)));
+    
+catch ME
+    if strcmp(ME.message,'Fields in a scalar structure must have the same number of rows.')
+        warndlg('Something is wrong with MRImanager: the output table does not have the same number of rows');
+        return
+        
+    end
+end
+
 
 % log_file_to_update = log_file;
 log_file.StudyName = categorical(cellstr(log_file.StudyName));
