@@ -3558,6 +3558,9 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 
 function MIA_table1_add_pixel_value(~,handles,pixel_coordinates)
 
+if ~isfield(handles, 'data_displayed')
+    return
+end
 [pixel_coordinates_2d] = [round(pixel_coordinates(1,1)) round(pixel_coordinates(1,2)) round(pixel_coordinates(1,3))];
 if pixel_coordinates_2d(1)<=0 || pixel_coordinates_2d(1) > size(handles.data_displayed.image,2) || ...
     pixel_coordinates_2d(2)<=0 || pixel_coordinates_2d(2) > size(handles.data_displayed.image,1) || ...
