@@ -2324,7 +2324,7 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0 && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
+                if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 end
                 % apply the colormap selected
@@ -2345,7 +2345,7 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                  % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0 && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
+                if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 end
 
@@ -7960,6 +7960,8 @@ function MIA_Brain_Extraction_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+ warndlg('Not implemented yet, Sorry!', 'Warning');
+    return
 if ~isfield(handles, 'data_loaded')
     warndlg('Please open 1 scan (in Single mode)!', 'Warning');
     return

@@ -97,7 +97,7 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'Execution_Mode','All Database'};
+    module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
     module_option(:,4)   = {'OutputSequenceName','Prefix'};
     module_option(:,5)   = {'Function','nmi'};
     module_option(:,6)   = {'Separation','4 2'};
@@ -106,7 +106,7 @@ if isempty(opt)
     module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
     module_option(:,10)   = {'Wrapping','No wrap'};
     module_option(:,11)   = {'Masking','Dont mask images'};
-    module_option(:,12)   = {'output_filename_ext','Coreg'};
+    module_option(:,12)   = {'output_filename_ext','CoregEst'};
     module_option(:,13)   = {'RefInput',2};
     module_option(:,14)   = {'InputToReshape',1};
     module_option(:,15)   = {'Table_in', table()};
@@ -153,7 +153,7 @@ if isempty(opt)
     user_parameter(:,11)  = {'       .Histogram Smoothing','numeric','','Hist_Smooth','',...
         'Gaussian smoothing to apply to the 256x256 joint histogram. Other information theoretic coregistration methods use fewer bins, but Gaussian smoothing seems to be more elegant.'};
     user_parameter(:,12)  = {'       .Filename prefix','char','','output_filename_ext','',...
-        'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''Est''.'};
+        'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''CoregEst''.'};
 
 
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
@@ -243,26 +243,31 @@ fclose(fid);
 %raw = reshape(raw, 1,length(raw));
 FixedImJSON = jsondecode(raw);
 
+% matlabbatch{1}.spm.spatial.coreg.estimate.ref = '<UNDEFINED>';
+% matlabbatch{1}.spm.spatial.coreg.estimate.source = '<UNDEFINED>';
+% matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
 
-% duplicate the scan first using the prefix string (user-defined-
-matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_ext;
-
-
-matlabbatch{1}.spm.spatial.coreg.estimate.ref = '<UNDEFINED>';
-matlabbatch{1}.spm.spatial.coreg.estimate.source = '<UNDEFINED>';
-matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
-matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
-matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [4 2];
-matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
+% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [4 2];
+% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
+% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 
 matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
-matlabbatch{1}.spm.spatial.coreg.estimate.source = {[files_in.In2{1}, ',1']};
+% First duplicate the source scan using the prefix string (user-defined)
+% Otherwise the CoregEstimate will overwrite the file!!
+copyfile(files_in.In2{1},  files_out.In2{1})
+copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
+% Use the files_out as source (the CoregEstimate will overwrite the file)
+matlabbatch{1}.spm.spatial.coreg.estimate.source = {[files_out.In2{1}, ',1']};
 if ~isempty(files_in.In3{1})
     for i=1:length(files_in.In3)
-        files_in.In3{i}= [files_in.In3{i}, ',1'];
+        % First duplicate all the 'Other' scans using the prefix string (user-defined)
+        % Otherwise the CoregEstimate will overwrite the raw files!!
+        copyfile(files_in.In3{i},  files_out.In3{i})
+        copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
+
+        other{i}= [files_out.In3{i}, ',1'];
     end
-    matlabbatch{1}.spm.spatial.coreg.estimate.other = files_in.In3;
+    matlabbatch{1}.spm.spatial.coreg.estimate.other = other;
 end
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
@@ -284,99 +289,8 @@ spm('defaults', 'FMRI');
 spm_jobman('initcfg');
 spm_jobman('run', jobs, inputs{:});
 
-%date_str = date;
-% if exist([PATHSTR filesep 'spm_' date_str(end-3:end) date_str(end-7:end-5) date_str(1:end-9) '.ps'], 'file') == 2
-%     movefile([PATHSTR filesep 'spm_' date_str(end-3:end) date_str(end-7:end-5) date_str(1:end-9) '.ps'],...
-%         [PATHSTR, filesep, NAME_scan_to_coreg(1:end-8) '_SPMcoreg.ps'], 'f'); 
-% end
-
-
-
-
-%% JSON de l'input 2
-[path, name, ext] = fileparts(files_in.In2{1});
-SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, ext];
-if exist(SpmOutputFile, 'file') ~=2
-    error('Cannot find the file %s', SpmOutputFile);
-end
-movefile(SpmOutputFile,files_out.In2{1});
-
-jsonfile = [path, filesep, name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-
-J = jsondecode(raw);
-
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In2{1});
-jsonfile = [path, filesep, name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
-
-%% JSON de l'input 3
-if isfield(files_out, 'In3')
-    for i=1:length(files_out.In3)
-        [path, name, ext] = fileparts(files_in.In3{i});
-        SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, '.nii'];
-        if exist(SpmOutputFile, 'file') ~=2
-            error('Cannot find the file %s', SpmOutputFile);
-        end
-        movefile(SpmOutputFile,files_out.In3{i})
-        jsonfile = [path, filesep, name, '.json'];
-        fid = fopen(jsonfile, 'r');
-        raw = fread(fid, inf, 'uint8=>char');
-        fclose(fid);
-        J = jsondecode(raw);
-        
-        JMod = jsonencode(J);
-        [path, name, ext] = fileparts(files_out.In3{i});
-        jsonfile = [path, filesep, name, '.json'];
-        fidmod = fopen(jsonfile, 'w');
-        fwrite(fidmod, JMod, 'uint8');
-        fclose(fidmod);
-    end
-end
-
-
 
 close(SPMinter)
 close(SPMgraph)
 
 
-% N = niftiread(files_in);
-% info = niftiinfo(files_in);
-% [path, name, ext] = fileparts(files_in);
-% jsonfile = [path, '/', name, '.json'];
-% fid = fopen(jsonfile, 'r');
-% raw = fread(fid, inf, 'uint8=>char');
-% fclose(fid);
-% %raw = reshape(raw, 1,length(raw));
-% J = jsondecode(raw);
-% 
-% Informations = whos('N');
-% FilteredImages = zeros(size(N), Informations.class);
-% NbDim = length(size(N));
-% if NbDim>4
-%     warning('Too much dimensions. This module deals with at most 4 dimensions.')
-% end
-% h = fspecial(opt.Type,str2double(opt.HSize), str2double(opt.Sigma));
-% for i=1:size(N,3)
-%     for j=1:size(N,4)
-%         FilteredImages(:,:,i,j) = imfilter(N(:,:,i,j), h, 'replicate');
-%     end
-% end
-% 
-% info2 = info;
-% info2.Filename = files_out;
-% info2.Filemoddate = char(datetime('now'));
-% info2.Description = [info.Description, 'Modified by Smoothing Module'];
-% 
-% niftiwrite(FilteredImages, files_out, info2)
-% JMod = jsonencode(J);
-% [path, name, ext] = fileparts(files_out);
-% jsonfile = [path, '/', name, '.json'];
-% fidmod = fopen(jsonfile, 'w');
-% fwrite(fidmod, JMod, 'uint8');
-% fclose(fidmod);

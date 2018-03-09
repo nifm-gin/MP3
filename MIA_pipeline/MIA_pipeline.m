@@ -765,7 +765,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_Coreg_Est_Res';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         ismodule = 1;
-     case '.SPM: Coreg (Est)'
+     case '   .SPM: Coreg (Est)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)';
         handles.new_module.module_name = 'Module_Coreg_Est';
