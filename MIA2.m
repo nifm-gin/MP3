@@ -8199,7 +8199,8 @@ if ~isfield(handles, 'database')
     return
 end
 
-handles.database
+% handles.database.Type(handles.database.SequenceName == 'Mask') = 'ROI';
+% guidata(hObject, handles)
 %mat2clipboard(get(handles.MIA_table1, 'Data'));
 %msgbox('Data copied!', 'logbook') ;
 
