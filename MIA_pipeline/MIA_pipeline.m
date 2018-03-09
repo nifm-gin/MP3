@@ -55,26 +55,18 @@ function MIA_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 handles.MIA_data = varargin{3};
-handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .T2*map',...
+handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .Fit_T2_T2star',...
                 '   .deltaR2', '   .deltaR2*',...
     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
                 '   .Vessel Densisty (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
      'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
-     'SPM', '   .SPM: Coreg', '   .SPM: Reslice','   .SPM: Realign', ...
+     'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Spatial', '   .Smoothing'...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
- 
- 
-%  
-%  {'Arithmetic', 'Mean slices', 'Smooth', 'Add slices', ...
-%    'SPM: Realign (Over time)', 'Same registration as', 'Normalization', 'Repair outlier',...
-%     'Remove images', 'Shift images', 'Import Atlas (and ROI)','Export to Nifti'};
-%     'T2starcorr3D', 'ASL_InvEff',
-
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
 set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
@@ -231,25 +223,6 @@ handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; ou
 %set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.psom.Modules));
 
-% display the pipeline
-if exist('biograph') == 2
-    
-    [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
-    bg = biograph(graph_deps,list_jobs);
-    
-    
-    % dolayout(bg);
-    %% add editable functions to interact with the biograph
-    set(bg, 'NodeCallbacks', @(hObject,eventdata)MIA_pipeline('node_callbacks',hObject));
-    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MIA_pipeline('edge_callbacks',hObject));
-    view(bg) %, which will bring up the display in a different window.
-    set(0, 'ShowHiddenHandles', 'on')
-    
-    handles.psom.biograph_fig = gcf;
-    %set(handles.psom.biograph_ob, 'Name', 'MIA pipeline manager');
-    
-    
-end
 guidata(hObject, handles);
 
 %MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
@@ -788,19 +761,31 @@ ismodule = 0;
 switch char(handles.Modules_listing(module_selected))
     case handles.Module_groups	
         module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
-    case '   .SPM: Coreg'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)';
-        handles.new_module.module_name = 'Module_Coreg';
+    case '   .SPM: Coreg (Est & Res)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est_Res('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est_Res(files_in,files_out,opt)';
+        handles.new_module.module_name = 'Module_Coreg_Est_Res';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+     case '   .SPM: Coreg (Est)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)';
+        handles.new_module.module_name = 'Module_Coreg_Est';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        ismodule = 1;   
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_T2map';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Fit_T2_T2star'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Fit_T2_T2star('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Fit_T2_T2star(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Fit_T2_T2star';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
         ismodule = 1;
     case '   .Smoothing'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
@@ -825,7 +810,9 @@ switch char(handles.Modules_listing(module_selected))
         ismodule = 1;
         
     otherwise
-        module_parameters_string = 'Not Implemented yet!!';     
+        module_parameters_string = 'Not Implemented yet!!';    
+        set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+
 end
 
 set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
@@ -1125,9 +1112,6 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data
     end
 end
 
-
-
-
 %% Create the pipeline from the modules.
 Names_Mod = fieldnames(handles.psom.Modules);
 Pipeline = handles.psom.Modules.(Names_Mod{1});
@@ -1137,6 +1121,26 @@ end
 
 handles.psom.pipeline = Pipeline;
 
+% display the pipeline
+if exist('biograph') == 2
+    
+    [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
+    bg = biograph(graph_deps,list_jobs);
+    
+    
+    % dolayout(bg);
+    %% add editable functions to interact with the biograph
+    set(bg, 'NodeCallbacks', @(hObject,eventdata)MIA_pipeline('node_callbacks',hObject));
+    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MIA_pipeline('edge_callbacks',hObject));
+    view(bg) %, which will bring up the display in a different window.
+    set(0, 'ShowHiddenHandles', 'on')
+    
+    handles.psom.biograph_fig = gcf;
+    %set(handles.psom.biograph_ob, 'Name', 'MIA pipeline manager');
+    guidata(hObject, handles);
+    %return
+    
+end
 
 %% exectute the pipeline
 if handles.MIA_pipeline_radiobuttonPSOM.Value

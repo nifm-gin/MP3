@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_Coreg_Est_Res(files_in,files_out,opt)
 % This is a template file for "brick" functions in NIAK.
 %
 % SYNTAX:
@@ -97,7 +97,7 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'Execution_Mode','All Database'};
+    module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
     module_option(:,4)   = {'OutputSequenceName','Prefix'};
     module_option(:,5)   = {'Function','nmi'};
     module_option(:,6)   = {'Separation','4 2'};
