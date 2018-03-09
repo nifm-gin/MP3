@@ -103,6 +103,7 @@ data_selected =  MIA2('finddata_selected',handles.MIA_data);
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
+set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
 guidata(hObject, handles);
 
 
@@ -619,6 +620,7 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
 else
     handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MIA_pipeline_parameter_setup_table.Data{1,1}); 
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
     %patient_listing = table_data(:,1);
 % patient_selected = patient_listing(find([table_data{:,2}]' == true));
@@ -791,39 +793,54 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg(files_in,files_out,opt)';
         handles.new_module.module_name = 'Module_Coreg';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_T2map';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
     case '   .Smoothing'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Smoothing(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Smoothing';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
     case '   .Dynamic Susceptibility Contrast'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Susceptibility(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Susceptibility';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
     case '   .T1map (Multi Angles)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MultiAngles('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MultiAngles(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_T1map_MultiAngles';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
         
     otherwise
         module_parameters_string = 'Not Implemented yet!!';     
 end
-set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
 
+set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
 if ismodule
     MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+    %TableSize = handles.MIA_pipeline_module_parameters.Position(3);
+    %FigureSizeInPix = handles.MIA_pipeline_manager_GUI.Position(3);
+    %TableSizeInPix = TableSize*FigureSizeInPix;
+    %DotsPerInch = get(0,'ScreenPixelsPerInch');
+    %DotsPerChar = handles.MIA_pipeline_module_parameters.FontSize;
+    %TableSizeInChar = TableSizeInPix/DotsPerChar;
+    handles.module_parameters_string = module_parameters_string;
+    handles.module_parameters_fields = module_parameters_fields;
+    
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 else
     table.data = '';
     table.columnName = '';
@@ -843,7 +860,32 @@ end
 guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 
-
+function [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles)
+    ActualValues = cell(size(handles.module_parameters_string));
+    StrToDisplay = cell(size(handles.module_parameters_string));
+    LString = zeros(size(handles.module_parameters_string));
+    for i=1:length(handles.module_parameters_fields)
+        if strcmp(handles.module_parameters_fields{i}, '')
+            ActualValues{i} = ' ';
+        else
+            if isnumeric(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}))
+                ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+            else
+                ActualValues{i} = char(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+            end
+        end
+        LString(i) = length(handles.module_parameters_string{i})+length(ActualValues{i});
+    end
+    %FinalLength = floor(TableSizeInChar);
+    FinalLength = 90;
+    for i=1:length(handles.module_parameters_fields)
+        
+        StrToDisplay{i} = [handles.module_parameters_string{i}, repmat(' ',1,FinalLength-LString(i)), ActualValues{i}];
+    end
+    
+    
+    %set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
+    set(handles.MIA_pipeline_module_parameters, 'String', char(StrToDisplay));
 
 
 
