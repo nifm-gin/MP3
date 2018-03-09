@@ -98,3 +98,9 @@ dictionaryMRI:
                    
                    viewer: {category: Specification}
                    json:   {tagJson: ~, type: ~, format: ~, units: ~}
+
+  SpinEchoTime:
+                  whereBruker:  {file: method, keyName: $SpinEchoTime=, type: float, format: ~, units: ms}
+
+                  viewer: {category: Specifications}
+                  json:   {tagJson: SpinEchoTime, type: float, format: ~, units: ms}
