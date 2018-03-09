@@ -1,8 +1,0 @@
-[Bruker] /Users/blemasso/GoogleDrive/matlab/MIA2/MRIFileManager/
-[Dicom] /Users/blemasso/Data_non_synch/2017_Cochon_Serduc
-[ParRec] /Users/blemasso/GoogleDrive/matlab/MIA2/MRIFileManager/
-[NifTI] /Users/blemasso/GoogleDrive/matlab/MIA2/MRIFileManager/
-[Export] /Users/blemasso/GoogleDrive/matlab/MIA2/MRIFileManager/
-[LookAndFeel] com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel
-[NamingRepNifTI] /
-[NamingFileNifTI] PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime
