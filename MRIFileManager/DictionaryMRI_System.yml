@@ -42,6 +42,8 @@
 dictionaryMRI:
 
   Acquisition Date:
+                  description: {info: "The date the acquisition of data that resulted in this image started"}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqDate=, type: string, format: "yyyy-MM-dd'T'HH:mm:ss','SSSZZZZ or HH:mm:ss dd MMM yyyy", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / HH:mm:ss ; yyyy.MM.dd", units: ~}
                   whereDicom:   {file: ~, keyName: Image Date, type: string, format: "yyyyMMdd", units: ~}
@@ -51,6 +53,8 @@ dictionaryMRI:
                   json:   {tagJson: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
 
   Acquisition Time:
+                  description: {info: "The time the acquisition of data that resulted in this image started"}
+                  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqScanTime=, type: string, format: "HH:mm:ss.SSS or SSS", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Scan Duration ; Scan Duration, type: string ; float, format: "ss ; ~", units: ~}
                   whereDicom:   {file: ~, keyName: Acquisition Time, type:  string, format: "SSS", units: s}
@@ -60,25 +64,33 @@ dictionaryMRI:
                   json:   {tagJson: AcquisitionTime, type: string, format: "HH:mm:ss.SSS", units: ~}
                   
   Angulation Image:
+                  description: {info: "Angulation Image (Philips only)"}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: image angulation ; Angulation AP (Image_Info), type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
   Angulation Midslice:
+                  description: {info: "Angulation Midslice (Philips only)"}
+                  
                   wherePhilips: {file: PAR ; Xml, keyName: Angulation midslice ; Angulation AP, type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   BandWidth:
+                  description: {info: ""}
+
                   whereBruker:  {file: acqp, keyName: $SW_h=, type: float, format: ~, units: MHz}
                   whereNifti:   {file: json, keyName: BandWidth, type: float, format: ~, units: MHz}                  
                   
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: BandWidth, type: float, format: ~, units: ~}
+                  json:   {tagJson: BandWidth, type: float, format: ~, units: MHz}
 
   Byte Order:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreByteOrder=, type: string, format: ~, units: ~}
                   whereNifti:   {file: niftiheader, keyName: Endianness, type: string, format: ~, units: ~}                  
                   
@@ -86,6 +98,8 @@ dictionaryMRI:
                   json:   {tagJson: ByteOrder, type: string, format: ~, units: ~}
    
   Coil:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_operation_mode=, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: Coil, type: string, format: ~, units: ~}
                   
@@ -93,12 +107,16 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Columns:
+                  description: {info: ""}
+  
                   whereDicom:   {file: ~, keyName: Columns, type: int, format: ~, units: ~}
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Creation Date:
+                  description: {info: ""}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_date=, type: string, format: "yyyy-MM-dd'T'HH:mm:ss','SSSZZZZ or HH:mm:ss dd MMM yyyy", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / hHH:mm:ss ; yyyy.MM.dd", units: ~}
                   whereDicom:   {file: ~, keyName: Study Date, type: string, format: "yyyyMMdd", units: ~}
@@ -108,6 +126,8 @@ dictionaryMRI:
                   json:   {tagJson: CreationDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}         
  
   Data Type:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreWordType=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: image pixel size ; Pixel Size, type: string ; int, format: ~, units: ~}
                   whereDicom:   {file: dirfile,dicomdir, keyName: Bits Allocated, type: string, format: ~, units: ~}
@@ -117,6 +137,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Echo Time:
+                  description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_echo_time=, type: float, format: ~, units: ms}
                   wherePhilips: {file: PAR ; Xml, keyName: echo_time ; Echo Time, type: float  ; float, format: ~, units: ms   ; ms}
                   whereDicom:   {file: dirfile, keyName: Echo Time, type: float, format: ~, units: ms}
@@ -126,6 +148,8 @@ dictionaryMRI:
                   json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
 
   Flip Angle:
+                  description: {info: "Steady state angle in degrees to which the magnetic vector is flipped from the magnetic vector of the primary field"}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_flip_angle=, type: float, format: ~, units: degree}
                   wherePhilips: {file: PAR ; Xml, keyName: image_flip_angle ; Image Flip Angle, type: float  ; float, format: ~, units: ~ ; degree}
                   whereDicom:   {file: dirfile, keyName: Flip Angle, type: float, format: ~, units: degree}
@@ -135,6 +159,8 @@ dictionaryMRI:
                   json:   {tagJson: FlipAngle, type: float, format: ~, units: degree}
 
   FOV:
+                  description: {info: ""}
+  
                   whereBruker:  {file: reco, keyName: $RECO_fov=, type: float, format: ~, units: mm}
                   wherePhilips: {file: PAR ; Xml, keyName: FOV  ; FOV AP , type: float  ; float, format: ~, units: ~ ; degree} # && FOV FH && FOV RL
                   whereNifti:   {file: json, keyName: FOV, type: float, format: ~, units: mm}
@@ -143,6 +169,8 @@ dictionaryMRI:
                   json:   {tagJson: FOV, type: float, format: ~, units: mm}
        
   Images In Acquisition:
+                  description: {info: "Number of images that resulted from this acquisition of data"}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreFrameCount=, type: int, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: index in REC file   ; Index, type: int  ; int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Number of Frames, type: int, format: ~, units: ~}
@@ -152,6 +180,8 @@ dictionaryMRI:
                   json:   {tagJson: ImageInAcquisition, type: int, format: ~, units: ~}
 
   Imaged Nucleus:
+                  description: {info: "Nucleus that is resonant at the imaging frequency. Examples: 31P, 1H"}
+  
                   whereBruker:  {file: acqp, keyName: $NUCLEUS=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Imaged Nucleus, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: ImagedNucleus, type: string, format: ~, units: ~}
@@ -160,6 +190,8 @@ dictionaryMRI:
                   json:   {tagJson: ImagedNucleus, type: string, format: ~, units: ~}  
                   
   Image Orientation Patient:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreOrientation=, type: float, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: image angulation ; Angulation AP , type: float  ; float, format: ~, units: degree ; degree} # && Angulation FH && Angulation RL
                   whereDicom:   {file: dirfile, keyName: Image Orientation (Patient), type: float, format: ~, units: ~}
@@ -169,6 +201,8 @@ dictionaryMRI:
                   json:   {tagJson: ImageOrientationPatient, type: float, format: ~, units: ~}
   
   Image Position Patient:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCorePosition=, type: float, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: image offcentre  ; Offcenter AP, type: float  ; float, format: ~, units: mm   ; ~} # && Offcenter FH && Offcenter RL
                   whereDicom:   {file: dirfile, keyName: Image Position (Patient), type: float, format: ~, units: ~}
@@ -178,6 +212,8 @@ dictionaryMRI:
                   json:   {tagJson: ImagePositionPatient, type: float, format: ~, units: ~}  
   
   Image Type:
+                  description: {info: "Image identification characteristics (Magnitude Image, .... )"}
+        
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreFrameType=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: image_type_mr  ; Type, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, dicomdir, keyName: Image Type, type: string, format: ~, units: ~}
@@ -187,6 +223,8 @@ dictionaryMRI:
                   json:   {tagJson: ImageType, type: string, format: ~, units: ~}  
   
   Imaging Frequency:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqImagingFrequency=, type: float, format: ~, units: MHz}
                   whereDicom:   {file: ~, keyName: Imaging Frequency, type: float, format: ~, units: MHz}
                   whereNifti:   {file: json, keyName: ImagingFrequency, type: float, format: ~, units: MHz}
@@ -195,6 +233,8 @@ dictionaryMRI:
                   json:   {tagJson: ImagingFrequency, type: float, format: ~, units: MHz}
 
   Inversion Time:
+                  description: {info: "Time in msec after the middle of inverting RF pulse to middle of excitation pulse to detect the amount of longitudinal magnetization"}
+  
                   whereBruker:  {file: visu_pars, keyName: $ACQ_inversion_time=, type: float, format: ~, units: ms}
                   whereDicom:   {file: dirfile, keyName: Inversion Time, type: float, format: ~, units: ms}
                   whereNifti:   {file: json, keyName: InversionTime, type: float, format: ~, units: ms}
@@ -203,6 +243,8 @@ dictionaryMRI:
                   json:   {tagJson: InversionTime, type: float, format: ~, units: ms}
 
   Manufacturer:
+                  description: {info: "Manufacturer of the equipment that produced the composite instances"}
+          
                   whereBruker:  {file: method, keyName: ORIGIN=, type: string, format: ~, units: ms}
                   whereDicom:   {file: ~, keyName: Manufacturer, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: Manufacturer, type: string, format: ~, units: ms}
@@ -211,17 +253,23 @@ dictionaryMRI:
                   json:   {tagJson: Manufacturer, type: string, format: ~, units: ms}
 
   Manufacturer's Model:
+                  description: {info: "Manufacturer's model name of the equipment that produced the composite instances"}
+  
                   whereDicom:   {file: ~, keyName: Manufacturer's Model Name, type: string, format: ~, units: ~}
                    
                   viewer: {category: Equipment}
                   json:   {tagJson: Manufacturer's Model, type: string, format: ~, units: ~}                  
 
   Modality:
+                  description: {info: ""}
+  
                   whereDicom:   {file: ~, keyName: Modality, type: string, format: ~, units: ~}
                   viewer: {category: Test}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Number Of Averages:
+                  description: {info: "Number of times a given pulse sequence is repeated before any parameter is changed"}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqNumberOfAverages=, type: int, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: number of averages   ; No Averages, type: int   ; int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Number of Averages, type: int, format: ~, units: ~}
@@ -230,6 +278,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Diffusion:
+                  description: {info: ""}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: diffusion b value number  ; BValue, type: int   ; int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Diffusion b-value, type: int, format: ~, units: ~}
                   
@@ -237,6 +287,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Echo:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_NEchoImages=, type: ~, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: echo number  ; Echo, type: int   ; int, format: ~, units: ~}
                   whereDicom:   {file: dirfile, keyName: Echo Time, type: ~, format: ~, units: ~}
@@ -246,6 +298,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Repetition:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_NRepetitions=, type: int, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Max. number of dynamics   ; Max No Dynamics, type: int   ; int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Temporal Position, type: int, format: ~, units: ~}
@@ -254,6 +308,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Number Of Slice:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCorePosition=, type: int, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Max. number of slices/locations  ; Max No Slices, type: int   ; int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Image Position Patient, type: int, format: ~, units: ~} #Slice Location
@@ -262,6 +318,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Patient BirthDate:
+                  description: {info: "Birth date of the patient"}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_dbirth=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Birth Date, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientBirthDate, type: string, format: ~, units: ~}
@@ -270,6 +328,8 @@ dictionaryMRI:
                   json:   {tagJson: PatientBirthDate, type: string, format: ~, units: ~}
 
   Patient ID:
+                  description: {info: ""}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_id=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient ID, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientID, type: string, format: ~, units: ~}
@@ -278,6 +338,8 @@ dictionaryMRI:
                   json:   {tagJson: PatientID, type: string, format: ~, units: ~}
 
   Patient Name:
+                  description: {info: ""}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_name_string=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Patient name   ; Patient Name, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Name, type: string, format: ~, units: ~}
@@ -287,6 +349,8 @@ dictionaryMRI:
                   json:   {tagJson: PatientName, type: string, format: ~, units: ~}
 
   Patient Position:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuSubjectPosition=, type: string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, keyName: Patient Position, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientPosition, type: string, format: ~, units: ~}
@@ -295,6 +359,8 @@ dictionaryMRI:
                   json:   {tagJson: PatientPosition, type: string, format: ~, units: ~}
 
   Patient Sex:
+                  description: {info: "Sex of the named patient"}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_sex=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Sex, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientSex, type: string, format: ~, units: ~}
@@ -303,6 +369,8 @@ dictionaryMRI:
                   json:   {tagJson: PatientSex, type: string, format: ~, units: ~}
 
   Patient Weight:
+                  description: {info: ""}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_weight=, type: float, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Weight, type: float, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientWeight, type: float, format: ~, units: ~}
@@ -311,20 +379,26 @@ dictionaryMRI:
                   json:   {tagJson: PatientWeight, type: float, format: ~, units: ~}
 
   Pixel Bandwidth:
+                  description: {info: "Reciprocal of the total sampling period, in hertz per pixel"}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqPixelBandwidth=, type: float, format: ~, units: ms}
                   whereDicom:   {file: ~, keyName: Pixel Bandwidth, type: float, format: ~, units: ms}
                   whereNifti:   {file: json, keyName: PixelBandwidth, type: float, format: ~, units: ms}
 
                   viewer: {category: ~}
-                  json:   {tagJson: PixelBandwidth, type: float, format: ~, units: ms}
+                  json:   {tagJson: PixelBandwidth, type: float, format: ~, units: Hz/pixel}
 
   Pixel Representation:
+                  description: {info: ""}
+  
                   whereDicom:   {file: ~, keyName: Pixel Representation, type: int, format: ~, units: ~}
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: Pixel Representation, type: int, format: ~, units: ~}
 
   Pixel Spacing:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_SpatResol=, type: int, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Pixel Spacing, type: int, format: ~, units: ~}
                   
@@ -332,18 +406,24 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Position Image:              
+                  description: {info: ""}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: image offcentre  ; Offcenter AP, type: float  ; float, format: ~, units: ~} # && Off Center FH && Off Center RL, type: float  ; float, format: ~, units: ~}
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
          
   Position Midslice:              
+                  description: {info: ""}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: Off Centre midslice ; Off Center AP , type: float  ; float, format: ~, units: ~} # && Off Center FH && Off Center RL
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Protocol:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_protocol_name=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Protocol name  ; Protocol Name, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Protocol Name, type: string, format: ~, units: ~}
@@ -353,6 +433,8 @@ dictionaryMRI:
                   json:   {tagJson: ProtocolName, type: string, format: ~, units: ~}
           
   Read Direction:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_SPackArrReadOrient=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Acquisition Matrix, type: string, format: ~, units: ~} #Multi-valued: frequency rows\frequency columns\phase rows\phase columns.
                   whereNifti:   {file: json, keyName: ReadDirection, type: string, format: ~, units: ~}
@@ -361,6 +443,8 @@ dictionaryMRI:
                   json:   {tagJson: ReadDirection, type: string, format: ~, units: ~}
 
   Repetition Time:
+                  description: {info: "The period of time in msec between the beginning of a pulse sequence and the beginning of the succeeding pulse sequence"}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_repetition_time=, type: float, format: ~, units: ms}
                   wherePhilips: {file: PAR ; Xml, keyName: Repetition time  ; Repetition Times, type: float  ; float, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Repetition Time, type: float, format: ~, units: ms}
@@ -370,18 +454,24 @@ dictionaryMRI:
                   json:   {tagJson: RepetitionTime, type: float, format: ~, units: ms}
 
   Rows:
+                  description: {info: ""}
+  
                   whereDicom:   {file: ~, keyName: Rows, type: int, format: ~, units: ~}
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Scaling slope and intercept:
+                  description: {info: ""}
+  
                   whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}                  
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
   Scan Mode:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCoreDim=, type: float, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Scan mode ; Scan Mode, type: string ; string, format: ~, units: ms}
                   whereDicom:   {file: ~, keyName: MR Acquisition Type, type: float, format: ~, units: ~}
@@ -391,6 +481,8 @@ dictionaryMRI:
                   json:   {tagJson: ScanMode, type: string, format: ~, units: ~}
           
   Scan Resolution:
+                  description: {info: ""}
+  
                   whereBruker:  {file: reco, keyName: $RECO_size=, type: int, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: recon resolution ; Resolution X , type: int  ; int, format: ~, units: ~} # && Resolution Y
                   whereDicom:   {file: ~, keyName: Rows & Columns, type: int, format: ~, units: ~}
@@ -400,6 +492,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Scanning Sequence:
+                  description: {info: "Description of the type of data taken(Spin Echo, Inversion Recovery,..."}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: scanning sequence ; Sequence, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Scanning Sequence, type: string, format: ~, units: ~}
                   
@@ -407,6 +501,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~} 
  
   Sequence Name:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqSequenceName=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Technique ; Technique, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, keyName: Sequence Name, type: string, format: ~, units: ~}
@@ -416,18 +512,24 @@ dictionaryMRI:
                   json:   {tagJson: SequenceName, type: string, format: ~, units: ~}
 
   Session:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_operator=, type: string, format: ~, units: ~}
                   
                   viewer: {category: Equipment}
                   json:   {tagJson: Session, type: string, format: ~, units: ~}
                   
   Slice Gap:
+                  description: {info: ""}
+  
                   wherePhilips: {file: PAR ; Xml, keyName: slice gap ; Slice Gap, type: float ; float, format: ~, units: mm}
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
 
   Slice Orientation:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_SPackArrSliceOrient=, type: string, format: ~, units: ~}
                   wherePhilips:  {file: PAR ; Xml, keyName: slice orientation ; Slice Orientation, type: string ; string, format: ~, units: ~}
                   whereDicom:  {file: dirfile, keyName: Image Orientation (Patient), type: string, format: ~, units: ~}                 
@@ -437,6 +539,8 @@ dictionaryMRI:
                   json:   {tagJson: SliceOrientation, type: string, format: ~, units: ~}
 
   Slice Position:
+                  description: {info: ""}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCorePosition=, type: string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, keyName: Slice Location, type: string, format: ~, units: ~}
                   
@@ -444,6 +548,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
           
   Slice Separation:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_slice_sepn=, type: float, format: ~, units: mm}
                   whereDicom:   {file: ~, keyName: Spacing Between Slices, type: float, format: ~, units: mm}
                   whereNifti:   {file: json, keyName: SpacingBetweenSlices, type: float, format: ~, units: mm}
@@ -452,6 +558,8 @@ dictionaryMRI:
                   json:   {tagJson: SpacingBetweenSlices, type: float, format: ~, units: mm}
 
   Slice Thickness:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_slice_thick=, type: float, format: ~, units: mm}
                   wherePhilips: {file: PAR ; Xml, keyName: slice thickness ; Slice Thickness, type: float ; float, format: ~, units: mm}
                   whereDicom:   {file: ~, keyName: Slice Thickness, type: float, format: ~, units: mm}
@@ -461,6 +569,8 @@ dictionaryMRI:
                   json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
 
   Software Version:
+                  description: {info: "Manufacturer's designation of software version of the equipment that produced the composite instances"}
+  
                   whereBruker:  {file: visu_pars, keyName: $VisuCreatorVersion=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Software Versions(s), type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: SoftwareVersions, type: string, format: ~, units: ~}
@@ -469,6 +579,8 @@ dictionaryMRI:
                   json:   {tagJson: SoftwareVersions, type: string, format: ~, units: ~}
 
   Spatial Resolution:
+                  description: {info: "The inherent limiting resolution in mm of the acquisition equipment for high contrast objects for the data gathering and reconstruction technique chosen. If variable across the images of the series, the value at the image center"}
+  
                   whereBruker:  {file: method, keyName: $PVM_SpatResol=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: pixel spacing  ; Pixel Spacing, type: float ; float, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Pixel Spacing, type: float, format: ~, units: ~}
@@ -478,6 +590,8 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Station Name:
+                  description: {info: ""}
+  
                   whereBruker:  {file: acqp, keyName: $ACQ_station=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Station Name, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: StationName, type: string, format: ~, units: ~}
@@ -486,6 +600,8 @@ dictionaryMRI:
                   json:   {tagJson: StationName, type: string, format: ~, units: ~}
 
   Study Name:
+                  description: {info: ""}
+  
                   whereBruker:  {file: subject, keyName: $SUBJECT_study_name=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination name ; Examination Name, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Study ID, type: string, format: ~, units: ~}
