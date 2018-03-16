@@ -957,6 +957,10 @@ for i=1:NbScanInput
     Input = handles.new_module.opt.table.Default{ScanInputs(i)};
     NbParameters = size(Input,2)/2;
     Datab = handles.MIA_pipeline_Filtered_Table;
+    Databtmp = table();
+    if NbParameters == 0
+        Datab = table();
+    end
     for j=1:NbParameters
         A = Input(:,2*j);
         A = A(~cellfun('isempty',A));
@@ -976,21 +980,25 @@ for i=1:NbScanInput
     if ~exist('Databtmp', 'var')
         output_database = table();
         pipeline = struct();
-        warndlg('Please select at least one parameter.')
+        warndlg('Please select at least one parameter (Input %d).', i)
         return
     end
     DatabaseInput{i} = Databtmp;
-    UTag2 = unique(getfield(Datab, Tag2));
-    UTag1 = unique(getfield(Datab, Tag1));
-    Mat = cell(length(UTag2), length(UTag1));
-    for m=1:length(UTag2)
-        Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
-        for n=1:length(UTag1)
-            Datab3 = Datab2(getfield(Datab2,Tag1) == UTag1(n),:);
-            for o=1:size(Datab3,1)
-                Mat{m,n,o} = [char(Datab3.Path(o)) char(Datab3.Filename(o)) '.nii'];
+    if ~isempty(Datab)
+        UTag2 = unique(getfield(Datab, Tag2));
+        UTag1 = unique(getfield(Datab, Tag1));
+        Mat = cell(length(UTag2), length(UTag1));
+        for m=1:length(UTag2)
+            Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
+            for n=1:length(UTag1)
+                Datab3 = Datab2(getfield(Datab2,Tag1) == UTag1(n),:);
+                for o=1:size(Datab3,1)
+                    Mat{m,n,o} = [char(Datab3.Path(o)) char(Datab3.Filename(o)) '.nii'];
+                end
             end
         end
+    else
+        Mat = {};
     end
     MatricesInputs{i} = Mat;
 end
@@ -1015,10 +1023,14 @@ for i=1:NbScanInput
         for j=1:length(UTag1)
             for k=1:length(UTag2)
                 Databtmp = DatabaseInput{i};
-                Databtmp2 = Databtmp(getfield(Databtmp, Tag1) == UTag1(j), :);
-                Databtmp3 = Databtmp2(getfield(Databtmp2, Tag2) == UTag2(k), :);
-                for l=1:size(Databtmp3,1)
-                    Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+                if ~isempty(Databtmp)
+                    Databtmp2 = Databtmp(getfield(Databtmp, Tag1) == UTag1(j), :);
+                    Databtmp3 = Databtmp2(getfield(Databtmp2, Tag2) == UTag2(k), :);
+                    for l=1:size(Databtmp3,1)
+                        Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+                    end
+                else
+                    Mattmp{j,k} = '';
                 end
             end
         end
@@ -1091,9 +1103,12 @@ output_database = table();
 for i=1:NbModules
     table_in = table();
     Files_in = struct();
+    B = zeros(1,NbScanInput);
     for l=1:NbScanInput
-        A = {FinalMat{l}{i,:}};
-        B(l) = any(cellfun('isempty', A));
+        if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
+            A = {FinalMat{l}{i,:}};
+            B(l) = any(cellfun('isempty', A));
+        end
     end
     if ~any(B)
     %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
