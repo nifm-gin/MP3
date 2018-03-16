@@ -133,14 +133,14 @@ if isempty(opt)
 %      % --> user_parameter(5,:) = Scans_Input_DOF
 %      % --> user_parameter(6,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
-    user_parameter(:,1)   = {'Select one scan or more as input','1Scan','','',{'SequenceName'}, ''};
-    user_parameter(:,2)   = {'Parameters','','','','', ''};
-    user_parameter(:,3)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', ''};
-    user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', ''};
-    user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize','', ''};
-    user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma','', ''};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
-    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
+    user_parameter(:,1)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Parameters','','','','', '', ''};
+    user_parameter(:,3)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', '',''};
+    user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', '',''};
+    user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize','', '',''};
+    user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma','', '',''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
     
     % So for no input file is selected and therefore no output
