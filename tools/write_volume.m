@@ -29,18 +29,16 @@ if ~isequal(orient, [1 2 3])
     rot_orient = mod(orient + 2, 3) + 1;
     flip_orient = orient - rot_orient;
     
-    %  get index of orient (rotate inversely)
-%     permutation(1:ndims(Data)) = 1:ndims(Data);
-%     [~, permutation(1:3)] = sort(rot_orient);
-%     Data = permute(Data, permutation);
-    Data = permute(Data, rot_orient);
-    
+    V0_size = Vo(1).private.dat.dim;
+    V0_dim = 1:length(V0_size);
+    V0_dim(1:3) = rot_orient;
+    Data = permute(Data, V0_dim);
     for i = 1:3
         if flip_orient(i)
             Data = flipdim(Data, i);
         end
     end
-   
+    
 end
 function orient = get_orient(R)
 
