@@ -63,7 +63,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
-     'Spatial', '   .Smoothing'...
+     'Spatial', '   .Smoothing', '   .Arithmetic'...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
@@ -329,7 +329,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
         table.columnName = {'SequenceName', 'Select ONE Input'};
         table.editable = [false true];
-        table.ColumnFormat = {'char'};        
+        table.ColumnFormat = {'char'};
     case 'XScan'
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
@@ -342,7 +342,34 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
-
+        
+    case '1ScanOr1ROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            for i=1:numel(SequenceType_listing)
+                table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+            end
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select ONE Input', 'Type'};
+        table.editable = [false true false];
+        table.ColumnFormat = {'char'};  
+     case 'XScanOrXROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
     case 'cell'
         table.ColumnFormat = handles.new_module.opt.table.Default(parameter_selected);
         table.data = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
@@ -411,7 +438,7 @@ if ~isempty(table.data)
         end
     end
     % Some calibration needed as ColumnWidth is in pixels
-    cellMaxLen = num2cell(maxLen*6);
+    cellMaxLen = num2cell(maxLen*6.5);
     % Set ColumnWidth of UITABLE
     set(handles.MIA_pipeline_parameter_setup_table, 'ColumnWidth', cellMaxLen);
     
@@ -559,14 +586,20 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI')
     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         
     end
+% elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI')
+%     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,3))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,3))) == 0
+%         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+%         
+%     end
+    
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
     if isempty(handles.new_module.opt.table.Default{parameter_selected})
         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
@@ -773,6 +806,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)';
         handles.new_module.module_name = 'Module_Coreg_Est';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;   
     case '   .T2map'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
@@ -786,6 +820,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.command = '[files_in,files_out,opt] = Module_Fit_T2_T2star(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Fit_T2_T2star';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
     case '   .Smoothing'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
@@ -808,7 +843,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-        
+    case '   .Arithmetic'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Arithmetic('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Arithmetic(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Arithmetic';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -1200,7 +1241,9 @@ if update
 %handles2.database = handles.MIA_data.database;
 
     MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
-    close('MIA pipeline Manager')
+    msgbox('Done', 'Information') ;
+
+   close('MIA pipeline Manager')
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
