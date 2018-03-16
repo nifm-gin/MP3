@@ -117,29 +117,29 @@ if isempty(opt)
      % --> user_parameter(5,:) = Scans_Input_DOF (degree-of-freedom)
      % --> user_parameter(6,:) = Help : text data which describe the parameter (it
      % will be display to help the user)
-     user_parameter(:,1)   = {'Description','Text','','','',...
+     user_parameter(:,1)   = {'Description','Text','','','','',...
         {'This module performs a voxel-by-voxel fitting using the following formula.'
     'y=abs(x(2) * exp(-xdata/x(1)))'
     'If a value equal to -1: the voxel signal is below the threshold or the fitting algorithm did not converge'}'};
-user_parameter(:,2)   = {'Select a Multi Gradient Echo or a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, ''};
-user_parameter(:,3)   = {'Parameters','','','','', ''};
-user_parameter(:,4)   = {'   .Output filename extension','char','_Fit_T2_T2star','output_filename_ext','',...
+user_parameter(:,2)   = {'Select a Multi Gradient Echo or a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+user_parameter(:,3)   = {'Parameters','','','','', '',''};
+user_parameter(:,4)   = {'   .Output filename extension','char','_Fit_T2_T2star','output_filename_ext','','',...
     {'Specify the string to be added to the filename input.'
     'Default filename extension is ''_Fit_T2_T2star''.'}'};
-user_parameter(:,5)   = {'   .Threshold','numeric', 5,'threshold','',...
+user_parameter(:,5)   = {'   .Threshold','numeric', 5,'threshold','','',...
     {'Specify the minimal signal necessary to perform the fitting (voxel-wise)'
     'Default value is 5 (which corresponds to a threshold of 5 percent of the maximal signal)'}'};
-user_parameter(:,6)   = {'   .Delete echoes before (ms)','numeric', 0,'trash_below','',...
+user_parameter(:,6)   = {'   .Delete echoes before (ms)','numeric', 0,'trash_below','','',...
     {'User can use this setting in order to apply a fitting only on a certain part of the data'
     'Every data acquired before the user defined value (in millisecond) will be trash'
     'Default valuie is 0 --> the fitting is performed on every data'}'};
-user_parameter(:,7)   = {'   .Delete echoes after (ms)','numeric', Inf,'trash_after','', ...
+user_parameter(:,7)   = {'   .Delete echoes after (ms)','numeric', Inf,'trash_after','','',...
     {'User can use this setting in order to apply a fitting only on a certain part of the data'
     'Every data acquired after the user defined value (in millisecond) will be trash'
     'Default valuie is Inf --> the fitting is performed on every data'}'};
 
-VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
-opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
+VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
+opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)',user_parameter(7,:)', 'VariableNames', VariableNames);
 
 % So far no input file is selected and therefore no output
 %

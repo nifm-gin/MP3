@@ -139,16 +139,16 @@ if isempty(opt)
 %      % --> user_parameter(4,:) = psom_parameter_list
 %      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
 %      % will be display to help the user)
-    user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',{'SequenceName'},''};
-    user_parameter(:,2)   = {'Parameters','','','','',''};
-    user_parameter(:,3)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','',''};
-    user_parameter(:,4)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','',''};
-    user_parameter(:,5)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','',''};
-    user_parameter(:,6)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','',''};
-    user_parameter(:,7)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','',''};
-    user_parameter(:,8)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','',''};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
-    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
+    user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',{'SequenceName'},'Mandatory',''};
+    user_parameter(:,2)   = {'Parameters','','','','','',''};
+    user_parameter(:,3)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','','',''};
+    user_parameter(:,4)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','','',''};
+    user_parameter(:,5)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','','',''};
+    user_parameter(:,6)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','','',''};
+    user_parameter(:,7)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
+    user_parameter(:,8)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','','',''};
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %     
 %%
     % So for no input file is selected and therefore no output

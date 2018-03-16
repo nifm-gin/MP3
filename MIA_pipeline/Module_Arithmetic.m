@@ -125,20 +125,20 @@ if isempty(opt)
     %      % --> user_parameter(4,:) = psom_parameter_list
     %      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
     %      % will be display to help the user)
-     user_parameter(:,1)   = {'Description','Text','','','', 'Description of the module'}  ;
-    user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, ''};
-    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', ''};
-    user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, ''};
-    user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','',...
+     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
+    user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
+    user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','','',...
         {'Specify the string to be added to the first filename.'
         'Default filename extension is ''_Arith''.'}'};
-    user_parameter(:,6)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','',...
+    user_parameter(:,6)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
         {'Specify the output orientation'
         '--> Output orienation = First input'
         '--> Output orientation = Second input'
         }'};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'Help'};
-    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', 'VariableNames', VariableNames);
+    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
+    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
     %%
     
     % So for no input file is selected and therefore no output
