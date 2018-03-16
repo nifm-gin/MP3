@@ -1,8 +1,14 @@
-function Y = read_volume(Vi,Vo)
+function Y = read_volume(Vi,Vo,interpolation)
 % Fonction used to rotate Vi to the voxel space of Vo
 % Vi = image to move
 % Vo = reference image (voxel space)
 %-Loop over planes reading to Y
+% interpolation method for the resampling:
+%              0         : Zero-order hold (nearest neighbour)
+%              1         : First-order hold (trilinear interpolation)
+%              2->127    : Higher order Lagrange (polynomial) interpolation
+%                          using different holds (second-order upwards)
+%              -127 - -1 : Different orders of sinc interpolation
 
 Y   = zeros(Vo(1).dim(1:3));       % initialize output volume
 Vi_size = Vi(1).private.dat.dim;
@@ -12,7 +18,7 @@ switch  length(Vi_size)
         for p = 1:Vo(1).dim(3)
             B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
             M = inv(B*(Vo(1).mat\Vi.mat));
-            d = spm_slice_vol(Vi,M,Vo(1).dim(1:2),3);
+            d = spm_slice_vol(Vi,M,Vo(1).dim(1:2),interpolation);
             Y(:,:,p) = reshape(d,Vo(1).dim(1:2));
         end
     case 4  %% 4D data
@@ -20,7 +26,7 @@ switch  length(Vi_size)
             for p = 1:Vo(1).dim(3)
                 B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
                 M = inv(B*(Vo(1).mat\Vi(n).mat));
-                d = spm_slice_vol(Vi(n),M,Vo(1).dim(1:2),3);
+                d = spm_slice_vol(Vi(n),M,Vo(1).dim(1:2),interpolation);
                 Y(:,:,p,n) = reshape(d,Vo(1).dim(1:2));
             end
         end
@@ -29,7 +35,7 @@ switch  length(Vi_size)
             for p = 1:Vo(1).dim(3)
                 B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
                 M = inv(B*(Vo(1).mat\Vi(n).mat));
-                d = spm_slice_vol(Vi(n),M,Vo(1).dim(1:2),3);
+                d = spm_slice_vol(Vi(n),M,Vo(1).dim(1:2),interpolation);
                 Y(:,:,p,n) = reshape(d,Vo(1).dim(1:2));
             end
         end
