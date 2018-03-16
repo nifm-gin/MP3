@@ -42,12 +42,16 @@
 dictionaryMRI:
 
   Coding Scheme Designator:
+                   description: {info: ""}
+  
                    whereDicom:  {file: ~, keyName: Coding Scheme Designator, type: string, format: ~, units: ~}
                    
                    viewer: {category: Specification}
                    json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Diffusion Preparation Method:
+                  description: {info: ""}
+  
                   whereBruker:  {file: method, keyName: $PVM_DiffPrepMode=, type: string, format: ~, units: ~}
                   whereNifti:    {file: json, keyName: DiffusionPreparationMethod, type: string, format: ~, units: ~}
                   
@@ -55,12 +59,16 @@ dictionaryMRI:
                   json:   {tagJson: DiffusionPreparationMethod, type: string, format: ~, units: ~}
 
   Diffusion AP_FH_RL:
+                  description: {info: ""}
+  
                   wherePhilips:  {file: PAR ; Xml, keyName: diffusion ; Diffusion AP, type: ~ ; ~, format: ~, units: ~}          
                   
                   viewer: {category: Diffusion} 
                   json:   {tag_Json: ~, type: ~, format: ~, units: ~}
   
   Direction Diffusion Number:
+                  description: {info: ""}
+                    
                   whereBruker:  {file: method, keyName: $PVM_DwNDiffDir=, type: int, format: ~, units: ~}
                   whereNifti:    {file: json, keyName: DirectionDiffusionNumber, type: int, format: ~, units: ~}
 
@@ -68,6 +76,8 @@ dictionaryMRI:
                   json:   {tagJson: DirectionDiffusionNumber, type: int, format: ~, units: ~}
 
   Method Diffusion:
+                  description: {info: ""}
+                    
                   whereBruker:  {file: method, keyName: $Method=, type: string, format: ~, units: ~}
                   whereNifti:    {file: json, keyName: MethodDiffusion, type: string, format: ~, units: ~}
                   
@@ -75,18 +85,24 @@ dictionaryMRI:
                   json:   {tagJson: MethodDiffusion, type: string, format: ~, units: ~}
 
   PCasl Phi:
+                  description: {info: ""}
+                  
                   whereBruker:  {file: method, keyName: $PCASL_PhiSwList=, type: string, format: ~, units: ~}
                   
                   viewer: {category: PCasl}
                   json:   {tagJson: PCaslPhi, type: string, format: ~, units: ~}
 
   PCasl Label:
+                  description: {info: ""}
+                  
                   whereBruker:  {file: method, keyName: $PCASL_LabelImages=, type: string, format: ~, units: ~}
                   
                   viewer: {category: PCasl}
                   json:   {tagJson: PCaslLabel, type: string, format: ~, units: ~}
                   
   Segment EPI:
+                  description: {info: ""}
+                  
                   whereBruker:  {file: method, keyName: $NSegments=, type: int, format: ~, units: ~}
                   whereNifti:    {file: json, keyName: SegmentEPI, type: int, format: ~, units: ~}
 
@@ -94,13 +110,8 @@ dictionaryMRI:
                   json:   {tagJson: SegmentEPI, type: int, format: ~, units: ~}
   
   Specific Character:
-                   whereDicom:  {file: ~, keyName: Specific Character Set, type: string, format: ~, units: ~}
+                  description: {info: ""}
+                  whereDicom:  {file: ~, keyName: Specific Character Set, type: string, format: ~, units: ~}
                    
-                   viewer: {category: Specification}
-                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-
-  SpinEchoTime:
-                  whereBruker:  {file: method, keyName: $SpinEchoTime=, type: float, format: ~, units: ms}
-
-                  viewer: {category: Specifications}
-                  json:   {tagJson: SpinEchoTime, type: float, format: ~, units: ms}
+                  viewer: {category: Specification}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
