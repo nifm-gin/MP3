@@ -128,8 +128,8 @@ if isempty(opt)
     'The original interpolation method described in this paper has been changed in order to give a smoother cost function.'
     'The images are also smoothed slightly, as is the histogram.  This is all in order to make the cost function as smooth as possible, to give faster convergence and less chance of local minima.'
     ''
-    'At the end of coregistration, the voxel-to-voxel affine transformation matrix is displayed, along with the histograms for the images in the original orientations, and the final orientations.'
-    'The registered images are displayed at the bottom.'
+    'A copy of the ''Source'' and '' Other Images'' is performed before the registration process'
+    'This module DO NOT overwrite the orignal files' 
     ''
     'Registration parameters are stored in the headers of the "source" and the "other" images.'
     }'};
@@ -139,7 +139,7 @@ if isempty(opt)
          'This is the image that is assumed to remain stationary (sometimes known as the target or template image), while the source image is moved to match it.'};
     user_parameter(:,4)   = {'Source Image','1Scan','','',{'SequenceName'},...
          'This is the image that is jiggled about to best match the reference.'};
-    user_parameter(:,5)   = {'Other Images','XScan','','',{'SequenceName'},...
+    user_parameter(:,5)   = {'Other Images','XScanOrXROI','','',{'SequenceName'},...
          'These are any images that need to remain in alignment with the source image.'};
     user_parameter(:,6)   = {'Parameters','','','','',''};
     user_parameter(:,7)   = {'    Estimation Options','', '','','',...
@@ -192,10 +192,15 @@ if strcmp(files_out, '')
             assert(size(tags3, 1) == 1);
             tags_out_In3 = tags3;
             tags_out_In3.IsRaw = categorical(0);
-            tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
             tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
-            tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName)]));
-            f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName), '.nii'];
+            if tags_out_In3.Type == 'Scan'
+                tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
+                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
+                 tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
+            else
+                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
+                tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+            end
             files_out.In3{i} = f_out;
             opt.Table_out = [opt.Table_out ; tags_out_In3];
         end
@@ -263,11 +268,12 @@ if ~isempty(files_in.In3{1})
         % First duplicate all the 'Other' scans using the prefix string (user-defined)
         % Otherwise the CoregEstimate will overwrite the raw files!!
         copyfile(files_in.In3{i},  files_out.In3{i})
-        copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
-
+        if isfile(strrep(files_in.In3{i},'.nii','.json'))
+            copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
+        end
         other{i}= [files_out.In3{i}, ',1'];
     end
-    matlabbatch{1}.spm.spatial.coreg.estimate.other = other;
+    matlabbatch{1}.spm.spatial.coreg.estimate.other = other';
 end
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;

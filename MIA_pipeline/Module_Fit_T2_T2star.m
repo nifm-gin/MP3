@@ -285,10 +285,6 @@ OutputImages(OutputImages < 0) = -1;
 OutputImages(OutputImages > 5000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
 
-
-%% need to update the json structure here before saving it with the T2map
-%spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
-
 % save the new files (.nii & .json)
 % update the header before saving the new .nii
 info2 = info;
