@@ -7658,7 +7658,7 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMIA]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, '[NoExitSystem]'}) %add lookAndFeel option
+MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem'}) %add lookAndFeel option
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MIA_tmp_folder_for_java, {' '}, namExport)));
