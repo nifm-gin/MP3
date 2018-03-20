@@ -7658,7 +7658,7 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMIA]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel}) %add lookAndFeel option
+MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem'}) %add lookAndFeel option
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MIA_tmp_folder_for_java, {' '}, namExport)));
@@ -7712,24 +7712,24 @@ for i = 1:numel(unique(log_file.StudyName))
                 NAME = char(log_file.NameFile(index_data_to_import(m),:));
                 if exist(fullfile(MIA_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MIA_tmp_folder, [NAME, '.json']));
-                    if isempty(char(json_data.ProtocolName))
-                        json_data.ProtocolName = {'Undefined'};
+                    if isempty(char(json_data.ProtocolName.value))
+                        json_data.ProtocolName.value = {'Undefined'};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
-                        if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName), ''))) == 1
+                        if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName.value), ''))) == 1
                             nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
                                 handles.database.Tp ==  char(tp_selected) &...
-                                strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName), '')), length(char(clean_variable_name(char(json_data.ProtocolName), '')))-1));
-                            seq_name = [char(clean_variable_name(char(json_data.ProtocolName), '')) '(' num2str(nbr_of_seq+1) ')'];
+                                strncmp(cellstr(handles.database.SequenceName), char(clean_variable_name(char(json_data.ProtocolName.value), '')), length(char(clean_variable_name(char(json_data.ProtocolName.value), '')))-1));
+                            seq_name = [char(clean_variable_name(char(json_data.ProtocolName.value), '')) '(' num2str(nbr_of_seq+1) ')'];
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         else
                             
-                            seq_name = clean_variable_name(char(json_data.ProtocolName), '');
+                            seq_name = clean_variable_name(char(json_data.ProtocolName.value), '');
                             file_name = strcat(name_selected, '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         end
                     else
-                        seq_name = clean_variable_name(char(json_data.ProtocolName), '');
+                        seq_name = clean_variable_name(char(json_data.ProtocolName.value), '');
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         
                     end
