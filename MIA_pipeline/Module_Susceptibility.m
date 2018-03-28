@@ -293,7 +293,7 @@ volume_mask = meansignal>max(N(:))*0.01;
 if sum(cell2num(scores(:,5))) > 10
     error('No computation because the AIF is not good enough');
 else
-    [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime(1)*10^(-3),J.EchoTime*10^(-3));
+    [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime.value(1)*10^(-3),J.EchoTime.value*10^(-3));
     %maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
     mapsVar = {CBV, CBF, MTT, TMAX, TTP, T0};
 
