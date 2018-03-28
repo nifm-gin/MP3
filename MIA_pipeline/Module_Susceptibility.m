@@ -260,6 +260,11 @@ end
 
 
 N = niftiread(files_in.In1{1});
+if size(N,4) == 1
+   warndlg([files_in.In1{1} ' is not a 4d image'], 'Warning');
+    return
+end
+
 N = double(N);
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
