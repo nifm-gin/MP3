@@ -293,7 +293,7 @@ end
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
+    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
 else
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = str2num(opt.Separation);
 end

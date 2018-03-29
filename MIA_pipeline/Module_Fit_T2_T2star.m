@@ -227,13 +227,13 @@ J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 
 % define the threshold and variables
-echotime = J.EchoTime;
+echotime = J.EchoTime.value;
 firstecho = sum(echotime < opt.trash_below) + 1;
 first_echotime=echotime(firstecho);
 
 % Get information from the JSON data
 if isfield(J, 'SpinEchoTime')
-    lastecho = sum(echotime<J.SpinEchoTime/2);
+    lastecho = sum(echotime<J.SpinEchoTime.value/2);
 else
     lastecho = length(echotime);
 end

@@ -219,7 +219,7 @@ info = niftiinfo(files_in.In1{1});
 J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 % Get information from the JSON data
-EchoTime = J.EchoTime;
+EchoTime = J.EchoTime.value;
 
 % reshape the data to a vector matric (speed the fitting process)
 %data_to_fit = reshape(double(data.img), [size(data.img,1)*size(data.img, 2)*size(data.img,3) numel(EchoTime)]);

@@ -362,7 +362,7 @@ end
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-    matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [FixedImJSON.SliceThickness, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
+    matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
     %matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [fixed.uvascim.image.reco.thickness fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples  fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples/2];
 else
     matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = str2num(opt.Separation);

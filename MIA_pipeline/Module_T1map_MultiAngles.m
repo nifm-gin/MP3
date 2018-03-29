@@ -228,8 +228,8 @@ for angles=1:NbAngles
         input(angles).nifti_header = spm_vol(files_in.In1{angles});
         data_to_process(:,:,:,angles) = read_volume(input(angles).nifti_header, input(1).nifti_header, 0);
         input(angles).json = spm_jsonread(strrep(files_in.In1{angles}, '.nii', '.json'));
-        flip_angles(angles) = input(angles).json.FlipAngle;
-        TR(angles) = input(angles).json.RepetitionTime;
+        flip_angles(angles) = input(angles).json.FlipAngle.value;
+        TR(angles) = input(angles).json.RepetitionTime.value;
     else
         warning_text = sprintf('##$ Can not calculate the T1 map because there is\n##$ something wrong with the data \n##$ Could not open the files');
         msgbox(warning_text, 'T10 map warning') ;
