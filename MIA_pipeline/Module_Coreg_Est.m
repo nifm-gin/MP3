@@ -286,6 +286,13 @@ if ~isempty(files_in.In3{1})
     matlabbatch{1}.spm.spatial.coreg.estimate.other = other';
 end
 
+header = niftiinfo(files_in.In2{1});
+if length(header.ImageSize) > 3
+    for j=2:header.ImageSize(4)
+        other= [other, [files_in.In2{1}, ',', num2str(j)]];
+    end
+end
+
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
