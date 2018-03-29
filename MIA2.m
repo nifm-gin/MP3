@@ -7665,6 +7665,7 @@ MRIFileManager.FileManagerFrame.main({MIA_tmp_folder_for_java, namExport handles
 
 function back_from_MRIManager(data_loaded)
 % retrived hObject, hObject and handles in global variable
+MIA2
 global hObjectb;
 global eventdatab;
 global handlesb;

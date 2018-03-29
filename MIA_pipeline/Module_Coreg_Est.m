@@ -264,14 +264,22 @@ copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii'
 % Use the files_out as source (the CoregEstimate will overwrite the file)
 matlabbatch{1}.spm.spatial.coreg.estimate.source = {[files_out.In2{1}, ',1']};
 if ~isempty(files_in.In3{1})
+    other = {};
     for i=1:length(files_in.In3)
+        header = niftiinfo(files_in.In3{i});
         % First duplicate all the 'Other' scans using the prefix string (user-defined)
         % Otherwise the CoregEstimate will overwrite the raw files!!
         copyfile(files_in.In3{i},  files_out.In3{i})
         if isfile(strrep(files_in.In3{i},'.nii','.json'))
             copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
         end
-        other{i}= [files_out.In3{i}, ',1'];
+        if length(header.ImageSize) > 3
+            for j=1:header.ImageSize(4)
+                other= [other, [files_in.In3{i}, ',', num2str(j)]];
+            end
+        else
+            other = [other, [files_in.In3{i}, ',1']];
+        end
     end
     matlabbatch{1}.spm.spatial.coreg.estimate.other = other';
 end

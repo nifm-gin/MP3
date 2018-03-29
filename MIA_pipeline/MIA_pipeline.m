@@ -96,6 +96,7 @@ set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.data
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
 set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
+%set(findall(gcf,'-property','FontSize'), 'FontSize', 30)
 guidata(hObject, handles);
 
 

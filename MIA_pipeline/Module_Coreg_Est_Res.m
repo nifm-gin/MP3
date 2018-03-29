@@ -333,11 +333,22 @@ FixedImJSON = jsondecode(raw);
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {[files_in.In1{1}, ',1']};
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
+
+
+
 if ~isempty(files_in.In3{1})
+    other = {};
     for i=1:length(files_in.In3)
-        files_in.In3{i}= [files_in.In3{i}, ',1'];
+        header = niftiinfo(files_in.In3{i});
+        if length(header.ImageSize) > 3
+            for j=1:header.ImageSize(4)
+                other= [other, [files_out.In3{i}, ',', num2str(j)]];
+            end
+        else
+            other = [other, [files_out.In3{i}, ',1']];
+        end
     end
-    matlabbatch{1}.spm.spatial.coreg.estwrite.other = files_in.In3;
+    matlabbatch{1}.spm.spatial.coreg.estwrite.other = other;
 end
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
