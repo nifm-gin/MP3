@@ -59,13 +59,14 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
                 '   .deltaR2', '   .deltaR2*',...
     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
                 '   .Vessel Densisty (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
+     'Diffusion', '   .ADCmap',...
      'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Spatial', '   .Smoothing', '   .Arithmetic'...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -816,6 +817,14 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+           
+    case '   .ADCmap'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ADCmap('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_ADCmap(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_ADCmap';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     case '   .Fit_T2_T2star'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Fit_T2_T2star('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Fit_T2_T2star(char(files_in),files_out,opt)';
@@ -1132,7 +1141,7 @@ for i=1:NbModules
                 end
             end
         end
-        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data'];
+        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'];
         handles.new_module.opt.Module_settings.Table_in = unique(table_in);
         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
@@ -1154,16 +1163,16 @@ function MIA_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM']);
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
 end
-opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'PSOM'];
+opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'Derived_data'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data' filesep 'Derived_data']);
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Derived_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Derived_data']);
     if status == false
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end

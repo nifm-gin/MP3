@@ -115,3 +115,25 @@ dictionaryMRI:
                    
                   viewer: {category: Specification}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Transposition:
+                  description: {info: ""}
+                  whereBruker:  {file: reco, keyName: $RECO_transposition=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: Grad Orient}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+
+  Gradient Orientation:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SPackArrGradOrient=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: Grad Orient}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+
+  Gradient Matrix:
+                  description: {info: ""}
+                  whereBruker:  {file: acqp, keyName: $ACQ_grad_matrix=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: Grad Orient}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}                  
+             

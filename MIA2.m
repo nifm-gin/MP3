@@ -1806,8 +1806,6 @@ if ~isfield(handles, 'database')
     return
 end
 
-%handles = guidata(hObject);
-% patient = get(handles.MIA_name_list, 'Value');
 new_patient_directory = uigetdir(handles.database.Properties.UserData.MIA_data_path, 'Select Directory');
 if sum(new_patient_directory) == 0
     return
@@ -1819,7 +1817,9 @@ else
     else
         handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
         handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
-        handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI', filesep];
+        handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI_data', filesep];
+        handles.database.Properties.UserData.MIA_Derived_data_path = [new_patient_directory, 'Derived_data', filesep];
+        handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
         % update the path in the table
         handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MIA_Raw_data_path;
         handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
@@ -1906,7 +1906,7 @@ for i = 1:numel(data_selected)
         
         %% read and load the nii file
         handles.data_loaded.ROI(i).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
-        handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,1);
+        handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0);
         handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
         handles.data_loaded.number_of_ROI = numel(handles.data_loaded.ROI);
         handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
@@ -2325,7 +2325,9 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
+                if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) &&...
+                        sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
+                        prctile(image_to_display(:),1) ~= prctile(image_to_display(:),99)
                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
                 end
                 % apply the colormap selected
@@ -2383,39 +2385,60 @@ if isfield(handles, 'data_displayed')
                                     'Visible', 'on',...
                                     'tag','ROI_contour');
                             end
+                            
+                            tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
+                            % Calculate the ROI volume for this slice (in
+                            % mm2)
+                            Voxel_size = abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(1,1)) *...
+                                abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(2,2)) *...
+                                abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(3,3));
+                            
+                            Volume_slice = sum(logical(roi_a_appliquer(:))) * Voxel_size;
                             % calculate the mean value inside the ROI over the
                             % Slice (mean / SD)
-                            tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                            
                             mean_slice = nanmean(tmp_slice(logical(roi_a_appliquer)));
                             sd_slice =  nanstd(tmp_slice(logical(roi_a_appliquer)));
                         else
+                            Volume_slice = nan;
                             mean_slice = nan;
                             sd_slice =  nan;
                         end
+                        
+                        data_3D = squeeze(handles.data_displayed.image(:,:,:,i)); %(:,:,:,get(handles.(sprintf('MIA_data%d_echo_slider', i)), 'Value'),get(handles.(sprintf('MIA_data%d_expt_slider', i)), 'Value')));
+                        % Calculate the ROI volume for this ROI (in mm2)
+                        Voxel_size = abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(1,1)) *...
+                            abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(2,2)) *...
+                            abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(3,3));
+                        Volume_VOI = sum(logical(handles.data_loaded.ROI(x).nii(:))) * Voxel_size;
                         % calculate the mean value inside the ROI over the
                         % volume (mean / SD)
-                        data_3D = squeeze(handles.data_displayed.image(:,:,:,i)); %(:,:,:,get(handles.(sprintf('MIA_data%d_echo_slider', i)), 'Value'),get(handles.(sprintf('MIA_data%d_expt_slider', i)), 'Value')));
                         mean_VOI = nanmean(data_3D(logical(handles.data_loaded.ROI(x).nii)));
                         sd_VOI =  nanstd(data_3D(logical(handles.data_loaded.ROI(x).nii)));
- 
+                        
                         clear data_slice data_3D
                         
                         if i == 1
-                            Slice_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-mean']} ;
-                            Slice_values(x*2-1,i+1) = num2cell(mean_slice);
-                            Slice_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-SD']} ;
-                            Slice_values(x*2,i+1) = num2cell(sd_slice);
+                            Slice_values(x*3-2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-Volume (mm3)']} ;
+                            Slice_values(x*3-2,i+1) = num2cell(Volume_slice);
+                            Slice_values(x*3-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-mean']} ;
+                            Slice_values(x*3-1,i+1) = num2cell(mean_slice);
+                            Slice_values(x*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-SD']} ;
+                            Slice_values(x*3,i+1) = num2cell(sd_slice);
                             
-                            VOI_values(x*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-mean']} ;
-                            VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
-                            VOI_values(x*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-SD']} ;
-                            VOI_values(x*2,i+1) = num2cell(sd_VOI);
+                            VOI_values(x*3-2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-Volume (mm3)']} ;
+                            VOI_values(x*3-2,i+1) = num2cell(Volume_VOI);
+                            VOI_values(x*3-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-mean']} ;
+                            VOI_values(x*3-1,i+1) = num2cell(mean_VOI);
+                            VOI_values(x*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-SD']} ;
+                            VOI_values(x*3,i+1) = num2cell(sd_VOI);
                         else
-                            Slice_values(x*2-1,i+1) = num2cell(mean_slice);
-                            Slice_values(x*2,i+1) = num2cell(sd_slice);
-                            VOI_values(x*2-1,i+1) = num2cell(mean_VOI);
-                            VOI_values(x*2,i+1) = num2cell(sd_VOI);
+                            Slice_values(x*3-2,i+1) = num2cell(Volume_slice);
+                            Slice_values(x*3-1,i+1) = num2cell(mean_slice);
+                            Slice_values(x*3,i+1) = num2cell(sd_slice);
+                            
+                            VOI_values(x*3-2,i+1) = num2cell(Volume_VOI);
+                            VOI_values(x*3-1,i+1) = num2cell(mean_VOI);
+                            VOI_values(x*3,i+1) = num2cell(sd_VOI);
                         end
                     end
                 else
