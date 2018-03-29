@@ -320,7 +320,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 FixedImInfo = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
+[path, name, ~] = fileparts(files_in.In1{1});
 FixedImJsonfile = [path, filesep, name, '.json'];
 fid = fopen(FixedImJsonfile, 'r');
 raw = fread(fid, inf, 'uint8=>char');
@@ -339,20 +339,22 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
 if ~isempty(files_in.In3{1})
     other = {};
     for i=1:length(files_in.In3)
-        header = niftiinfo(files_in.In3{i});
-        if length(header.ImageSize) > 3
-            for j=1:header.ImageSize(4)
-                other= [other, [files_out.In3{i}, ',', num2str(j)]];
+        if ~isempty(files_in.In3{i})
+            header = niftiinfo(files_in.In3{i});
+            if length(header.ImageSize) > 3
+                for j=1:header.ImageSize(4)
+                    other= [other, [files_out.In3{i}, ',', num2str(j)]];
+                end
+            else
+                other = [other, [files_out.In3{i}, ',1']];
             end
-        else
-            other = [other, [files_out.In3{i}, ',1']];
         end
     end
     matlabbatch{1}.spm.spatial.coreg.estwrite.other = other;
 end
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
-if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
+if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]')
     matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [FixedImJSON.SliceThickness, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
     %matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [fixed.uvascim.image.reco.thickness fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples  fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples/2];
 else
