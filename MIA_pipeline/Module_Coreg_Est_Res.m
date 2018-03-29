@@ -335,7 +335,9 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {[files_in.In1{1}, ',1']};
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
 if ~isempty(files_in.In3{1})
     for i=1:length(files_in.In3)
-        files_in.In3{i}= [files_in.In3{i}, ',1'];
+        if ~isempty(files_in.In3{i})
+            files_in.In3{i}= [files_in.In3{i}, ',1'];
+        end
     end
     matlabbatch{1}.spm.spatial.coreg.estwrite.other = files_in.In3;
 end
