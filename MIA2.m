@@ -7800,43 +7800,158 @@ if isempty(warning_result) || strcmp(warning_result, 'No')
     return
 end
 
-scan_list = [];
-VOIs_list = [];
-for i=1:size(handles.database,2)
-    for j = 1:numel(handles.database(i).day)
-        scan_list = [scan_list handles.database(i).day(j).scans_file]; %#ok<AGROW>
-        VOIs_list = [VOIs_list handles.database(i).day(j).VOIs_file]; %#ok<AGROW>
+
+Data_path = handles.database.Properties.UserData.MIA_data_path;
+
+%% Check if all entries are correctly linked to valid files.
+
+ValidEntries = [];
+InvalidEntries = [];
+ValidNiftiFiles = {};
+InvalidNiftiFiles = {};
+ValidJsonFiles = {};
+InvalidJsonFiles = {};
+for i=1:height(handles.database)
+    if handles.database(i,:).Type == 'Scan'
+        Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
+        Json_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.json'];
+        
+        if exist(Nifti_file, 'file')==2 && exist(Json_file, 'file') == 2
+            ValidEntries = [ValidEntries, i];
+            ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+            ValidJsonFiles = [ValidJsonFiles, {Json_file}];
+        else
+            InvalidEntries = [InvalidEntries, i];
+            if exist(Nifti_file, 'file')~=2
+                InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+            elseif exist(Json_file, 'file')~=2
+                InvalidJsonFiles = [InvalidJsonFiles, {Json_file}];
+            end
+        end
+    elseif handles.database(i,:).Type == 'ROI'
+        Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
+        if exist(Nifti_file, 'file')==2
+            ValidEntries = [ValidEntries, i];
+            ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+        else
+            InvalidEntries = [InvalidEntries, i];
+            InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+        end
+        
+    else
+        warning('Types allowed : Scan, ROI. We found an unknown type : %s', handles.database(i,:).Type)
+    end 
+end
+
+%% If there is some invalid entries, the user can choose to delete all of them.
+if ~isempty(InvalidEntries)
+    text = ['We found some entries in the database for which file(s) are missing in ', Data_path, '. Do you want to delete them from the table ?']; 
+    answer = questdlg(text, 'Wrong entries', 'Yes', 'See wrong entries','No', 'No');
+    
+    %function answer = DeleteWrongEntries(PushButton, EventData)    
+    if strcmp(answer,'See wrong entries')
+        f = figure;
+        t = uitable(f, 'Position', [30,100,500,300],'ColumnName', handles.database.Properties.VariableNames,'Data',cellstr(handles.database{InvalidEntries, :}));
+        %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
+        %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+        answer = questdlg('So, should I delete them ?', 'It''s time to choose', 'Yes', 'No', 'No');
+    end
+    if strcmp(answer, 'Yes')
+        handles.database(InvalidEntries,:) = [];
+        ValidFiles = [ValidNiftiFiles, ValidJsonFiles];
+        msgbox('Done')
+    else
+        ValidFiles = [ValidNiftiFiles, ValidJsonFiles, InvalidNiftiFiles, InvalidJsonFiles];
+    end
+else
+    msgbox('All your database''s entries are correctly linked to the files !')
+    ValidFiles = [ValidNiftiFiles, ValidJsonFiles];
+end
+
+% ValidFiles is the list of all files linked to the database. Other files
+% in DirectoriesToProcess are useless.
+
+
+DirectoriesToProcess = {['Derived_data', filesep], ['MIA_data', filesep, 'Raw_data', filesep], ['ROI_data', filesep]};
+
+
+if exist([Data_path,  'To_Trash'],'dir') ~= 7
+    [status, ~, ~] = mkdir([Data_path,  'To_Trash']);
+    if status == false
+        error('Cannot create the To_Thrash folder to move the useless files in.')
     end
 end
-database_file = cell([scan_list VOIs_list])';
 
-%%% create a listing of all matlab file in the Image_analyses_data folder
-cellf = @(fun, arr) cellfun(fun, num2cell(arr), 'uniformoutput',0);
-hard_drive_files=cellf(@(f) char(f.tochar()), java.io.File(handles.database(1).path).list());
-hard_drive_files = cell2struct(hard_drive_files, 'name' , size(hard_drive_files,1));
-
-if exist(fullfile(handles.database(1).path, 'to_trash'), 'dir') ~= 7
-    status = mkdir(fullfile(handles.database(1).path, 'to_trash'));
-    if status == 0
-        warndlg('You do not the right to write in the folder!', 'Warning');
-        return
+MovedFiles = {};
+for i=1:length(DirectoriesToProcess)
+    Files = dir([Data_path, DirectoriesToProcess{i}]);
+    Files = struct2cell(Files);
+    for j=1:length(Files)
+        file = Files(:,j);
+        if ~file{5}
+            if ~contains([file{2}, filesep, file{1}], ValidFiles)
+                [status, msg] = movefile([file{2}, filesep, file{1}], [Data_path,  'To_Trash']);
+                if status
+                    MovedFiles = [MovedFiles; {[file{2}, filesep, file{1}]}];
+                else
+                    warning('Error when moving the useless files. %s', msg)
+                end
+            end
+        end
     end
 end
 
-%% create a listing of all file how need to be deleted
-file_moved = 0;
-for i=1:size(hard_drive_files,1)
-    if strcmp(hard_drive_files(i).name, 'to_trash') || strcmp(hard_drive_files(i).name, 'desktop.ini')
-        continue
-    end
-    if sum(strcmp(database_file, hard_drive_files(i).name)) == 0
-        file_moved = file_moved+1;
-        FileRename([handles.database(1).path, hard_drive_files(i).name],...
-            [handles.database(1).path, 'to_trash', filesep,hard_drive_files(i).name])
+
+if isempty(MovedFiles)
+    msgbox('The folders containing your database''s files are already pretty clean !')
+else
+    text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.']; 
+    answer = questdlg(text, 'Moved Files', 'OK !', 'See files moved','OK !');
+    if strcmp(answer,'See files moved')
+        f = figure;
+        t = uitable(f, 'Position', [30,100,500,300],'ColumnName', {'Moved Files'},'Data',cellstr(MovedFiles), 'ColumnWidth',{800});
+        btnCancel = uicontrol('Parent', f, 'Position', [225,40,100,50], 'String', 'OK', 'Callback', 'delete(gcf)');
     end
 end
 
-msgbox([num2str(file_moved), ' Files have been moved to ', handles.database(1).path, 'to_trash'], 'Message') ;
+% scan_list = [];
+% VOIs_list = [];
+% 
+% for i=1:size(handles.database,2)
+%     for j = 1:numel(handles.database(i).day)
+%         scan_list = [scan_list handles.database(i).day(j).scans_file]; %#ok<AGROW>
+%         VOIs_list = [VOIs_list handles.database(i).day(j).VOIs_file]; %#ok<AGROW>
+%     end
+% end
+% database_file = cell([scan_list VOIs_list])';
+% 
+% %%% create a listing of all matlab file in the Image_analyses_data folder
+% cellf = @(fun, arr) cellfun(fun, num2cell(arr), 'uniformoutput',0);
+% hard_drive_files=cellf(@(f) char(f.tochar()), java.io.File(handles.database(1).path).list());
+% hard_drive_files = cell2struct(hard_drive_files, 'name' , size(hard_drive_files,1));
+% 
+% if exist(fullfile(handles.database(1).path, 'to_trash'), 'dir') ~= 7
+%     status = mkdir(fullfile(handles.database(1).path, 'to_trash'));
+%     if status == 0
+%         warndlg('You do not the right to write in the folder!', 'Warning');
+%         return
+%     end
+% end
+% 
+% %% create a listing of all file how need to be deleted
+% file_moved = 0;
+% for i=1:size(hard_drive_files,1)
+%     if strcmp(hard_drive_files(i).name, 'to_trash') || strcmp(hard_drive_files(i).name, 'desktop.ini')
+%         continue
+%     end
+%     if sum(strcmp(database_file, hard_drive_files(i).name)) == 0
+%         file_moved = file_moved+1;
+%         FileRename([handles.database(1).path, hard_drive_files(i).name],...
+%             [handles.database(1).path, 'to_trash', filesep,hard_drive_files(i).name])
+%     end
+% end
+% 
+% msgbox([num2str(file_moved), ' Files have been moved to ', handles.database(1).path, 'to_trash'], 'Message') ;
 
 
 
