@@ -56,7 +56,7 @@ handles.output = hObject;
 
 handles.MIA_data = varargin{3};
 handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .Fit_T2_T2star',...
-                '   .deltaR2', '   .deltaR2*',...
+                '   .deltaR2', '   .deltaR2*', '   .MGE2Dfrom3D',...
     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
                 '   .Vessel Densisty (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
                 '   .Inversion Efficiency (ASL_InvEff)',...
@@ -861,14 +861,20 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-    case '   .Module_ASL_InvEff'
+    case '   .Inversion Efficiency (ASL_InvEff)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_ASL_InvEff';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-        
+    case '   .MGE2Dfrom3D'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MGE2Dfrom3D('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_MGE2Dfrom3D(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_MGE2Dfrom3D';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
