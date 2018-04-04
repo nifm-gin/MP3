@@ -7886,7 +7886,7 @@ MovedFiles = {};
 for i=1:length(DirectoriesToProcess)
     Files = dir([Data_path, DirectoriesToProcess{i}]);
     Files = struct2cell(Files);
-    for j=1:length(Files)
+    for j=1:size(Files,2)
         file = Files(:,j);
         if ~file{5}
             if ~contains([file{2}, filesep, file{1}], ValidFiles)
