@@ -104,7 +104,6 @@ if isempty(opt)
     module_option(:,7)   = {'Table_out', table()};
     module_option(:,8)   = {'output_filename_ext','DeltaR2'};
     module_option(:,9)   = {'Output_orientation','First input'};
-    module_option(:,10)  = {'nb_echos', 1};
     
     
     
@@ -136,7 +135,6 @@ if isempty(opt)
         '--> Output orienation = First input'
         '--> Output orientation = Second input'
         }'};
-    user_parameter(:,5)  = {'   .Number of echos used', 'numeric', '', 'nb_echos', '', '', ''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
     %%
@@ -313,6 +311,9 @@ end
 % first input (rotation/translation)
 
 OutputImages = DeltaR2Map;
+OutputImages(OutputImages < 0) = -1;
+OutputImages(OutputImages > 5000) = -1;
+OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end
