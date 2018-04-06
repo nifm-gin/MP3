@@ -896,6 +896,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .R2prim'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_R2Prim('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_R2Prim(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_R2Prim';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
