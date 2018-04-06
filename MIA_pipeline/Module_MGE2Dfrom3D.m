@@ -233,29 +233,29 @@ if ~strcmp(echo_to_trash, 'end')
 end
 
 
-[rows3d, cols3d, echos3d, depths3d]=size(MGE2Dfrom3D);
+[rows3d, cols3d, depths3d, echos3d]=size(MGE2Dfrom3D);
 nbr_of_final_slice = fix((depths3d-first_slice+1)/nbr_of_slice);
 if nbr_of_final_slice ==0
     return
 end
-temp2  =zeros([size(MGE2Dfrom3D, 1) size(MGE2Dfrom3D, 2) size(MGE2Dfrom3D, 3) nbr_of_final_slice]);
+temp2  =zeros([size(MGE2Dfrom3D, 1) size(MGE2Dfrom3D, 2) nbr_of_final_slice size(MGE2Dfrom3D, 4)]);
 for i = 1:nbr_of_final_slice
     for k=1:echos3d
-        temp=(MGE2Dfrom3D(:,:,k,first_slice+(i*nbr_of_slice)-nbr_of_slice:first_slice+(i*nbr_of_slice)-1));
-        temp=sum(abs(temp),4);
-        temp2(:,:,k,i)=temp;
+        temp=MGE2Dfrom3D(:,:,first_slice+(i*nbr_of_slice)-nbr_of_slice:first_slice+(i*nbr_of_slice)-1,k);
+        temp=sum(abs(temp),3);
+        temp2(:,:,i,k)=temp;
     end
 end
 
 x = 1:rows3d;
 y = 1:cols3d;
-MGE2Dfrom3D = NaN(size(MGE2Dfrom3D(x,y,:,1:nbr_of_final_slice)));
+MGE2Dfrom3D = NaN(size(MGE2Dfrom3D(x,y,1:nbr_of_final_slice,:)));
 
 for i = 1:nbr_of_final_slice
-    MGE2Dfrom3D(x,y,:,i)=(temp2(x,y,:,i)+...
-        (temp2(x,y,:,i)+...
-        temp2(x,y,:,i))+...
-         temp2(x,y,:,i));
+    MGE2Dfrom3D(x,y,i,:)=(temp2(x,y,i,:)+...
+        (temp2(x,y,i,:)+...
+        temp2(x,y,i,:))+...
+         temp2(x,y,i,:));
 end
 
 if length(J.FOV.value) == 3
