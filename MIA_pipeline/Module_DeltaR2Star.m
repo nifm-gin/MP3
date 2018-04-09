@@ -221,7 +221,7 @@ if size(input_pre, 3) ~= size(input_post, 3)
             r2sapres=1./r2sapres;	% R2*post (ms-1)
             warning on %#ok<*WNON>
             r2sapres(index_apres)=0;
-            DeltaR2StarMap(:,:,1,deltaR2star_slice_nbr)=r2sapres-r2savant;
+            DeltaR2StarMap(:,:,deltaR2star_slice_nbr,1)=r2sapres-r2savant;
             index_nan=find(input_pre(:,:,j,1)==NaN); %#ok<FNAN>
             DeltaR2StarMap(index_nan)=0;
         end

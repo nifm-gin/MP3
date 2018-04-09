@@ -216,7 +216,7 @@ input_post = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0)
 se_echotime = J1.EchoTime.value;
 se_echo_pos = 1:length(J1.EchoTime.value);
 
-if size(input_pre, 4) ~= size(input_post, 4)
+if size(input_pre, 3) ~= size(input_post, 3)
     DeltaR2Map=zeros(size(input_pre));
     deltaR2_slice_nbr = 0;
     for i = 1:size(input_pre, 3)
@@ -317,6 +317,28 @@ OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end
+
+
+
+
+
+% save the new files (.nii & .json)
+% update the header before saving the new .nii
+info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
+
+info2 = info;
+info2.Filename = files_out.In1{1};
+info2.Filemoddate = char(datetime('now'));
+info2.Datatype = class(OutputImages);
+info2.Description = [info.Description, 'Modified by the DeltaR2 Module'];
+
+% save the new .nii file
+niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
+
+% so far copy the .json file of the first input
+copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+% 
+
 
 %% Initial function 
 % fid=fopen(filename_pre ,'r');
@@ -555,27 +577,3 @@ end
 % %complete the structure
 % deltaR2_map.acq = data_pre.uvascim.image.acq;
 % deltaR2_map.filename = data_pre.uvascim.image.filename;
-
-%% 
-
-
-
-
-% save the new files (.nii & .json)
-% update the header before saving the new .nii
-info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
-
-info2 = info;
-info2.Filename = files_out.In1{1};
-info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
-info2.Description = [info.Description, 'Modified by the DeltaR2 Module'];
-
-% save the new .nii file
-niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
-
-% so far copy the .json file of the first input
-copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
-% 
-
-
