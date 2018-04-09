@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_DeltaR2(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_DeltaR2_2(files_in,files_out,opt)
 % This is a template file for "brick" functions in NIAK.
 %
 % SYNTAX:
@@ -216,8 +216,9 @@ input_post = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0)
 se_echotime = J1.EchoTime.value;
 se_echo_pos = 1:length(J1.EchoTime.value);
 
-if size(input_pre, 3) ~= size(input_post, 3)
-    DeltaR2Map=zeros(size(input_pre));
+
+if size(input_pre,3) ~= size(input_post,3)
+    deltaR2_map=zeros(size(input_pre));
     deltaR2_slice_nbr = 0;
     for i = 1:size(input_pre, 3)
         for j = 1:size(input_post, 3)
@@ -235,10 +236,11 @@ if size(input_pre, 3) ~= size(input_post, 3)
             warning on %#ok<WNON>
             deltaR2(index_avant)=0;
             deltaR2(index_apres)=0;
-            DeltaR2Map(:,:,deltaR2_slice_nbr,1)=deltaR2;
-               
+            deltaR2_map(:,:,deltaR2_slice_nbr,1)=deltaR2;
+            
         end
     end
+    
     if deltaR2_slice_nbr == 0
         warning_text = sprintf('##$ Can not calculate the deltaR2 map because there is\n##$ no slice offset match between\n##$SO2map=%s\n##$ and \n##$CBFmap=%s',...
             filename_SO2map,filename_CBF);
@@ -247,70 +249,47 @@ if size(input_pre, 3) ~= size(input_post, 3)
     end
 else
     % Compute the deltaR2 map for all slices
-    DeltaR2Map=zeros(size(input_pre));     % DeltaR2 map
-    
-    for m_slice=1:size(input_pre,3)
-        temp_avant=squeeze(input_pre(:,:,m_slice, se_echo_pos));
-        temp_apres=squeeze(input_post(:,:,m_slice, se_echo_pos));
+    deltaR2_map.reco='';
+    deltaR2_map=zeros([size(input_pre,1), size(input_pre, 2), size(input_pre, 3)]);     % DeltaR2 map
+    for m_slice=1:size(input_pre, 3)       
+        temp_avant=squeeze(input_pre(:,:,m_slice,se_echo_pos));
+        temp_apres=squeeze(input_post(:,:,m_slice,se_echo_pos));
         index_avant=find(temp_avant<(1e-3*mean(temp_avant(:))));
-        index_apres=find(temp_apres<(1e-3*mean(temp_apres(:))));
-        
+        index_apres=find(temp_apres<(1e-3*mean(temp_apres(:)))); 
         %To avoid division by small numbers
         temp_apres(index_apres)=1;
-        temp_avant(index_avant)=1;
         warning off %#ok<WNOFF>
-        A = -(1./se_echotime);
+        %deltaR2=-(1/se_echotime) * log(temp_apres ./ temp_avant);%ms-1
+        A = -(1./se_echotime)';
         B = log(temp_apres ./ temp_avant);
         B = permute(B, [3,2,1]);
-        deltaR2= A.*B ;%ms-1
-        deltaR2 = permute(deltaR2, [3,2,1]);
+        for i=1:size(B,3)
+            deltaR2(i,:) = A*squeeze(B(:,:,i));
+        end
+        %deltaR2= A.*B ;%ms-1
+        %deltaR2 = permute(deltaR2, [3,2,1]);
         warning on %#ok<WNON>
-        deltaR2(index_avant)=0;
-        deltaR2(index_apres)=0;
-        DeltaR2Map(:,:,m_slice,:)=deltaR2;
-        
+        %deltaR2(index_avant)=0;
+        %deltaR2(index_apres)=0;
+        deltaR2_map(:,:,m_slice,1)=deltaR2;
         %Compute the err map
         %proc.err(:,:,1,m_slice)=tmpim;
-        
     end
+    %Adapt the fov offsets and orientations infos
 end
-% 
-% %Set the dimensions of the proc structure
-% deltaR2_map.reco.no_samples=RAW_data_pre.no_samples;
-% deltaR2_map.reco.no_views=RAW_data_pre.no_views;
-% 
-% deltaR2_map.reco.no_echoes=1; %Number of parameters stored here
-% deltaR2_map.reco.no_expts=1;
-% 
-% %Complete the reco structure
-% deltaR2_map.reco.texte='DeltaR2';
-% deltaR2_map.reco.unit='ms-1';
-% deltaR2_map.reco.date=date;
-% deltaR2_map.reco.displayedecho=1;
-% deltaR2_map.reco.displayedslice=1;
-% deltaR2_map.reco.displayedexpt=1;
-% deltaR2_map.reco_number = 1;
-% deltaR2_map.scan_number = 104;
-% deltaR2_map.clip=[0 0.4 1];
-% deltaR2_map.reco.globalmax = max(deltaR2_map.reco.data(:));
-% deltaR2_map.reco.globalmin = min(deltaR2_map.reco.data(:));
-% deltaR2_map.reco.thickness = data_pre.uvascim.image.reco.thickness;
 
-% ParamConfig=sprintf('##$QuantifMethod=''-(1/se_echotime) * log(temp_apres ./ temp_avant)''\n##$Spin Echo time=%d\n##$Spin Echo position=%d\n##$Number of echo used=%s\n##$T2pre=%s\n##$T2post=%s\n\n##$Sequence pre info\n%s\n\n##$Sequence post info\n%s',...
-%     se_echotime, se_echo_pos, add_parameters{:}{1},filename_pre,filename_post, [RAW_data_pre.iminfos{:}], [RAW_data_post.iminfos{:}]);
-% deltaR2_map.reco.paramQuantif = ParamConfig;
-% deltaR2_map.reco=orderfields(deltaR2_map.reco);
+%Set the dimensions of the proc structure
 
-%complete the structure
-% deltaR2_map.acq = data_pre.uvascim.image.acq;
-% deltaR2_map.filename = data_pre.uvascim.image.filename;
+
+%Complete the reco structure
+
 
 
 
 % transform the OutputImages matrix in order to match to the nii header of the
 % first input (rotation/translation)
 
-OutputImages = DeltaR2Map;
+OutputImages = deltaR2_map;
 OutputImages(OutputImages < 0) = -1;
 OutputImages(OutputImages > 5000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
@@ -326,11 +305,15 @@ end
 % update the header before saving the new .nii
 info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
 
+
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages);
-info2.Description = [info.Description, 'Modified by the DeltaR2 Module'];
+info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
+info2.ImageSize = size(OutputImages);
+%info2.Description = [info.Description, 'Modified by T2map Module'];
+
 
 % save the new .nii file
 niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
