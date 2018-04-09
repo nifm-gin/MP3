@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_DeltaR2_2(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_DeltaR2(files_in,files_out,opt)
 % This is a template file for "brick" functions in NIAK.
 %
 % SYNTAX:
