@@ -7794,11 +7794,11 @@ function MIA_menu_Clean_database_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %%% create a listing of all file present in the database
 
-warning_result = questdlg('This function will move every file present in your hard drive and not present in your database, do you want to continue?',...
-    'Warning', 'Yes', 'No', 'No');
-if isempty(warning_result) || strcmp(warning_result, 'No')
-    return
-end
+% warning_result = questdlg('This function will move every file present in your hard drive and not present in your database, do you want to continue?',...
+%     'Warning', 'Yes', 'No', 'No');
+% if isempty(warning_result) || strcmp(warning_result, 'No')
+%     return
+% end
 
 
 Data_path = handles.database.Properties.UserData.MIA_data_path;
