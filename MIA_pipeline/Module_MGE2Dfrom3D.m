@@ -213,11 +213,16 @@ N = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 
 %% load input JSON file
+
+
+input(1).nifti_header = spm_vol(files_in.In1{1});
+
 J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
-
-
-MGE2Dfrom3D = N;
-
+% MGE3D = read_volume(input(1).nifti_header, input(1).nifti_header, 0);
+% 
+% 
+% output.nifti_header = input(1).nifti_header;
+MGE3D = N;
 % Empty memory
 clear data
 
@@ -228,42 +233,79 @@ echo_to_trash = opt.echo_to_trash;
 % Some echoes need to be remove --> human data
 if ~strcmp(echo_to_trash, 'end')
     echo_to_trash = str2double(echo_to_trash);
-    MGE2Dfrom3D = MGE2Dfrom3D(:,:,:,1:echo_to_trash);
+    MGE3D = MGE3D(:,:,:,1:echo_to_trash);
     J.EchoTime.value = J.EchoTime.value(1:echo_to_trash);
 end
 
 
-[rows3d, cols3d, depths3d, echos3d]=size(MGE2Dfrom3D);
+[rows3d, cols3d, depths3d, echos3d]=size(MGE3D);
 nbr_of_final_slice = fix((depths3d-first_slice+1)/nbr_of_slice);
-if nbr_of_final_slice ==0
+if nbr_of_final_slice == 0
     return
 end
-temp2  =zeros([size(MGE2Dfrom3D, 1) size(MGE2Dfrom3D, 2) nbr_of_final_slice size(MGE2Dfrom3D, 4)]);
+temp2 = zeros([size(MGE3D, 1) size(MGE3D, 2) nbr_of_final_slice size(MGE3D, 4)]);
 for i = 1:nbr_of_final_slice
     for k=1:echos3d
-        temp=MGE2Dfrom3D(:,:,first_slice+(i*nbr_of_slice)-nbr_of_slice:first_slice+(i*nbr_of_slice)-1,k);
+        temp=MGE3D(:,:,first_slice+(i*nbr_of_slice)-nbr_of_slice:first_slice+(i*nbr_of_slice)-1,k);
         temp=sum(abs(temp),3);
         temp2(:,:,i,k)=temp;
     end
 end
 
-x = 1:rows3d;
-y = 1:cols3d;
-MGE2Dfrom3D = NaN(size(MGE2Dfrom3D(x,y,1:nbr_of_final_slice,:)));
+% x = 1:rows3d;
+% y = 1:cols3d;
+%MGE2Dfrom3D = NaN(size(MGE3D));
+MGE2Dfrom3D = temp2;
 
-for i = 1:nbr_of_final_slice
-    MGE2Dfrom3D(x,y,i,:)=(temp2(x,y,i,:)+...
-        (temp2(x,y,i,:)+...
-        temp2(x,y,i,:))+...
-         temp2(x,y,i,:));
-end
+% for i = 1:nbr_of_final_slice
+%     temp=squeeze(reco.fov_offsets(:,1,fist_slice+(i*nbr_of_slice)-nbr_of_slice:fist_slice+(i*nbr_of_slice)-1));
+%     new_offset=median(temp,2);
+%     MGE2Dfrom3D.reco.fov_offsets(:,:,i) = repmat(new_offset, [1 MGE2Dfrom3D.reco.no_echoes]);
+% end
 
-if length(J.FOV.value) == 3
-    J.FOV.value(3)=[];
-end
 
+
+% for i = 1:nbr_of_final_slice
+%     %MGE2Dfrom3D(x,y,first_slice+i-1,:)=temp2(x,y,i,:);
+%     MGE2Dfrom3D(x,y,first_slice+i-1,:)=MGE3D(x,y,i,:);
+% end
+
+% if length(J.FOV.value) == 3
+%     J.FOV.value(3)=[];
+% end
+% 
 J.SliceThickness.value = J.SliceThickness.value*nbr_of_slice;
-J.ImageInAcquisition.value = nbr_of_final_slice;
+J.ImageInAcquisition.value = nbr_of_final_slice*length(J.EchoTime.value);
+
+
+
+OutputImages = MGE2Dfrom3D;
+OutputImages(isinf(OutputImages)) = -1;
+OutputImages_reoriented = OutputImages;
+% if ~exist('OutputImages_reoriented', 'var')
+%     OutputImages_reoriented = write_volume(OutputImages, input(1).nifti_header);
+% end
+
+% save the new files (.nii & .json)
+% update the header before saving the new .nii
+info2 = info;
+info2.Filename = files_out.In1{1};
+info2.Filemoddate = char(datetime('now'));
+info2.Datatype = class(OutputImages_reoriented);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reoriented)));
+info2.PixelDimensions(3) = info2.PixelDimensions(3)*nbr_of_slice;
+info2.Transform.T(4,3) = info2.Transform.T(4,3)+first_slice*info.Transform.T(3,3);
+info2.Transform.T(3,3) = info2.Transform.T(3,3)*nbr_of_slice;
+info2.ImageSize = size(OutputImages_reoriented);
+info2.Description = [info.Description, 'MGE2Dfrom3D'];
+
+% save the new .nii file
+niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
+
+% so far copy the .json file of the first input
+copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+% 
+
 
 
 %% Initial function
@@ -389,24 +431,3 @@ J.ImageInAcquisition.value = nbr_of_final_slice;
 % MGE2Dfrom3D.reco=orderfields(MGE2Dfrom3D.reco);
 % 
 % MGE2Dfrom3D.clip = [MGE2Dfrom3D.reco.globalmin MGE2Dfrom3D.reco.globalmax 1];
-%% 
-OutputImages = MGE2Dfrom3D;
-
-
-% save the new files (.nii & .json)
-% update the header before saving the new .nii
-info2 = info;
-info2.Filename = files_out.In1{1};
-info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
-info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
-%info2.PixelDimensions = [info.PixelDimensions, 0];
-info2.ImageSize = size(OutputImages);
-info2.Description = [info.Description, 'Modified by ASL_InvEff Module'];
-
-% save the new .nii file
-niftiwrite(OutputImages, files_out.In1{1}, info2);
-
-% so far copy the .json file of the first input
-copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
-% 

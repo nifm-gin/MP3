@@ -199,10 +199,10 @@ if strcmp(opt.Output_orientation, 'First input')
 else
     ref_scan = 2;
 end
-%T2Map = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
-%T2StarCorr3D = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
-T2Map = niftiread(files_in.In1{1});
-T2StarCorr3D = niftiread(files_in.In2{1});
+T2Map = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
+T2StarCorr3D = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
+%T2Map = niftiread(files_in.In1{1});
+%T2StarCorr3D = niftiread(files_in.In2{1});
 
 % check data compatibility (slice thickness and slice number)
 % if JT2StarCorr3D.SliceThickness.value ~= JT2Map.SliceThickness.value
@@ -258,9 +258,9 @@ OutputImages = R2prim_map;
 % OutputImages(OutputImages < 0) = -1;
 % OutputImages(OutputImages > 5000) = -1;
 % OutputImages(isnan(OutputImages)) = -1;
-% if ~exist('OutputImages_reoriented', 'var')
-%     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
-% end
+if ~exist('OutputImages_reoriented', 'var')
+    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
+end
 
 
 % save the new files (.nii & .json)
@@ -270,12 +270,12 @@ info = niftiinfo(files_in.(['In' num2str(1)]){1});
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
-info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
-info2.ImageSize = size(OutputImages);
+info2.Datatype = class(OutputImages_reoriented);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reoriented)));
+info2.ImageSize = size(OutputImages_reoriented);
 
 % save the new .nii file
-niftiwrite(OutputImages, files_out.In1{1}, info2);
+niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
 
 % so far copy the .json file of the first input
 copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
