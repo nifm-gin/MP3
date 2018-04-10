@@ -97,7 +97,8 @@ data_selected =  MIA2('finddata_selected',handles.MIA_data);
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
-set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
+%set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
+set(findall(handles.MIA_pipeline_manager_GUI.Children, 'Tag', 'MIA_pipeline_module_parameters'), 'FontName', 'Courier')
 %set(findall(gcf,'-property','FontSize'), 'FontSize', 30)
 guidata(hObject, handles);
 
@@ -930,6 +931,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_SO2';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
