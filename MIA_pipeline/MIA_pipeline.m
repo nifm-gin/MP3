@@ -614,10 +614,10 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI')
     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         
@@ -1437,21 +1437,38 @@ if length(handles.MIA_pipeline_Unique_Values_Selection) <= 1
 end
 
 handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
-NewTable = handles.MIA_pipeline_TmpDatabase;
-for i=1:length(handles.FilterParameters)
-    Tag = handles.FilterParameters{1,i}{1};
-    TagTable = table();
-    for j=2:length(handles.FilterParameters{1,i})
-        SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-        TagTable = unique(TagTable);
+
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
     end
-    NewTable = TagTable;
 end
 
-handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+%handles.new_module.opt.table.Default{parameter_selected} = [];
+% NewTable = handles.MIA_pipeline_TmpDatabase;
+% for i=1:length(handles.FilterParameters)
+%     Tag = handles.FilterParameters{1,i}{1};
+%     TagTable = table();
+%     for j=2:length(handles.FilterParameters{1,i})
+%         SelectedValue = handles.FilterParameters{1,i}{j};
+%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+%         TagTable = unique(TagTable);
+%     end
+%     NewTable = TagTable;
+% end
+% 
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+
+
 % NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 % SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
 % SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
@@ -1509,21 +1526,34 @@ for i=1:length(handles.FilterParameters)
    end
 end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
+% 
+% NewTable = handles.MIA_pipeline_TmpDatabase;
+% for i=1:length(handles.FilterParameters)
+%     Tag = handles.FilterParameters{1,i}{1};
+%     TagTable = table();
+%     for j=2:length(handles.FilterParameters{1,i})
+%         SelectedValue = handles.FilterParameters{1,i}{j};
+%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+%         TagTable = unique(TagTable);
+%     end
+%     NewTable = TagTable;
+% end
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+% 
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
-NewTable = handles.MIA_pipeline_TmpDatabase;
-for i=1:length(handles.FilterParameters)
-    Tag = handles.FilterParameters{1,i}{1};
-    TagTable = table();
-    for j=2:length(handles.FilterParameters{1,i})
-        SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-        TagTable = unique(TagTable);
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
     end
-    NewTable = TagTable;
 end
-handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
 
 % Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
 % handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
