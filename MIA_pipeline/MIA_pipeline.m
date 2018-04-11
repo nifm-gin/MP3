@@ -818,8 +818,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_T2map';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-           
+        ismodule = 1;   
     case '   .ADCmap'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ADCmap('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ADCmap(char(files_in),files_out,opt)';
@@ -939,6 +938,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+%     case '   .T1map (Multi Inversion Time)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_T1map_MIT';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -1095,6 +1101,15 @@ end
 
 % On which input matrix size must we create the final matrixes ?
 %RefInput = 2;
+for i=1:length(ScanInputs)
+    if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') || isempty(MatricesInputs{i})
+        warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
+        return
+    end
+end
+
+
+
 RefInput = handles.new_module.opt.Module_settings.RefInput;
 RefDatab = DatabaseInput{RefInput};
 RefMat = MatricesInputs{RefInput};
