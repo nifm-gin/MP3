@@ -1041,6 +1041,22 @@ NbScanInput = length(ScanInputs);
 %%% se retrouve avec des tailles de matrices incompatibles pour les 3
 %%% inputs. Réfléchir là dessus. Edit : Trouvé ! :)
 
+for i=1:height(handles.new_module.opt.table)
+    if ~isempty(handles.new_module.opt.table.PSOM_Fields{i})
+        Value = handles.new_module.opt.Module_settings.(handles.new_module.opt.table.PSOM_Fields{i});
+        Type = handles.new_module.opt.table.Type{i};
+        if ~isa(Value, Type) && ~strcmp(Type,'cell')
+            text = [handles.new_module.opt.table.Names_Display{i}, ' value is not a ', Type, '. Please select a correct value.'];
+            warndlg(text, 'Wrong type of parameters');
+            pipeline = struct();
+            output_database = table();
+            return
+        end
+    end
+end
+
+
+
 %% Build Tp*Patients Matrixes filled up with each inputs files.
 DatabaseInput = cell(NbScanInput, 1);
 MatricesInputs = cell(NbScanInput,1);
@@ -1104,6 +1120,8 @@ end
 for i=1:length(ScanInputs)
     if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') || isempty(MatricesInputs{i})
         warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
+        pipeline = struct();
+        output_database = table();
         return
     end
 end
