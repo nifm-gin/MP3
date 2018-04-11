@@ -362,6 +362,30 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select ONE Input', 'Type'};
         table.editable = [false true false];
         table.ColumnFormat = {'char'};  
+    case '1ROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select ONE Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
+    case 'XROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
      case 'XScanOrXROI'
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
