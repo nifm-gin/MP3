@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 23-Feb-2018 14:08:07
+% Last Modified by GUIDE v2.5 12-Apr-2018 14:20:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -42,6 +42,10 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+
+
+
+
 
 % --- Executes just before MIA_pipeline is made visible.
 function MIA_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -85,6 +89,8 @@ handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
 handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
+% handles.module_parameters_string = {};
+% handles.module_parameters_fields = {};
 
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 handles.FilterParameters = {};
@@ -761,6 +767,7 @@ output_file_names  = strrep(cellstr(output_file_names), ' ', '');
 
 % --- Executes on selection change in MIA_pipeline_add_tag_popupmenu.
 function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+
 % hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -778,6 +785,8 @@ else
     handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
     handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
 end
+
+
 guidata(hObject, handles);
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_add_tag_popupmenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_add_tag_popupmenu
@@ -1026,7 +1035,6 @@ function [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, event
     %FinalLength = floor(TableSizeInChar);
     FinalLength = 90;
     for i=1:length(handles.module_parameters_fields)
-        
         StrToDisplay{i} = [handles.module_parameters_string{i}, repmat(' ',1,FinalLength-LString(i)), ActualValues{i}];
     end
     
@@ -1440,7 +1448,10 @@ handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Uniq
 
 [hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
-[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+end
+
 
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
@@ -1786,6 +1797,10 @@ function MIA_pipeline_pipeline_listbox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+
 
 
 % --- Executes on button press in MIA_pipeline_exectute_pipeline_button.
