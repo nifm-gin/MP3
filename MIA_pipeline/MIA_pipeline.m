@@ -1150,7 +1150,7 @@ end
 % On which input matrix size must we create the final matrixes ?
 %RefInput = 2;
 for i=1:length(ScanInputs)
-    if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') || isempty(MatricesInputs{i})
+    if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
         warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
         pipeline = struct();
         output_database = table();
@@ -1285,7 +1285,7 @@ for i=1:NbModules
                 end
             end
         end
-        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'];
+        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'];
         handles.new_module.opt.Module_settings.Table_in = unique(table_in);
         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
@@ -1321,6 +1321,15 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Derived
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end
 end
+
+
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Tmp'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Tmp']);
+    if status == false
+        error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
+    end
+end
+
 
 %% Create the pipeline from the modules.
 Names_Mod = fieldnames(handles.psom.Modules);
@@ -1389,6 +1398,21 @@ for i=1:length(Jobs)
                    path_out = [path_out, filesep];
                    outdb = handles.MIA_pipeline_TmpDatabase(handles.MIA_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
+                   assert(height(outdb) == 1)
+                   Folders = strsplit(path_out, filesep);
+                   Folders{end-1} = 'Derived_data';
+                   NewPath = strjoin(Folders, filesep);
+                   [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
+                   
+                   [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   if statusNii && statusJson
+                       outdb.Path = NewPath;
+                       %eval(['delete ' B{k}]);
+                   elseif ~statusNii
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.nii'])
+                   elseif ~statusJson
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.json'])
+                   end
                    handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                end
            end
