@@ -7847,7 +7847,7 @@ end
 if ~isempty(InvalidEntries)
     text = ['We found some entries in the database for which file(s) are missing in ', Data_path, '. Do you want to delete them from the table ?']; 
     answer = questdlg(text, 'Wrong entries', 'Yes', 'See wrong entries','No', 'No');
-    
+    uiwait(gcf)
     %function answer = DeleteWrongEntries(PushButton, EventData)    
     if strcmp(answer,'See wrong entries')
         f = figure;
@@ -7913,6 +7913,7 @@ else
         btnCancel = uicontrol('Parent', f, 'Position', [225,40,100,50], 'String', 'OK', 'Callback', 'delete(gcf)');
     end
 end
+guidata(hObject, handles)
 
 % scan_list = [];
 % VOIs_list = [];
