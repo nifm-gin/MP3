@@ -86,7 +86,16 @@ handles.Remove_selected = handles.Remove_Tags_listing{1};
 
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+CellsColoured = DisplayColoredTable(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_TagsToPrint);
+handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+% colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+% for i=1:size(handles.MIA_pipeline_Filtering_Table.Data, 1)
+%     handles.MIA_pipeline_Filtering_Table.Data{i,1} = colergen(rgb2hex([1 0 0]), handles.MIA_pipeline_Filtering_Table.Data{i,1});
+% end
+
+
+
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
 % handles.module_parameters_string = {};
@@ -108,7 +117,34 @@ set(findall(handles.MIA_pipeline_manager_GUI.Children, 'Tag', 'MIA_pipeline_modu
 %set(findall(gcf,'-property','FontSize'), 'FontSize', 30)
 guidata(hObject, handles);
 
-
+function CellsColoured = DisplayColoredTable(InputTable, Tags)
+colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+CellsColoured = cellstr(InputTable{:,Tags});
+for i=1:size(CellsColoured, 1)
+    Path =  InputTable.Path(i);
+    Folders = strsplit(char(Path), filesep);
+    Folder = Folders(end-1);
+    switch Folder{1}
+        case 'Raw_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([0 1 1]), CellsColoured{i,j}); %Cyan
+            end
+        case 'Derived_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([0 1 0]), CellsColoured{i,j});%Green
+            end
+        case 'Tmp'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([1 1 0]), CellsColoured{i,j});%Yellow
+            end
+        case 'ROI_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([1 0 1]), CellsColoured{i,j});%Magenta
+            end
+            
+    end
+    
+end
 
 
 % UIWAIT makes MIA_pipeline wait for user response (see UIRESUME)
@@ -162,7 +198,9 @@ for i=1:length(handles.FilterParameters)
 end
 
 handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
+handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 %% Update of Unique Values
 TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
 handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
@@ -1772,8 +1810,16 @@ if ok == 0;
 end
 handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Properties.VariableNames(selection);
 
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
+% handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
 guidata(hObject, handles);
 
 
