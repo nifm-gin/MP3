@@ -1,90 +1,4 @@
 function [files_in,files_out,opt] = Module_Arithmetic(files_in,files_out,opt)
-% This is a template file for "brick" functions in NIAK.
-%
-% SYNTAX:
-% [IN,OUT,OPT] = PSOM_TEMPLATE_BRICK(IN,OUT,OPT)
-%
-% _________________________________________________________________________
-% INPUTS:
-%
-% IN
-%   (string) a file name of a 3D+t fMRI dataset .
-%
-% OUT
-%   (structure) with the following fields:
-%       flag_test
-%   CORRECTED_DATA
-%       (string, default <BASE NAME FMRI>_c.<EXT>) File name for processed
-%       data.
-%       If OUT is an empty string, the name of the outputs will be
-%       the same as the inputs, with a '_c' suffix added at the end.
-%
-%   MASK
-%       (string, default <BASE NAME FMRI>_mask.<EXT>) File name for a mask
-%       of the data. If OUT is an empty string, the name of the
-%       outputs will be the same as the inputs, with a '_mask' suffix added
-%       at the end.
-%
-% OPT
-%   (structure) with the following fields.
-%
-%   TYPE_CORRECTION
-%      (string, default 'mean_var') possible values :
-%      'none' : no correction at all
-%      'mean' : correction to zero mean.
-%      'mean_var' : correction to zero mean and unit variance
-%      'mean_var2' : same as 'mean_var' but slower, yet does not use as
-%      much memory).
-%
-%   FOLDER_OUT
-%      (string, default: path of IN) If present, all default outputs
-%      will be created in the folder FOLDER_OUT. The folder needs to be
-%      created beforehand.
-%
-%   FLAG_VERBOSE
-%      (boolean, default 1) if the flag is 1, then the function prints
-%      some infos during the processing.
-%
-%   FLAG_TEST
-%      (boolean, default 0) if FLAG_TEST equals 1, the brick does not do
-%      anything but update the default values in IN, OUT and OPT.
-%
-% _________________________________________________________________________
-% OUTPUTS:
-%
-% IN, OUT, OPT: same as inputs but updated with default values.
-%
-% _________________________________________________________________________
-% SEE ALSO:
-% NIAK_CORRECT_MEAN_VAR
-%
-% _________________________________________________________________________
-% COMMENTS:
-%
-% _________________________________________________________________________
-% Copyright (c) <NAME>, <INSTITUTION>, <START DATE>-<END DATE>.
-% Maintainer : <EMAIL ADDRESS>
-% See licensing information in the code.
-% Keywords : PSOM, documentation, template, brick
-
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in
-% all copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-% THE SOFTWARE.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -104,28 +18,21 @@ if isempty(opt)
     module_option(:,7)   = {'Table_out', table()};
     module_option(:,8)   = {'Operation', 'Addition'};
     module_option(:,9)   = {'output_filename_ext','_Arith'};
-    module_option(:,10)   = {'Output_orientation','First input'};
-    
-    
-    
-    
+    module_option(:,10)  = {'Output_orientation','First input'};
+
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
-    %
-    %      additional_info_name = {'Operation', 'Day of the 2nd scan', 'Name of the 2nd scan'};
-    %         additional_info_data = {'Addition', 'first', handles.Math_parameters_list{1}};
-    %         additional_info_format = {{'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage', 'Concentration'},...
-    %             ['first', '-1', '+1',  'same', handles.Math_tp_list], handles.Math_parameters_list};
-    %         additional_info_editable = [1 1 1];
     
     
-    %     %% list of everything displayed to the user associated to their 'type'
-    %      % --> user_parameter(1,:) = user_parameter_list
-    %      % --> user_parameter(2,:) = user_parameter_type
-    %      % --> user_parameter(3,:) = parameter_default
-    %      % --> user_parameter(4,:) = psom_parameter_list
-    %      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
-    %      % will be display to help the user)
-     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
+        %% list of everything displayed to the user associated to their 'type'
+         % --> user_parameter(1,:) = user_parameter_list
+         % --> user_parameter(2,:) = user_parameter_type
+         % --> user_parameter(3,:) = parameter_default
+         % --> user_parameter(4,:) = psom_parameter_list
+         % --> user_parameter(5,:) = Scans_input_DOF : Degrees of Freedom for the user to choose the scan
+         % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
+         % --> user_parameter(7,:) = Help : text data which describe the parameter (it
+         % will be display to help the user)
+    user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
     user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
     user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
@@ -171,13 +78,8 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Module_Coreg_Est:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_Arithmetic:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
-
-%% Inputs
-%if ~ischar(files_in)
-%    error('files in should be a char');
-%end
 
 %% If the test flag is true, stop here !
 
@@ -199,8 +101,6 @@ else
 end
 input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
 input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
-
-
 
 switch opt.Operation
     case 'Addition'
@@ -245,7 +145,7 @@ info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages);
-info2.Description = [info.Description, 'Modified by the Arithmetic Module'];
+
 
 % save the new .nii file
 niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);

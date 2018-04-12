@@ -1,90 +1,4 @@
 function [files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)
-% This is a template file for "brick" functions in NIAK.
-%
-% SYNTAX:
-% [IN,OUT,OPT] = PSOM_TEMPLATE_BRICK(IN,OUT,OPT)
-%
-% _________________________________________________________________________
-% INPUTS:
-%
-% IN        
-%   (string) a file name of a 3D+t fMRI dataset .
-%
-% OUT
-%   (structure) with the following fields:
-%       flag_test
-%   CORRECTED_DATA
-%       (string, default <BASE NAME FMRI>_c.<EXT>) File name for processed 
-%       data.
-%       If OUT is an empty string, the name of the outputs will be 
-%       the same as the inputs, with a '_c' suffix added at the end.
-%
-%   MASK
-%       (string, default <BASE NAME FMRI>_mask.<EXT>) File name for a mask 
-%       of the data. If OUT is an empty string, the name of the 
-%       outputs will be the same as the inputs, with a '_mask' suffix added 
-%       at the end.
-%
-% OPT           
-%   (structure) with the following fields.  
-%
-%   TYPE_CORRECTION       
-%      (string, default 'mean_var') possible values :
-%      'none' : no correction at all                       
-%      'mean' : correction to zero mean.
-%      'mean_var' : correction to zero mean and unit variance
-%      'mean_var2' : same as 'mean_var' but slower, yet does not use as 
-%      much memory).
-%
-%   FOLDER_OUT 
-%      (string, default: path of IN) If present, all default outputs 
-%      will be created in the folder FOLDER_OUT. The folder needs to be 
-%      created beforehand.
-%
-%   FLAG_VERBOSE 
-%      (boolean, default 1) if the flag is 1, then the function prints 
-%      some infos during the processing.
-%
-%   FLAG_TEST 
-%      (boolean, default 0) if FLAG_TEST equals 1, the brick does not do 
-%      anything but update the default values in IN, OUT and OPT.
-%           
-% _________________________________________________________________________
-% OUTPUTS:
-%
-% IN, OUT, OPT: same as inputs but updated with default values.
-%              
-% _________________________________________________________________________
-% SEE ALSO:
-% NIAK_CORRECT_MEAN_VAR
-%
-% _________________________________________________________________________
-% COMMENTS:
-%
-% _________________________________________________________________________
-% Copyright (c) <NAME>, <INSTITUTION>, <START DATE>-<END DATE>.
-% Maintainer : <EMAIL ADDRESS>
-% See licensing information in the code.
-% Keywords : PSOM, documentation, template, brick
-
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in
-% all copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-% THE SOFTWARE.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -113,13 +27,15 @@ if isempty(opt)
     module_option(:,16)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
-%     %% list of everything displayed to the user associated to their 'type'
-%      % --> user_parameter(1,:) = user_parameter_list
-%      % --> user_parameter(2,:) = user_parameter_type
-%      % --> user_parameter(3,:) = parameter_default
-%      % --> user_parameter(4,:) = psom_parameter_list
-%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
-%      % will be display to help the user)
+        %% list of everything displayed to the user associated to their 'type'
+         % --> user_parameter(1,:) = user_parameter_list
+         % --> user_parameter(2,:) = user_parameter_type
+         % --> user_parameter(3,:) = parameter_default
+         % --> user_parameter(4,:) = psom_parameter_list
+         % --> user_parameter(5,:) = Scans_input_DOF : Degrees of Freedom for the user to choose the scan
+         % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
+         % --> user_parameter(7,:) = Help : text data which describe the parameter (it
+         % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
     'Within-subject registration using a rigid-body model and image reslicing.'
@@ -220,15 +136,6 @@ end
 %    error('files in should be a char');
 %end
 
-
-
-if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
-    opt.threshold = str2double(opt.threshold);
-    if isnan(opt.threshold)
-        disp('The threshold used was not a number')
-        return
-    end
-end
 
 %% If the test flag is true, stop here !
 
