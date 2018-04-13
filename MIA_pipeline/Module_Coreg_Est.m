@@ -100,25 +100,27 @@ if strcmp(files_out, '')
     f_out = [char(tags_out_In2.Path), char(tags_out_In2.Patient), '_', char(tags_out_In2.Tp), '_', char(tags_out_In2.SequenceName), '.nii'];
     files_out.In2{1} = f_out;
     opt.Table_out = tags_out_In2;
-    for i=1:length(files_in.In3)
-        if ~isempty(files_in.In3{i})
-            [Path_In3, Name_In3, ~] = fileparts(files_in.In3{i});
-            tags3 = opt.Table_in(opt.Table_in.Path == [Path_In3, filesep],:);
-            tags3 = tags3(tags3.Filename == Name_In3,:);
-            assert(size(tags3, 1) == 1);
-            tags_out_In3 = tags3;
-            tags_out_In3.IsRaw = categorical(0);
-            tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
-            if tags_out_In3.Type == 'Scan'
-                tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
-                 tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
-            else
-                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
-                tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+    if isfield(files_in, 'In3')
+        for i=1:length(files_in.In3)
+            if ~isempty(files_in.In3{i})
+                [Path_In3, Name_In3, ~] = fileparts(files_in.In3{i});
+                tags3 = opt.Table_in(opt.Table_in.Path == [Path_In3, filesep],:);
+                tags3 = tags3(tags3.Filename == Name_In3,:);
+                assert(size(tags3, 1) == 1);
+                tags_out_In3 = tags3;
+                tags_out_In3.IsRaw = categorical(0);
+                tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
+                if tags_out_In3.Type == 'Scan'
+                    tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
+                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
+                else
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
+                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+                end
+                files_out.In3{i} = f_out;
+                opt.Table_out = [opt.Table_out ; tags_out_In3];
             end
-            files_out.In3{i} = f_out;
-            opt.Table_out = [opt.Table_out ; tags_out_In3];
         end
     end
 end

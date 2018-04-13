@@ -1111,19 +1111,19 @@ NbScanInput = length(ScanInputs);
 %%% se retrouve avec des tailles de matrices incompatibles pour les 3
 %%% inputs. Réfléchir là dessus. Edit : Trouvé ! :)
 
-for i=1:height(handles.new_module.opt.table)
-    if ~isempty(handles.new_module.opt.table.PSOM_Fields{i})
-        Value = handles.new_module.opt.Module_settings.(handles.new_module.opt.table.PSOM_Fields{i});
-        Type = handles.new_module.opt.table.Type{i};
-        if ~isa(Value, Type) && ~strcmp(Type,'cell')
-            text = [handles.new_module.opt.table.Names_Display{i}, ' value is not a ', Type, '. Please select a correct value.'];
-            warndlg(text, 'Wrong type of parameters');
-            pipeline = struct();
-            output_database = table();
-            return
-        end
-    end
-end
+% for i=1:height(handles.new_module.opt.table)
+%     if ~isempty(handles.new_module.opt.table.PSOM_Fields{i})
+%         Value = handles.new_module.opt.Module_settings.(handles.new_module.opt.table.PSOM_Fields{i});
+%         Type = handles.new_module.opt.table.Type{i};
+%         if ~isa(Value, Type) && ~strcmp(Type,'cell')
+%             text = [handles.new_module.opt.table.Names_Display{i}, ' value is not a ', Type, '. Please select a correct value.'];
+%             warndlg(text, 'Wrong type of parameters');
+%             pipeline = struct();
+%             output_database = table();
+%             return
+%         end
+%     end
+% end
 
 
 
@@ -1187,6 +1187,8 @@ end
 
 % On which input matrix size must we create the final matrixes ?
 %RefInput = 2;
+
+
 for i=1:length(ScanInputs)
     if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
         warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
@@ -1296,24 +1298,34 @@ for i=1:NbModules
     table_in = table();
     Files_in = struct();
     B = zeros(1,NbScanInput);
+    All_Selected_Scans = [];
     for l=1:NbScanInput
+        AllScans = 1;
         if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
             A = {FinalMat{l}{i,:}};
+            if length({FinalMat{l}{i,:}}) ~= length(Selection(:,:,l))
+                AllScans = 0;
+            end
             B(l) = any(cellfun('isempty', A));
         end
+        All_Selected_Scans = [All_Selected_Scans, AllScans];
     end
-    if ~any(B)
+    if ~any(B) && all(All_Selected_Scans)
     %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
         for j=1:NbScanInput
             %A = {FinalMat{j}{i,:}};
             %B = cellfun('isempty', A);
             %if all(B)
             for k=1:size(FinalMat{j},2)
-                if isempty(FinalMat{j}{i,k})
-                    FinalMat{j}{i,k} = '';
-                end
-                eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
+%                 if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(j)}, 'Invariant') && isempty(FinalMat{j}{i,k})
+%                     
+%                 end
+%                 if isempty(FinalMat{j}{i,k})
+%                     FinalMat{j}{i,k} = '';
+%                 end
+%                  eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                 if ~isempty(FinalMat{j}{i,k})
+                    eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                     [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
                     databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
                     databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
