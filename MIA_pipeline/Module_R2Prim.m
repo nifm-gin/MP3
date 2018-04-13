@@ -86,6 +86,11 @@ end
 if opt.flag_test == 1
     return
 end
+
+[Status, Message, Wrong_File] = Check_files(files_in);
+if ~Status
+    error('Problem with the input file : %s \n%s', Wrong_File, Message)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

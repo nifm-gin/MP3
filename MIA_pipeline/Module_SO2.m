@@ -97,32 +97,27 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Module_SO2:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
-%% Inputs
-if ~ischar(files_in.In1{1}) 
-    error('files in should be a char');
-end
 
-[path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
-if ~strcmp(ext_nii, '.nii')
-     error('First file need to be a .nii');  
-end
+% [path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
+% if ~strcmp(ext_nii, '.nii')
+%      error('First file need to be a .nii');  
+% end
+% 
+% %% Building default output names
+% if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same folder as the input
+%     opt.folder_out = path_nii;    
+% end
 
-
-
-%% Building default output names
-if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same folder as the input
-    opt.folder_out = path_nii;    
-end
-
-if isempty(files_out)
-   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename_ext,ext_nii)};
-end
 
 %% If the test flag is true, stop here !
 if opt.flag_test == 1
     return
 end
 
+[Status, Message, Wrong_File] = Check_files(files_in);
+if ~Status
+    error('Problem with the input file : %s \n%s', Wrong_File, Message)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

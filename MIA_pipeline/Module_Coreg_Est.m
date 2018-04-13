@@ -131,16 +131,16 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Module_Coreg_Est:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
-%% Inputs
-%if ~ischar(files_in) 
-%    error('files in should be a char');
-%end
-
 
 %% If the test flag is true, stop here !
 
 if opt.flag_test == 1
     return
+end
+
+[Status, Message, Wrong_File] = Check_files(files_in);
+if ~Status
+    error('Problem with the input file : %s \n%s', Wrong_File, Message)
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%

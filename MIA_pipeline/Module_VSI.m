@@ -83,22 +83,19 @@ if isempty(files_out)
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
     files_out.In1{1} = f_out;
 end
-
-
-
-
-
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Module_VSI:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
-
-
 %% If the test flag is true, stop here !
 
 if opt.flag_test == 1
     return
+end
+[Status, Message, Wrong_File] = Check_files(files_in);
+if ~Status
+    error('Problem with the input file : %s \n%s', Wrong_File, Message)
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
