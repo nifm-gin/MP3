@@ -84,7 +84,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Smoothing:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_DCE_phenomeno:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% Inputs

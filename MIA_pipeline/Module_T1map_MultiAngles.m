@@ -1,111 +1,10 @@
 function [files_in,files_out,opt] = Module_T1map_MultiAngles(files_in,files_out,opt)
-%
-% SYNTAX:
-% [IN,OUT,OPT] = PSOM_TEMPLATE_BRICK(IN,OUT,OPT)
-%
-% _________________________________________________________________________
-% INPUTS:
-%
-% IN        
-%   (string) a file name of a 3D+t fMRI dataset .
-%
-% OUT
-%   (structure) with the following fields:
-%       flag_test
-%   CORRECTED_DATA
-%       (string, default <BASE NAME FMRI>_c.<EXT>) File name for processed 
-%       data.
-%       If OUT is an empty string, the name of the outputs will be 
-%       the same as the inputs, with a '_c' suffix added at the end.
-%
-%   MASK
-%       (string, default <BASE NAME FMRI>_mask.<EXT>) File name for a mask 
-%       of the data. If OUT is an empty string, the name of the 
-%       outputs will be the same as the inputs, with a '_mask' suffix added 
-%       at the end.
-%
-% OPT           
-%   (structure) with the following fields.  
-%
-%   TYPE_CORRECTION       
-%      (string, default 'mean_var') possible values :
-%      'none' : no correction at all                       
-%      'mean' : correction to zero mean.
-%      'mean_var' : correction to zero mean and unit variance
-%      'mean_var2' : same as 'mean_var' but slower, yet does not use as 
-%      much memory).
-%
-%   FOLDER_OUT 
-%      (string, default: path of IN) If present, all default outputs 
-%      will be created in the folder FOLDER_OUT. The folder needs to be 
-%      created beforehand.
-%
-%   FLAG_VERBOSE 
-%      (boolean, default 1) if the flag is 1, then the function prints 
-%      some infos during the processing.
-%
-%   FLAG_TEST 
-%      (boolean, default 0) if FLAG_TEST equals 1, the brick does not do 
-%      anything but update the default values in IN, OUT and OPT.
-%           
-% _________________________________________________________________________
-% OUTPUTS:
-%
-% IN, OUT, OPT: same as inputs but updated with default values.
-%              
-% _________________________________________________________________________
-% SEE ALSO:
-% NIAK_CORRECT_MEAN_VAR
-%
-% _________________________________________________________________________
-% COMMENTS:
-%
-% _________________________________________________________________________
-% Copyright (c) <NAME>, <INSTITUTION>, <START DATE>-<END DATE>.
-% Maintainer : <EMAIL ADDRESS>
-% See licensing information in the code.
-% Keywords : PSOM, documentation, template, brick
-
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in
-% all copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-% THE SOFTWARE.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
 if isempty(opt)
-%     % define every option needed to run this module
-%     fields   = {'RefInput', 'InputToReshape','NbInput', 'NbOutput', 'threshold'  , 'flag_test' , 'folder_out', 'output_filename_ext', 'OutputSequenceName'};
-%     defaults = {1,1, 1, 1, 5, true, '', 'T1map', 'AllName'};
-%     opt.Module_settings = psom_struct_defaults(struct(),fields,defaults);
-%     
-%     % list of everything displayed to the user associated to their 'type'
-%     user_parameter_list = {'Select at least 3 scans with different flip angles'; 'Parameters'; '   .Output filename extension' ; '   .Threshold'};
-%     user_parameter_type = {'XScan'; ''; 'char'; 'numeric'};
-%     parameter_default = {''; ''; 'T1map'; 5};
-%     psom_parameter_list = {''; ''; 'output_filename_ext'; 'threshold'};
-%     scans_input_DOF = {{'SequenceName'}; ''; ''; ''};
-%     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF'};
-%     opt.table = table(user_parameter_list, user_parameter_type, parameter_default, psom_parameter_list, scans_input_DOF, 'VariableNames', VariableNames);
-%     % So for no input file is selected and therefore no output
-
-% Benjamin Modifications
      % define every option needed to run this module
          % define every option needed to run this module
     % --> module_option(1,:) = field names
@@ -121,15 +20,15 @@ if isempty(opt)
     module_option(:,9)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
-%% list of everything displayed to the user associated to their 'type'
-     % --> user_parameter(1,:) = user_parameter_list
-     % --> user_parameter(2,:) = user_parameter_type
-     % --> user_parameter(3,:) = parameter_default
-     % --> user_parameter(4,:) = psom_parameter_list
-     % --> user_parameter(5,:) = Scans_Input_DOF
-     % --> user_parameter(6,:) = Help : text data which describe the parameter (it
-     % will be display to help the user)
-     % will be display to help the user)
+        %% list of everything displayed to the user associated to their 'type'
+         % --> user_parameter(1,:) = user_parameter_list
+         % --> user_parameter(2,:) = user_parameter_type
+         % --> user_parameter(3,:) = parameter_default
+         % --> user_parameter(4,:) = psom_parameter_list
+         % --> user_parameter(5,:) = Scans_input_DOF : Degrees of Freedom for the user to choose the scan
+         % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
+         % --> user_parameter(7,:) = Help : text data which describe the parameter (it
+         % will be display to help the user)
     user_parameter(:,1)   = {'Select at least 3 scans with different flip angles','XScan','','',{'SequenceName'},'Mandatory',''};
     user_parameter(:,2)   = {'Parameters','','','','','',''};
     user_parameter(:,3)   = {'   .Output filename extension','char','T1map','output_filename_ext','','',''};
@@ -183,14 +82,6 @@ if ~strcmp(ext_nii, '.nii')
      error('First file need to be a .nii');  
 end
 
-
-if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
-    opt.threshold = str2double(opt.threshold);
-    if isnan(opt.threshold)
-        disp('The threshold used was not a number')
-        return
-    end
-end
 
 
 %% Building default output names
@@ -286,7 +177,7 @@ nii_header.Filename = files_out.In1{1};
 nii_header.Filemoddate = char(datetime('now'));
 nii_header.Datatype = class(T1map);
 nii_header.ImageSize = size(T1map);
-nii_header.Description = [nii_header.Description, ' Modified by the Module T1map_MultiAngles'];
+%nii_header.Description = [nii_header.Description, ' Modified by the Module T1map_MultiAngles'];
 % save the new .nii file
 niftiwrite(T1map, files_out.In1{1}, nii_header)
 

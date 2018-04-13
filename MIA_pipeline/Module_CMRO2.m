@@ -82,7 +82,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('CMRO2:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_CMRO2:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% Inputs
