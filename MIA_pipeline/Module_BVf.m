@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_T2map(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_BVf(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -12,13 +12,20 @@ if isempty(opt)
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'threshold',5};
-    module_option(:,4)   = {'output_filename_ext','T2map'};
-    module_option(:,5)   = {'OutputSequenceName','AllName'};
-    module_option(:,6)   = {'RefInput',1};
-    module_option(:,7)   = {'InputToReshape',1};
-    module_option(:,8)   = {'Table_in', table()};
-    module_option(:,9)   = {'Table_out', table()};
+    module_option(:,3)   = {'trash_below',0};
+    module_option(:,4)   = {'trash_after',Inf};
+    module_option(:,5)   = {'output_filename_ext','BVf'};
+    module_option(:,6)   = {'B0',4.7};
+    module_option(:,7)   = {'Gamma',2.67502};
+    module_option(:,8)   = {'deltaxi_CA',0.264};
+    module_option(:,9)   = {'HCT',0.375};
+    module_option(:,10)  = {'UseT1Map','No'};
+    module_option(:,11)  = {'HTC_map','None'};
+    module_option(:,12)  = {'OutputSequenceName','AllName'};
+    module_option(:,13)  = {'RefInput',1};
+    module_option(:,14)  = {'InputToReshape',1};
+    module_option(:,15)  = {'Table_in', table()};
+    module_option(:,16)  = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
         %% list of everything displayed to the user associated to their 'type'
@@ -30,18 +37,31 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Select a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,2)   = {'Parameters','','','','', '',''};
-    user_parameter(:,3)   = {'   .Output filename extension','char','T2map','output_filename_ext','', '',''};
-    user_parameter(:,4)   = {'   .Threshold','numeric', 5,'threshold','', '',''};
-    VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
-    opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
+     user_parameter(:,1)   = {'Description','Text','','','','',...
+        {'BVf Module'}'};
+user_parameter(:,2)   = {'Select a DeltaR2* scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+user_parameter(:,3)   = {'Parameters','','','','', '',''};
+user_parameter(:,4)   = {'   .Output filename extension','char','BVf','output_filename_ext','','',...
+    {'Specify the string to be added to the filename input.'
+    'Default filename extension is ''BVf''.'}'};
+user_parameter(:,5)   = {'   .B0','numeric', '','B0','','',...
+    {''}'};
+user_parameter(:,6)   = {'   .Gamma (10^8)','numeric','','Gamma','','',...
+    {''}'};
+user_parameter(:,7)   = {'   .deltaxi HBC (10^-6)','numeric', '','deltaxi_CA','','',...
+    {''}'};
+user_parameter(:,8)   = {'   .HCT','numeric','','HCT','', '',''};
+user_parameter(:,9)   = {'   .Using T1map ?','cell',{'No', 'Yes'},'UseT1Map','', '',''};
+user_parameter(:,10)   = {'   .HCT_map','char','','HTC_map','', '',''};
+
+VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
+opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)',user_parameter(7,:)', 'VariableNames', VariableNames);
 
 % So far no input file is selected and therefore no output
 %
     % The output file will be generated automatically when the input file
     % will be selected by the user
-    opt.NameOutFiles = {'T2map'};
+    opt.NameOutFiles = {'BVf'};
     
     files_in.In1 = {''};
     files_out.In1 = {''};
@@ -68,8 +88,10 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('T2map:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_BVf:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
+
+%% Inputs
 
 
 % [path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
@@ -77,16 +99,17 @@ end
 %      error('First file need to be a .nii');  
 % end
 % 
+% 
 % %% Building default output names
 % if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same folder as the input
 %     opt.folder_out = path_nii;    
 % end
 
-
 %% If the test flag is true, stop here !
 if opt.flag_test == 1
     return
 end
+
 [Status, Message, Wrong_File] = Check_files(files_in);
 if ~Status
     error('Problem with the input file : %s \n%s', Wrong_File, Message)
@@ -105,60 +128,30 @@ info = niftiinfo(files_in.In1{1});
 %% load input JSON file
 J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
-% Get information from the JSON data
-EchoTime = J.EchoTime.value;
-
-% reshape the data to a vector matric (speed the fitting process)
-%data_to_fit = reshape(double(data.img), [size(data.img,1)*size(data.img, 2)*size(data.img,3) numel(EchoTime)]);
-data_to_fit = reshape(double(N), [size(N,1)*size(N, 2)*size(N,3) numel(EchoTime)]);
-
-%% create empty structures
-T2map_tmp = NaN(size(data_to_fit,1),1);
 
 
-% define the threshold and variables
-maxim=max(data_to_fit(:)) * opt.threshold/100;
-t2init_Cte = EchoTime(1) - EchoTime(end-1);
+B0=opt.B0;
+gamma=opt.Gamma; gamma = gamma*10^8;
+deltaxi_CA=opt.deltaxi_CA; deltaxi_CA = deltaxi_CA*10^-6;
+
+deltaomega=2*pi*gamma*deltaxi_CA*B0;
 
 
-%init matlabpool
-% schd = parcluster();
-% poolobj = parpool('local', schd.NumWorkers);
+% save imformation
+BVf_map=N;
 
-parfor voxel_nbr = 1:size(data_to_fit,1)
-    tmp_voxel_data=data_to_fit(voxel_nbr,:);
-    if max(tmp_voxel_data(:))>= maxim
-        %% fit data
-        t2init=(t2init_Cte)/log(tmp_voxel_data(end-1)/tmp_voxel_data(1));
-        if t2init<=0 || isnan(t2init)
-            t2init=30;
-        end
-        [aaa, ~,  convergence]=levenbergmarquardt('AB_t2s',EchoTime', abs(tmp_voxel_data),[t2init max(abs(tmp_voxel_data))*1.5]);
-        % the algorithm converged
-        if convergence == -1
-            % to remove when good input data
-            if isreal(aaa(1))
-                T2map_tmp(voxel_nbr)=aaa(1);
-%                 M0map_tmp(voxel_nbr)=aaa(2);
-%                 T2_Error_map_tmp(voxel_nbr)=bbb(1);
-%                 M0_Error_map_tmp(voxel_nbr)=bbb(2);
-            end
-        end
-    end
+% Empty memory
+clear data
+
+for i = 1:size(N, 3)
+    BVf_map(:,:,i,1)=(3/(2*deltaomega)*BVf_map(:,:,i,1))*100000;
 end
-% delete(poolobj);
 
-% [~,filename,~] = fileparts(MSE_map_filename);
 
-% reshape matrix
-OutputImages=reshape(T2map_tmp,[size(N,1) size(N, 2) size(N,3)]);
+OutputImages = BVf_map;
 OutputImages(OutputImages < 0) = -1;
 OutputImages(OutputImages > 5000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
-
-
-%% need to update the json structure here before saving it with the T2map
-%spm_jsonwrite(strrep(files_out.filename, '.nii', '.json'), data.json);
 
 % save the new files (.nii & .json)
 % update the header before saving the new .nii
@@ -168,11 +161,11 @@ info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages);
 info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
 info2.ImageSize = size(OutputImages);
-info2.Description = [info.Description, 'Modified by T2map Module'];
+%info2.Description = [info.Description, 'Modified by T2star_map Module'];
 
 % save the new .nii file
 niftiwrite(OutputImages, files_out.In1{1}, info2);
 
 % so far copy the .json file of the first input
 copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
-
+% 

@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 23-Feb-2018 14:08:07
+% Last Modified by GUIDE v2.5 12-Apr-2018 14:20:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,6 +43,10 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+
+
+
+
 % --- Executes just before MIA_pipeline is made visible.
 function MIA_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -56,9 +60,10 @@ handles.output = hObject;
 
 handles.MIA_data = varargin{3};
 handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .Fit_T2_T2star',...
-                '   .deltaR2', '   .deltaR2*',...
+                '   .deltaR2', '   .deltaR2*', '   .MGE2Dfrom3D',...
     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
-                '   .Vessel Densisty (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
+                '   .Vessel Density (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
+                '   .Inversion Efficiency (ASL_InvEff)',...
      'Diffusion', '   .ADCmap',...
      'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
@@ -81,9 +86,20 @@ handles.Remove_selected = handles.Remove_Tags_listing{1};
 
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+CellsColoured = DisplayColoredTable(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_TagsToPrint);
+handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+% colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+% for i=1:size(handles.MIA_pipeline_Filtering_Table.Data, 1)
+%     handles.MIA_pipeline_Filtering_Table.Data{i,1} = colergen(rgb2hex([1 0 0]), handles.MIA_pipeline_Filtering_Table.Data{i,1});
+% end
+
+
+
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
+% handles.module_parameters_string = {};
+% handles.module_parameters_fields = {};
 
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 handles.FilterParameters = {};
@@ -96,11 +112,39 @@ data_selected =  MIA2('finddata_selected',handles.MIA_data);
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
-set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
+%set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
+set(findall(handles.MIA_pipeline_manager_GUI.Children, 'Tag', 'MIA_pipeline_module_parameters'), 'FontName', 'Courier')
 %set(findall(gcf,'-property','FontSize'), 'FontSize', 30)
 guidata(hObject, handles);
 
-
+function CellsColoured = DisplayColoredTable(InputTable, Tags)
+colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+CellsColoured = cellstr(InputTable{:,Tags});
+for i=1:size(CellsColoured, 1)
+    Path =  InputTable.Path(i);
+    Folders = strsplit(char(Path), filesep);
+    Folder = Folders(end-1);
+    switch Folder{1}
+        case 'Raw_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([0 1 1]), CellsColoured{i,j}); %Cyan
+            end
+        case 'Derived_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([0 1 0]), CellsColoured{i,j});%Green
+            end
+        case 'Tmp'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([1 1 0]), CellsColoured{i,j});%Yellow
+            end
+        case 'ROI_data'
+            for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([1 0 1]), CellsColoured{i,j});%Magenta
+            end
+            
+    end
+    
+end
 
 
 % UIWAIT makes MIA_pipeline wait for user response (see UIRESUME)
@@ -154,7 +198,9 @@ for i=1:length(handles.FilterParameters)
 end
 
 handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
+handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 %% Update of Unique Values
 TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
 handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
@@ -360,6 +406,30 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select ONE Input', 'Type'};
         table.editable = [false true false];
         table.ColumnFormat = {'char'};  
+    case '1ROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select ONE Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
+    case 'XROI'
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
      case 'XScanOrXROI'
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
@@ -588,10 +658,10 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI')
     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         
@@ -735,6 +805,7 @@ output_file_names  = strrep(cellstr(output_file_names), ' ', '');
 
 % --- Executes on selection change in MIA_pipeline_add_tag_popupmenu.
 function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+
 % hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -752,6 +823,8 @@ else
     handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
     handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
 end
+
+
 guidata(hObject, handles);
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_add_tag_popupmenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_add_tag_popupmenu
@@ -816,8 +889,7 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_T2map';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-           
+        ismodule = 1;   
     case '   .ADCmap'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ADCmap('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ADCmap(char(files_in),files_out,opt)';
@@ -860,6 +932,90 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .Inversion Efficiency (ASL_InvEff)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_ASL_InvEff';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .MGE2Dfrom3D'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MGE2Dfrom3D('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_MGE2Dfrom3D(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_MGE2Dfrom3D';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .deltaR2'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_DeltaR2';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .deltaR2*'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2Star('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2Star(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_DeltaR2Star';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Dynamic Contrast Enhancement (Phenomenology)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DCE_phenomeno('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_DCE_phenomeno(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_DCE_phenomeno';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .R2prim'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_R2Prim('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_R2Prim(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_R2Prim';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Blood volume fraction (steady-state)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_BVf('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_BVf(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_BVf';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Vessel Size Imaging (steady-state)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_VSI('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_VSI(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_VSI';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Vessel Density (steady-state)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Density('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Density(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Density';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .SO2map'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_SO2('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_SO2(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_SO2';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .CMRO2'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CMRO2('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_CMRO2(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_CMRO2';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+%     case '   .T1map (Multi Inversion Time)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_T1map_MIT';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -917,7 +1073,6 @@ function [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, event
     %FinalLength = floor(TableSizeInChar);
     FinalLength = 90;
     for i=1:length(handles.module_parameters_fields)
-        
         StrToDisplay{i} = [handles.module_parameters_string{i}, repmat(' ',1,FinalLength-LString(i)), ActualValues{i}];
     end
     
@@ -955,6 +1110,22 @@ NbScanInput = length(ScanInputs);
 %%% l'intérêt de ces histoires de matrices... Le soucis actuel c'est qu'on
 %%% se retrouve avec des tailles de matrices incompatibles pour les 3
 %%% inputs. Réfléchir là dessus. Edit : Trouvé ! :)
+
+% for i=1:height(handles.new_module.opt.table)
+%     if ~isempty(handles.new_module.opt.table.PSOM_Fields{i})
+%         Value = handles.new_module.opt.Module_settings.(handles.new_module.opt.table.PSOM_Fields{i});
+%         Type = handles.new_module.opt.table.Type{i};
+%         if ~isa(Value, Type) && ~strcmp(Type,'cell')
+%             text = [handles.new_module.opt.table.Names_Display{i}, ' value is not a ', Type, '. Please select a correct value.'];
+%             warndlg(text, 'Wrong type of parameters');
+%             pipeline = struct();
+%             output_database = table();
+%             return
+%         end
+%     end
+% end
+
+
 
 %% Build Tp*Patients Matrixes filled up with each inputs files.
 DatabaseInput = cell(NbScanInput, 1);
@@ -1016,6 +1187,19 @@ end
 
 % On which input matrix size must we create the final matrixes ?
 %RefInput = 2;
+
+
+for i=1:length(ScanInputs)
+    if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
+        warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
+        pipeline = struct();
+        output_database = table();
+        return
+    end
+end
+
+
+
 RefInput = handles.new_module.opt.Module_settings.RefInput;
 RefDatab = DatabaseInput{RefInput};
 RefMat = MatricesInputs{RefInput};
@@ -1114,24 +1298,34 @@ for i=1:NbModules
     table_in = table();
     Files_in = struct();
     B = zeros(1,NbScanInput);
+    All_Selected_Scans = [];
     for l=1:NbScanInput
+        AllScans = 1;
         if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
             A = {FinalMat{l}{i,:}};
+            if length({FinalMat{l}{i,:}}) ~= length(Selection(:,:,l))
+                AllScans = 0;
+            end
             B(l) = any(cellfun('isempty', A));
         end
+        All_Selected_Scans = [All_Selected_Scans, AllScans];
     end
-    if ~any(B)
+    if ~any(B) && all(All_Selected_Scans)
     %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
         for j=1:NbScanInput
             %A = {FinalMat{j}{i,:}};
             %B = cellfun('isempty', A);
             %if all(B)
             for k=1:size(FinalMat{j},2)
-                if isempty(FinalMat{j}{i,k})
-                    FinalMat{j}{i,k} = '';
-                end
-                eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
+%                 if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(j)}, 'Invariant') && isempty(FinalMat{j}{i,k})
+%                     
+%                 end
+%                 if isempty(FinalMat{j}{i,k})
+%                     FinalMat{j}{i,k} = '';
+%                 end
+%                  eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                 if ~isempty(FinalMat{j}{i,k})
+                    eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                     [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
                     databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
                     databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
@@ -1141,7 +1335,7 @@ for i=1:NbModules
                 end
             end
         end
-        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'];
+        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'];
         handles.new_module.opt.Module_settings.Table_in = unique(table_in);
         pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
         Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
@@ -1177,6 +1371,15 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Derived
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end
 end
+
+
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Tmp'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path,  'Tmp']);
+    if status == false
+        error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
+    end
+end
+
 
 %% Create the pipeline from the modules.
 Names_Mod = fieldnames(handles.psom.Modules);
@@ -1245,6 +1448,21 @@ for i=1:length(Jobs)
                    path_out = [path_out, filesep];
                    outdb = handles.MIA_pipeline_TmpDatabase(handles.MIA_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
+                   assert(height(outdb) == 1)
+                   Folders = strsplit(path_out, filesep);
+                   Folders{end-1} = 'Derived_data';
+                   NewPath = strjoin(Folders, filesep);
+                   [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
+                   
+                   [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   if statusNii && statusJson
+                       outdb.Path = NewPath;
+                       %eval(['delete ' B{k}]);
+                   elseif ~statusNii
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.nii'])
+                   elseif ~statusJson
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.json'])
+                   end
                    handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                end
            end
@@ -1301,21 +1519,41 @@ if length(handles.MIA_pipeline_Unique_Values_Selection) <= 1
 end
 
 handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
-NewTable = handles.MIA_pipeline_TmpDatabase;
-for i=1:length(handles.FilterParameters)
-    Tag = handles.FilterParameters{1,i}{1};
-    TagTable = table();
-    for j=2:length(handles.FilterParameters{1,i})
-        SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-        TagTable = unique(TagTable);
-    end
-    NewTable = TagTable;
+
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
 
-handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
+    end
+end
+
+%handles.new_module.opt.table.Default{parameter_selected} = [];
+% NewTable = handles.MIA_pipeline_TmpDatabase;
+% for i=1:length(handles.FilterParameters)
+%     Tag = handles.FilterParameters{1,i}{1};
+%     TagTable = table();
+%     for j=2:length(handles.FilterParameters{1,i})
+%         SelectedValue = handles.FilterParameters{1,i}{j};
+%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+%         TagTable = unique(TagTable);
+%     end
+%     NewTable = TagTable;
+% end
+% 
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+
+
 % NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
 % SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
 % SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
@@ -1373,21 +1611,34 @@ for i=1:length(handles.FilterParameters)
    end
 end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
+% 
+% NewTable = handles.MIA_pipeline_TmpDatabase;
+% for i=1:length(handles.FilterParameters)
+%     Tag = handles.FilterParameters{1,i}{1};
+%     TagTable = table();
+%     for j=2:length(handles.FilterParameters{1,i})
+%         SelectedValue = handles.FilterParameters{1,i}{j};
+%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
+%         TagTable = unique(TagTable);
+%     end
+%     NewTable = TagTable;
+% end
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+% 
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
-NewTable = handles.MIA_pipeline_TmpDatabase;
-for i=1:length(handles.FilterParameters)
-    Tag = handles.FilterParameters{1,i}{1};
-    TagTable = table();
-    for j=2:length(handles.FilterParameters{1,i})
-        SelectedValue = handles.FilterParameters{1,i}{j};
-        TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-        TagTable = unique(TagTable);
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
     end
-    NewTable = TagTable;
 end
-handles.MIA_pipeline_Filtered_Table = NewTable;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
 
 % Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
 % handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
@@ -1571,8 +1822,16 @@ if ok == 0;
 end
 handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Properties.VariableNames(selection);
 
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+
+% handles.MIA_pipeline_Filtered_Table = NewTable;
+% CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
+% handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
 guidata(hObject, handles);
 
 
@@ -1620,6 +1879,10 @@ function MIA_pipeline_pipeline_listbox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+
 
 
 % --- Executes on button press in MIA_pipeline_exectute_pipeline_button.

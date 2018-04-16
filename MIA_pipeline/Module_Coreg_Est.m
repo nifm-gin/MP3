@@ -1,90 +1,4 @@
 function [files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)
-% This is a template file for "brick" functions in NIAK.
-%
-% SYNTAX:
-% [IN,OUT,OPT] = PSOM_TEMPLATE_BRICK(IN,OUT,OPT)
-%
-% _________________________________________________________________________
-% INPUTS:
-%
-% IN        
-%   (string) a file name of a 3D+t fMRI dataset .
-%
-% OUT
-%   (structure) with the following fields:
-%       flag_test
-%   CORRECTED_DATA
-%       (string, default <BASE NAME FMRI>_c.<EXT>) File name for processed 
-%       data.
-%       If OUT is an empty string, the name of the outputs will be 
-%       the same as the inputs, with a '_c' suffix added at the end.
-%
-%   MASK
-%       (string, default <BASE NAME FMRI>_mask.<EXT>) File name for a mask 
-%       of the data. If OUT is an empty string, the name of the 
-%       outputs will be the same as the inputs, with a '_mask' suffix added 
-%       at the end.
-%
-% OPT           
-%   (structure) with the following fields.  
-%
-%   TYPE_CORRECTION       
-%      (string, default 'mean_var') possible values :
-%      'none' : no correction at all                       
-%      'mean' : correction to zero mean.
-%      'mean_var' : correction to zero mean and unit variance
-%      'mean_var2' : same as 'mean_var' but slower, yet does not use as 
-%      much memory).
-%
-%   FOLDER_OUT 
-%      (string, default: path of IN) If present, all default outputs 
-%      will be created in the folder FOLDER_OUT. The folder needs to be 
-%      created beforehand.
-%
-%   FLAG_VERBOSE 
-%      (boolean, default 1) if the flag is 1, then the function prints 
-%      some infos during the processing.
-%
-%   FLAG_TEST 
-%      (boolean, default 0) if FLAG_TEST equals 1, the brick does not do 
-%      anything but update the default values in IN, OUT and OPT.
-%           
-% _________________________________________________________________________
-% OUTPUTS:
-%
-% IN, OUT, OPT: same as inputs but updated with default values.
-%              
-% _________________________________________________________________________
-% SEE ALSO:
-% NIAK_CORRECT_MEAN_VAR
-%
-% _________________________________________________________________________
-% COMMENTS:
-%
-% _________________________________________________________________________
-% Copyright (c) <NAME>, <INSTITUTION>, <START DATE>-<END DATE>.
-% Maintainer : <EMAIL ADDRESS>
-% See licensing information in the code.
-% Keywords : PSOM, documentation, template, brick
-
-% Permission is hereby granted, free of charge, to any person obtaining a copy
-% of this software and associated documentation files (the "Software"), to deal
-% in the Software without restriction, including without limitation the rights
-% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-% copies of the Software, and to permit persons to whom the Software is
-% furnished to do so, subject to the following conditions:
-%
-% The above copyright notice and this permission notice shall be included in
-% all copies or substantial portions of the Software.
-%
-% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-% THE SOFTWARE.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -113,13 +27,15 @@ if isempty(opt)
     module_option(:,16)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
-%     %% list of everything displayed to the user associated to their 'type'
-%      % --> user_parameter(1,:) = user_parameter_list
-%      % --> user_parameter(2,:) = user_parameter_type
-%      % --> user_parameter(3,:) = parameter_default
-%      % --> user_parameter(4,:) = psom_parameter_list
-%      % --> user_parameter(5,:) = Help : text data which describe the parameter (it
-%      % will be display to help the user)
+        %% list of everything displayed to the user associated to their 'type'
+         % --> user_parameter(1,:) = user_parameter_list
+         % --> user_parameter(2,:) = user_parameter_type
+         % --> user_parameter(3,:) = parameter_default
+         % --> user_parameter(4,:) = psom_parameter_list
+         % --> user_parameter(5,:) = Scans_input_DOF : Degrees of Freedom for the user to choose the scan
+         % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
+         % --> user_parameter(7,:) = Help : text data which describe the parameter (it
+         % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
     'Within-subject registration using a rigid-body model and image reslicing.'
@@ -184,25 +100,27 @@ if strcmp(files_out, '')
     f_out = [char(tags_out_In2.Path), char(tags_out_In2.Patient), '_', char(tags_out_In2.Tp), '_', char(tags_out_In2.SequenceName), '.nii'];
     files_out.In2{1} = f_out;
     opt.Table_out = tags_out_In2;
-    for i=1:length(files_in.In3)
-        if ~isempty(files_in.In3{i})
-            [Path_In3, Name_In3, ~] = fileparts(files_in.In3{i});
-            tags3 = opt.Table_in(opt.Table_in.Path == [Path_In3, filesep],:);
-            tags3 = tags3(tags3.Filename == Name_In3,:);
-            assert(size(tags3, 1) == 1);
-            tags_out_In3 = tags3;
-            tags_out_In3.IsRaw = categorical(0);
-            tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
-            if tags_out_In3.Type == 'Scan'
-                tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
-                 tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
-            else
-                f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
-                tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+    if isfield(files_in, 'In3')
+        for i=1:length(files_in.In3)
+            if ~isempty(files_in.In3{i})
+                [Path_In3, Name_In3, ~] = fileparts(files_in.In3{i});
+                tags3 = opt.Table_in(opt.Table_in.Path == [Path_In3, filesep],:);
+                tags3 = tags3(tags3.Filename == Name_In3,:);
+                assert(size(tags3, 1) == 1);
+                tags_out_In3 = tags3;
+                tags_out_In3.IsRaw = categorical(0);
+                tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
+                if tags_out_In3.Type == 'Scan'
+                    tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
+                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
+                else
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
+                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+                end
+                files_out.In3{i} = f_out;
+                opt.Table_out = [opt.Table_out ; tags_out_In3];
             end
-            files_out.In3{i} = f_out;
-            opt.Table_out = [opt.Table_out ; tags_out_In3];
         end
     end
 end
@@ -215,25 +133,16 @@ if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Module_Coreg_Est:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
-%% Inputs
-%if ~ischar(files_in) 
-%    error('files in should be a char');
-%end
-
-
-
-if isfield(opt,'threshold') && (~isnumeric(opt.threshold))
-    opt.threshold = str2double(opt.threshold);
-    if isnan(opt.threshold)
-        disp('The threshold used was not a number')
-        return
-    end
-end
 
 %% If the test flag is true, stop here !
 
 if opt.flag_test == 1
     return
+end
+
+[Status, Message, Wrong_File] = Check_files(files_in);
+if ~Status
+    error('Problem with the input file : %s \n%s', Wrong_File, Message)
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
@@ -295,7 +204,7 @@ end
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
+    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
 else
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = str2num(opt.Separation);
 end
