@@ -108,8 +108,8 @@ javaclasspath(fullfile(filepath,[name,ext]));
 
 handles.original_Java_LookAndFeel = javax.swing.UIManager.getLookAndFeel;
 handles.original_Java_LookAndFeel = sprintf('%s',handles.original_Java_LookAndFeel);
-handles.original_Java_LookAndFeel = split(handles.original_Java_LookAndFeel," - ");
-handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel{end},"]");
+handles.original_Java_LookAndFeel = split(handles.original_Java_LookAndFeel,' - ');
+handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndFeel{end},']');
 handles.original_Java_LookAndFeel = ['[LookAndFeel] ',handles.original_Java_LookAndFeel];
 handles.original_Java_LookAndFeel
 
@@ -8225,7 +8225,6 @@ if ~isfield(handles, 'database')
     return
 end
 
-% handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = [handles.database.Properties.UserData.MIA_data_path, 'Derived_data', filesep];
 
 % handles.database.Type(handles.database.SequenceName == 'Mask') = 'ROI';
 % guidata(hObject, handles)
