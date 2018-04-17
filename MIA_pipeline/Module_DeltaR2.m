@@ -132,8 +132,12 @@ input_post = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0)
 % se_echo_pos = find(se_echo_pos == 1);
 %%
 %nb_echo_used=opt.nb_echos;
-se_echotime = J1.EchoTime.value;
-se_echo_pos = 1:length(J1.EchoTime.value);
+se_echotime = J1.SpinEchoTime.value/1000; %Conversion from ms to sec
+%se_echotime = J1.EchoTime.value;
+%se_echo_pos = 1:length(J1.EchoTime.value);
+[~,se_echo_pos] = min(abs(J1.EchoTime.value/1000 - se_echotime)); %Conversion from ms to sec
+%se_echo_pos = abs(J1.EchoTime.value/1000 - se_echotime) <= 1/1000; %Conversion from ms to sec
+%se_echo_pos = find(se_echo_pos == 1);
 
 
 if size(input_pre,3) ~= size(input_post,3)
@@ -178,13 +182,13 @@ else
         %To avoid division by small numbers
         temp_apres(index_apres)=1;
         warning off %#ok<WNOFF>
-        %deltaR2=-(1/se_echotime) * log(temp_apres ./ temp_avant);%ms-1
-        A = -(1./se_echotime)';
-        B = log(temp_apres ./ temp_avant);
-        B = permute(B, [3,2,1]);
-        for i=1:size(B,3)
-            deltaR2(i,:) = A*squeeze(B(:,:,i));
-        end
+        deltaR2=-(1/se_echotime) * log(temp_apres ./ temp_avant);%ms-1
+%         A = -(1./se_echotime)';
+%         B = log(temp_apres ./ temp_avant);
+%         B = permute(B, [3,2,1]);
+%         for i=1:size(B,3)
+%             deltaR2(i,:) = A*squeeze(B(:,:,i));
+%         end
         %deltaR2= A.*B ;%ms-1
         %deltaR2 = permute(deltaR2, [3,2,1]);
         warning on %#ok<WNON>
