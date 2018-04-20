@@ -1,4 +1,4 @@
-function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr)
+function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr, view_mode)
 % Fonction used to rotate Vi to the voxel space of Vo
 % Vi = image to move
 % Vref = reference image (voxel space)
@@ -64,6 +64,20 @@ if ~isequal(orient, [1 2 3])
     permutation(1:ndims(Y)) = 1:ndims(Y);
     [~, permutation(1:3)] = sort(rot_orient);
     Y = permute(Y, permutation);
+end
+switch view_mode
+    case 'Axial'
+        
+    case 'Coronal'
+        Y = permute(Y, [3 2 1]);
+        Y = flip(Y,1);
+        Y = flip(Y,2);
+
+    case 'Saggital'
+        Y = permute(Y, [3 1 2]);
+        Y = flip(Y,1);
+        Y = flip(Y,2);
+        
 end
 
 

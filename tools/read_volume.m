@@ -1,4 +1,4 @@
-function Y = read_volume(Vi,Vo,interpolation)
+function Y = read_volume(Vi,Vo,interpolation, view_mode)
 % Fonction used to rotate Vi to the voxel space of Vo
 % Vi = image to move
 % Vo = reference image (voxel space)
@@ -79,7 +79,20 @@ if ~isequal(orient, [1 2 3])
     Y = permute(Y, permutation);
 end
 
+switch view_mode
+    case 'Axial'
+        
+    case 'Coronal'
+        Y = permute(Y, [3 2 1]);
+        Y = flip(Y,1);
+        Y = flip(Y,2);
 
+    case 'Saggital'
+        Y = permute(Y, [3 1 2]);
+        Y = flip(Y,1);
+        Y = flip(Y,2);
+        
+end
 
 
 function orient = get_orient(R)
