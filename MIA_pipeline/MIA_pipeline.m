@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 12-Apr-2018 14:20:42
+% Last Modified by GUIDE v2.5 20-Apr-2018 12:00:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -217,7 +217,7 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles);
+[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
     return
@@ -230,13 +230,11 @@ end
 %     handles.tmp_database = output_database;
 % end
     
-if isfield(handles, 'psom')
-    old_modules = handles.psom.Modules;
-    old_databases = handles.psom.Output_databases;
+if isfield(handles, 'MIA_pipeline_ParamsModules')
+    old_modules = handles.MIA_pipeline_ParamsModules;
     %old_pipeline = handles.psom.pipeline;
 else
     old_modules = struct();
-    old_databases = struct();
     %old_pipeline = struct();
 end
 
@@ -250,14 +248,23 @@ while ~isempty(intersect(fieldnames(old_modules), Name_New_Mod))
     Name_New_Mod = [handles.new_module.module_name, '_', num2str(j)];
     j=j+1;
 end
-handles.psom.Output_databases = setfield(old_databases, Name_New_Mod, output_database);
-handles.psom.Modules = setfield(old_modules, Name_New_Mod, new_pipeline);
+
+SaveModule = struct();
+SaveModule.Filters = handles.FilterParameters;
+SaveModule.ModuleParams = handles.new_module;
+SaveModule.OutputDatabase = output_database;
+SaveModule.Jobs = new_pipeline;
+handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
+
+%handles.psom.Output_databases = setfield(old_databases, Name_New_Mod, output_database);
+%handles.psom.Modules = setfield(old_modules, Name_New_Mod, new_pipeline);
 
 
 %handles.MIA_pipeline_Filtered_Table = [handles.MIA_pipeline_Filtered_Table ; output_database];
 %handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
 %handles.psom.pipeline = merged_pipe;
-handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+%handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
 
 
 
@@ -269,7 +276,7 @@ handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; ou
 
 %module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 %set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
-set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.psom.Modules));
+set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 
 guidata(hObject, handles);
 
@@ -1016,6 +1023,13 @@ switch char(handles.Modules_listing(module_selected))
 %         module_parameters_string = handles.new_module.opt.table.Names_Display;
 %         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
 %         ismodule = 1;
+    case '   .Cerebral blood flow (ASL)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CBF('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_CBF(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_CBF';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -1096,13 +1110,13 @@ end
 
 
 
-function [pipeline, output_database] = MIA_pipeline_generate_psom_modules(hObject, eventdata, handles)
+function [pipeline, output_database] = MIA_pipeline_generate_psom_modules(New_module, FilterParameters, TmpDatabase, MIA_path)
 % hObject    handle to MIA_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 pipeline = struct();
-Types = handles.new_module.opt.table.Type;
-ScanInputs = find(contains(Types, 'Scan'));
+Types = New_module.opt.table.Type;
+ScanInputs = find(contains(Types, {'Scan', 'ROI'}));
 NbScanInput = length(ScanInputs);
 %%% NOTE : Il serait peut-être plus judicieux de boucler sur tous les temps
 %%% et patients de la databse de sortie du filtre grosses mailles, ce qui
@@ -1127,6 +1141,20 @@ NbScanInput = length(ScanInputs);
 
 
 
+for i=1:length(FilterParameters)
+    Tag = FilterParameters{1,i}{1};
+    TagTable = table();
+    for j=2:length(FilterParameters{1,i})
+        SelectedValue = FilterParameters{1,i}{j};
+        TagTable = [TagTable;TmpDatabase(TmpDatabase{:,Tag}==SelectedValue,:)];
+        TagTable = unique(TagTable);
+    end
+    TmpDatabase = TagTable;
+end
+
+
+
+
 %% Build Tp*Patients Matrixes filled up with each inputs files.
 DatabaseInput = cell(NbScanInput, 1);
 MatricesInputs = cell(NbScanInput,1);
@@ -1135,9 +1163,9 @@ Tag2 = 'Patient';
 EmptyParams = cell(NbScanInput, 1);
 for i=1:NbScanInput
     EmptyParams{i} = 0;
-    Input = handles.new_module.opt.table.Default{ScanInputs(i)};
+    Input = New_module.opt.table.Default{ScanInputs(i)};
     NbParameters = size(Input,2)/2;
-    Datab = handles.MIA_pipeline_Filtered_Table;
+    Datab = TmpDatabase;
     Databtmp = table();
     if NbParameters == 0
         Datab = table();
@@ -1150,7 +1178,7 @@ for i=1:NbScanInput
             Databtmp = table();
             for k = 1:length(ParamsSelected)
                 Selection{j,k,i} = ParamsSelected{k};
-                Tag = handles.new_module.opt.table.Scans_Input_DOF{ScanInputs(i)}{j};
+                Tag = New_module.opt.table.Scans_Input_DOF{ScanInputs(i)}{j};
                 Databtmp = unique([Databtmp ; Datab(getfield(Datab,Tag)==ParamsSelected{k},:)]);
             end
             Datab = Databtmp;
@@ -1190,7 +1218,7 @@ end
 
 
 for i=1:length(ScanInputs)
-    if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
+    if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
         warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
         pipeline = struct();
         output_database = table();
@@ -1200,7 +1228,7 @@ end
 
 
 
-RefInput = handles.new_module.opt.Module_settings.RefInput;
+RefInput = New_module.opt.Module_settings.RefInput;
 RefDatab = DatabaseInput{RefInput};
 RefMat = MatricesInputs{RefInput};
 
@@ -1243,7 +1271,7 @@ end
 
 
 % Which input must we adapt ?
-InputToReshape = handles.new_module.opt.Module_settings.InputToReshape;
+InputToReshape = New_module.opt.Module_settings.InputToReshape;
 if InputToReshape ~= RefInput
     InToReshape = FinalMat{InputToReshape};
     %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
@@ -1301,7 +1329,7 @@ for i=1:NbModules
     All_Selected_Scans = [];
     for l=1:NbScanInput
         AllScans = 1;
-        if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
+        if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
             A = {FinalMat{l}{i,:}};
             if length({FinalMat{l}{i,:}}) ~= length(Selection(:,:,l))
                 AllScans = 0;
@@ -1327,7 +1355,7 @@ for i=1:NbModules
                 if ~isempty(FinalMat{j}{i,k})
                     eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
                     [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
-                    databtmp = handles.MIA_pipeline_Filtered_Table(handles.MIA_pipeline_Filtered_Table.Filename == categorical(cellstr(NAME)),:);
+                    databtmp = TmpDatabase(TmpDatabase.Filename == categorical(cellstr(NAME)),:);
                     databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
                     assert(size(databtmp, 1) == 1);
                     InTags = databtmp(1,:);
@@ -1335,10 +1363,10 @@ for i=1:NbModules
                 end
             end
         end
-        handles.new_module.opt.Module_settings.folder_out = [handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'];
-        handles.new_module.opt.Module_settings.Table_in = unique(table_in);
-        pipeline = psom_add_job(pipeline, [handles.new_module.module_name, num2str(i)], handles.new_module.module_name, Files_in, '', handles.new_module.opt.Module_settings);
-        Mod_Struct = getfield(pipeline, [handles.new_module.module_name, num2str(i)]);
+        New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
+        New_module.opt.Module_settings.Table_in = unique(table_in);
+        pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
+        Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
         output_database = [output_database; Mod_Struct.opt.Table_out];
     end
 end
@@ -1382,10 +1410,14 @@ end
 
 
 %% Create the pipeline from the modules.
-Names_Mod = fieldnames(handles.psom.Modules);
-Pipeline = handles.psom.Modules.(Names_Mod{1});
-for i=2:length(Names_Mod)
-    Pipeline = smart_pipeline_merge(Pipeline, handles.psom.Modules.(Names_Mod{i}));
+Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+%Pipeline = handles.psom.Modules.(Names_Mod{1});
+Pipeline = struct();
+for i=1:length(Names_Mod)
+    Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+    %[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(Mod.Module, Mod.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    Pipeline = smart_pipeline_merge(Pipeline, Mod.Jobs);
+    %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase; Mod.OutputDatabase]);
 end
 
 handles.psom.pipeline = Pipeline;
@@ -1492,6 +1524,15 @@ end
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
 %set(handles.MIA_pipeline.Filtering_Table, 'Data', 
 %a=0;
+function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
+
+Datab = handles.MIA_data.database;
+Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+for i=1:length(Names_Mod)
+    Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+    Datab = [Datab ; Mod.OutputDatabase];
+end
+handles.MIA_pipeline_TmpDatabase = unique(Datab);
 
 
 
@@ -1888,5 +1929,26 @@ end
 % --- Executes on button press in MIA_pipeline_exectute_pipeline_button.
 function MIA_pipeline_exectute_pipeline_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_exectute_pipeline_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in MIA_pipeline_DeleteModule.
+function MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_DeleteModule (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+guidata(hObject, handles);
+
+
+% --- Executes on button press in MIA_pipeline_Edit_Module.
+function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Edit_Module (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
