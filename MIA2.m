@@ -2336,6 +2336,10 @@ if isfield(handles, 'data_displayed')
 %                         prctile(image_to_display(:),1) ~= prctile(image_to_display(:),99)
 %                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
 %                 end
+
+                [hmin, hmax] = SetMinMax(image_to_display);
+                set(handles.(sprintf('MIA_data%d', i)),  'Clim', [hmin hmax]);
+
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
