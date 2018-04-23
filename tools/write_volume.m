@@ -1,4 +1,4 @@
-function Data = write_volume(Data,Vo)
+function Data = write_volume(Data,Vo, view_mode)
 %% apply the inverse transformation (rotation/translation) in order 
 %% to go back the the Vo referencial
 %% Coded by BL 10102017
@@ -40,6 +40,25 @@ if ~isequal(orient, [1 2 3])
     end
     
 end
+
+switch view_mode
+    case 'Axial'
+        
+    case 'Coronal'
+        Data = permute(Data, [1 3 2]);
+        Data = flip(Data,1);
+        Data = flip(Data,2);
+
+    case 'Saggital'
+        Data = permute(Data, [3 1 2]);
+        Data = flip(Data,1);
+        Data = flip(Data,2);
+        
+end
+
+
+
+
 function orient = get_orient(R)
 
 orient = [];
