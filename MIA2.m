@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 20-Apr-2018 11:25:00
+% Last Modified by GUIDE v2.5 23-Apr-2018 16:53:11
 
 
 % Begin initialization code - DO NOT EDIT
@@ -8294,18 +8294,6 @@ function MIA_test_button_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-%% code to generate texture values for 1 scan and X ROIs
-ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
-Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
-texture_values = table;
-for i = 1:handles.data_loaded.number_of_scan	
-    for j = 1:handles.data_loaded.number_of_ROI
-        texture_values(size(texture_values,1)+1).SequenceName = nominal(Scan_names(i));
-        texture_values(size(texture_values,1)).ROI = nominal(ROI_names(j));
-%         texture_values(size(texture_values,1)).Entropy = entropy(
-    end
-end
-
 
 % handles.database.Type(handles.database.SequenceName == 'Mask') = 'ROI';
 % guidata(hObject, handles)
@@ -8806,3 +8794,50 @@ set(handles.MIA_Coronal_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]
 handles.view_mode = 'Axial';
 MIA_update_axes(hObject, eventdata, handles)
 %guidata(hObject, handles);
+
+
+% --------------------------------------------------------------------
+function MIA_plot1_Texture_analysis_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_plot1_Texture_analysis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'database')
+    return
+end
+%% code to generate texture values for 1 scan and X ROIs
+ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
+Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
+texture_values = table;
+ warning('off')
+for i = 1:handles.data_loaded.number_of_scan	
+    for j = 1:handles.data_loaded.number_of_ROI
+        volume = squeeze(handles.data_displayed.image(:,:,:,i));
+        mask = handles.data_loaded.ROI(j).nii;
+        matrix_tmp = volume .* mask;
+        matrix_tmp(matrix_tmp==0)=nan;
+        
+        texture_values.SequenceName(size(texture_values,1)+1) = nominal(Scan_names(i,:));
+        texture_values.ROI(size(texture_values,1)) = nominal(ROI_names(j,:));
+        texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
+        texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
+        texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
+        texture_values.Percentile_1(size(texture_values,1)) = prctile(matrix_tmp(:),1);
+        texture_values.Percentile_5(size(texture_values,1)) = prctile(matrix_tmp(:),5);
+        texture_values.Percentile_95(size(texture_values,1)) = prctile(matrix_tmp(:),95);
+        texture_values.Percentile_99(size(texture_values,1)) = prctile(matrix_tmp(:),99);
+        
+        [ROIonly,~,~,~] = prepareVolume(volume,mask,'PETscan',...
+            (handles.data_loaded.Scan(i).V.mat(1,1)+ handles.data_loaded.Scan(i).V.mat(2,2))/2 , ...
+        handles.data_loaded.Scan(i).V.mat(3,3),...
+        1,...
+        'pixelW','Global','Equal',128);
+        [texture] =  getGlobalTextures(ROIonly,100);
+        texture_values.Kurtosis(size(texture_values,1)) = texture.Kurtosis;
+        texture_values.Skewness(size(texture_values,1)) = texture.Skewness;
+        texture_values.Variance(size(texture_values,1)) = texture.Variance;
+        
+        
+    end
+end
+disp(texture_values);
+ warning('on')
