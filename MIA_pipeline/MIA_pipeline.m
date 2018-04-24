@@ -2002,14 +2002,15 @@ function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-handles.MIA_pipeline.EditedModule = SelectedModule;
+handles.MIA_pipeline.EditedModuleName = SelectedModule;
+handles.BeforeEditedModuleFilters = handles.FilterParameters;
 
-%Remove the module we want to edit, and adapt the database
+%% Remove the module we want to edit, and adapt the database
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
-
+handles.BeforeEditedModule = handles.new_module;
 handles.new_module = Module.ModuleParams;
 
 module_parameters_string = handles.new_module.opt.table.Names_Display;
@@ -2026,17 +2027,13 @@ handles.FilterParameters = Module.Filters;
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
 
-%MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+%% Add/Remove Popmenu update
 TagsUsed = {};
 for i=1:length(Module.Filters)
     TagsUsed = [TagsUsed, Module.Filters{i}(1)];
 end
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(TagsUsed, handles.Add_Tags_listing);
-% Tag_To_Add = handles.Source_selected;
-% Index = find(contains(handles.Add_list, Tag_To_Add));
-% NewTagListing = {handles.Add_list{1:Index-1},handles.Add_list{Index+1:end}};
-% [handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
-% 
+
 set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
 set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
@@ -2045,11 +2042,13 @@ handles.Remove_selected = handles.Remove_list{1};
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
+handles.MIA_pipeline_module_parameters.Value = 1;
+MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 
 
 
-
+%% Update figure
 set(handles.MIA_pipeline_module_parameters, 'BackgroundColor', [0.5 0.5 0.5]);
 set(handles.MIA_pipeline_parameter_setup_table, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
 set(handles.MIA_pipeline_Unique_Values_Tag, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
@@ -2063,8 +2062,8 @@ set(handles.MIA_pipeline_module_listbox, 'Enable', 'off');
 set(handles.MIA_pipeline_Edit_Module, 'Enable', 'off');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
 
-
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
+
 guidata(hObject, handles);
 %guidata(hObject, handles);
 
@@ -2086,13 +2085,59 @@ SaveModule.Filters = handles.FilterParameters;
 SaveModule.ModuleParams = handles.new_module;
 SaveModule.OutputDatabase = output_database;
 SaveModule.Jobs = new_pipeline;
-handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModule) = SaveModule;
+handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
 
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
 end
 
 
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+
+handles.FilterParameters = {};
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+
+handles.new_module = handles.BeforeEditedModule;
+handles.FilterParameters = handles.BeforeEditedModuleFilters;
+
+
+
+
+%% Display the module we were creating before the Edit (Beggining)
+module_parameters_string = handles.new_module.opt.table.Names_Display;
+module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+
+%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+
+handles.module_parameters_string = module_parameters_string;
+handles.module_parameters_fields = module_parameters_fields;
+    
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+
+
+%% Add/Remove Popmenu update
+TagsUsed = {};
+for i=1:length(handles.FilterParameters)
+    TagsUsed = [TagsUsed, handles.FilterParameters{i}(1)];
+end
+[handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(TagsUsed, handles.Add_Tags_listing);
+
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+handles.Source_selected = handles.Add_list{1};
+handles.Remove_selected = handles.Remove_list{1};
+%handles.Remove_selected = Tag_To_Add;
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+%% Display the module we were creating before the Edit (End)
+
+
+
+
+%% Update figure
 set(handles.MIA_pipeline_module_parameters, 'BackgroundColor', [0.94 0.94 0.94])
 set(handles.MIA_pipeline_parameter_setup_table, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
 set(handles.MIA_pipeline_Unique_Values_Tag, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
@@ -2106,4 +2151,5 @@ set(handles.MIA_pipeline_Edit_Module, 'Enable', 'on');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
+
 MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
