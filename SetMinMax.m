@@ -4,16 +4,16 @@ function [hmin,hmax] = SetMinMax(image)
 
 AUTO_THRESHOLD = 5000;
 nbpix = size(image, 1)*size(image, 2);
-limit = nbpix/10;
+limit = nbpix/5;
 threshold = nbpix/AUTO_THRESHOLD;
 nbbins = 256;
 figure('Name', 'Hist');
 h = histogram(image(:), nbbins);
 
-i=0;
+i=1;
 found = 0;
 while ~found && i<nbbins
-    counts = h.Values(i+1);
+    counts = h.Values(i);
     if counts>limit
         counts=0;
     end
@@ -24,7 +24,7 @@ hmin = h.BinEdges(i);
 
 i=nbbins;
 while ~found && i>0
-    counts = h.Values(i-1);
+    counts = h.Values(i);
     if counts>limit
         counts=0;
     end

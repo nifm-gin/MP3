@@ -114,13 +114,13 @@ J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 ASL = N;
 
-DataControl = ASL(:,:,2,:,:);
-DataLabel = ASL(:,:,1,:,:);
+DataControl = ASL(:,:,:,2,:);
+DataLabel = ASL(:,:,:,1,:);
 alpha = abs( (DataControl - DataLabel) ./ (2 * DataControl) )*100;
 
 % I need to squeeze the data to be able to display it in MIA, but I believe
 % it might be a fraud.
-ASL_InvEff = squeeze(alpha);
+ASL_InvEff = alpha;
 
 OutputImages = ASL_InvEff;
 

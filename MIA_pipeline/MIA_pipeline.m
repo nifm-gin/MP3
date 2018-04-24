@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 20-Apr-2018 12:00:34
+% Last Modified by GUIDE v2.5 23-Apr-2018 11:35:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1952,3 +1952,80 @@ function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_Edit_Module (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+handles.MIA_pipeline.EditedModule = SelectedModule;
+
+%Remove the module we want to edit, and adapt the database
+handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
+
+handles.new_module = Module.ModuleParams;
+
+module_parameters_string = handles.new_module.opt.table.Names_Display;
+module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+
+%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+
+handles.module_parameters_string = module_parameters_string;
+handles.module_parameters_fields = module_parameters_fields;
+    
+handles.FilterParameters = Module.Filters;
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+
+
+%MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+
+
+set(handles.MIA_pipeline_clear_pipeline_button, 'Enable', 'off');
+set(handles.MIA_pipeline_DeleteModule, 'Enable', 'off');
+set(handles.MIA_pipeline_add_module_button, 'Enable', 'off');
+set(handles.MIA_pipeline_execute_button, 'Enable', 'off');
+set(handles.MIA_pipeline_module_listbox, 'Enable', 'off');
+set(handles.MIA_pipeline_Edit_Module, 'Enable', 'off');
+set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
+
+
+set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
+guidata(hObject, handles);
+%guidata(hObject, handles);
+
+
+% --- Executes on button press in MIA_pipeline_Save_Module.
+function MIA_pipeline_Save_Module_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Save_Module (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+
+
+
+
+SaveModule = struct();
+SaveModule.Filters = handles.FilterParameters;
+SaveModule.ModuleParams = handles.new_module;
+SaveModule.OutputDatabase = output_database;
+SaveModule.Jobs = new_pipeline;
+handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModule) = SaveModule;
+
+
+
+
+
+set(handles.MIA_pipeline_clear_pipeline_button, 'Enable', 'on');
+set(handles.MIA_pipeline_DeleteModule, 'Enable', 'on');
+set(handles.MIA_pipeline_add_module_button, 'Enable', 'on');
+set(handles.MIA_pipeline_execute_button, 'Enable', 'on');
+set(handles.MIA_pipeline_module_listbox, 'Enable', 'on');
+set(handles.MIA_pipeline_Edit_Module, 'Enable', 'on');
+set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
+
+set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
+guidata(hObject, handles);
