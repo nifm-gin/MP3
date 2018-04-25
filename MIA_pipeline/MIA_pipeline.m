@@ -1609,33 +1609,7 @@ if isfield(handles, 'new_module')
     end
 end
 
-%handles.new_module.opt.table.Default{parameter_selected} = [];
-% NewTable = handles.MIA_pipeline_TmpDatabase;
-% for i=1:length(handles.FilterParameters)
-%     Tag = handles.FilterParameters{1,i}{1};
-%     TagTable = table();
-%     for j=2:length(handles.FilterParameters{1,i})
-%         SelectedValue = handles.FilterParameters{1,i}{j};
-%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-%         TagTable = unique(TagTable);
-%     end
-%     NewTable = TagTable;
-% end
-% 
-% handles.MIA_pipeline_Filtered_Table = NewTable;
-% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 
-
-
-% NewTagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
-% SizeVert = max(size(NewTagValues,1), size(handles.MIA_pipeline_Filtering_Table.Data,1));
-% SizeHor = size(handles.MIA_pipeline_Filtering_Table.Data,2)+1;
-% FullTable = cell(SizeVert,SizeHor);
-% FullTable(1:size(handles.MIA_pipeline_Filtering_Table.Data,1),1:size(handles.MIA_pipeline_Filtering_Table.Data,2)) = handles.MIA_pipeline_Filtering_Table.Data;
-% FullTable(1:size(NewTagValues,1),size(handles.MIA_pipeline_Filtering_Table.Data,2)+1) = NewTagValues;
-% handles.MIA_pipeline_Filtering_Table.Data = FullTable;
-% handles.MIA_pipeline_Filtering_Table.ColumnName = [handles.MIA_pipeline_Filtering_Table.ColumnName; {handles.Source_selected}];
 %% Update of the add tag popupmenu after an add
 Tag_To_Add = handles.Source_selected;
 Index = find(contains(handles.Add_list, Tag_To_Add));
@@ -1650,35 +1624,6 @@ handles.Remove_selected = handles.Remove_list{1};
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
-
-% if isempty(NewTagListing)
-%     set(handles.MIA_pipeline_add_tag_popupmenu, 'String', {'NoMoreTags'})
-%     set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
-%     handles.Source_selected = {'NoMoreTags'};
-%     handles.Tags_listing = {'NoMoreTags'};
-% 
-% else
-%     set(handles.MIA_pipeline_add_tag_popupmenu, 'String', NewTagListing);
-%     set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
-%     handles.Source_selected = NewTagListing{1};
-%     handles.Tags_listing = NewTagListing;
-%     MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-% end
-% %% Update of the remove tag popupmenu after an add
-% if contains(handles.MIA_pipeline_remove_tag_popupmenu.String, 'NoMoreTags')
-%     set(handles.MIA_pipeline_remove_tag_popupmenu,'String', {Tag_To_Add});
-%     handles.Remove_selected = Tag_To_Add;
-% else
-% %handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
-%     if size(handles.MIA_pipeline_remove_tag_popupmenu.String,1)==1
-%         set(handles.MIA_pipeline_remove_tag_popupmenu,'String',[handles.MIA_pipeline_remove_tag_popupmenu.String; {Tag_To_Add}]);
-%         handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
-%     else
-%         set(handles.MIA_pipeline_remove_tag_popupmenu,'String',[handles.MIA_pipeline_remove_tag_popupmenu.String; Tag_To_Add]);
-%         handles.Remove_Tags_listing = handles.MIA_pipeline_remove_tag_popupmenu.String;
-%     end
-% end
-% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
 
 % --- Executes on button press in MIA_pipeline_Remove_Tag_Button.
@@ -1697,21 +1642,7 @@ for i=1:length(handles.FilterParameters)
 end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
 % 
-% NewTable = handles.MIA_pipeline_TmpDatabase;
-% for i=1:length(handles.FilterParameters)
-%     Tag = handles.FilterParameters{1,i}{1};
-%     TagTable = table();
-%     for j=2:length(handles.FilterParameters{1,i})
-%         SelectedValue = handles.FilterParameters{1,i}{j};
-%         TagTable = [TagTable;NewTable(NewTable{:,Tag}==SelectedValue,:)];
-%         TagTable = unique(TagTable);
-%     end
-%     NewTable = TagTable;
-% end
-% handles.MIA_pipeline_Filtered_Table = NewTable;
-% handles.MIA_pipeline_Filtering_Table.Data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
-% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
-% 
+
 [hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
@@ -1727,12 +1658,6 @@ if isfield(handles, 'new_module')
 end
 
 
-% Index = find(contains(handles.MIA_pipeline_Filtering_Table.ColumnName, handles.Remove_selected));
-% handles.MIA_pipeline_Filtering_Table.Data(:,Index) = [];
-% [val, index]=min(sum(cellfun(@isempty,handles.MIA_pipeline_Filtering_Table.Data)));
-% handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun(@isempty, handles.MIA_pipeline_Filtering_Table.Data(:,index)), :);
-% %handles.MIA_pipeline_Filtering_Table.Data = handles.MIA_pipeline_Filtering_Table.Data(~cellfun('isempty',handles.MIA_pipeline_Filtering_Table.Data));
-% handles.MIA_pipeline_Filtering_Table.ColumnName(Index) = [];
 %% Update of the remove tag popup menu after a remove
 Tag_To_Remove = handles.Remove_selected;
 Index = find(contains(handles.Remove_list, Tag_To_Remove));
@@ -1749,32 +1674,7 @@ handles.Remove_selected = handles.Remove_list{1};
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
-% if isempty(NewTagListing)
-%     set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
-%     set(handles.MIA_pipeline_remove_tag_popupmenu, 'Value', 1);
-%     handles.Remove_selected = {'NoMoreTags'};
-%     handles.Remove_Tags_listing = {'NoMoreTags'};
-% else
-%     set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', NewTagListing);
-%     set(handles.MIA_pipeline_remove_tag_popupmenu, 'Value', 1);
-%     handles.Remove_selected = NewTagListing{1};
-%     handles.Remove_Tags_listing = NewTagListing;
-%     MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
-% end
-% %% Update of the add tag popup menu after a remove
-% if contains(handles.MIA_pipeline_add_tag_popupmenu.String, 'NoMoreTags')
-%     set(handles.MIA_pipeline_add_tag_popupmenu,'String', {Tag_To_Add});
-% else
-% %handles.Remove_Tag_Listing = {handles.Remove_Tag_Listing, Tag_To_Add};
-%     if size(handles.MIA_pipeline_add_tag_popupmenu.String,1)==1
-%         set(handles.MIA_pipeline_add_tag_popupmenu,'String',[handles.MIA_pipeline_add_tag_popupmenu.String; {Tag_To_Add}]);
-%         handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
-%     else
-%         set(handles.MIA_pipeline_add_tag_popupmenu,'String',[handles.MIA_pipeline_add_tag_popupmenu.String; Tag_To_Add]);
-%         handles.Tags_listing = handles.MIA_pipeline_add_tag_popupmenu.String;
-%     end
-% end
-% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+
 guidata(hObject, handles);
 
 
@@ -1799,24 +1699,45 @@ function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% If there is an filter loaded remove them all  
-if ~isempty(handles.Remove_Tags_listing)
-    MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
-    handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
-end
 % define which patient is selected
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
-handles.Source_selected = 'Patient';
-handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))}; 
-MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
-% retrieve UI data
-handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
+handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
+handles.FilterParameters{2} = {'Tp', char(handles.MIA_pipeline_TmpDatabase.Tp(data_selected(1)))};
 
-% Add the time point filter
-handles.MIA_pipeline_Unique_Values_Selection= {'Tp', char(handles.MIA_pipeline_TmpDatabase.Tp(data_selected(1)))}; 
-handles.Source_selected = 'Tp';
-MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+end
+
+
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
+    end
+end
+
+NewTagListing = {'Patient', 'Tp'};
+[handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+handles.Source_selected = handles.Add_list{1};
+handles.Remove_selected = handles.Remove_list{1};
+%handles.Remove_selected = Tag_To_Add;
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+guidata(hObject, handles);
+
+
+
+
+
+
+
+
 
 % --- Executes on selection change in MIA_pipeline_remove_tag_popupmenu.
 function MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
@@ -1836,16 +1757,36 @@ function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_pushMIATPSelection (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isempty(handles.Remove_Tags_listing)
-    MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
-    handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
-end
 % define which patient is selected
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
-handles.Source_selected = 'Patient';
-handles.MIA_pipeline_Unique_Values_Selection= {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected))}; 
-MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
+
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+end
+
+
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
+    end
+end
+
+NewTagListing = {'Patient'};
+[handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+handles.Source_selected = handles.Add_list{1};
+handles.Remove_selected = handles.Remove_list{1};
+%handles.Remove_selected = Tag_To_Add;
+MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+guidata(hObject, handles);
 
 
 % --- Executes on button press in MIA_pipeline_push_Database.
@@ -1854,28 +1795,71 @@ function MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-handles.Tags_listing = handles.MIA_pipeline_TmpDatabase.Properties.VariableNames;
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
-set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
-
-handles.Source_selected = handles.Tags_listing{1};
-
-
-handles.Remove_Tags_listing = {'NoMoreTags'};
-handles.Remove_selected = handles.Remove_Tags_listing{1};
-handles.MIA_pipeline_TmpDatabase.IsRaw = categorical(handles.MIA_pipeline_TmpDatabase.IsRaw);
-
-handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
-handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
-
-
-
 handles.FilterParameters = {};
 
-handles.MIA_pipeline_Unique_Values_Selection = {};
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+end
+
+
+if isfield(handles, 'new_module')
+    for i=1:length(handles.new_module.opt.table.Default)
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+            handles.new_module.opt.table.Default{i} = [];
+        end
+    end
+end
+
+NewTagListing = handles.Add_Tags_listing;
+[handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+handles.Source_selected = handles.Add_list{1};
+handles.Remove_selected = handles.Remove_list{1};
+%handles.Remove_selected = Tag_To_Add;
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+
+% 
+% %% Update of the add tag popupmenu after an add
+% Tag_To_Add = handles.Source_selected;
+% Index = find(contains(handles.Add_list, Tag_To_Add));
+% NewTagListing = {handles.Add_list{1:Index-1},handles.Add_list{Index+1:end}};
+% [handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
+% 
+% set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+% set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+% handles.Source_selected = handles.Add_list{1};
+% handles.Remove_selected = handles.Remove_list{1};
+% %handles.Remove_selected = Tag_To_Add;
+% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+% set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+
+
+% handles.Tags_listing = handles.MIA_pipeline_TmpDatabase.Properties.VariableNames;
+% set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
+% set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
+% 
+% handles.Source_selected = handles.Tags_listing{1};
+% 
+% 
+% handles.Remove_Tags_listing = {'NoMoreTags'};
+% handles.Remove_selected = handles.Remove_Tags_listing{1};
+% handles.MIA_pipeline_TmpDatabase.IsRaw = categorical(handles.MIA_pipeline_TmpDatabase.IsRaw);
+% 
+% handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
+% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+% 
+% 
+% 
+% handles.FilterParameters = {};
+% 
+% handles.MIA_pipeline_Unique_Values_Selection = {};
+% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+
 guidata(hObject, handles);
 
 
