@@ -1172,7 +1172,7 @@ for i=1:NbScanInput
     Input = New_module.opt.table.Default{ScanInputs(i)};
     NbParameters = size(Input,2)/2;
     Datab = TmpDatabase;
-    Databtmp = table();
+    %Databtmp = table();
     if NbParameters == 0
         Datab = table();
     end
@@ -1183,6 +1183,9 @@ for i=1:NbScanInput
         if ~isempty(ParamsSelected)
             Databtmp = table();
             for k = 1:length(ParamsSelected)
+                if j==1
+                    SelectionScans{j,k,i} = ParamsSelected{k};
+                end
                 Selection{j,k,i} = ParamsSelected{k};
                 Tag = New_module.opt.table.Scans_Input_DOF{ScanInputs(i)}{j};
                 Databtmp = unique([Databtmp ; Datab(getfield(Datab,Tag)==ParamsSelected{k},:)]);
@@ -1195,7 +1198,8 @@ for i=1:NbScanInput
     if ~exist('Databtmp', 'var')
         output_database = table();
         pipeline = struct();
-        warndlg('Please select at least one parameter (Input %d).', i)
+        text = ['Please select at least one parameter (Input ',num2str(i),').'];
+        warndlg(text)
         return
     end
     DatabaseInput{i} = Databtmp;
@@ -1337,7 +1341,7 @@ for i=1:NbModules
         AllScans = 1;
         if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
             A = {FinalMat{l}{i,:}};
-            if length({FinalMat{l}{i,:}}) ~= length(Selection(:,:,l))
+            if length({FinalMat{l}{i,:}}) ~= length(SelectionScans(:,:,l))
                 AllScans = 0;
             end
             B(l) = any(cellfun('isempty', A));
@@ -2077,7 +2081,9 @@ function MIA_pipeline_Save_Module_Callback(hObject, eventdata, handles)
 
 [new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
 
-
+if isempty(fieldnames(new_pipeline)) && isempty(output_database)
+    return
+end
 
 
 SaveModule = struct();
