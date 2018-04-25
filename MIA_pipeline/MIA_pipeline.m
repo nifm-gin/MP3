@@ -2152,4 +2152,4 @@ set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
 
-MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+% MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
