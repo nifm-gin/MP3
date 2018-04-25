@@ -580,16 +580,16 @@ function MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles, 'psom')
+if isfield(handles, 'MIA_pipeline_ParamsModules')
     set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
     if ~isempty(findobj('Tag', 'BioGraphTool'))
         close(findobj('Tag', 'BioGraphTool'));
     end
-        handles = rmfield(handles, 'psom');
+        handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
 
 end
 
-handles.tmp_database = table();
+%handles.tmp_database = table();
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 guidata(hObject, handles);
