@@ -2243,9 +2243,17 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MIA_load_axes') && get(handles.MIA_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+       
         handles = MIA_update_image_displayed(hObject, eventdata, handles); 
-        % update every siders, popupmenu and so on
+        
+        % Setup every siders, popupmenu when new dataset are loaded
+        if strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_Saggital_view_button')...
+                || strcmp(get(hObject, 'Tag'), 'MIA_Axial_view_button')  || ...
+              strcmp(get(hObject, 'Tag'), 'MIA_Coronal_view_button')|| ...
+              strcmp(get(hObject, 'Tag'), 'MIA_orientation_space_popupmenu')
          handles =MIA_update_sliders(hObject, eventdata, handles);
+        end
+        
          guidata(hObject, handles);
     end
     
@@ -2324,7 +2332,7 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) &&...
+                if sum(image_to_display(:)) ~= 0  &&...
                         sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
                         prctile(image_to_display(:),1) ~= prctile(image_to_display(:),99)
                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
@@ -3246,7 +3254,11 @@ end
 % get pixel coordonates
 slice_nbre = get(handles.MIA_slider_slice, 'Value');
 tag = get(get(hObject, 'Children'), 'Tag');
-currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']);
+if size(tag,1)>1
+    currPt_on_axe=eval(['get(handles.MIA_' tag{end} ',''CurrentPoint'');']);
+else
+    currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']); 
+end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
 if voxel(1) == 0 || voxel(2)==0
@@ -7424,10 +7436,11 @@ function MIA_GUI_WindowButtonUpFcn(hObject, eventdata, handles)
 handles = guidata(hObject);
 if ~strcmp(get(handles.MIA_GUI,'SelectionType'),'normal')
     set(handles.MIA_GUI,'WindowButtonMotionFcn',   @(hObject,eventdata)MIA2('MIA_GUI_WindowButtonMotionFcn',hObject,eventdata,guidata(hObject)));
+    % save contrast
+    handles.display_option.manual_contrast = 1;
+    guidata(hObject, handles)
 end
-% save contrast
-handles.display_option.manual_contrast = 1;
-guidata(hObject, handles)
+
 
 
 % --------------------------------------------------------------------
@@ -8764,8 +8777,8 @@ set(handles.MIA_Coronal_view_button, 'backgroundColor', [1,0,0]);
 set(handles.MIA_Saggital_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 set(handles.MIA_Axial_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 handles.view_mode = 'Coronal';
+handles.display_option.manual_contrast = 0;
 MIA_update_axes(hObject, eventdata, handles)
-%guidata(hObject, handles);
 
 % --- Executes on button press in MIA_Saggital_view_button.
 function MIA_Saggital_view_button_Callback(hObject, eventdata, handles)
@@ -8778,8 +8791,8 @@ set(handles.MIA_Saggital_view_button, 'backgroundColor', [1,0,0]);
 set(handles.MIA_Axial_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 set(handles.MIA_Coronal_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 handles.view_mode = 'Saggital';
+handles.display_option.manual_contrast = 0;
 MIA_update_axes(hObject, eventdata, handles)
-%guidata(hObject, handles);
 
 % --- Executes on button press in MIA_Axial_view_button.
 function MIA_Axial_view_button_Callback(hObject, eventdata, handles)
@@ -8792,8 +8805,8 @@ set(handles.MIA_Axial_view_button, 'backgroundColor', [1,0,0]);
 set(handles.MIA_Saggital_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 set(handles.MIA_Coronal_view_button, 'backgroundColor', [0.9412, 0.9412, 0.9412]);
 handles.view_mode = 'Axial';
+handles.display_option.manual_contrast = 0;
 MIA_update_axes(hObject, eventdata, handles)
-%guidata(hObject, handles);
 
 
 % --------------------------------------------------------------------

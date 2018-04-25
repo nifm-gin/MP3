@@ -115,7 +115,7 @@ for angles=1:NbAngles
         fclose(fid);
         %tmp =  niftiread(files_in.In1{angles});
         input(angles).nifti_header = spm_vol(files_in.In1{angles});
-        data_to_process(:,:,:,angles) = read_volume(input(angles).nifti_header, input(1).nifti_header, 0);
+        data_to_process(:,:,:,angles) = read_volume(input(angles).nifti_header, input(1).nifti_header, 0, 'Axial');
         input(angles).json = spm_jsonread(strrep(files_in.In1{angles}, '.nii', '.json'));
         flip_angles(angles) = input(angles).json.FlipAngle.value;
         TR(angles) = input(angles).json.RepetitionTime.value;
@@ -135,7 +135,7 @@ data_to_process =  data_to_process(:,:,:,flip_angles_index);
 %% calculate T1map
 data_in_vector = reshape(data_to_process, [size(data_to_process,1)*size(data_to_process,2)*size(data_to_process,3), size(data_to_process,4)]);
 maxim=max(data_in_vector) * opt.threshold / 100;
-fit_result = zeros([size(data_in_vector,1), 2]);
+fit_result = NaN([size(data_in_vector,1), 2]);
 erreur = zeros([size(data_in_vector,1), 1]);
 
 parfor i=1:size(data_in_vector,1)
@@ -159,12 +159,12 @@ end
 
 fit_result(:,2) = erreur;
 fit_result=reshape(fit_result,[size(data_to_process,1),size(data_to_process,2),size(data_to_process,3), 2]);
-fit_result(fit_result(:,:,:,1)<0.) = 0.;
+fit_result(fit_result(:,:,:,1)<0.) = nan;
 T1map = -mean(TR)./ log(fit_result(:,:,:,1)); % en ms
 
 % transform the T1map matrix in order to match to the nii hearder of the
 % first input (rotation/translation)
-T1map = write_volume(T1map, input(1).nifti_header);
+T1map = write_volume(T1map, input(1).nifti_header, 'Axial');
 
 
 %% save the new files (.nii & .json)
