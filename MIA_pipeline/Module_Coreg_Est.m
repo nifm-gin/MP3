@@ -172,7 +172,7 @@ copyfile(files_in.In2{1},  files_out.In2{1})
 copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
 % Use the files_out as source (the CoregEstimate will overwrite the file)
 matlabbatch{1}.spm.spatial.coreg.estimate.source = {[files_out.In2{1}, ',1']};
-if ~isempty(files_in.In3{1})
+if isfield(files_in, 'In3')
     other = {};
     for i=1:length(files_in.In3)
         if ~isempty(files_in.In3{i})

@@ -172,7 +172,7 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
 
 
 
-if ~isempty(files_in.In3{1})
+if isfield(files_in, 'In3')
     other = {};
     for i=1:length(files_in.In3)
         if ~isempty(files_in.In3{i})

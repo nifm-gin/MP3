@@ -7814,7 +7814,7 @@ end
 if ~isempty(InvalidEntries)
     text = ['We found some entries in the database for which file(s) are missing in ', Data_path, '. Do you want to delete them from the table ?']; 
     answer = questdlg(text, 'Wrong entries', 'Yes', 'See wrong entries','No', 'No');
-    uiwait(gcf)
+    %uiwait(gcf)
     %function answer = DeleteWrongEntries(PushButton, EventData)    
     if strcmp(answer,'See wrong entries')
         f = figure;
@@ -8701,6 +8701,7 @@ end
 % set(handles.MIA_slider_slice, 'max', size(handles.data_loaded.Scan(1).nii, 3), 'Value', 1, 'SliderStep',[1/(size(handles.data_loaded.Scan(1).nii, 3) -1) min(5/(size(handles.data_loaded.Scan(1).nii, 3) -1),1)]);
 %
 % %update handes
+handles.display_option.manual_contrast = 0;
 guidata(hObject, handles)
 MIA_update_axes(hObject, eventdata, handles)
 

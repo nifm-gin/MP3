@@ -1172,7 +1172,7 @@ for i=1:NbScanInput
     Input = New_module.opt.table.Default{ScanInputs(i)};
     NbParameters = size(Input,2)/2;
     Datab = TmpDatabase;
-    %Databtmp = table();
+    Databtmp = table();
     if NbParameters == 0
         Datab = table();
     end
@@ -1331,17 +1331,24 @@ for i=1:NbScanInput
 end
 
 output_database = table();
-
+% add module to a pipeline if feasible (all conditions checked)
+% and create output_database
 for i=1:NbModules
     table_in = table();
     Files_in = struct();
+    % For the module i, check if all input contains the number of files as
+    % the  number of scan selected by the user. if these numbers are  
+    % differents and the condered input is mantatory then we do not create
+    % the module. If not, the module muste be created and added to the
+    % pipeline
     B = zeros(1,NbScanInput);
     All_Selected_Scans = [];
+    % here we check conditions input by input
     for l=1:NbScanInput
         AllScans = 1;
         if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
             A = {FinalMat{l}{i,:}};
-            if length({FinalMat{l}{i,:}}) ~= length(SelectionScans(:,:,l))
+            if length({FinalMat{l}{i,:}}) ~= sum(~cellfun('isempty',SelectionScans(:,:,l))) %length(SelectionScans(:,:,l))
                 AllScans = 0;
             end
             B(l) = any(cellfun('isempty', A));
