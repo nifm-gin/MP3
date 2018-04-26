@@ -5481,14 +5481,14 @@ file_name = strcat(char(handles.data_loaded.info_data_loaded.Patient(Scan_of_ref
     '-', newVOI_name{:} ,...
     '_',datestr(now,'yyyymmdd-HHMMSSFFF'));          %Specify file name to write to
 % Create the ROI folder if needed
-if exist([handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep], 'dir') ~= 7
-    status = mkdir([handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep]);
+if exist([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep], 'dir') ~= 7
+    status = mkdir([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep]);
     if status == 0
         warndlg('You do not have the right to write in the folder!', 'Warning');
         return
     end
 end
-V_ROI.fname =  [handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep, file_name, '.nii'] ;
+V_ROI.fname =  [handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep, file_name, '.nii'] ;
 
 V_ROI = rmfield(V_ROI,'private'); % Delete old nifti header. Will be recreated to match new image properties
 V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
@@ -5522,7 +5522,7 @@ else
     %% add new ROI data to the database
     new_data = table(categorical(cellstr('Undefined')), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
         categorical(handles.data_loaded.info_data_loaded.Tp(which_image)),...
-        categorical(cellstr([handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
+        categorical(cellstr([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
         categorical(cellstr('ROI')), categorical(0), categorical(newVOI_name),...
         'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
     
@@ -7860,11 +7860,11 @@ end
 % in DirectoriesToProcess are useless.
 
 
-DirectoriesToProcess = {['Derived_data', filesep], ['MIA_data', filesep, 'Raw_data', filesep], ['ROI_data', filesep]};
+DirectoriesToProcess = {['MIA_data', filesep, 'Derived_data', filesep], ['MIA_data', filesep, 'Raw_data', filesep], ['MIA_data', filesep, 'ROI_data', filesep]};
 
 
-if exist([Data_path,  'To_Trash'],'dir') ~= 7
-    [status, ~, ~] = mkdir([Data_path,  'To_Trash']);
+if exist([Data_path,  'MIA_data', filesep, 'To_Trash'],'dir') ~= 7
+    [status, ~, ~] = mkdir([Data_path, 'MIA_data', filesep, 'To_Trash']);
     if status == false
         error('Cannot create the To_Thrash folder to move the useless files in.')
     end
