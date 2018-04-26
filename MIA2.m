@@ -2011,6 +2011,15 @@ set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
 handles.data_loaded.number_of_scan = numel(data_to_load);
 handles.data_loaded.info_data_loaded = handles.database(data_to_load,:);
 
+%hide used windows
+set(handles.MIA_data3, 'Visible', 'off');
+set(handles.MIA_data3_title, 'Visible', 'off');
+set(handles.MIA_data3, 'HandleVisibility', 'off');
+
+set(handles.MIA_data4, 'Visible', 'off');
+set(handles.MIA_data4_title, 'Visible', 'off');
+set(handles.MIA_data4, 'HandleVisibility', 'off');
+
 for i=1:2 
     stri = num2str(i);
     %  and clear Axes unused
@@ -2079,121 +2088,133 @@ end
 function handles = MIA_update_sliders(hObject, eventdata, handles)
 
 %set popupmenu(s) (echo and expt for each axes) and clear Axes if needed
-for i=1:4 %handles.data_loaded.number_of_scan
-    stri = num2str(i);
-    %  and clear Axes unused
-    eval(['cla(handles.MIA_data' stri ');']);
-    if i > handles.data_loaded.number_of_scan
-        set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off', 'Value', 1);
-        set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off', 'Value', 1);
-        
-    else
-        mat_size = handles.data_loaded.Scan(i).V(1).private.dat.dim;
-        eval(['set(handles.MIA_data' stri '_title, ''String'', char(handles.data_loaded.info_data_loaded.SequenceName(i)));']);
-        
-        if handles.data_loaded.number_of_scan > i-1 && length(mat_size) < 3 % 2D data
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Value', 1);
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
+if handles.mode == 1
+    for i=1:4 %handles.data_loaded.number_of_scan
+        stri = num2str(i);
+        %  and clear Axes unused
+        eval(['cla(handles.MIA_data' stri ');']);
+        if i > handles.data_loaded.number_of_scan
+            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off', 'Value', 1);
+            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off', 'Value', 1);
             
-        elseif handles.data_loaded.number_of_scan > i-1 && length(mat_size) == 3  % 3D data
-             set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
-%             set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(3),...
-%                 'SliderStep',[1/(mat_size(3)-1) min(5/(mat_size(3)-1),1)]);
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Value', 1);
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
+        else
+            mat_size = handles.data_loaded.Scan(i).V(1).private.dat.dim;
+            eval(['set(handles.MIA_data' stri '_title, ''String'', char(handles.data_loaded.info_data_loaded.SequenceName(i)));']);
             
-        elseif handles.data_loaded.number_of_scan > i-1 && length(mat_size) == 4 % 4D data
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
-                'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
-            
-        elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 5 % 5D data
-            set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
-                'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
-            
-            set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max', mat_size(5),...
-                'SliderStep',[1/(mat_size(5)-1) min(5/(mat_size(5)-1),1)]);
+            if handles.data_loaded.number_of_scan > i-1 && length(mat_size) < 3 % 2D data
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Value', 1);
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
+                
+            elseif handles.data_loaded.number_of_scan > i-1 && length(mat_size) == 3  % 3D data
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
+                %             set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(3),...
+                %                 'SliderStep',[1/(mat_size(3)-1) min(5/(mat_size(3)-1),1)]);
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'off');
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Value', 1);
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
+                
+            elseif handles.data_loaded.number_of_scan > i-1 && length(mat_size) == 4 % 4D data
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
+                    'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
+                
+            elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 5 % 5D data
+                set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
+                    'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
+                
+                set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max', mat_size(5),...
+                    'SliderStep',[1/(mat_size(5)-1) min(5/(mat_size(5)-1),1)]);
+            end
         end
     end
-end
-
-% resize windows handles.MIA_data1
-switch handles.data_loaded.number_of_scan
-    case 1
-        set(handles.MIA_data1, 'Position', [0.0188 0.0800 0.5117 0.68]);
-        set(handles.MIA_data1_title, 'Visible', 'on');
-        set(handles.MIA_data1_echo_slider, 'Position', [0.0334 0.0448 0.3827 0.0168]);
-        set(handles.MIA_data1_expt_slider , 'Position', [0.0334 0.0280 0.3827 0.0168]);
-        
-        set(handles.MIA_data2, 'Visible', 'off');
-        set(handles.MIA_data2_title, 'Visible', 'off');
-        set(handles.MIA_data2, 'HandleVisibility', 'off');
-        
-        set(handles.MIA_data3, 'Visible', 'off');
-        set(handles.MIA_data3_title, 'Visible', 'off');
-        set(handles.MIA_data3, 'HandleVisibility', 'off');
-        
-        set(handles.MIA_data4, 'Visible', 'off');
-        set(handles.MIA_data4_title, 'Visible', 'off');
-        set(handles.MIA_data4, 'HandleVisibility', 'off');
-        
-        set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
-        set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
-        
-    case 2
-        set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
-        set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
-        set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
-        
-        set(handles.MIA_data2, 'Visible', 'on');
-        set(handles.MIA_data2_title, 'Visible', 'on');
-        set(handles.MIA_data2, 'HandleVisibility', 'on');
-        set(handles.MIA_data3, 'Visible', 'off');
-        set(handles.MIA_data3_title, 'Visible', 'off');
-        set(handles.MIA_data3, 'HandleVisibility', 'off');
-        set(handles.MIA_data4, 'Visible', 'off');
-        set(handles.MIA_data4_title, 'Visible', 'off');
-        set(handles.MIA_data4, 'HandleVisibility', 'off');
-        set(handles.MIA_slider_slice, 'Position', [0.0334 0.395 0.3827 0.0168]);
-        set(handles.MIA_set_clip, 'Position', [0.4275 0.385 0.0719 0.025]);
-    case 3
-        set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
-        set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
-        set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
-        
-        set(handles.MIA_data2, 'Visible', 'on');
-        set(handles.MIA_data2_title, 'Visible', 'on');
-        set(handles.MIA_data2, 'HandleVisibility', 'on');
-        set(handles.MIA_data3, 'Visible', 'on');
-        set(handles.MIA_data3_title, 'Visible', 'on');
-        set(handles.MIA_data3, 'HandleVisibility', 'on');
-        set(handles.MIA_data4, 'Visible', 'off');
-        set(handles.MIA_data4_title, 'Visible', 'off');
-        set(handles.MIA_data4, 'HandleVisibility', 'off');
-        set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
-        set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
-        
-    case 4
-        set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
-        set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
-        set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
-        
-        set(handles.MIA_data2, 'Visible', 'on');
-        set(handles.MIA_data2_title, 'Visible', 'on');
-        set(handles.MIA_data2, 'HandleVisibility', 'on');
-        set(handles.MIA_data3, 'Visible', 'on');
-        set(handles.MIA_data3_title, 'Visible', 'on');
-        set(handles.MIA_data3, 'HandleVisibility', 'on');
-        set(handles.MIA_data4, 'Visible', 'off');
-        set(handles.MIA_data4_title, 'Visible', 'on');
-        set(handles.MIA_data4, 'HandleVisibility', 'on');
-        set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
-        set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
+    
+    % resize windows handles.MIA_data1
+    switch handles.data_loaded.number_of_scan
+        case 1
+            set(handles.MIA_data1, 'Position', [0.0188 0.0800 0.5117 0.68]);
+            set(handles.MIA_data1_title, 'Visible', 'on');
+            set(handles.MIA_data1_echo_slider, 'Position', [0.0334 0.0448 0.3827 0.0168]);
+            set(handles.MIA_data1_expt_slider , 'Position', [0.0334 0.0280 0.3827 0.0168]);
+            
+            set(handles.MIA_data2, 'Visible', 'off');
+            set(handles.MIA_data2_title, 'Visible', 'off');
+            set(handles.MIA_data2, 'HandleVisibility', 'off');
+            
+            set(handles.MIA_data3, 'Visible', 'off');
+            set(handles.MIA_data3_title, 'Visible', 'off');
+            set(handles.MIA_data3, 'HandleVisibility', 'off');
+            
+            set(handles.MIA_data4, 'Visible', 'off');
+            set(handles.MIA_data4_title, 'Visible', 'off');
+            set(handles.MIA_data4, 'HandleVisibility', 'off');
+            
+            set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
+            set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
+            
+        case 2
+            set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
+            set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
+            set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
+            
+            set(handles.MIA_data2, 'Visible', 'on');
+            set(handles.MIA_data2_title, 'Visible', 'on');
+            set(handles.MIA_data2, 'HandleVisibility', 'on');
+            set(handles.MIA_data3, 'Visible', 'off');
+            set(handles.MIA_data3_title, 'Visible', 'off');
+            set(handles.MIA_data3, 'HandleVisibility', 'off');
+            set(handles.MIA_data4, 'Visible', 'off');
+            set(handles.MIA_data4_title, 'Visible', 'off');
+            set(handles.MIA_data4, 'HandleVisibility', 'off');
+            set(handles.MIA_slider_slice, 'Position', [0.0334 0.395 0.3827 0.0168]);
+            set(handles.MIA_set_clip, 'Position', [0.4275 0.385 0.0719 0.025]);
+        case 3
+            set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
+            set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
+            set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
+            
+            set(handles.MIA_data2, 'Visible', 'on');
+            set(handles.MIA_data2_title, 'Visible', 'on');
+            set(handles.MIA_data2, 'HandleVisibility', 'on');
+            set(handles.MIA_data3, 'Visible', 'on');
+            set(handles.MIA_data3_title, 'Visible', 'on');
+            set(handles.MIA_data3, 'HandleVisibility', 'on');
+            set(handles.MIA_data4, 'Visible', 'off');
+            set(handles.MIA_data4_title, 'Visible', 'off');
+            set(handles.MIA_data4, 'HandleVisibility', 'off');
+            set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
+            set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
+            
+        case 4
+            set(handles.MIA_data1, 'Position', [0.0188 0.4529 0.2523 0.3140]);
+            set(handles.MIA_data1_echo_slider, 'Position', [0.0188 0.4294 0.2518 0.0168]);
+            set(handles.MIA_data1_expt_slider , 'Position', [0.0188 0.4126 0.2518 0.0168]);
+            
+            set(handles.MIA_data2, 'Visible', 'on');
+            set(handles.MIA_data2_title, 'Visible', 'on');
+            set(handles.MIA_data2, 'HandleVisibility', 'on');
+            set(handles.MIA_data3, 'Visible', 'on');
+            set(handles.MIA_data3_title, 'Visible', 'on');
+            set(handles.MIA_data3, 'HandleVisibility', 'on');
+            set(handles.MIA_data4, 'Visible', 'off');
+            set(handles.MIA_data4_title, 'Visible', 'on');
+            set(handles.MIA_data4, 'HandleVisibility', 'on');
+            set(handles.MIA_slider_slice, 'Position', [0.0334 0.0112 0.3827 0.0168]);
+            set(handles.MIA_set_clip, 'Position', [0.4275 0.0042 0.0719 0.025]);
+    end
+else
+    
+    %hide used windows
+    set(handles.MIA_data3, 'Visible', 'off');
+    set(handles.MIA_data3_title, 'Visible', 'off');
+    set(handles.MIA_data3, 'HandleVisibility', 'off');
+    
+    set(handles.MIA_data4, 'Visible', 'off');
+    set(handles.MIA_data4_title, 'Visible', 'off');
+    set(handles.MIA_data4, 'HandleVisibility', 'off');
 end
 
 % set MIA_slider_slice
@@ -2333,9 +2354,9 @@ if isfield(handles, 'data_displayed')
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                 % Exlude the 2 extremum (min, max) of the Clim
                 if sum(image_to_display(:)) ~= 0  &&...
-                        sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
-                        prctile(image_to_display(:),1) ~= prctile(image_to_display(:),99)
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+                        sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
+                        prctile_copy(image_to_display(:),1) ~= prctile_copy(image_to_display(:),99)
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
                 end
                 % apply the colormap selected
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -2355,8 +2376,8 @@ if isfield(handles, 'data_displayed')
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
                  % Exlude the 2 extremum (min, max) of the Clim
-%                 if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile(image_to_display(:),1) prctile(image_to_display(:),99)] ~= [0 0]) ~= 0
-%                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile(image_to_display(:),1) prctile(image_to_display(:),99)]);
+%                 if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0
+%                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
 %                 end
 
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
@@ -8835,10 +8856,10 @@ for i = 1:handles.data_loaded.number_of_scan
         texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
         texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
         texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
-        texture_values.Percentile_1(size(texture_values,1)) = prctile(matrix_tmp(:),1);
-        texture_values.Percentile_5(size(texture_values,1)) = prctile(matrix_tmp(:),5);
-        texture_values.Percentile_95(size(texture_values,1)) = prctile(matrix_tmp(:),95);
-        texture_values.Percentile_99(size(texture_values,1)) = prctile(matrix_tmp(:),99);
+        texture_values.Percentile_1(size(texture_values,1)) = prctile_copy(matrix_tmp(:),1);
+        texture_values.Percentile_5(size(texture_values,1)) = prctile_copy(matrix_tmp(:),5);
+        texture_values.Percentile_95(size(texture_values,1)) = prctile_copy(matrix_tmp(:),95);
+        texture_values.Percentile_99(size(texture_values,1)) = prctile_copy(matrix_tmp(:),99);
         
         [ROIonly,~,~,~] = prepareVolume(volume,mask,'PETscan',...
             (handles.data_loaded.Scan(i).V.mat(1,1)+ handles.data_loaded.Scan(i).V.mat(2,2))/2 , ...
