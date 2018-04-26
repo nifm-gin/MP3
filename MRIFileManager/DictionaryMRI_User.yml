@@ -135,5 +135,54 @@ dictionaryMRI:
                   whereBruker:  {file: acqp, keyName: $ACQ_grad_matrix=, type: string, format: ~, units: ~}
                    
                   viewer: {category: Grad Orient}
-                  json:   {tagJson: ~, type: ~, format: ~, units: ~}                  
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+
+  SpinEchoTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_EchoTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SpinEchoTime, type: float, format: ~, units: ms}
+
+  PostLabelTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: ASL_PostLabelTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: PostLabelTime, type: float, format: ~, units: ms}  
+
+  LabelTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: ASL_LabelTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: LabelTime, type: float, format: ~, units: ms}  
+
+  SpatDimEnum:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SpatDimEnum=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SpatDimEnum, type: float, format: ~, units: ms}  
+
+  ObjOrderList:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_ObjOrderList=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ObjOrderList, type: float, format: ~, units: ms}  
+
+  FovSatOnOff:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_FovSatOnOff=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FovSatOnOff, type: float, format: ~, units: ms}  
+
+  RepetitionTimePVM:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_RepetitionTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: RepetitionTimePVM, type: float, format: ~, units: ms}           
              
