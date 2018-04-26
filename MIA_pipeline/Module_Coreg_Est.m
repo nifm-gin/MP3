@@ -170,10 +170,20 @@ matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
 % Otherwise the CoregEstimate will overwrite the file!!
 copyfile(files_in.In2{1},  files_out.In2{1})
 copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
+% if the image of reference is > to 3D need to split the data
+header = niftiinfo(files_out.In2{1});
+if length(header.ImageSize) > 3
+     other = {};
+    for j=2:header.ImageSize(4)
+        other= [other, [files_out.In2{1}, ',', num2str(j)]];
+    end
+end
 % Use the files_out as source (the CoregEstimate will overwrite the file)
 matlabbatch{1}.spm.spatial.coreg.estimate.source = {[files_out.In2{1}, ',1']};
 if isfield(files_in, 'In3')
-    other = {};
+    if ~exist('other', 'var')
+        other = {};
+    end
     for i=1:length(files_in.In3)
         if ~isempty(files_in.In3{i})
             header = niftiinfo(files_in.In3{i});
@@ -185,22 +195,17 @@ if isfield(files_in, 'In3')
             end
             if length(header.ImageSize) > 3
                 for j=1:header.ImageSize(4)
-                    other= [other, [files_in.In3{i}, ',', num2str(j)]];
+                    other= [other, [files_out.In3{i}, ',', num2str(j)]];
                 end
             else
-                other = [other, [files_in.In3{i}, ',1']];
+                other = [other, [files_out.In3{i}, ',1']];
             end
         end
     end
     matlabbatch{1}.spm.spatial.coreg.estimate.other = other';
 end
 
-header = niftiinfo(files_in.In2{1});
-if length(header.ImageSize) > 3
-    for j=2:header.ImageSize(4)
-        other= [other, [files_in.In2{1}, ',', num2str(j)]];
-    end
-end
+
 
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
 if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 

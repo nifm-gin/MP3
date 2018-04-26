@@ -105,8 +105,8 @@ if strcmp(opt.Output_orientation, 'First input')
 else
     ref_scan = 2;
 end
-input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
-input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
+input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
 
 switch opt.Operation
     case 'Addition'
@@ -141,7 +141,7 @@ end
 % transform the OutputImages matrix in order to match to the nii header of the
 % first input (rotation/translation)
 if ~exist('OutputImages_reoriented', 'var')
-    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
+    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header, 'Axial');
 end
 % save the new files (.nii & .json)
 % update the header before saving the new .nii
