@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 23-Apr-2018 16:53:11
+% Last Modified by GUIDE v2.5 29-Apr-2018 11:36:22
 
 
 % Begin initialization code - DO NOT EDIT
@@ -467,370 +467,6 @@ data_selected = finddata_selected(handles);
 fprintf('\nload(''%s'')\n',handles.database.nii(data_selected));
 
 
-
-% --------------------------------------------------------------------
-function MIA_add_name_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_add_name (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% global uvascim uvascroi
-disp('MIA_add_name_Callback')
-if strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') == 1 ||...
-        strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') == 1 ||...
-        strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') == 1 ||...
-        strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') == 1
-    filename = handles.load_bruker_tmp.filename;
-    directory = handles.load_bruker_tmp.pathname;
-    
-else
-    [filename, directory]=uigetfile({'*.mat;*.nii;','Image Files (*.mat,*.nii...)'}, 'Selection une structure uvasc','MultiSelect','on');
-    if isequal(filename,0)
-        return
-    end
-    if ischar(filename)
-        filename = {filename};
-    end
-end
-
-% Can load several structure
-for x = 1:numel(filename)
-    handles = guidata(hObject);
-    fid=fopen(fullfile(directory,filename{x}),'r');
-    if fid>0
-        fclose(fid);
-        [~, ~, ext] = fileparts(filename{x});
-        if strcmp(ext, '.nii')
-            data_loaded.uvascim= convert_nii2uvascim(fullfile(directory,filename{x}));
-        else
-            data_loaded = load(fullfile(directory,filename{x}));
-        end
-        
-        if ~or(isfield(data_loaded, 'uvascim'), isfield(data_loaded, 'so2struct'))
-            warndlg('Please select a correct uvasc structure');
-            clear data_loaded
-            return
-        end
-    else
-        warndlg('Please select a correct uvasc structure');
-        return
-    end
-    %     end
-    id_nbr = numel(get(handles.MIA_name_list, 'String'));
-    % First patient of the database
-    if id_nbr == 0
-        id_nbr =1;
-    end
-    if isfield(data_loaded, 'uvascim') && strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') ~= 1 &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') ~= 1 &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') ~= 1 &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') ~= 1
-        
-        handles.data = data_loaded.uvascim;
-        id_info =filename{x};
-        sep_position = strfind(id_info, '-');
-        %try to figure out the patient's name and time point
-        if ~isempty(sep_position) && numel(sep_position) == 2
-            id = id_info(1:sep_position(1)-1);
-            tp = id_info(sep_position(1)+1:sep_position(2)-1);
-        else
-            id = id_info;
-            tp = id_info;
-        end
-    elseif strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') ~= 1 || ...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') ~= 1 ||...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') ~= 1 ||...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') ~= 1
-        
-        handles.data = data_loaded.uvascim;
-    elseif isfield(data_loaded, 'so2struct')
-        
-        % load computed maps
-        maps_names = fieldnames(data_loaded.so2struct.map);
-        for i = 1:numel(maps_names)
-            handles.data.image(i) = eval(['data_loaded.so2struct.map.' maps_names{i}]);
-        end
-        % correct the bug on the z_offset in the so2stuct
-        % the correct z_offset is located in the T2map
-        match = strcmp(maps_names, 'T2map');
-        scan_ref = find(match==1);
-        for i = 1:numel(maps_names)
-            if match(i) == 0
-                handles.data.image(i).reco = rmfield(handles.data.image(i).reco,'fov_offsets');
-                handles.data.image(i).reco.fov_offsets =  handles.data.image(scan_ref).reco.fov_offsets;
-                handles.data.image(i).reco.thickness = handles.data.image(scan_ref).reco.thickness;
-            end
-        end
-        for i = 1:numel(maps_names)
-            if match(i) == 0
-                handles.data.image(i).reco = rmfield(handles.data.image(i).reco,'fov_offsets');
-                handles.data.image(i).reco.fov_offsets =  handles.data.image(scan_ref).reco.fov_offsets;
-                handles.data.image(i).reco.thickness = handles.data.image(scan_ref).reco.thickness;
-            end
-        end
-        
-        id_info =filename{x};
-        id_beg = strfind(handles.data.image(1).texte,'Patient name');
-        id_end = strfind(handles.data.image(1).texte,'Examination name');
-        id = strtrim(handles.data.image(1).texte(id_beg+39:id_end-6));
-        tp_beg = strfind(handles.data.image(1).texte,'Examination date/time              :');
-        td_end = strfind(handles.data.image(1).texte,'.    Series Type');
-        tp = strtrim(handles.data.image(1).texte(tp_beg+36:td_end-14));
-        
-    end
-    clear data_loaded
-    handles.data.roifile = '';
-    % The soft already know that!
-    if strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') ~=1 &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') ~=1  &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') ~=1  &&...
-            strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') ~= 1
-        dlgbox_title =  strcat('File name:', {' '}, id_info,{' '}');
-        answer = inputdlg({'Is the id''s name correct?', 'Is the time point correct?'},dlgbox_title{:}, [1 size(dlgbox_title{:},2)+25], [{id} {tp}]);
-        if isempty(answer)
-            return
-        end
-    else
-        answer(1) = handles.load_bruker_tmp.answer(1);
-        answer(2) = handles.load_bruker_tmp.answer(2);
-    end
-    % find if the patient exist already
-    if ~isempty(strmatch(answer(1), get(handles.MIA_name_list, 'String'), 'exact')) %#ok<*MATCH3>
-        id_nbr = strmatch(answer(1), get(handles.MIA_name_list, 'String'), 'exact');
-        tmp = handles.database(1:id_nbr);
-        % find if the time point exist already
-        if ~isempty(strmatch(answer(2), {handles.database(id_nbr).day.date}', 'exact'))
-            tp_nbr = strmatch(answer(2), {handles.database(id_nbr).day.date}', 'exact');
-        else
-            tp_nbr = numel(handles.database(id_nbr).day)+1;
-            tmp(id_nbr).day(tp_nbr).date = '';
-            tmp(id_nbr).day(tp_nbr).comment = '';
-            tmp(id_nbr).day(tp_nbr).VOIs = '';
-            tmp(id_nbr).day(tp_nbr).VOIs_file = '';
-            tmp(id_nbr).day(tp_nbr).parameters = '';
-            tmp(id_nbr).day(tp_nbr).scans_file = '';
-        end
-    else
-        if id_nbr > 1 || id_nbr == 1 && isfield(handles, 'database')
-            tmp = handles.database(1:id_nbr);
-            id_nbr = id_nbr+1;
-            tmp(id_nbr).day.date = '';
-            tmp(id_nbr).day.comment = '';
-            tmp(id_nbr).day.VOIs = '';
-            tmp(id_nbr).day.VOIs_file = '';
-            tmp(id_nbr).day.parameters = '';
-            tmp(id_nbr).day.scans_file = '';
-            tmp(id_nbr).group = 'group name';
-            tmp(id_nbr).omit = 0;
-        else % First patient of the database
-            tmp(1).name = '';
-            tmp(1).path = '';
-            tmp(1).group = 'group name';
-            tmp(1).omit = 0;
-            tmp(1).day.date = '';
-            tmp(1).day.comment = '';
-            tmp(1).day.VOIs = '';
-            tmp(1).day.VOIs_file = '';
-            tmp(1).day.parameters = '';
-            tmp(1).day.scans_file = '';
-        end
-        tp_nbr = 1;
-    end
-    % add patient info to the database
-    tmp(id_nbr).name = answer{1};
-    if isfield(handles,'database')
-        tmp(id_nbr).path = handles.database(1).path;
-    else
-        if isempty(strfind(directory, 'Image_Analyses_data'))
-            if strcmp(directory(end), filesep) ~= 1
-                tmp(id_nbr).path = [directory 'Image_Analyses_data' filesep];
-            else
-                tmp(id_nbr).path = [directory filesep 'Image_Analyses_data' filesep];
-            end
-            % Create a new folder if needed
-            %         if exist(tmp(id_nbr).path, 'dir') ~= 7
-            status = mkdir(tmp(id_nbr).path);
-            if status == 0
-                warndlg('You do not the right to write in the folder!', 'Warning');
-                %                 clear uvascim
-                return
-            end
-            %         end
-        else
-            if strcmp(directory(end), filesep) ~= 1
-                tmp(id_nbr).path = [directory filesep];
-            else
-                tmp(id_nbr).path = directory;
-            end
-        end
-    end
-    %     end
-    
-    tmp(id_nbr).day(tp_nbr).date = answer{2};
-    
-    % find scan info
-    size_data = zeros(numel(handles.data.image),5);
-    list_scan = cell(numel(handles.data.image),1);
-    for i=1:numel(handles.data.image)
-        if strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') ==1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') ==1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') ==1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') == 1
-            list_scan{i} = sprintf(handles.load_bruker_tmp.scanname{x});
-        else
-            size_data(i,1:size(size(handles.data.image(i).reco.data),2))=size(handles.data.image(i).reco.data);
-            if isfield(handles.data.image(i).reco,'texte')
-                list_scan{i} = sprintf(handles.data.image(i).reco.texte);
-            else
-                list_scan{i}= sprintf(handles.data.image(i).acq.ppl_name);
-            end
-        end
-    end
-    % Split and save 1 structure per parameter
-    for i=1:numel(list_scan)
-        % Clean the futur file name by removing weird characters: ( ) [
-        % ]....
-        if strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker') ==1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_bruker_OM') == 1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_data') == 1 ||...
-                strcmp(get(hObject, 'Tag'), 'MIA_menu_load_DICOM') == 1
-            file_name =  char(filename(x));
-            file_name = cellstr(file_name(1:end-4));
-        else
-            file_name = strcat(answer{1},'_',answer{2},'_',num2str(i), '-', list_scan(i));
-        end
-        
-        file_name = regexprep(file_name,'[: ]','-');
-        file_name = regexprep(file_name,'*','star');
-        file_name = regexprep(file_name,'(','');
-        file_name = regexprep(file_name,')','');
-        file_name = regexprep(file_name,',','');
-        file_name = regexprep(file_name,'<','');
-        file_name = regexprep(file_name,'>','');
-        file_name = regexprep(file_name,'/','-');
-        
-        
-        % Split Echoes if for particular scan such as (DTI-EPI)
-        if  ~isempty(regexpi(handles.data.image(i).acq.ppl_name,'\w*Dti\w*'))  && ...
-                strcmp(handles.data.image(i).reco.echo_label(1), 'signal intensity')
-            %save only the ADC map !!
-            for ii=3%   %% 1:size(handles.data.image(i).reco.data,3)
-                % If data imported from uvasc --> save uvascim
-                %tmp_uvascim = uvascim;
-                uvascim = handles.data;
-                uvascim.image = handles.data.image(i);
-                uvascim.image.reco.data = uvascim.image.reco.data(:,:,ii,:);
-                uvascim.image.reco.fov_offsets = uvascim.image.reco.fov_offsets(:,ii,:,:);
-                uvascim.image.reco.fov_orientation = uvascim.image.reco.fov_orientation(:,ii,:,:);
-                uvascim.image.reco.fov_phase_orientation= uvascim.image.reco.fov_phase_orientation(ii,:,:);
-                uvascim.image.reco.label= uvascim.image.reco.label(ii,:,:);
-                uvascim.image.reco.no_echoes = 1;
-                uvascim.image.reco.phaselabel = uvascim.image.reco.phaselabel(ii,:,:);
-                uvascim.image.reco.scaling_factor =uvascim.image.reco.scaling_factor(ii,:,:);
-                uvascim.image.reco.scaling_offset = uvascim.image.reco.scaling_offset(ii,:,:);
-                
-                echo_label = handles.data.image(i).reco.echo_label{ii};
-                switch echo_label
-                    case 'signal intensity'
-                        sub_file_name=strcat(file_name{:},'-Diff-SI.mat');
-                        parameter_name= {'Diff-SI'};
-                    case 'std dev of signal intensity'
-                        sub_file_name=strcat(file_name{:},'-Diff-std_of_SI.mat');
-                        parameter_name= {'Diff-std_of_SI'};
-                    case 'diffusion constant'
-                        sub_file_name=strcat(file_name{:},'-ADC.mat');
-                        parameter_name= {'ADC'};
-                    case 'std dev of diffusion constant'
-                        sub_file_name=strcat(file_name{:},'-Diff-std_of_diff_ct.mat');
-                        parameter_name= {'Diff-std_of_diff_ct'};
-                    case 'std dev of the fit'
-                        sub_file_name=strcat(file_name{:},'-Diff-std_of_fit.mat');
-                        parameter_name= {'Diff-std_of_fit'};
-                    otherwise
-                        sub_file_name=strcat(file_name{:},'-',handles.data.image(i).reco.echo_label{ii}, '.mat');
-                        parameter_name=strcat(list_scan(i),'-',handles.data.image(i).reco.echo_label{ii});
-                end
-                if exist(fullfile(strcat(tmp(id_nbr).path,sub_file_name)) , 'file') ~= 2
-                    save(fullfile(strcat(tmp(id_nbr).path,sub_file_name)),'uvascim');
-                end
-                
-                if ischar(sub_file_name)
-                    sub_file_name = {sub_file_name};
-                end
-                tmp(id_nbr).day(tp_nbr).parameters = [tmp(id_nbr).day(tp_nbr).parameters parameter_name];
-                tmp(id_nbr).day(tp_nbr).scans_file = [tmp(id_nbr).day(tp_nbr).scans_file sub_file_name];
-                
-                %updade handles.clips
-                if isempty(strmatch(parameter_name, handles.clips(:,1), 'exact'))
-                    handles.clips(size(handles.clips,1)+1,1) = parameter_name;
-                    
-                    if( max(~isreal(uvascim.image.reco.data(:)))==1 )  % complex data
-                        handles.clips(size(handles.clips,1),2) = {min(abs(uvascim.image.reco.data(:)))};
-                        handles.clips(size(handles.clips,1),3) =  {max(abs(uvascim.image.reco.data(:)))};
-                    else    % real data
-                        handles.clips(size(handles.clips,1),2) = {min(uvascim.image.reco.data(:))};
-                        handles.clips(size(handles.clips,1),3) =  {max(uvascim.image.reco.data(:))};
-                    end
-                end
-            end
-            
-        else
-            
-            % If data imported from uvasc --> save uvascim
-            %tmp_uvascim = uvascim;
-            uvascim = handles.data;
-            uvascim.image = handles.data.image(i);
-            %             uvascfile=fullfile(strcat(tmp(id_nbr).path,file_name{:},'.mat'));
-            %             if exist(uvascfile, 'file') ~= 2
-            %                 save(uvascfile,'uvascim');
-            %             else
-            %                 uvascfile=fullfile(strcat(tmp(id_nbr).path,file_name{:},'_',datestr(now,'yyyymmdd-HHMMSS'),'.mat'));
-            %                 save(uvascfile,'uvascim');
-            %
-            %             end
-            
-            tmp(id_nbr).day(tp_nbr).parameters = [tmp(id_nbr).day(tp_nbr).parameters list_scan(i)];
-            tmp(id_nbr).day(tp_nbr).scans_file = [tmp(id_nbr).day(tp_nbr).scans_file strcat(file_name, '.mat')];
-            
-            %updadehandles.clips
-            if ~isfield(handles, 'clips') || isempty(strmatch(list_scan(i), handles.clips(:,1), 'exact'))
-                if ~isfield(handles, 'clips')
-                    handles.clips(1,1) = list_scan(i);
-                    
-                    if( max(~isreal(uvascim.image.reco.data(:)))==1 )    % complex data
-                        handles.clips(1,2) =  {min(abs(uvascim.image.reco.data(:)))};
-                        handles.clips(1,3) =  {max(abs(uvascim.image.reco.data(:)))};
-                    else    % real data
-                        handles.clips(1,2) =  {min(uvascim.image.reco.data(:))};
-                        handles.clips(1,3) =  {max(uvascim.image.reco.data(:))};
-                    end
-                end
-                handles.clips(size(handles.clips,1)+1,1) = list_scan(i);
-                if( max(~isreal(uvascim.image.reco.data(:)))==1 )    % complex data
-                    handles.clips(size(handles.clips,1),2) = {min(abs(uvascim.image.reco.data(:)))};
-                    handles.clips(size(handles.clips,1),3) =  {max(abs(uvascim.image.reco.data(:)))};
-                else    % real data
-                    handles.clips(size(handles.clips,1),2) = {min(uvascim.image.reco.data(:))};
-                    handles.clips(size(handles.clips,1),3) =  {max(uvascim.image.reco.data(:))};
-                end
-            end
-        end
-    end
-    
-    if isfield(handles, 'database')
-        % add this patient to the database
-        if id_nbr~=numel(handles.database)
-            for i = id_nbr+1:numel(handles.database)
-                tmp(i)=handles.database(i);
-            end
-        end
-    end
-    handles.database = tmp;
-    clear tmp
-    guidata(hObject, handles);
-    MIA_update_database_display(hObject, eventdata, handles);
-end
-%update Figure name
-MIA_update_figureName(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function MIA_add_roi_Callback(hObject, eventdata, handles)
@@ -1956,8 +1592,10 @@ set(handles.MIA_patient_information_title, 'String', [char(unique(handles.databa
 set(handles.MIA_orientation_space_popupmenu, 'String',  char(unique(handles.database.SequenceName(data_selected),'stable')), 'Value', 1);
 if numel(data_selected) > 1
     set(handles.MIA_orientation_space_popupmenu, 'Visible', 'on');
+    set(handles.MIA_orientation_space_text, 'Visible', 'on');
 else
     set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off'); 
+    set(handles.MIA_orientation_space_text, 'Visible', 'off');
 end
 handles.data_loaded.number_of_scan = numel(data_selected);
 handles.data_loaded.info_data_loaded = handles.database(data_selected,:);
@@ -2379,7 +2017,11 @@ if isfield(handles, 'data_displayed')
 %                 if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0
 %                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
 %                 end
-
+                 if sum(image_to_display(:)) ~= 0  &&...
+                        sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
+                        prctile_copy(image_to_display(:),1) ~= prctile_copy(image_to_display(:),99)
+                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
+                end
                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
                 
@@ -7469,118 +7111,46 @@ function MIA_copy_ScanVoi_to_other_tp_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_copy_ScanVoi_to_other_tp (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-patient_selected = get(handles.MIA_name_list, 'Value');
-time_point_selected = get(handles.MIA_time_points_list, 'Value');
-scan_voi_selected = get(handles.MIA_scans_list, 'Value');
+data_selected = finddata_selected(handles);
+Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
-    'ListSize', [300 500],...
-    'ListString', {handles.database(patient_selected).day.date}');
+    'ListSize', [200 300],...
+    'ListString', Tp_listing);
 if ok == 0
     return
 end
-logbook = {};
 for i=1:numel(time_point)
-    for j = 1:numel(scan_voi_selected)
-        % copie scan
-        if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-            scan_name = handles.database(patient_selected).day(time_point_selected).parameters(scan_voi_selected(j));
-            file_name_to_copy = handles.database(patient_selected).day(time_point_selected).scans_file(scan_voi_selected(j));
-            listing = handles.database(patient_selected).day(time_point(i)).parameters';
-            % copie VOI
-        else
-            scan_name = handles.database(patient_selected).day(time_point_selected).VOIs(scan_voi_selected(j));
-            file_name_to_copy = handles.database(patient_selected).day(time_point_selected).VOIs_file(scan_voi_selected(j));
-            listing = handles.database(patient_selected).day(time_point(i)).VOIs';
-        end
-        PATHSTR = handles.database(patient_selected).path;
-        if sum(strcmp(scan_name, listing)) == 0
-            filename = [handles.database(patient_selected).name, '-', ...
-                handles.database(patient_selected).day(time_point(i)).date, '-',...
-                scan_name{:}, '-ROI.mat'];
-            filename = regexprep(filename,'[: ]','-');
-            filename = regexprep(filename,'*','star');
-            filename = regexprep(filename,'(','');
-            filename = regexprep(filename,')','');
-            filename = regexprep(filename,',','');
-            filename = regexprep(filename,'<','');
-            filename = regexprep(filename,'>','');
-            filename = regexprep(filename,'/','-');
-            if  exist(fullfile(PATHSTR,file_name_to_copy{:}), 'file') == 0
-                warning_text = sprintf('Can not %s because it do not exist\n',...
-                    scan_name{:});
-                logbook{numel(logbook)+1} =warning_text;
-                continue
-            elseif  exist(fullfile(PATHSTR,filename), 'file') == 2
-                
-                user_response = questdlg(['The file: ' filename ' already exist. Do you want to overwrite this file or no?'],'Warning', 'Yes', 'No', 'No');
-                if strcmp(user_response, 'No')
-                    return
-                end
-                user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-                % overwrite the file if requested
-                if strcmp(user_response, 'Yes')
-                    copyfile(fullfile(PATHSTR,file_name_to_copy{:}), fullfile(PATHSTR,filename), 'f');
-                    if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-                        if isempty(handles.database(patient_selected).day(time_point(i)).parameters)
-                            handles.database(patient_selected).day(time_point(i)).parameters = scan_name;
-                            handles.database(patient_selected).day(time_point(i)).scans_file =  {filename};
-                        else
-                            handles.database(patient_selected).day(time_point(i)).parameters(end+1) = scan_name;
-                            handles.database(patient_selected).day(time_point(i)).scans_file(end+1) =  {filename};
-                        end
-                    else
-                        if isempty(handles.database(patient_selected).day(time_point(i)).VOIs_file)
-                            handles.database(patient_selected).day(time_point(i)).VOIs = scan_name;
-                            handles.database(patient_selected).day(time_point(i)).VOIs_file =  {filename};
-                        else
-                            handles.database(patient_selected).day(time_point(i)).VOIs(end+1) = scan_name;
-                            handles.database(patient_selected).day(time_point(i)).VOIs_file(end+1) =  {filename};
-                        end
-                    end
-                end
-            else
-                copyfile(fullfile(PATHSTR,file_name_to_copy{:}), fullfile(PATHSTR,filename), 'f');
-                if get(handles.MIA_scan_VOIs_button, 'Value') == 0
-                    if isempty(handles.database(patient_selected).day(time_point(i)).parameters)
-                        handles.database(patient_selected).day(time_point(i)).parameters = scan_name;
-                        handles.database(patient_selected).day(time_point(i)).scans_file =  {filename};
-                    else
-                        handles.database(patient_selected).day(time_point(i)).parameters(end+1) = scan_name;
-                        handles.database(patient_selected).day(time_point(i)).scans_file(end+1) =  {filename};
-                    end
-                else
-                    if isempty(handles.database(patient_selected).day(time_point(i)).VOIs_file)
-                        handles.database(patient_selected).day(time_point(i)).VOIs = scan_name;
-                        handles.database(patient_selected).day(time_point(i)).VOIs_file =  {filename};
-                    else
-                        handles.database(patient_selected).day(time_point(i)).VOIs(end+1) = scan_name;
-                        handles.database(patient_selected).day(time_point(i)).VOIs_file(end+1) =  {filename};
-                    end
-                end
+    new_entry = handles.database(data_selected,:);
+    new_entry.Tp = Tp_listing(time_point(i));
+    new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
+    % check if the scan already exist for this time point
+    if sum(ismember(handles.database, new_entry)) == 0
+        fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
+        if fid_nii>0
+            fclose(fid_nii);
+            % update the database
+            handles.database(size(handles.database,1)+1,:) = new_entry;
+            % create the new files
+            copyfile(fullfilename(handles, data_selected, '.nii'), fullfilename(handles, size(handles.database,1), '.nii'), 'f');
+            if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
+                copyfile(fullfilename(handles, data_selected, '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
             end
-            warning_text = sprintf('%s was copied to %s\n',...
-                scan_name{:},...
-                handles.database(patient_selected).day(time_point(i)).date);
-            logbook{numel(logbook)+1} =warning_text;
         else
-            warning_text = sprintf('%s already exist for %s\n',...
-                scan_name{:},...
-                handles.database(patient_selected).day(time_point(i)).date);
-            logbook{numel(logbook)+1} =warning_text;
+            warndlg(['something is wrong this the data : ' fullfilename(handles, data_selected, '.nii')],  'Warning');
+            return
         end
+    else
+        warndlg(['This scan already exist : ' char(new_entry.Filename)],  'Warning');
+        return
     end
+    
 end
-
 %update handes
 guidata(hObject, handles)
 
-if ~isempty(logbook)
-    listdlg('ListString', logbook', 'ListSize',[250 350], 'Name', 'logbook');
-else
-    msgbox('Done', 'logbook') ;
-end
+msgbox('Done', 'logbook') ;
+
 
 function MIA_warning_duplicate_scan_fcn(handles, parameters,patient_nbr,time_point)
 

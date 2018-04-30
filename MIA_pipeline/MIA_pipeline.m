@@ -69,7 +69,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
-     'Spatial', '   .Smoothing', '   .Arithmetic'...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
  
@@ -941,6 +941,13 @@ switch char(handles.Modules_listing(module_selected))
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Arithmetic('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Arithmetic(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Arithmetic';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Normalization'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Normalization('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Normalization(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Normalization';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;

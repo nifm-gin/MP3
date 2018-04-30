@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_Arithmetic(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_Normalization(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -16,9 +16,9 @@ if isempty(opt)
     module_option(:,5)   = {'InputToReshape',1};
     module_option(:,6)   = {'Table_in', table()};
     module_option(:,7)   = {'Table_out', table()};
-    module_option(:,8)   = {'Operation', 'Addition'};
-    module_option(:,9)   = {'output_filename_ext','_Arith'};
-    module_option(:,10)  = {'Output_orientation','First input'};
+   % module_option(:,8)   = {'Operation', 'Addition'};
+    module_option(:,8)   = {'Output_filename_ext','_Norm'};
+    module_option(:,9)  = {'Value_of_normalization',1};
 
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -33,17 +33,14 @@ if isempty(opt)
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
-    user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
-    user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','','',...
+    user_parameter(:,2)   = {'Select the scan to normalize','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+ %   user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
+    user_parameter(:,3)   = {'Select one ROI','1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,4)   = {'   .Output filename extension','char','_Norm','Output_filename_ext','','',...
         {'Specify the string to be added to the first filename.'
-        'Default filename extension is ''_Arith''.'}'};
-    user_parameter(:,6)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
-        {'Specify the output orientation'
-        '--> Output orienation = First input'
-        '--> Output orientation = Second input'
-        }'};
+        'Default filename extension is ''_Norm''.'}'};
+    user_parameter(:,5)   = {'   .Value of normalization','numeric',1,'Value_of_normalization','','',...
+        {'Specify the value used to normalize the scan'}'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
     %%
@@ -65,7 +62,7 @@ if isempty(files_out)
     if strcmp(opt.OutputSequenceName, 'AllName')
         opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.Output_filename_ext]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
@@ -78,7 +75,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Module_Arithmetic:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_Normalize:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% If the test flag is true, stop here !
@@ -100,58 +97,31 @@ end
 input(1).nifti_header = spm_vol(files_in.In1{1});
 input(2).nifti_header = spm_vol(files_in.In2{1});
 
-if strcmp(opt.Output_orientation, 'First input')   
-    ref_scan = 1;
-else
-    ref_scan = 2;
-end
-input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
-input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
 
-switch opt.Operation
-    case 'Addition'
-        OutputImages = input1 + input2;
-    case 'Subtraction'
-        OutputImages = input2 - input1;
-    case 'Multiplication'
-       
-        if sum(opt.Table_in.Type == 'ROI') > 0
-            if length(size(input1)) > length(size(input2))
-                OutputImages = input1 .* repmat(input2, [1 1 1 size(input1,4) size(input1,5) size(input1,6) size(input1,7)]);    
-            else
-                OutputImages =  repmat(input1, [1 1 1 size(input1,4) size(input1,5) size(input1,6) size(input1,7)]) .* input2;    
-            end
-        else
-            OutputImages = input1 .* input2;
-        end
-    case'Division'
-        OutputImages = input2 ./ input1;
-    case 'Percentage'
-        OutputImages = ((input2 - input1) ./ input1 .* 100);
-        OutputImages(isinf(OutputImages)) = nan;
-%     case 'Concentration'
-%         question = strcat('Please enter the relaxivity (mM-1.sec-1)');
-%         relaxivity  = inputdlg(question,'Relaxivity',1,{'6'});
-%         if isempty(relaxivity)
-%             return
-%         end
-%         result_map.reco.data = (1./(image1.uvascim.image.reco.data/1000) - 1/(image2.uvascim.image.reco.data/1000)) / str2double(relaxivity{:}) ;
-%         Methode_info = ['relaxivity = ' relaxivity{:} ' mM-1.sec-1'];
-end
+scan = read_volume(input(1).nifti_header, input(1).nifti_header, 0, 'Axial');
+ROI = read_volume(input(2).nifti_header, input(1).nifti_header, 0, 'Axial');
+%% code to perform the normalization of the scan by the ROI and using the value gave by the user
+ROI(ROI == 0) = NaN;
+tmp = scan.*ROI;
+scan = scan/nanmean(tmp(:));
+scan =  scan .* opt.Value_of_normalization;
+
+
+%%
 
 % transform the OutputImages matrix in order to match to the nii header of the
 % first input (rotation/translation)
 if ~exist('OutputImages_reoriented', 'var')
-    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header, 'Axial');
+    OutputImages_reoriented = write_volume(scan, input(1).nifti_header, 'Axial');
 end
 % save the new files (.nii & .json)
 % update the header before saving the new .nii
-info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
 
-info2 = info;
+info2 = niftiinfo(files_in.In1{1});
+
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
+info2.Datatype = class(scan);
 
 
 % save the new .nii file
