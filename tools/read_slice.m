@@ -38,9 +38,6 @@ end
 if sum(sum(R==0) == [2 2 2]) ~= 3
     Rnew = zeros([3,3]);
     R = Vref(1).mat(1:3,1:3);
-% %     Rnew(1,find(abs(Vref(1).mat(:,1)) ==max(abs(Vref(1).mat(:,1))))) = Vref(1).mat(1,find(abs(Vref(1).mat(1:3,1)) == max(abs(Vref(1).mat(1:3,1)))));
-% %     Rnew(2,find(abs(Vref(1).mat(:,2)) ==max(abs(Vref(1).mat(:,2))))) = Vref(1).mat(2,find(abs(Vref(1).mat(1:3,2)) == max(abs(Vref(1).mat(1:3,2)))));
-% %     Rnew(3,find(abs(Vref(1).mat(:,3)) ==max(abs(Vref(1).mat(:,3))))) = Vref(1).mat(3,find(abs(Vref(1).mat(1:3,3)) == max(abs(Vref(1).mat(1:3,3)))));
     Rnew(abs(R(1:3,1)) == max(abs(R(1:3,1))),1)  =  R(abs(R(1:3,1)) == max(abs(R(1:3,1))),1);%max(abs(R(1:3,1)));
     Rnew(abs(R(1:3,2)) == max(abs(R(1:3,2))),2)  =  R(abs(R(1:3,2)) == max(abs(R(1:3,2))),2);%max(abs(R(1:3,2)));
     Rnew(abs(R(1:3,3)) == max(abs(R(1:3,3))),3)  =  R(abs(R(1:3,3)) == max(abs(R(1:3,3))),3);%max(abs(R(1:3,3)));
