@@ -1396,14 +1396,7 @@ for i=1:NbModules
 end
 output_database = unique(output_database);
 
-    
-    
-    
-    
-    
-    
-    
-
+  
 
 function MIA_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_execute_button (see GCBO)
@@ -1414,19 +1407,30 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
+else
+    %  Here we clean all PSOM files because the code do not handle these
+    %  files for now
+    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Derived_data']);
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, Derived_data']);
     if status == false
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end
 end
 
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Tmp'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'Tmp']);
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp']);
+    if status == false
+        error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
+    end
+else
+    %  Here we clean all tmp files
+    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'], 's');
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp']);
     if status == false
         error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
     end
@@ -1468,6 +1472,7 @@ if exist('biograph') == 2
 end
 
 %% exectute the pipeline
+
 if handles.MIA_pipeline_radiobuttonPSOM.Value
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
     Result = load([opt_pipe.path_logs, '/PIPE_status_backup.mat']);

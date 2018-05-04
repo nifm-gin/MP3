@@ -1510,12 +1510,9 @@ else
     set(handles.MIA_PRM_slider_tp, 'Max', handles.data_loaded.number_of_scan);
     set(handles.MIA_PRM_slider_tp,'Value',1);
     set(handles.MIA_PRM_slider_tp,'Min',1);
-    if handles.data_loaded.number_of_scan == 2
-        set(handles.MIA_PRM_slider_tp,'Visible', 'off');
-    else
-        set(handles.MIA_PRM_slider_tp,'Visible', 'on');
-        set(handles.MIA_PRM_slider_tp,'SliderStep',[1/(handles.data_loaded.number_of_scan-1) min(5/(handles.data_loaded.number_of_scan-1),1)]);
-    end
+    
+    set(handles.MIA_PRM_slider_tp,'Visible', 'on');
+    set(handles.MIA_PRM_slider_tp,'SliderStep',[1/(handles.data_loaded.number_of_scan-1) min(5/(handles.data_loaded.number_of_scan-1),1)]);
 end
 
 % display a waiting symbol
@@ -1921,8 +1918,9 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
         handles = MIA_update_VOI_displayed(hObject, eventdata, handles);
         
         %     %update MIA_plot1 if needed
-        if strcmp(get(hObject, 'Tag'), 'MIA_load_axes') &&...
-                handles.display_option.view_plot == 1
+        if (strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp') || ...
+               (strcmp(get(hObject, 'Tag'), 'MIA_PRM_CI')) || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu')) && ...
+                handles.display_option.view_plot == 1 
             if handles.mode == 1
                 handles =MIA_update_plot1_single(hObject,handles);
             else
@@ -2325,7 +2323,8 @@ if isfield(handles, 'data_displayed')
         set(get(handles.(sprintf('MIA_data%d', i)), 'Children'), 'ButtonDownFcn', @MIA_clic_on_image);
         % update contrast using the values stored (if it is not a new scan
         % loaded)
-        if handles.display_option.manual_contrast == 1 && strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
+        if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MIA_slider_slice') || ...
+             strcmp(get(hObject, 'Tag'), 'MIA_new_roi'))   
             set(handles.(sprintf('MIA_data%d', i)), 'Clim', current_contrast );
         end
         
@@ -2387,12 +2386,8 @@ switch get(hObject, 'Tag')
         if handles.mode == 1
             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(2).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         else
-            if  handles.data_loaded.number_of_scan ==2
-                scan_number = 2;
-            else
-                scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
-            end
-             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);            
+            scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
+            handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         end
     case {'MIA_data3_echo_slider', 'MIA_data3_expt_slider'}
         data3_echo_nbr = get(handles.MIA_data3_echo_slider, 'Value');
@@ -2430,11 +2425,8 @@ switch get(hObject, 'Tag')
                         end
                     end
                 else % select post-scan
-                    if  handles.data_loaded.number_of_scan ==2
-                        scan_number = 2;
-                    else
-                        scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
-                    end
+                    scan_number = get(handles.MIA_PRM_slider_tp, 'Value');
+                    
                 end
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
@@ -2659,7 +2651,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 VOI_data = reshape(VOI_data, [size(VOI_data,1)*size(VOI_data,2)*size(VOI_data,3),1]);
                 VOI_data(VOI_data == 0) =[];
                 %nbin = numel(voi_data(:,5))/(numel(voi_data(:,5))/15);
-                nbin = 15;
+                nbin = 150;
                 if ii > 1
                     hold(handles.MIA_plot1, 'on');
                 end
@@ -2728,7 +2720,9 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3).*VOI_data(:,4)) == 0,:) =[];
-
+                % remove nan
+                VOI_data(isnan(VOI_data(:,1)),:) = [];
+                
                 color4d = zeros(size(VOI_data(:,4),1),3);
                 tmp = jet(256);
                 mini=min(VOI_data(:,4));
@@ -5123,14 +5117,14 @@ file_name = strcat(char(handles.data_loaded.info_data_loaded.Patient(Scan_of_ref
     '-', newVOI_name{:} ,...
     '_',datestr(now,'yyyymmdd-HHMMSSFFF'));          %Specify file name to write to
 % Create the ROI folder if needed
-if exist([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep], 'dir') ~= 7
-    status = mkdir([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep]);
+if exist(handles.database.Properties.UserData.MIA_ROI_path, 'dir') ~= 7
+    status = mkdir([handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep]);
     if status == 0
         warndlg('You do not have the right to write in the folder!', 'Warning');
         return
     end
 end
-V_ROI.fname =  [handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep, file_name, '.nii'] ;
+V_ROI.fname =  [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii'] ;
 
 V_ROI = rmfield(V_ROI,'private'); % Delete old nifti header. Will be recreated to match new image properties
 V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
@@ -5164,7 +5158,7 @@ else
     %% add new ROI data to the database
     new_data = table(categorical(cellstr('Undefined')), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
         categorical(handles.data_loaded.info_data_loaded.Tp(which_image)),...
-        categorical(cellstr([handles.database.Properties.UserData.MIA_data_path, 'MIA_data', filesep, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
+        categorical(cellstr([handles.database.Properties.UserData.MIA_data_path, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
         categorical(cellstr('ROI')), categorical(0), categorical(newVOI_name),...
         'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
     
@@ -5788,7 +5782,7 @@ else
         end
         if isfield(handles.data_selected_for_PRM_resized.image(i).reco, 'paramQuantif')
             info_image = handles.data_selected_for_PRM.image(tp).reco.paramQuantif;
-            if size(info_image,1) ==2;
+            if size(info_image,1) ==2
                 info_image = char(info_image);
                 info_image(size(info_image,1)+1, 1:length(['slice offset : ' num2str(handles.data_selected_for_PRM.scan_z_offset(i).values,'%g ')])) =...
                     ['slice offset : ' num2str(handles.data_selected_for_PRM.scan_z_offset(i).values,'%g ')];
@@ -7430,11 +7424,11 @@ end
 % in DirectoriesToProcess are useless.
 
 
-DirectoriesToProcess = {['MIA_data', filesep, 'Derived_data', filesep], ['MIA_data', filesep, 'Raw_data', filesep], ['MIA_data', filesep, 'ROI_data', filesep]};
+DirectoriesToProcess = {'Derived_data', 'Raw_data', 'ROI_data'};
 
 
-if exist([Data_path,  'MIA_data', filesep, 'To_Trash'],'dir') ~= 7
-    [status, ~, ~] = mkdir([Data_path, 'MIA_data', filesep, 'To_Trash']);
+if exist([Data_path, 'To_Trash'],'dir') ~= 7
+    [status, ~, ~] = mkdir([Data_path, 'To_Trash']);
     if status == false
         error('Cannot create the To_Thrash folder to move the useless files in.')
     end
@@ -7462,6 +7456,7 @@ end
 
 if isempty(MovedFiles)
     msgbox('The folders containing your database''s files are already pretty clean !')
+    rmdir([Data_path, 'To_Trash']);
 else
     text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.']; 
     answer = questdlg(text, 'Moved Files', 'OK !', 'See files moved','OK !');
