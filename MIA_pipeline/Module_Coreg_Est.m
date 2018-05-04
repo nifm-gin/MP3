@@ -148,22 +148,15 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FixedImInfo = niftiinfo(files_in.In1{1});
-[path, name, ~] = fileparts(files_in.In1{1});
-FixedImJsonfile = [path, filesep, name, '.json'];
-fid = fopen(FixedImJsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-FixedImJSON = jsondecode(raw);
+% FixedImInfo = niftiinfo(files_in.In1{1});
+% [path, name, ~] = fileparts(files_in.In1{1});
+% FixedImJsonfile = [path, filesep, name, '.json'];
+% fid = fopen(FixedImJsonfile, 'r');
+% raw = fread(fid, inf, 'uint8=>char');
+% fclose(fid);
+% %raw = reshape(raw, 1,length(raw));
+% FixedImJSON = jsondecode(raw);
 
-% matlabbatch{1}.spm.spatial.coreg.estimate.ref = '<UNDEFINED>';
-% matlabbatch{1}.spm.spatial.coreg.estimate.source = '<UNDEFINED>';
-% matlabbatch{1}.spm.spatial.coreg.estimate.other = {''};
-
-% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [4 2];
-% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
-% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 
 matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
 % First duplicate the source scan using the prefix string (user-defined)
@@ -171,10 +164,11 @@ matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
 copyfile(files_in.In2{1},  files_out.In2{1})
 copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
 % if the image of reference is > to 3D need to split the data
-header = niftiinfo(files_out.In2{1});
-if length(header.ImageSize) > 3
+% header = niftiinfo(files_out.In2{1});
+header = spm_vol(files_out.In2{1});
+if length(header.dim) > 3
      other = {};
-    for j=2:header.ImageSize(4)
+    for j=2:header.dim(4)
         other= [other, [files_out.In2{1}, ',', num2str(j)]];
     end
 end
@@ -186,15 +180,16 @@ if isfield(files_in, 'In3')
     end
     for i=1:length(files_in.In3)
         if ~isempty(files_in.In3{i})
-            header = niftiinfo(files_in.In3{i});
+            %header = niftiinfo(files_in.In3{i});
+            header = spm_vol(files_in.In3{i});
             % First duplicate all the 'Other' scans using the prefix string (user-defined)
             % Otherwise the CoregEstimate will overwrite the raw files!!
             copyfile(files_in.In3{i},  files_out.In3{i})
             if isfile(strrep(files_in.In3{i},'.nii','.json'))
                 copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
             end
-            if length(header.ImageSize) > 3
-                for j=1:header.ImageSize(4)
+            if length(header.dim) > 3
+                for j=1:header.dim(4)
                     other= [other, [files_out.In3{i}, ',', num2str(j)]];
                 end
             else
@@ -206,13 +201,13 @@ if isfield(files_in, 'In3')
 end
 
 
-
-matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
-if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
-else
+% 
+% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
+% if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
+%     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
+% else
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = str2num(opt.Separation);
-end
+% end
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = str2num(opt.Tolerence); %#ok<*ST2NM>
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = str2num(opt.Hist_Smooth);
 
