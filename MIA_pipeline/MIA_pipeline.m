@@ -1415,7 +1415,7 @@ end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
 
 if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, Derived_data']);
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data']);
     if status == false
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end
