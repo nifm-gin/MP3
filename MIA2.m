@@ -7201,7 +7201,7 @@ else
     handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
     handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
-    handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI', filesep];
+    handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI_data', filesep];
     handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
 end
