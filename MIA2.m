@@ -4861,8 +4861,7 @@ function MIA_menu_save_database_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if ~isfield(handles.database.Properties.UserData , 'db_filename')
-    path_root = pwd;
-    [filename,pathname] = uiputfile('.mat','Please enter the name of the database', path_root );%pathstr(1:file_sep(end)));
+    [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
     if pathname == 0
         return
     end
