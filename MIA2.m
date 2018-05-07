@@ -1929,21 +1929,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
             
         end
     end
-    
   
-    
-    %     else
-    %         if ~isempty(get(handles.MIA_plot1, 'Children'))
-    %             delete(get(handles.MIA_plot1, 'Children'));
-%             legend(handles.MIA_plot1,'off');
-%             hold(handles.MIA_plot1, 'off');
-%             set(handles.MIA_plot1, 'XTick', []);
-%             set(handles.MIA_plot1, 'YTick', []);
-%         end
-%         if isfield(handles, 'data_ploted')
-%             handles = rmfield(handles, 'data_ploted');
-%         end
-%     end
     % Update the VOI_cluster matrix (new cluster, resized...)
     if isfield(handles, 'ROI_cluster_resized')
         handles = MIA_update_VOI_cluster_displayed(hObject,handles);
@@ -1967,72 +1953,64 @@ else
     isZoomed = false;
 end
 
-
-VOI_values = {};
-Slice_values= {};
-
 % display every data available (image, ROI, cluster...)
-
 if isfield(handles, 'data_displayed')
     number_of_data_to_displayed = numel(fieldnames(handles.data_displayed));
     axe = zeros(1,size( handles.data_displayed.image,4));
+    colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
     for i=1:size(handles.data_displayed.image,4)
         
         stri = num2str(i);
+        current_data = ['MIA_data' stri];
         % store current contrast
-        current_contrast = get(handles.(sprintf('MIA_data%d', i)), 'Clim');
-        if     ~isempty(get(handles.(sprintf('MIA_data%d', i)), 'Children'))
-            delete(get(handles.(sprintf('MIA_data%d', i)), 'Children'));
+        current_contrast = get(handles.(current_data), 'Clim');
+        if     ~isempty(get(handles.(current_data), 'Children'))
+            delete(get(handles.(current_data), 'Children'));
         end
         switch number_of_data_to_displayed
             case 1 % image only
                 image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
-                image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
+                image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
                 % Exlude the 2 extremum (min, max) of the Clim
-                if sum(image_to_display(:)) ~= 0  &&...
-                        sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
-                        prctile_copy(image_to_display(:),1) ~= prctile_copy(image_to_display(:),99)
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
+                min = prctile_copy(image_to_display(:),1);
+                max = prctile_copy(image_to_display(:),99);
+                 if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+                    set(handles.(current_data), 'Clim', [min max]);
+                 end
+                % apply the colormap selected
+                colormap(handles.(current_data),  colormap_selected{:})
+                if isZoomed == true
+                    set(handles.(current_data),'XLim', XLim_zoomed);
+                    set(handles.(current_data),'YLim', YLim_zoomed);
+                    setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
+                else
+                    set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+                    set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+                end
+                set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+            case 2 % image + ROI
+                 % Clip image displayed at the 2 extremum (min, max)                 
+                image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
+                image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data), 'Tag', current_data);
+                % Exlude the 2 extremum (min, max) of the Clim
+                min = prctile_copy(image_to_display(:),1);
+                max = prctile_copy(image_to_display(:),99);
+                if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+                    set(handles.(current_data), 'Clim', [min max]);
                 end
                 % apply the colormap selected
-                colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-                eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
+                colormap(handles.(current_data),  colormap_selected{:})
                 
                 if isZoomed == true
-                    set(handles.(sprintf('MIA_data%d', i)),'XLim', XLim_zoomed);
-                    set(handles.(sprintf('MIA_data%d', i)),'YLim', YLim_zoomed);
-                    setappdata(handles.(sprintf('MIA_data%d', i)),'matlab_graphics_resetplotview', origInfo);
-                else
-                    set(handles.(sprintf('MIA_data%d', i)), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-                    set(handles.(sprintf('MIA_data%d', i)), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
-                end
-                set(handles.(sprintf('MIA_data%d', i)), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-            case 2 % image + ROI
-                 % Clip image displayed at the 2 extremum (min, max)
-                image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                image(image_to_display,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
-                 % Exlude the 2 extremum (min, max) of the Clim
-%                 if sum(image_to_display(:)) ~= 0 && ~isnan(sum(image_to_display(:))) && sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0
-%                     set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
-%                 end
-                 if sum(image_to_display(:)) ~= 0  &&...
-                        sum([prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)] ~= [0 0]) ~= 0 && ...
-                        prctile_copy(image_to_display(:),1) ~= prctile_copy(image_to_display(:),99)
-                    set(handles.(sprintf('MIA_data%d', i)),  'Clim', [prctile_copy(image_to_display(:),1) prctile_copy(image_to_display(:),99)]);
-                end
-                colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-                eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
-                
-                if isZoomed == true
-                    set(handles.(sprintf('MIA_data%d', i)),'XLim', XLim_zoomed);
-                    set(handles.(sprintf('MIA_data%d', i)),'YLim', YLim_zoomed);
-                    setappdata(handles.(sprintf('MIA_data%d', i)),'matlab_graphics_resetplotview', origInfo);
+                    set(handles.(current_data),'XLim', XLim_zoomed);
+                    set(handles.(current_data),'YLim', YLim_zoomed);
+                    setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
                     
                 else
-                    set(handles.(sprintf('MIA_data%d', i)), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-                    set(handles.(sprintf('MIA_data%d', i)), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+                    set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+                    set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
                 end
-                hold(handles.(sprintf('MIA_data%d', i)), 'on');
+                hold(handles.(current_data), 'on');
                 if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
                     fillroi = true;
                     trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
@@ -2041,73 +2019,20 @@ if isfield(handles, 'data_displayed')
                 end
                 % if ROI on the slice
                 if handles.mode == 1
-                    ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
+                  %  ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
                     for x = 1:numel(handles.data_loaded.ROI)
                         if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
+                            
                             roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
                             if fillroi
                                 roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
-                                image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
+                                image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
                             else
-                                contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
+                                contour(handles.(current_data), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
                                     'Visible', 'on',...
                                     'tag','ROI_contour');
-                            end
-                            
-                            tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                            % Calculate the ROI volume for this slice (in
-                            % mm2)
-                            Voxel_size = abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(1,1)) *...
-                                abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(2,2)) *...
-                                abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(3,3));
-                            
-                            Volume_slice = sum(logical(roi_a_appliquer(:))) * Voxel_size;
-                            % calculate the mean value inside the ROI over the
-                            % Slice (mean / SD)
-                            mean_slice = nanmean(tmp_slice(logical(roi_a_appliquer)));
-                            sd_slice =  nanstd(tmp_slice(logical(roi_a_appliquer)));
-                        else
-                            Volume_slice = nan;
-                            mean_slice = nan;
-                            sd_slice =  nan;
-                        end
-                        
-                        data_3D = squeeze(handles.data_displayed.image(:,:,:,i)); %(:,:,:,get(handles.(sprintf('MIA_data%d_echo_slider', i)), 'Value'),get(handles.(sprintf('MIA_data%d_expt_slider', i)), 'Value')));
-                        % Calculate the ROI volume for this ROI (in mm2)
-                        Voxel_size = abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(1,1)) *...
-                            abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(2,2)) *...
-                            abs(handles.data_loaded.Scan(get(handles.MIA_orientation_space_popupmenu, 'Value')).V(1).mat(3,3));
-                        Volume_VOI = sum(logical(handles.data_loaded.ROI(x).nii(:))) * Voxel_size;
-                        % calculate the mean value inside the ROI over the
-                        % volume (mean / SD)
-                        mean_VOI = nanmean(data_3D(logical(handles.data_loaded.ROI(x).nii)));
-                        sd_VOI =  nanstd(data_3D(logical(handles.data_loaded.ROI(x).nii)));
-                        
-                        clear data_slice data_3D
-                        
-                        if i == 1
-                            Slice_values(x*3-2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-Volume (mm3)']} ;
-                            Slice_values(x*3-2,i+1) = num2cell(Volume_slice);
-                            Slice_values(x*3-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-mean']} ;
-                            Slice_values(x*3-1,i+1) = num2cell(mean_slice);
-                            Slice_values(x*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-slice-SD']} ;
-                            Slice_values(x*3,i+1) = num2cell(sd_slice);
-                            
-                            VOI_values(x*3-2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-Volume (mm3)']} ;
-                            VOI_values(x*3-2,i+1) = num2cell(Volume_VOI);
-                            VOI_values(x*3-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-mean']} ;
-                            VOI_values(x*3-1,i+1) = num2cell(mean_VOI);
-                            VOI_values(x*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(x))) '-VOI-SD']} ;
-                            VOI_values(x*3,i+1) = num2cell(sd_VOI);
-                        else
-                            Slice_values(x*3-2,i+1) = num2cell(Volume_slice);
-                            Slice_values(x*3-1,i+1) = num2cell(mean_slice);
-                            Slice_values(x*3,i+1) = num2cell(sd_slice);
-                            
-                            VOI_values(x*3-2,i+1) = num2cell(Volume_VOI);
-                            VOI_values(x*3-1,i+1) = num2cell(mean_VOI);
-                            VOI_values(x*3,i+1) = num2cell(sd_VOI);
-                        end
+                            end                            
+                        end                       
                     end
                 else
                     if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
@@ -2123,20 +2048,10 @@ if isfield(handles, 'data_displayed')
                         eval(['hold(handles.MIA_data' stri ', ''on'');']);
                         eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
                         eval(['hold(handles.MIA_data' stri ', ''off'');']);
-                        
-                        % calculate the mean value inside the ROI over the
-                        % Slice (mean / SD)
-                        tmp_slice = squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-                        
-                        mean_slice = nanmean(tmp_slice(logical(roi_a_appliquer)));
-                        sd_slice =  nanstd(tmp_slice(logical(roi_a_appliquer)));
-                    else
-                        mean_slice = nan;
-                        sd_slice =  nan;
                     end
                 end
-                set(handles.(sprintf('MIA_data%d', i)), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-                hold(handles.(sprintf('MIA_data%d', i)), 'off');
+                set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+                hold(handles.(current_data), 'off');
             case 3 % image + ROI + cluster
                 
                 %On charge le fichier contenant : "uvascroi" : toutes les
@@ -2316,26 +2231,20 @@ if isfield(handles, 'data_displayed')
                 
         end
         
-        axe(i) = handles.(sprintf('MIA_data%d', i));
+        axe(i) = handles.(current_data);
         %%%%%%%% activate clic on graph MIA_dataXX_ButtonDownFcn
-        set(get(handles.(sprintf('MIA_data%d', i)), 'Children'), 'HitTest', 'off');
-        set(handles.(sprintf('MIA_data%d', i)),'ButtonDownFcn', @MIA_clic_on_image);
-        set(get(handles.(sprintf('MIA_data%d', i)), 'Children'), 'ButtonDownFcn', @MIA_clic_on_image);
+        set(get(handles.(current_data), 'Children'), 'HitTest', 'off');
+        set(handles.(current_data),'ButtonDownFcn', @MIA_clic_on_image);
+        set(get(handles.(current_data), 'Children'), 'ButtonDownFcn', @MIA_clic_on_image);
         % update contrast using the values stored (if it is not a new scan
         % loaded)
         if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MIA_slider_slice') || ...
              strcmp(get(hObject, 'Tag'), 'MIA_new_roi'))   
-            set(handles.(sprintf('MIA_data%d', i)), 'Clim', current_contrast );
+            set(handles.(current_data), 'Clim', current_contrast );
         end
         
     end
     
-end
-if number_of_data_to_displayed == 2 && ~isempty(VOI_values)
-    set(handles.MIA_table1, 'Data', [Slice_values' VOI_values']');
-    width= get(handles.MIA_table1,'ColumnWidth' );
-    width{1} = max(cellfun(@length,Slice_values(:,1)))*6;
-    set(handles.MIA_table1,'ColumnWidth', width)
 end
 
 %Si on affiche un cluster, on affiche les statistiques calcul??es
@@ -2402,13 +2311,14 @@ switch get(hObject, 'Tag')
             handles = rmfield(handles, 'data_displayed');
         end
         if handles.mode == 1
+            
             for i=1:handles.data_loaded.number_of_scan
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
                 eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
-               
+                
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
             end
             
@@ -2635,6 +2545,9 @@ end
 %coordonates = handles.data_ploted.coordonates;
 ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
 Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
+
+table_data = cell(2*handles.data_loaded.number_of_ROI,handles.data_loaded(1).number_of_scan+1);
+ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
 for ii = 1:handles.data_loaded.number_of_ROI
     voi_empty = 0;
     strii=num2str(ii);
@@ -2740,6 +2653,11 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 end
                 legende_txt(ii,:) = ROI_names(ii,:);
         end
+        %update tablee
+        table_data(ii*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-mean']};
+        table_data(ii*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
+        table_data(ii*2-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
+        table_data(ii*2,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
     end
     clear VOI_data
 end
@@ -2759,6 +2677,13 @@ set(get(handles.MIA_plot1, 'XLabel'), 'String', get(handles.MIA_data1_title, 'St
 
 set(get(handles.MIA_plot1, 'ZLabel'), 'String', get(handles.MIA_data3_title, 'String'));
 hold(handles.MIA_plot1, 'off');
+
+
+
+%update table1
+
+set(handles.MIA_table1, 'Data', table_data);
+
 
 
 
@@ -4931,7 +4856,7 @@ if strcmp('Other', char(ROI_listing(VOI_number))) == 1
     if isempty(newVOI_name)
         return
     end
-    if sum(strcmp(newVOI_name, ROI_listing) > 0)
+    if sum(strcmp(newVOI_name, cellstr(ROI_listing)) > 0)
         warning_text = sprintf('Can not draw this "New" ROI, because %s ROI exist already,\nplease try again and select %s ROI in the ROIs list proposed',...
             newVOI_name{:}, newVOI_name{:});
         msgbox(warning_text, 'ROI warning') ;
