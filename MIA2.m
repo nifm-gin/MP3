@@ -2634,8 +2634,9 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3).*VOI_data(:,4)) == 0,:) =[];
                 % remove nan
-                VOI_data(isnan(VOI_data(:,1)),:) = [];
-                
+%                 VOI_data(isnan(VOI_data(:,1)),:) = [];
+                VOI_data(isnan(mean(VOI_data,2)),:) = [];
+
                 color4d = zeros(size(VOI_data(:,4),1),3);
                 tmp = jet(256);
                 mini=min(VOI_data(:,4));
@@ -2656,6 +2657,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         %update tablee
         table_data(ii*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-mean']};
         table_data(ii*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
+        VOI_data(VOI_data==0)=nan;
         table_data(ii*2-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
         table_data(ii*2,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
     end
@@ -4163,9 +4165,9 @@ table_data(5,2) = {std(VOI_data(:,4))};
 table_data(6,2) = {mean(VOI_data(:,5))};
 table_data(7,2) = {std(VOI_data(:,5))};
 
-voxel_volume = abs(handles.data_loaded.Scan(1).V.mat(1,1)*...
-    handles.data_loaded.Scan(1).V.mat(2,2)*...
-    handles.data_loaded.Scan(1).V.mat(3,3));
+voxel_volume = abs(handles.data_loaded.Scan(1).V(1).mat(1,1)*...
+    handles.data_loaded.Scan(1).V(1).mat(2,2)*...
+    handles.data_loaded.Scan(1).V(1).mat(3,3));
 
 table_data(8,2) = {numel(VOI_data(:,1))*voxel_volume};
 set(handles.MIA_table1, 'Data', table_data);
@@ -7832,7 +7834,11 @@ function MIA_test_button_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-
+data(:,1) = get(get(handles.MIA_plot1, 'Children'), 'XData');
+data(:,2) = get(get(handles.MIA_plot1, 'Children'), 'YData');
+data(isnan(data(:,1)),:) = [];
+data(isnan(data(:,2)),:) = [];
+mat2clipboard(data)
 % handles.database.Type(handles.database.SequenceName == 'Mask') = 'ROI';
 % guidata(hObject, handles)
 %mat2clipboard(get(handles.MIA_table1, 'Data'));
