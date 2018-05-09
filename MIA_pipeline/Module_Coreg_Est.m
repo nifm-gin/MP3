@@ -166,9 +166,9 @@ copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii'
 % if the image of reference is > to 3D need to split the data
 % header = niftiinfo(files_out.In2{1});
 header = spm_vol(files_out.In2{1});
-if length(header.dim) > 3
+if numel(header) > 1
      other = {};
-    for j=2:header.dim(4)
+    for j=2:numel(header)
         other= [other, [files_out.In2{1}, ',', num2str(j)]];
     end
 end
@@ -188,8 +188,8 @@ if isfield(files_in, 'In3')
             if isfile(strrep(files_in.In3{i},'.nii','.json'))
                 copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
             end
-            if length(header.dim) > 3
-                for j=1:header.dim(4)
+            if numel(header) > 1
+                for j=1:numel(header)
                     other= [other, [files_out.In3{i}, ',', num2str(j)]];
                 end
             else
