@@ -5014,8 +5014,15 @@ switch ROI_case
         
         %transform the ROI_matrix in order to match to the nii hearder
         %(rotation/translation)
+        %ROI_matrix(:,:,1) = createMask(hroi);
+        %adaptedstruct = handles.data_loaded.Scan(Scan_of_reference_selected).V;
+%         indextomove = 2;
+%         for i=1:length(adaptedstruct)
+%             adaptedstruct(i).dim = adaptedstruct(i).dim(1:2);
+%             adaptedstruct(i).mat(indextomove,4) = adaptedstruct(i).mat(indextomove,4)+(slice_nbr-1)*adaptedstruct(i).mat(indextomove,indextomove);
+%         end
         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
-        ROI_matrix = createMask(hroi);
+        
     case 'Union'
         handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi);
         %         handles.data_loaded.ROI(ROI_loaded_idex).nii(handles.data_loaded.ROI(ROI_loaded_idex).nii > 0 ) = 1;
@@ -5059,10 +5066,12 @@ else
     V_ROI.pinfo(1:2) = [1;0];       % do not apply any scaling when saving as float data
 end
 % save the ROI in nii file (could be a new ROI or and old but updated)
-V_ROI.dim = [V_ROI.dim(1), V_ROI.dim(2), 1];
-%V_ROI.mat = adaptedstruct(1).mat;
-indextomove = 3;
-V_ROI.mat(indextomove,4) = V_ROI.mat(indextomove,4)+(slice_nbr-1)*V_ROI.mat(indextomove,indextomove);
+[ROI_matrix, FinalMat] = CropROI(ROI_matrix, V_ROI.mat);
+V_ROI.dim = [size(ROI_matrix,1), size(ROI_matrix,2), size(ROI_matrix,3)];
+% V_ROI.mat = adaptedstruct(1).mat;
+V_ROI.mat = FinalMat;
+% indextomove = 3; %% Not X, not Y, but Z
+% V_ROI.mat(indextomove,4) = V_ROI.mat(indextomove,4)+(slice_nbr-1)*V_ROI.mat(indextomove,indextomove);
 
 spm_write_vol(V_ROI,ROI_matrix);
 % spm_jsonwrite(fullfilename(handles, roi_index, '.json'), hroi_data);

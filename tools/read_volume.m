@@ -14,7 +14,7 @@ Y   = zeros(Vo(1).dim(1:3));       % initialize output volume
 Vi_size = Vi(1).private.dat.dim;
 
 switch  length(Vi_size)
-    case 3  %% 3D data
+    case {2,3}  %% 3D data
         for p = 1:Vo(1).dim(3)
             B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
             M = inv(B*(Vo(1).mat\Vi.mat));
