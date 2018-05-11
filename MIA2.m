@@ -1959,7 +1959,6 @@ if isfield(handles, 'data_displayed')
     axe = zeros(1,size( handles.data_displayed.image,4));
     colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
     for i=1:size(handles.data_displayed.image,4)
-        
         stri = num2str(i);
         current_data = ['MIA_data' stri];
         % store current contrast

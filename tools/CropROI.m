@@ -16,7 +16,9 @@ FinalSlice = ROISlices(end);
 
 OutputVol = InputVol(:,:,FirstSlice:FinalSlice);
 OutputMat = InputMat;
-OutputMat(3,4) = InputMat(3,4) + (FirstSlice-1)*InputMat(3,3);
+Movement = [0;0;FirstSlice-1;1];
+OutputMat(:,4) = InputMat * Movement;
+%OutputMat(3,4) = InputMat(3,4) + (FirstSlice-1)*InputMat(3,3);
 
 end
 
