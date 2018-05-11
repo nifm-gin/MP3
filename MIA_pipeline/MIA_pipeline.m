@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 23-Apr-2018 11:35:45
+% Last Modified by GUIDE v2.5 11-May-2018 18:23:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -282,6 +282,7 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 %module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 %set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 
 guidata(hObject, handles);
 
@@ -592,6 +593,7 @@ end
 %handles.tmp_database = table();
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+set(handles.MIA_pipeline_JobsList, 'String', {''});
 guidata(hObject, handles);
 
 
@@ -1958,6 +1960,16 @@ function MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+if SelectedIndex == 0
+    JobNames = {''};
+else
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    JobNames = fieldnames(Module.Jobs);
+end
+set(handles.MIA_pipeline_JobsList, 'String',JobNames) 
+
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_pipeline_listbox contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_pipeline_listbox
@@ -1998,6 +2010,12 @@ handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules,
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
+    set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
+    MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+else 
+    set(handles.MIA_pipeline_JobsList, 'String', {''});
+end
 guidata(hObject, handles);
 
 
@@ -2068,6 +2086,7 @@ set(handles.MIA_pipeline_execute_button, 'Enable', 'off');
 set(handles.MIA_pipeline_module_listbox, 'Enable', 'off');
 set(handles.MIA_pipeline_Edit_Module, 'Enable', 'off');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
+set(handles.MIA_pipeline_JobsList, 'Enable', 'off');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
 
@@ -2158,7 +2177,110 @@ set(handles.MIA_pipeline_execute_button, 'Enable', 'on');
 set(handles.MIA_pipeline_module_listbox, 'Enable', 'on');
 set(handles.MIA_pipeline_Edit_Module, 'Enable', 'on');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
+set(handles.MIA_pipeline_JobsList, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
 
 % MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+
+
+% --- Executes on selection change in MIA_pipeline_JobsList.
+function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsList (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+Job = Module.Jobs.(SelectedJob);
+Names = fieldnames(Job);
+String = {};
+for i=2:length(Names)
+    Param = Job.(Names{i});
+    NamesEntries = fieldnames(Param);
+    for j=1:length(NamesEntries)
+        String = [String; {[Names{i}, ' ', NamesEntries{j}]}];
+    end
+end
+set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', String)
+
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsList contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsList
+
+
+% --- Executes during object creation, after setting all properties.
+function MIA_pipeline_JobsList_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsList (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in MIA_pipeline_JobsParametersFieldsList.
+function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsParametersFieldsList (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+Job = Module.Jobs.(SelectedJob);
+SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
+SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
+Fields = strsplit(SelectedParameterField);
+Param = Job.(Fields{1});
+Entrie = Param.(Fields{2});
+if ~islogical(Entrie) && ~istable(Entrie)
+    set(handles.MIA_pipeline_JobsParametersValues, 'String', Entrie)
+else
+    set(handles.MIA_pipeline_JobsParametersValues, 'String', {'Cannot display this type.'})
+end
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsParametersFieldsList contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsParametersFieldsList
+
+
+% --- Executes during object creation, after setting all properties.
+function MIA_pipeline_JobsParametersFieldsList_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsParametersFieldsList (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in MIA_pipeline_JobsParametersValues.
+function MIA_pipeline_JobsParametersValues_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsParametersValues (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsParametersValues contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsParametersValues
+
+
+% --- Executes during object creation, after setting all properties.
+function MIA_pipeline_JobsParametersValues_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_JobsParametersValues (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
