@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 11-May-2018 18:23:54
+% Last Modified by GUIDE v2.5 14-May-2018 14:52:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2017,6 +2017,9 @@ if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 else 
     set(handles.MIA_pipeline_JobsList, 'String', {''});
+    set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', {''});
+    set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
+    
 end
 guidata(hObject, handles);
 
@@ -2227,8 +2230,9 @@ end
 %         String = [String; {[Names{i}, ' ', NamesEntries{j}]}];
 %     end
 % end
-MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', String)
+MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
+
 
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsList contents as cell array
@@ -2308,3 +2312,27 @@ function MIA_pipeline_JobsParametersValues_CreateFcn(hObject, eventdata, handles
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in MIA_pipeline_save_pipeline.
+function MIA_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_save_pipeline (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~isempty(handles.MIA_pipeline_ParamsModules)
+    [file, path] = uiputfile('MyPipeline.mat');
+    Pipeline = handles.MIA_pipeline_ParamsModules;
+    %selpath = uigetdir(handles.MIA_data.database.Properties.UserData.MIA_data_path,'Please select a file to save your pipeline in.');
+    save([path, file],'-struct', 'Pipeline')
+    msgbox('Pipeline saved!','Done!');
+else
+    msgbox('There is no pipeline to save ...', 'Error');
+end
+
+
+
+% --- Executes on button press in MIA_pipeline_load_pipeline.
+function MIA_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_load_pipeline (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
