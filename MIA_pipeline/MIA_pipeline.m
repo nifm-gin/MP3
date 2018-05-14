@@ -1968,7 +1968,9 @@ else
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     JobNames = fieldnames(Module.Jobs);
 end
-set(handles.MIA_pipeline_JobsList, 'String',JobNames) 
+set(handles.MIA_pipeline_JobsList, 'String',JobNames)
+MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+
 
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_pipeline_listbox contents as cell array
@@ -2087,6 +2089,8 @@ set(handles.MIA_pipeline_module_listbox, 'Enable', 'off');
 set(handles.MIA_pipeline_Edit_Module, 'Enable', 'off');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
 set(handles.MIA_pipeline_JobsList, 'Enable', 'off');
+set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'off');
+set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'off');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
 
@@ -2178,6 +2182,8 @@ set(handles.MIA_pipeline_module_listbox, 'Enable', 'on');
 set(handles.MIA_pipeline_Edit_Module, 'Enable', 'on');
 set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
 set(handles.MIA_pipeline_JobsList, 'Enable', 'on');
+set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'on');
+set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
 
@@ -2195,15 +2201,33 @@ Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
 SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
 Job = Module.Jobs.(SelectedJob);
-Names = fieldnames(Job);
+%Names = fieldnames(Job);
 String = {};
-for i=2:length(Names)
-    Param = Job.(Names{i});
-    NamesEntries = fieldnames(Param);
-    for j=1:length(NamesEntries)
-        String = [String; {[Names{i}, ' ', NamesEntries{j}]}];
-    end
+
+Inputs = fieldnames(Job.files_in);
+for i=1:length(Inputs)
+    String = [String; {['files_in', ' ', Inputs{i}]}];
 end
+
+Outputs = fieldnames(Job.files_out);
+for i=1:length(Outputs)
+    String = [String; {['files_out', ' ', Outputs{i}]}];
+end
+
+UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
+UserFields = UserFields(~cellfun(@isempty,UserFields));
+for i=1:length(UserFields)
+    String = [String; {['opt', ' ', UserFields{i}]}];
+end
+
+% for i=2:length(Names)
+%     Param = Job.(Names{i});
+%     NamesEntries = fieldnames(Param);
+%     for j=1:length(NamesEntries)
+%         String = [String; {[Names{i}, ' ', NamesEntries{j}]}];
+%     end
+% end
+MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', String)
 
 
