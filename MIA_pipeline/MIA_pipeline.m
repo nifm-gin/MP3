@@ -1970,7 +1970,8 @@ else
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     JobNames = fieldnames(Module.Jobs);
 end
-set(handles.MIA_pipeline_JobsList, 'String',JobNames)
+set(handles.MIA_pipeline_JobsList, 'String',JobNames);
+set(handles.MIA_pipeline_JobsList, 'Value', 1);
 MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 
 
@@ -2233,6 +2234,7 @@ end
 %     end
 % end
 set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', String)
+set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1)
 MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
 
 
@@ -2270,6 +2272,10 @@ SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{Se
 Fields = strsplit(SelectedParameterField);
 Param = Job.(Fields{1});
 Entrie = Param.(Fields{2});
+if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
+    [~,name,~] = fileparts(Entrie{1});
+    Entrie = {name};
+end
 if ~islogical(Entrie) && ~istable(Entrie)
     set(handles.MIA_pipeline_JobsParametersValues, 'String', Entrie)
 else
