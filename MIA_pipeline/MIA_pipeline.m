@@ -1716,6 +1716,7 @@ function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
 % define which patient is selected
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
+handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
 handles.FilterParameters{2} = {'Tp', char(handles.MIA_pipeline_TmpDatabase.Tp(data_selected(1)))};
 
@@ -1774,6 +1775,7 @@ function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
 % define which patient is selected
 data_selected =  MIA2('get_data_selected',handles.MIA_data);
 % add the patient filter
+handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
 
 [hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
@@ -1782,7 +1784,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
 
-
+%% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
@@ -2319,6 +2321,9 @@ function MIA_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_save_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    msgbox('There is no pipeline to save ...', 'No Pipeline');
+end
 if ~isempty(handles.MIA_pipeline_ParamsModules)
     [file, path] = uiputfile('MyPipeline.mat');
     Pipeline = handles.MIA_pipeline_ParamsModules;
@@ -2326,7 +2331,7 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
     save([path, file],'-struct', 'Pipeline')
     msgbox('Pipeline saved!','Done!');
 else
-    msgbox('There is no pipeline to save ...', 'Error');
+    msgbox('There is no pipeline to save ...', 'No Pipeline');
 end
 
 
