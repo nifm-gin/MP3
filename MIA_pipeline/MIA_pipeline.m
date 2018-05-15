@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 14-May-2018 14:52:31
+% Last Modified by GUIDE v2.5 15-May-2018 17:44:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2347,3 +2347,40 @@ function MIA_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_load_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in MIA_pipeline_Delete_Job.
+function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Delete_Job (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+Job = Module.Jobs.(SelectedJob);
+Module.Jobs = rmfield(Module.Jobs, SelectedJob);
+if isempty(fieldnames(Module.Jobs))
+    MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
+    handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+else
+    
+    %% update Output databse of the  selected module.
+    Outputs = fieldnames(Job.files_out);
+    for i=1:length(Outputs)
+        Files = Job.files_out.(Outputs{i});
+        for j=1:length(Files)
+            [path, name, ~] = fileparts(Files{j});
+            line = Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:);
+            assert(line.Path == categorical(cellstr([path, filesep])));
+            Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
+        end
+    end
+    handles.MIA_pipeline_ParamsModules.(SelectedModule) =  Module;
+    [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+    [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+    MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+end
+guidata(hObject, handles);
