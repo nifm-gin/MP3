@@ -2330,11 +2330,46 @@ function MIA_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'MIA_pipeline_ParamsModules')
     msgbox('There is no pipeline to save ...', 'No Pipeline');
 end
+
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+    if status == false
+        error('Cannot create the Saved_Pipelines folder to save the pipelines.')
+    end
+end
+
+
 if ~isempty(handles.MIA_pipeline_ParamsModules)
-    [file, path] = uiputfile('MyPipeline.mat');
+    prompt = 'Name of the pipeline ?';
+    title = 'Saving';
+    dims = [1 35];
+    definput = {'MyPipeline'};
+    answer1 = inputdlg(prompt,title,dims,definput);
+    listing = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+    FinalAnswer = answer1{1};
+    Flag = true;
+    while any(contains([FinalAnswer, '.mat'], listing.mat)) && Flag
+        quest = 'This name is already used, do you want to overwrite it ?';
+        answer2 = questdlg(quest);
+        switch answer2
+            case 'Yes'
+                FinalAnswer = answer1{1};
+                Flag = false;
+            case 'No'
+                prompt = 'Name of the pipeline ?';
+                title = 'Saving';
+                dims = [1 35];
+                answer3 = inputdlg(prompt,title,dims);
+                FinalAnswer = answer3{1};
+            case 'Cancel'
+                return
+        end
+    end
+  
+    %[file, path] = uiputfile('MyPipeline.mat');
     Pipeline = handles.MIA_pipeline_ParamsModules;
     %selpath = uigetdir(handles.MIA_data.database.Properties.UserData.MIA_data_path,'Please select a file to save your pipeline in.');
-    save([path, file],'-struct', 'Pipeline')
+    save([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, FinalAnswer],'-struct', 'Pipeline');
     msgbox('Pipeline saved!','Done!');
 else
     msgbox('There is no pipeline to save ...', 'No Pipeline');
@@ -2347,6 +2382,34 @@ function MIA_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_load_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+list = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+[indx,tf] = listdlg('ListString',list.mat,'PromptString','Select the pipeline to load.', 'SelectionMode','single', 'ListSize',[300,300]);
+if tf == 0
+    return
+end
+PipelineName = list.mat{indx};
+pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
+Modules = fieldnames(pipeline);
+for i=1:length(Modules)
+    Module = pipeline.(Modules{i});
+    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    pipeline.(Modules{i}).Jobs = pipeline_module;
+    pipeline.(Modules{i}).OutputDatabase = output_database_module;
+end
+handles.MIA_pipeline_ParamsModules = pipeline;
+
+
+set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
+MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+
+guidata(hObject, handles);
+
+
+
+
+
 
 
 % --- Executes on button press in MIA_pipeline_Delete_Job.

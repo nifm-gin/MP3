@@ -114,6 +114,9 @@ handles.original_Java_LookAndFeel = extractBefore(handles.original_Java_LookAndF
 handles.original_Java_LookAndFeel = ['[LookAndFeel] ',handles.original_Java_LookAndFeel];
 handles.original_Java_LookAndFeel
 
+% A = javax.swing.UIManager.getLookAndFeel;
+% char(A.getClass) % 'class com.jgoodies.looks.plastic.Plastic3DLookAndFeel' Replace class by [LookAndFeel]
+
 
 % Update handles structure
 guidata(hObject, handles);
