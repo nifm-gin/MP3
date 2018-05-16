@@ -2369,6 +2369,13 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
     %[file, path] = uiputfile('MyPipeline.mat');
     Pipeline = handles.MIA_pipeline_ParamsModules;
     %selpath = uigetdir(handles.MIA_data.database.Properties.UserData.MIA_data_path,'Please select a file to save your pipeline in.');
+    Modules = fieldnames(Pipeline);
+    for i=1:length(Modules)
+        Module = Pipeline.(Modules{i});
+        Module = rmfield(Module, Jobs);
+        Module = rmfield(Module, OutputDatabase);
+        Pipeline.(Modules{i}) = Module;
+    end
     save([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, FinalAnswer],'-struct', 'Pipeline');
     msgbox('Pipeline saved!','Done!');
 else
@@ -2403,6 +2410,8 @@ handles.MIA_pipeline_ParamsModules = pipeline;
 set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
 MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
 guidata(hObject, handles);
 
