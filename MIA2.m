@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 29-Apr-2018 11:36:22
+% Last Modified by GUIDE v2.5 18-May-2018 14:42:12
 
 
 % Begin initialization code - DO NOT EDIT
@@ -7195,7 +7195,8 @@ clear hObjectb
 clear eventdatab
 clear handlesb
 
-
+data_loaded{1} = strrep(data_loaded{1}, 'null', '"''''"');
+data_loaded{1} = strrep(data_loaded{1}, '""', '"''''"');
 %javax.swing.UIManager.setLookAndFeel(newLnF);
 handles = guidata(handles.MIA_GUI);
 MIA_tmp_folder = [handles.database.Properties.UserData.MIA_data_path, 'tmp'];
@@ -8388,3 +8389,72 @@ for i = 1:handles.data_loaded.number_of_scan
 end
 disp(texture_values);
  warning('on')
+
+
+% --------------------------------------------------------------------
+function MIA_Import_ROI_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_Import_ROI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+
+ROI_listing = [unique(handles.database.SequenceName(handles.database.Type == 'ROI'))', 'Other']';
+% Enter the ROI's name
+[VOI_number,ok] = listdlg('Name', 'Bip', 'SelectionMode', 'single', 'ListString',  ROI_listing,'ListSize', [200 150],...
+    'PromptString', 'Select the Roi''s name');
+if ok == 0
+    return
+end
+
+if strcmp('Other', char(ROI_listing(VOI_number))) == 1
+    newVOI_name = inputdlg('Name of the new VOI ', 'Question?', 1, {''});
+    if isempty(newVOI_name)
+        return
+    end
+    if sum(strcmp(newVOI_name, cellstr(ROI_listing)) > 0)
+        warning_text = sprintf('Can not import this "New" ROI, because %s ROI exist already,\nplease try again and select %s ROI in the ROIs list proposed',...
+            newVOI_name{:}, newVOI_name{:});
+        msgbox(warning_text, 'ROI warning') ;
+        return
+    end
+
+else
+    newVOI_name = char(ROI_listing(VOI_number));
+end
+
+
+[file,path] = uigetfile('*.nii', 'Select your ROI:');
+
+Index = get_data_selected(handles);
+if isempty(Index)
+    set(handles.MIA_scan_VOIs_button, 'Value',0);
+    Index = get_data_selected(handles);
+end
+set(handles.MIA_scan_VOIs_button, 'Value',1);
+Entry_Selected = handles.database(Index,:);
+
+file_name = strcat(char(Entry_Selected.Patient),...
+    '-', char(Entry_Selected.Tp),...
+    '-ROI',...
+    '-', newVOI_name{1} ,...
+    '_',datestr(now,'yyyymmdd-HHMMSSFFF')); 
+
+status = copyfile([path, file], [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii']);
+
+if ~status
+    msgbox('An error occured when trying to copy your ROI file into the MIA ROI_data folder of your project.', 'Copy error') ;
+    return
+end
+
+New_Entry = Entry_Selected;
+New_Entry.Type = categorical(cellstr('ROI'));
+New_Entry.IsRaw = categorical(0);
+New_Entry.SequenceName = categorical(cellstr(newVOI_name{1}));
+New_Entry.Path = categorical(cellstr(handles.database.Properties.UserData.MIA_ROI_path));
+New_Entry.Filename = categorical(cellstr(file_name));
+handles.database = [handles.database; New_Entry];
+guidata(hObject, handles);
+MIA_update_database_display(hObject, eventdata, handles)
