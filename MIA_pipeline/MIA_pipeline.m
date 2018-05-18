@@ -2372,8 +2372,8 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
     Modules = fieldnames(Pipeline);
     for i=1:length(Modules)
         Module = Pipeline.(Modules{i});
-        Module = rmfield(Module, Jobs);
-        Module = rmfield(Module, OutputDatabase);
+        Module = rmfield(Module, 'Jobs');
+        Module = rmfield(Module, 'OutputDatabase');
         Pipeline.(Modules{i}) = Module;
     end
     save([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, FinalAnswer],'-struct', 'Pipeline');
@@ -2389,6 +2389,16 @@ function MIA_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_load_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+if isfield(handles, 'MIA_pipeline_ParamsModules')
+    if ~isempty(handles.MIA_pipeline_ParamsModules)
+        quest = 'By loading a new pipeline, your current pipeline will be deleted. Continue ?';
+        answer = questdlg(quest);
+        if strcmp(answer, 'No')
+            return
+        end
+    end
+end
 
 list = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
 [indx,tf] = listdlg('ListString',list.mat,'PromptString','Select the pipeline to load.', 'SelectionMode','single', 'ListSize',[300,300]);
