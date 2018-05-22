@@ -2043,7 +2043,12 @@ handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules,
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
-handles.BeforeEditedModule = handles.new_module;
+if isfield(handles, 'new_module')
+    handles.BeforeEditedModule = handles.new_module;
+else
+    handles.BeforeEditedModule = struct();
+end
+
 handles.new_module = Module.ModuleParams;
 
 module_parameters_string = handles.new_module.opt.table.Names_Display;
@@ -2142,10 +2147,14 @@ handles.FilterParameters = handles.BeforeEditedModuleFilters;
 
 
 
-%% Display the module we were creating before the Edit (Beggining)
-module_parameters_string = handles.new_module.opt.table.Names_Display;
-module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-
+%% Display the module we were creating before the Edit (Beginning)
+if ~isfield(handles.new_module, 'opt')
+    module_parameters_string = {};
+    module_parameters_fields = {};
+else
+    module_parameters_string = handles.new_module.opt.table.Names_Display;
+    module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+end
 %MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 handles.module_parameters_string = module_parameters_string;
@@ -2424,8 +2433,6 @@ MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
 guidata(hObject, handles);
-
-
 
 
 
