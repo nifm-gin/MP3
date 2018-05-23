@@ -8437,6 +8437,10 @@ end
 
 [file,path] = uigetfile('*.nii', 'Select your ROI:');
 
+if path == 0
+    return
+end
+
 Index = get_data_selected(handles);
 if isempty(Index)
     set(handles.MIA_scan_VOIs_button, 'Value',0);
