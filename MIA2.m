@@ -744,11 +744,18 @@ if isfield(handles, 'database')
     end
 end
 path_root=pwd;
-[filename, pathname]=uigetfile('*.mat','Open Mat File','MultiSelect','off');
-
+%[filename, pathname]=uigetfile('*.mat','Open Mat File','MultiSelect','off');
+selpath = uigetdir(path_root,'Select the project''s folder you want to open');
+pathname = selpath;
+%listfiles = what(selpath)
+filename = 'MIA_database.mat';
 if pathname == 0
     return
 else
+    if exist(fullfile(pathname, filename)) ~= 2
+        errordlg('The folder you selected might be corrupt. Please select a folder containing a MIA_database.mat file.', 'Cannot open project');
+        return
+    end
     cd(pathname);
     if ~strcmp(class(filename),'double') %#ok<STISA>
         %reset everything
@@ -4790,12 +4797,12 @@ function MIA_menu_save_database_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if ~isfield(handles.database.Properties.UserData , 'db_filename')
-    [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
-    if pathname == 0
-        return
-    end
-    handles.database.Properties.UserData.db_filename = filename;
-    handles.database.Properties.UserData.MIA_data_path = pathname;
+%     [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
+%     if pathname == 0
+%         return
+%     end
+    handles.database.Properties.UserData.db_filename = 'MIA_database.mat';
+    %handles.database.Properties.UserData.MIA_data_path = pathname;
 end
 
 handles.database.Properties.UserData.VOIs = handles.VOIs;
@@ -7281,6 +7288,8 @@ guidata(hObject, handles);
 
 MIA_update_database_display(hObject, eventdata, handles);
 msgbox('Import Done!', 'Message') ;
+MIA_menu_save_database_Callback(hObject, eventdata, handles)
+msgbox('Database saved!', 'Message') ;
 
 
 % --------------------------------------------------------------------
@@ -8442,6 +8451,13 @@ file_name = strcat(char(Entry_Selected.Patient),...
     '-', newVOI_name{1} ,...
     '_',datestr(now,'yyyymmdd-HHMMSSFFF')); 
 
+
+ROI_dest = handles.database.Properties.UserData.MIA_ROI_path;
+if ~exist(ROI_dest)
+    mkdir(ROI_dest)
+end
+%status = copyfile([path, file],ROI_dest);
+
 status = copyfile([path, file], [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii']);
 
 if ~status
@@ -8456,5 +8472,6 @@ New_Entry.SequenceName = categorical(cellstr(newVOI_name{1}));
 New_Entry.Path = categorical(cellstr(handles.database.Properties.UserData.MIA_ROI_path));
 New_Entry.Filename = categorical(cellstr(file_name));
 handles.database = [handles.database; New_Entry];
+set(handles.MIA_scans_list, 'Value',1);
 guidata(hObject, handles);
 MIA_update_database_display(hObject, eventdata, handles)
