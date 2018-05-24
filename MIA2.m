@@ -64,9 +64,9 @@ if ~isempty(varargin)
     handles.roi = varargin{3};
 end
 % init stuct/variables
-%handles.VOIs = {'Other'};
-%handles.histo = {'Other'}; %{'Pimo', 'ColIV', 'Tc+I_cerveau', 'Tc+I_ref'};
-%handles.resolution = [1 64 112 128 192 256 384 512 3000];
+handles.VOIs = {'Other'};
+handles.histo = {'Other'}; %{'Pimo', 'ColIV', 'Tc+I_cerveau', 'Tc+I_ref'};
+handles.resolution = [1 64 112 128 192 256 384 512 3000];
 handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
