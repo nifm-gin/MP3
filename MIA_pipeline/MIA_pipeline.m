@@ -580,6 +580,10 @@ function MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles
 % hObject    handle to MIA_pipeline_clear_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
+if strcmp(answer, 'No')
+    return
+end
 
 if isfield(handles, 'MIA_pipeline_ParamsModules')
     set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
@@ -593,7 +597,9 @@ end
 %handles.tmp_database = table();
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-set(handles.MIA_pipeline_JobsList, 'String', {''});
+%set(handles.MIA_pipeline_JobsList, 'String', {''});
+set(handles.MIA_pipeline_pipeline_listbox, 'Value', 0);
+MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
 
 
@@ -1963,8 +1969,9 @@ function MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-if SelectedIndex == 0
+if isequal(SelectedIndex, 0) || isempty(SelectedIndex)
     JobNames = {''};
+    
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
@@ -2201,6 +2208,8 @@ set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'on');
 set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
+set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
+MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 
 % MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 
@@ -2211,30 +2220,33 @@ function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
-Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-Job = Module.Jobs.(SelectedJob);
-%Names = fieldnames(Job);
-String = {};
+if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
+    String = {};
+else
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+    SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    Job = Module.Jobs.(SelectedJob);
+    %Names = fieldnames(Job);
+    String = {};
 
-Inputs = fieldnames(Job.files_in);
-for i=1:length(Inputs)
-    String = [String; {['files_in', ' ', Inputs{i}]}];
+    Inputs = fieldnames(Job.files_in);
+    for i=1:length(Inputs)
+        String = [String; {['files_in', ' ', Inputs{i}]}];
+    end
+
+    Outputs = fieldnames(Job.files_out);
+    for i=1:length(Outputs)
+        String = [String; {['files_out', ' ', Outputs{i}]}];
+    end
+
+    UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
+    UserFields = UserFields(~cellfun(@isempty,UserFields));
+    for i=1:length(UserFields)
+        String = [String; {['opt', ' ', UserFields{i}]}];
+    end
 end
-
-Outputs = fieldnames(Job.files_out);
-for i=1:length(Outputs)
-    String = [String; {['files_out', ' ', Outputs{i}]}];
-end
-
-UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
-UserFields = UserFields(~cellfun(@isempty,UserFields));
-for i=1:length(UserFields)
-    String = [String; {['opt', ' ', UserFields{i}]}];
-end
-
 % for i=2:length(Names)
 %     Param = Job.(Names{i});
 %     NamesEntries = fieldnames(Param);
@@ -2271,21 +2283,26 @@ function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, hand
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
-Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-Job = Module.Jobs.(SelectedJob);
-SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
-SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
-Fields = strsplit(SelectedParameterField);
-Param = Job.(Fields{1});
-Entrie = Param.(Fields{2});
-if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
-    [~,name,~] = fileparts(Entrie{1});
-    Entrie = {name};
+if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
+    Entrie = {};
+else
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+    SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    Job = Module.Jobs.(SelectedJob);
+    SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
+    SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
+    Fields = strsplit(SelectedParameterField);
+    Param = Job.(Fields{1});
+    Entrie = Param.(Fields{2});
+    if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
+        [~,name,~] = fileparts(Entrie{1});
+        Entrie = {name};
+    end
 end
 if ~islogical(Entrie) && ~istable(Entrie)
+    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1)
     set(handles.MIA_pipeline_JobsParametersValues, 'String', Entrie)
 else
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {'Cannot display this type.'})
@@ -2410,6 +2427,10 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
 end
 
 list = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+if isempty(list)
+    msgbox('There is no saved pipelines');
+    return
+end
 [indx,tf] = listdlg('ListString',list.mat,'PromptString','Select the pipeline to load.', 'SelectionMode','single', 'ListSize',[300,300]);
 if tf == 0
     return
