@@ -453,12 +453,13 @@ job_status_old = job_status;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Stage 3 : Set up the 'restart' flags %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+String = {};
 flag_restart = false([1 length(job_status)]);
 flag_start = false([1 length(job_status)]);
 flag_start(ismember(job_status_old,{'none','failed','exit'})) = true;
 if flag_verbose
     fprintf('\nSetting up the to-do list. The following jobs will be executed ...\n');
+    String = [String, {sprintf('\nSetting up the to-do list. The following jobs will be executed ...\n')}];
 end
 lmax = 0;
 for num_j = 1:nb_jobs
@@ -476,6 +477,7 @@ for num_j = 1:nb_jobs
         flag_restart_job = true;
         if flag_verbose
             fprintf('    %s%s(failed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+            String = [String, {sprintf('    %s%s(failed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
         end
     else
         %% If an old pipeline exists, check if the job has been modified
@@ -484,18 +486,22 @@ for num_j = 1:nb_jobs
                 flag_same = psom_cmp_var(pipeline_old.(name_job),pipeline.(name_job));
                 if ~flag_same&&flag_verbose
                     fprintf('    %s%s(changed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                    String = [String, {sprintf('    %s%s(changed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
                 end
             else
                 flag_same = true;
                 if (num_j == 1)&&flag_verbose
                     fprintf('    The OPT.FLAG_UPDATE is off, jobs are not going to be checked for updates.\n');
+                    String = [String, {sprintf('    The OPT.FLAG_UPDATE is off, jobs are not going to be checked for updates.\n')}];
                 end
             end
             if flag_same && strcmp(job_status_old{num_j},'none')
                 fprintf('    %s%s(new)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                String = [String, {sprintf('    %s%s(new)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
                 flag_restart_job = true;
             elseif flag_same && (strcmp(job_status_old{num_j},'submitted')|strcmp(job_status_old{num_j},'running'))
                 fprintf('    %s%s(submission failed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                String = [String, {sprintf('    %s%s(submission failed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
                 flag_restart_job = true;
             end
             flag_restart_job = flag_restart_job||~flag_same;
@@ -503,6 +509,7 @@ for num_j = 1:nb_jobs
             flag_restart_job = true;
             if flag_verbose
                 fprintf('    %s%s(new)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                String = [String, {sprintf('    %s%s(new)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
             end
         end
         
@@ -518,6 +525,7 @@ for num_j = 1:nb_jobs
         if flag_force&&~flag_restart(num_j)
             if flag_verbose
                 fprintf('    %s%s(manual restart)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                String = [String, {sprintf('    %s%s(manual restart)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
             end
             flag_restart_job = true;
         end
@@ -542,6 +550,7 @@ for num_j = 1:nb_jobs
                 for num_a = 1:length(list_add)
                     if flag_verbose
                         fprintf('    %s%s(child of a restarted job)\n',list_jobs{list_add(num_a)},repmat(' ',[1 lmax-length(list_jobs{list_add(num_a)})]))
+                        String = [String, {sprintf('    %s%s(child of a restarted job)\n',list_jobs{list_add(num_a)},repmat(' ',[1 lmax-length(list_jobs{list_add(num_a)})]))}];
                     end
                 end
             end            
@@ -584,6 +593,7 @@ while flag_miss
         list_new = find(mask_new_restart);
         for num_n = 1:length(list_new)
             fprintf('    %s%s(produce necessary files)\n',list_jobs{list_new(num_n)},repmat(' ',[1 lmax-length(list_jobs{list_new(num_n)})]))
+            String = [String, {sprintf('    %s%s(produce necessary files)\n',list_jobs{list_new(num_n)},repmat(' ',[1 lmax-length(list_jobs{list_new(num_n)})]))}];
         end         
     end
     flag_miss = any(mask_new_restart);
@@ -598,6 +608,7 @@ while flag_miss
             for num_a = 1:length(list_add)
                 if flag_verbose
                     fprintf('    %s%s(child of a restarted job)\n',list_jobs{list_add(num_a)},repmat(' ',[1 lmax-length(list_jobs{list_add(num_a)})]))
+                    String = [String, {sprintf('    %s%s(child of a restarted job)\n',list_jobs{list_add(num_a)},repmat(' ',[1 lmax-length(list_jobs{list_add(num_a)})]))}];
                 end
             end
         end                       
@@ -657,7 +668,7 @@ end
 
 if ~flag_OK
     if flag_pause
-        fprintf('\n!!! The input files of some jobs were found missing.\nPress CTRL-C now if you do not wish to run the pipeline or any key to continue anyway...\n');        
+        fprintf('\n!!! The input files of some jobs were found missing.\nPress CTRL-C now if you do not wish to run the pipeline or any key to continue anyway...\n');
         pause        
     else
         warning('\n!!! The input files of some jobs were found missing.\n');
@@ -673,8 +684,19 @@ if flag_verbose
 end
 
 if flag_pause
-    fprintf('Any old description of the pipeline is going to be flushed (except for the log files of finished jobs).\nPress CTRL-C now to cancel or press any key to continue.\n');   
-    pause
+    %fprintf('Any old description of the pipeline is going to be flushed (except for the log files of finished jobs).\nPress CTRL-C now to cancel or press any key to continue.\n');   
+    fprintf('Any old description of the pipeline is going to be flushed (except for the log files of finished jobs).\n');   
+    f = figure;
+    t = uitable(f, 'Position', [30,50,500,325],'ColumnName', String(1),'Data',String(2:end)');
+    btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'delete(gcf);');
+    %btnStop = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Stop', 'Callback', 'error(''Pipeline execution stopped.'')');
+    uiwait(f)
+    answer = questdlg('GO ?', 'It''s time to choose', 'Yes', 'No', 'No');
+    delete(f)
+    if strcmp(answer, 'No')
+       error('Pipeline execution stopped.')
+    end
+    %pause
 end
 
 %% Create logs folder
