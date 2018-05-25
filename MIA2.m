@@ -8442,11 +8442,13 @@ if path == 0
 end
 
 Index = get_data_selected(handles);
+Button = get(handles.MIA_scan_VOIs_button, 'Value');
 if isempty(Index)
     set(handles.MIA_scan_VOIs_button, 'Value',0);
     Index = get_data_selected(handles);
+    set(handles.MIA_scan_VOIs_button, 'Value',Button);
 end
-set(handles.MIA_scan_VOIs_button, 'Value',1);
+%set(handles.MIA_scan_VOIs_button, 'Value',1);
 Entry_Selected = handles.database(Index,:);
 
 file_name = strcat(char(Entry_Selected.Patient),...
