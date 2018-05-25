@@ -2848,9 +2848,9 @@ end
 slice_nbre = get(handles.MIA_slider_slice, 'Value');
 tag = get(get(hObject, 'Children'), 'Tag');
 if size(tag,1)>1
-    currPt_on_axe=eval(['get(handles.MIA_' tag{end} ',''CurrentPoint'');']);
+    currPt_on_axe=eval(['get(handles.' tag{end} ',''CurrentPoint'');']);
 else
-    currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']); 
+    currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']); 
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
@@ -8364,6 +8364,7 @@ end
 %% code to generate texture values for 1 scan and X ROIs
 ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
 Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
+scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 texture_values = table;
  warning('off')
 for i = 1:handles.data_loaded.number_of_scan	
@@ -8375,7 +8376,8 @@ for i = 1:handles.data_loaded.number_of_scan
         
         texture_values.SequenceName(size(texture_values,1)+1) = nominal(Scan_names(i,:));
         texture_values.ROI(size(texture_values,1)) = nominal(ROI_names(j,:));
-        texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
+        texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:3)) * sum(mask(:));
+      %  texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
         texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
         texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
         texture_values.Percentile_1(size(texture_values,1)) = prctile_copy(matrix_tmp(:),1);
@@ -8383,16 +8385,15 @@ for i = 1:handles.data_loaded.number_of_scan
         texture_values.Percentile_95(size(texture_values,1)) = prctile_copy(matrix_tmp(:),95);
         texture_values.Percentile_99(size(texture_values,1)) = prctile_copy(matrix_tmp(:),99);
         
-        [ROIonly,~,~,~] = prepareVolume(volume,mask,'PETscan',...
-            (handles.data_loaded.Scan(i).V.mat(1,1)+ handles.data_loaded.Scan(i).V.mat(2,2))/2 , ...
-        handles.data_loaded.Scan(i).V.mat(3,3),...
-        1,...
+        [ROIonly,~,~,~] = prepareVolume(volume,mask,'MRscan',...
+            sum(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:2))/2 , ...
+            handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(3), 1,...
         'pixelW','Global','Equal',128);
         [texture] =  getGlobalTextures(ROIonly,100);
         texture_values.Kurtosis(size(texture_values,1)) = texture.Kurtosis;
         texture_values.Skewness(size(texture_values,1)) = texture.Skewness;
         texture_values.Variance(size(texture_values,1)) = texture.Variance;
-        
+        clear matrix_tmp;
         
     end
 end
