@@ -1555,7 +1555,7 @@ if update
     MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
     msgbox('Done', 'Information') ;
 
-   close('MIA pipeline Manager')
+    close('MIA pipeline Manager')
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
@@ -2109,6 +2109,9 @@ set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
 set(handles.MIA_pipeline_JobsList, 'Enable', 'off');
 set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'off');
 set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'off');
+set(handles.MIA_pipeline_Delete_Job, 'Enable', 'off');
+set(handles.MIA_pipeline_save_pipeline, 'Enable', 'off');
+set(handles.MIA_pipeline_load_pipeline, 'Enable', 'off');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
 
@@ -2206,6 +2209,9 @@ set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
 set(handles.MIA_pipeline_JobsList, 'Enable', 'on');
 set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'on');
 set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'on');
+set(handles.MIA_pipeline_Delete_Job, 'Enable', 'on');
+set(handles.MIA_pipeline_save_pipeline, 'Enable', 'on');
+set(handles.MIA_pipeline_load_pipeline, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
 set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
