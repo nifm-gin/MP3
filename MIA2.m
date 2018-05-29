@@ -6744,7 +6744,20 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{3} =  'ascend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+%% New Code
+fields = fieldnames(handles.database);
+% [~, indPat] = max(strcmp(fields, {'Patient'}));
+% [~, indTp] = max(strcmp(fields, {'Tp'}));
+% [~, indSeq] = max(strcmp(fields, {'SequenceName'}));
+% Indexs = [indPat, indTp, indSeq];
+[~, indSeq] = max(strcmp(fields, {'SequenceName'}));
+Indexs = indSeq;
+[~, index] = sortrows(cellstr(handles.database{:,:}), Indexs, handles.database.Properties.UserData.Order_data_display{3});
+handles.database = handles.database(index,:);
+
+%% Old Code 
+%handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+%% 
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
