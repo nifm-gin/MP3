@@ -1,6 +1,6 @@
 function [Status, Message, Wrong_File] = Check_files(files_in)
 %% Check validity of each files of the PSOM 'files_in' structure and return :
-%       Status : Booleean - 1 if all the files are valid, 0 if one file is incorrect.
+%       Status : Booleean - 1 if all the files are valid, 0 if at least one file is incorrect.
 %       Message : String - Explaining the potential errors.
 %       Wrong_File : String - Name of the first invalid file.
 % This function checks if the files contained in files_in are strings, if

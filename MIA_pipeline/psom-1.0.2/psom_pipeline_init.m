@@ -488,6 +488,16 @@ for num_j = 1:nb_jobs
                     fprintf('    %s%s(changed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
                     String = [String, {sprintf('    %s%s(changed)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
                 end
+                if flag_same
+                    flag_exist = CheckExistenceFilesOut(pipeline.(name_job));
+                    if ~flag_exist
+                        flag_same = false;
+                        if flag_verbose
+                            fprintf('    %s%s(file_out deleted)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))
+                            String = [String, {sprintf('    %s%s(file_out deleted)\n',name_job,repmat(' ',[1 lmax-length(name_job)]))}];
+                        end
+                    end
+                end
             else
                 flag_same = true;
                 if (num_j == 1)&&flag_verbose
