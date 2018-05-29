@@ -580,12 +580,13 @@ function MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles
 % hObject    handle to MIA_pipeline_clear_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
-if strcmp(answer, 'No')
-    return
-end
+
 
 if isfield(handles, 'MIA_pipeline_ParamsModules')
+    answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
+    if strcmp(answer, 'No')
+        return
+    end
     set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
     if ~isempty(findobj('Tag', 'BioGraphTool'))
         close(findobj('Tag', 'BioGraphTool'));
@@ -598,7 +599,8 @@ end
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
 MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
-set(handles.MIA_pipeline_pipeline_listbox, 'Value', 0);
+set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
+set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
 MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
 
@@ -1415,10 +1417,10 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
-else
-    %  Here we clean all PSOM files because the code do not handle these
-    %  files for now
-    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
+% else
+%     %  Here we clean all PSOM files because the code do not handle these
+%     %  files for now
+%     rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
 
@@ -1483,7 +1485,7 @@ end
 
 if handles.MIA_pipeline_radiobuttonPSOM.Value
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
-    Result = load([opt_pipe.path_logs, '/PIPE_status_backup.mat']);
+    Result = load([opt_pipe.path_logs, '/PIPE_status.mat']);
 else
     Modules = fieldnames(handles.psom.pipeline);
     Result = struct();
@@ -1555,7 +1557,11 @@ if update
     MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
     msgbox('Done', 'Information') ;
 
-    close('MIA pipeline Manager')
+    %close('MIA pipeline Manager')
+    handles.database = handles.MIA_data.database;
+    handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
+    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+    
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
 %MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
@@ -1969,9 +1975,11 @@ function MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-if isequal(SelectedIndex, 0) || isempty(SelectedIndex)
-    JobNames = {''};
+% if isequal(SelectedIndex, 0) || isempty(SelectedIndex)
+%     JobNames = {''};
     
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    JobNames = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
@@ -2026,6 +2034,8 @@ if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
     MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 else 
+    handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
+    set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
     set(handles.MIA_pipeline_JobsList, 'String', {''});
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', {''});
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
@@ -2226,8 +2236,10 @@ function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
-    String = {};
+% if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
+%     String = {};
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    String = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
@@ -2289,8 +2301,10 @@ function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, hand
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
-    Entrie = {};
+% if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
+%     Entrie = {};
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    Entrie = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
