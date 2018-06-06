@@ -113,9 +113,17 @@ J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 
 ASL = N;
+ASL = sqrt(ASL(:,:,:,1).^2 + ASL(:,:,:,2).^2);
+DataControl = ASL(:,:,2);
+DataLabel = ASL(:,:,1);
 
-DataControl = ASL(:,:,:,2,:);
-DataLabel = ASL(:,:,:,1,:);
+% ASL = sqrt(ASL(:,:,1,:).^2 + ASL(:,:,2,:).^2);
+% DataControl = ASL(:,:,:,2);
+% DataLabel = ASL(:,:,:,1);
+
+%DataControl = ASL(:,:,:,2,:);
+%DataLabel = ASL(:,:,:,1,:);
+
 alpha = abs( (DataControl - DataLabel) ./ (2 * DataControl) )*100;
 
 % I need to squeeze the data to be able to display it in MIA, but I believe
