@@ -12,8 +12,8 @@ if isempty(opt)
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'OutputSequenceName','AllName'};
-    module_option(:,4)   = {'RefInput',1};
-    module_option(:,5)   = {'InputToReshape',1};
+    module_option(:,4)   = {'RefInput',2};
+    module_option(:,5)   = {'InputToReshape',2};
     module_option(:,6)   = {'Table_in', table()};
     module_option(:,7)   = {'Table_out', table()};
     module_option(:,8)   = {'output_filename_ext','DeltaR2Star'};

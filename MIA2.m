@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 18-May-2018 14:42:12
+% Last Modified by GUIDE v2.5 07-Jun-2018 19:18:01
 
 
 % Begin initialization code - DO NOT EDIT
@@ -334,7 +334,8 @@ if get(handles.MIA_scan_VOIs_button, 'Value') == 0 %display parameters list
     set(handles.MIA_file_list, 'String', file_text);
     
 else %display VOIs list
-    is_ROI=  handles.database.Type == 'ROI';
+    %is_ROI=  handles.database.Type == 'ROI';
+    is_ROI = handles.database.Type == 'ROI' | handles.database.Type == 'Cluster';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_ROI);
     if isempty(sequence_listing)
@@ -2385,7 +2386,12 @@ for i = 1:numel(handles.data_loaded.ROI)
     switch get(hObject, 'Tag')
         case {'MIA_load_axes', 'MIA_Axial_view_button', 'MIA_Saggital_view_button', 'MIA_Coronal_view_button'}
             handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
-            handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
+            if any(handles.data_loaded.info_data_loaded.Type == categorical(cellstr('ROI')))
+                handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
+            elseif any(handles.data_loaded.info_data_loaded.Type == categorical(cellstr('Cluster')))
+                handles.data_loaded.ROI(i).nii(0<handles.data_loaded.ROI(i).nii & handles.data_loaded.ROI(i).nii<1) = 1;
+                handles.data_loaded.ROI(i).nii = round(handles.data_loaded.ROI(i).nii);
+            end
     end
     for slice_nbr=1:get(handles.MIA_slider_slice, 'Max')
         roi_a_appliquer=handles.data_loaded.ROI(i).nii(:,:,slice_nbr);
@@ -7253,7 +7259,9 @@ for i = 1:numel(unique(log_file.StudyName))
                 NAME = char(log_file.NameFile(index_data_to_import(m),:));
                 if exist(fullfile(MIA_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MIA_tmp_folder, [NAME, '.json']));
-                    if isempty(char(json_data.ProtocolName.value))
+                    if ~isfield(json_data, 'ProtocolName')
+                        json_data.ProtocolName.value = {'Undefined'};
+                    elseif isempty(char(json_data.ProtocolName.value))
                         json_data.ProtocolName.value = {'Undefined'};
                     end
                     if ~isempty(handles.database)
@@ -8495,3 +8503,25 @@ handles.database = [handles.database; New_Entry];
 set(handles.MIA_scans_list, 'Value',1);
 guidata(hObject, handles);
 MIA_update_database_display(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function MIA_menu_Display_Transform_Matrix_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Display_Transform_Matrix (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'data_loaded')
+    return
+end
+table = handles.data_loaded.info_data_loaded;
+table2 = table(table.Type == categorical(cellstr('Scan')),:);
+Mats = cell(size(table2, 1),1);
+for i=1:size(table2,1)
+    file = [char(table2.Path(i)), char(table2.Filename(i)), '.nii'];
+    info = niftiinfo(file);
+    Mats{i} = info.Transform.T;
+    uf = uifigure;
+    %title(uf,[char(table2.Filename(i)), '.nii'])
+    t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);  
+end

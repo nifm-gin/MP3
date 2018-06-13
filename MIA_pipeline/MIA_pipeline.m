@@ -70,8 +70,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
+     'Clustering', '   .Clustering GMM', ...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Clustering' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -1052,6 +1053,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .Clustering GMM'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ClusteringGMM('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_ClusteringGMM(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_ClusteringGMM';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -1521,11 +1529,22 @@ for i=1:length(Jobs)
                    outdb = outdb(outdb.Filename == name_out, :);
                    assert(height(outdb) == 1)
                    Folders = strsplit(path_out, filesep);
-                   Folders{end-1} = 'Derived_data';
+                   switch char(outdb.Type)
+                       case 'Scan'
+                           Folders{end-1} = 'Derived_data';
+                       case 'ROI'
+                           Folders{end-1} = 'ROI_data';
+                       case 'Cluster'
+                           Folders{end-1} = 'ROI_data';
+                   end
                    NewPath = strjoin(Folders, filesep);
                    [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                    
-                   [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   if strcmp(char(outdb.Type), 'Scan')
+                        [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   else
+                       statusJson = 1;
+                   end
                    if statusNii && statusJson
                        outdb.Path = NewPath;
                        %eval(['delete ' B{k}]);
@@ -2317,8 +2336,12 @@ else
     Param = Job.(Fields{1});
     Entrie = Param.(Fields{2});
     if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
-        [~,name,~] = fileparts(Entrie{1});
-        Entrie = {name};
+        NewEntrie = [];
+        for i=1:length(Entrie)
+            [~,name,~] = fileparts(Entrie{i});
+            NewEntrie = [NewEntrie; {name}];
+        end
+        Entrie = NewEntrie;
     end
 end
 if ~islogical(Entrie) && ~istable(Entrie)
