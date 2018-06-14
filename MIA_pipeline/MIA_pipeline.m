@@ -1276,13 +1276,13 @@ FinalMat{RefInput} = RefMat;
 
 for i=1:NbScanInput
     if i~=RefInput
-        Mattmp = cell(length(UTag1), length(UTag2));
-        for j=1:length(UTag1)
-            for k=1:length(UTag2)
+        Mattmp = cell(length(UTag2), length(UTag1));
+        for j=1:length(UTag2)
+            for k=1:length(UTag1)
                 Databtmp = DatabaseInput{i};
                 if ~isempty(Databtmp)
-                    Databtmp2 = Databtmp(getfield(Databtmp, Tag1) == UTag1(j), :);
-                    Databtmp3 = Databtmp2(getfield(Databtmp2, Tag2) == UTag2(k), :);
+                    Databtmp2 = Databtmp(getfield(Databtmp, Tag2) == UTag2(j), :);
+                    Databtmp3 = Databtmp2(getfield(Databtmp2, Tag1) == UTag1(k), :);
                     for l=1:size(Databtmp3,1)
                         Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
                     end
