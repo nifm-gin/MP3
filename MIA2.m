@@ -7622,7 +7622,7 @@ for i=1:height(handles.database)
                 InvalidJsonFiles = [InvalidJsonFiles, {Json_file}];
             end
         end
-    elseif handles.database(i,:).Type == 'ROI'
+    elseif handles.database(i,:).Type == 'ROI' || handles.database(i,:).Type == 'Cluster'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
         if exist(Nifti_file, 'file')==2
             ValidEntries = [ValidEntries, i];
@@ -7633,7 +7633,7 @@ for i=1:height(handles.database)
         end
         
     else
-        warning('Types allowed : Scan, ROI. We found an unknown type : %s', handles.database(i,:).Type)
+        warning('Types allowed : Scan, ROI, Cluster. We found an unknown type : %s', handles.database(i,:).Type)
     end 
 end
 
