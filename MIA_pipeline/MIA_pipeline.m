@@ -70,8 +70,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
+     'Clustering', '   .Clustering GMM', ...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Clustering' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -1052,6 +1053,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .Clustering GMM'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ClusteringGMM('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_ClusteringGMM(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_ClusteringGMM';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
@@ -1253,157 +1261,179 @@ for i=1:length(ScanInputs)
     end
 end
 
-
-
-RefInput = New_module.opt.Module_settings.RefInput;
-RefDatab = DatabaseInput{RefInput};
-RefMat = MatricesInputs{RefInput};
-
-UTag1 = unique(getfield(RefDatab, Tag1));
-UTag2 = unique(getfield(RefDatab, Tag2));
-
-
-FinalMat = cell(NbScanInput,1);
-FinalMat{RefInput} = RefMat;
-
-for i=1:NbScanInput
-    if i~=RefInput
-        Mattmp = cell(length(UTag1), length(UTag2));
-        for j=1:length(UTag1)
-            for k=1:length(UTag2)
-                Databtmp = DatabaseInput{i};
-                if ~isempty(Databtmp)
-                    Databtmp2 = Databtmp(getfield(Databtmp, Tag1) == UTag1(j), :);
-                    Databtmp3 = Databtmp2(getfield(Databtmp2, Tag2) == UTag2(k), :);
-                    for l=1:size(Databtmp3,1)
-                        Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+if strcmp(New_module.opt.Module_settings.AutomaticJobsCreation, 'Yes')
+    
+    RefInput = New_module.opt.Module_settings.RefInput;
+    RefDatab = DatabaseInput{RefInput};
+    RefMat = MatricesInputs{RefInput};
+    
+    UTag1 = unique(getfield(RefDatab, Tag1));
+    UTag2 = unique(getfield(RefDatab, Tag2));
+    
+    
+    FinalMat = cell(NbScanInput,1);
+    FinalMat{RefInput} = RefMat;
+    
+    for i=1:NbScanInput
+        if i~=RefInput
+            Mattmp = cell(length(UTag2), length(UTag1));
+            for j=1:length(UTag2)
+                for k=1:length(UTag1)
+                    Databtmp = DatabaseInput{i};
+                    if ~isempty(Databtmp)
+                        Databtmp2 = Databtmp(getfield(Databtmp, Tag2) == UTag2(j), :);
+                        Databtmp3 = Databtmp2(getfield(Databtmp2, Tag1) == UTag1(k), :);
+                        for l=1:size(Databtmp3,1)
+                            Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+                        end
+                    else
+                        Mattmp{j,k} = '';
                     end
-                else
-                    Mattmp{j,k} = '';
                 end
             end
+            FinalMat{i} = Mattmp;
         end
-        FinalMat{i} = Mattmp;
     end
-end
-
-%RefMat(strcmp('',RefMat)) = []
-%RefMat(:,~all(cellfun('isempty', RefMat(:, :, :)), 1))
-
-% A(:,find(all(cellfun(@isempty,A),1)) & find(all(cellfun(@isempty,A),3)),:) = [];
-% A(find(all(cellfun(@isempty,A),2)),:,:) = [];
-% A(:,:,find(all(cellfun(@isempty,A),2))) = [];
-
-
-
-
-% Which input must we adapt ?
-InputToReshape = New_module.opt.Module_settings.InputToReshape;
-if InputToReshape ~= RefInput
-    InToReshape = FinalMat{InputToReshape};
-    %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
-    InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
-    InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
     
-    %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
-    if EmptyParams{InputToReshape} == 0
-        NewIn = repmat(InToReshape, size(RefMat));
-        assert(size(NewIn,1) == size(RefMat,1));
-        assert(size(NewIn,2) == size(RefMat,2));
-        assert(size(NewIn,3) == size(RefMat,3));
-        FinalMat{InputToReshape} = NewIn;
-    elseif size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
-        string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
-        choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
-        switch choice
-            case 'Continue'
+    %RefMat(strcmp('',RefMat)) = []
+    %RefMat(:,~all(cellfun('isempty', RefMat(:, :, :)), 1))
+    
+    % A(:,find(all(cellfun(@isempty,A),1)) & find(all(cellfun(@isempty,A),3)),:) = [];
+    % A(find(all(cellfun(@isempty,A),2)),:,:) = [];
+    % A(:,:,find(all(cellfun(@isempty,A),2))) = [];
+    
+    
+    
+    
+    % Which input must we adapt ?
+    InputToReshape = New_module.opt.Module_settings.InputToReshape;
+    if InputToReshape ~= RefInput
+        InToReshape = FinalMat{InputToReshape};
+        %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
+        InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
+        InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+        
+        %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
+        if EmptyParams{InputToReshape} == 0
             NewIn = repmat(InToReshape, size(RefMat));
             assert(size(NewIn,1) == size(RefMat,1));
             assert(size(NewIn,2) == size(RefMat,2));
             assert(size(NewIn,3) == size(RefMat,3));
             FinalMat{InputToReshape} = NewIn;
-            case 'Return'
-                output_database = table();
-                pipeline = struct();
-                return
-        end
-    elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
-        NewIn = repmat(InToReshape, size(RefMat,1), 1);
-        assert(size(NewIn,1) == size(RefMat,1));
-        assert(size(NewIn,2) == size(RefMat,2));
-        assert(size(NewIn,3) == size(RefMat,3));
-        FinalMat{InputToReshape} = NewIn;
-    elseif size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
-        NewIn = repmat(InToReshape, 1, size(RefMat,2));
-        assert(size(NewIn,1) == size(RefMat,1));
-        assert(size(NewIn,2) == size(RefMat,2));
-        assert(size(NewIn,3) == size(RefMat,3));
-        FinalMat{InputToReshape} = NewIn;
-    end
-end
-
-NbModules = size(RefMat,1)*size(RefMat,2);
-for i=1:NbScanInput
-    FinalMat{i} = reshape(FinalMat{i}, [NbModules,size(FinalMat{i},3)]);
-end
-
-output_database = table();
-% add module to a pipeline if feasible (all conditions checked)
-% and create output_database
-for i=1:NbModules
-    table_in = table();
-    Files_in = struct();
-    % For the module i, check if all input contains the number of files as
-    % the  number of scan selected by the user. if these numbers are  
-    % differents and the condered input is mantatory then we do not create
-    % the module. If not, the module muste be created and added to the
-    % pipeline
-    B = zeros(1,NbScanInput);
-    All_Selected_Scans = [];
-    % here we check conditions input by input
-    for l=1:NbScanInput
-        AllScans = 1;
-        if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
-            A = {FinalMat{l}{i,:}};
-            if length({FinalMat{l}{i,:}}) ~= sum(~cellfun('isempty',SelectionScans(:,:,l))) %length(SelectionScans(:,:,l))
-                AllScans = 0;
+        elseif size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
+            string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
+            choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
+            switch choice
+                case 'Continue'
+                    NewIn = repmat(InToReshape, size(RefMat));
+                    assert(size(NewIn,1) == size(RefMat,1));
+                    assert(size(NewIn,2) == size(RefMat,2));
+                    assert(size(NewIn,3) == size(RefMat,3));
+                    FinalMat{InputToReshape} = NewIn;
+                case 'Return'
+                    output_database = table();
+                    pipeline = struct();
+                    return
             end
-            B(l) = any(cellfun('isempty', A));
+        elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
+            NewIn = repmat(InToReshape, size(RefMat,1), 1);
+            assert(size(NewIn,1) == size(RefMat,1));
+            assert(size(NewIn,2) == size(RefMat,2));
+            assert(size(NewIn,3) == size(RefMat,3));
+            FinalMat{InputToReshape} = NewIn;
+        elseif size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
+            NewIn = repmat(InToReshape, 1, size(RefMat,2));
+            assert(size(NewIn,1) == size(RefMat,1));
+            assert(size(NewIn,2) == size(RefMat,2));
+            assert(size(NewIn,3) == size(RefMat,3));
+            FinalMat{InputToReshape} = NewIn;
         end
-        All_Selected_Scans = [All_Selected_Scans, AllScans];
     end
-    if ~any(B) && all(All_Selected_Scans)
-    %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
-        for j=1:NbScanInput
-            %A = {FinalMat{j}{i,:}};
-            %B = cellfun('isempty', A);
-            %if all(B)
-            for k=1:size(FinalMat{j},2)
-%                 if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(j)}, 'Invariant') && isempty(FinalMat{j}{i,k})
-%                     
-%                 end
-%                 if isempty(FinalMat{j}{i,k})
-%                     FinalMat{j}{i,k} = '';
-%                 end
-%                  eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
-                if ~isempty(FinalMat{j}{i,k})
-                    eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
-                    [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
-                    databtmp = TmpDatabase(TmpDatabase.Filename == categorical(cellstr(NAME)),:);
-                    databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
-                    assert(size(databtmp, 1) == 1);
-                    InTags = databtmp(1,:);
-                    table_in = [table_in; InTags];
+    
+    NbModules = size(RefMat,1)*size(RefMat,2);
+    for i=1:NbScanInput
+        FinalMat{i} = reshape(FinalMat{i}, [NbModules,size(FinalMat{i},3)]);
+    end
+    
+    
+    
+    output_database = table();
+    % add module to a pipeline if feasible (all conditions checked)
+    % and create output_database
+    for i=1:NbModules
+        table_in = table();
+        Files_in = struct();
+        % For the module i, check if all input contains the number of files as
+        % the  number of scan selected by the user. if these numbers are
+        % differents and the condered input is mantatory then we do not create
+        % the module. If not, the module muste be created and added to the
+        % pipeline
+        B = zeros(1,NbScanInput);
+        All_Selected_Scans = [];
+        % here we check conditions input by input
+        for l=1:NbScanInput
+            AllScans = 1;
+            if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(l)}, 'Mandatory')
+                A = {FinalMat{l}{i,:}};
+                if length({FinalMat{l}{i,:}}) ~= sum(~cellfun('isempty',SelectionScans(:,:,l))) %length(SelectionScans(:,:,l))
+                    AllScans = 0;
+                end
+                B(l) = any(cellfun('isempty', A));
+            end
+            All_Selected_Scans = [All_Selected_Scans, AllScans];
+        end
+        if ~any(B) && all(All_Selected_Scans)
+            %if ~isempty(FinalMat{InputToReshape}{i}) && ~isempty(FinalMat{RefInput}{i})
+            for j=1:NbScanInput
+                %A = {FinalMat{j}{i,:}};
+                %B = cellfun('isempty', A);
+                %if all(B)
+                for k=1:size(FinalMat{j},2)
+                    %                 if strcmp(handles.new_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(j)}, 'Invariant') && isempty(FinalMat{j}{i,k})
+                    %
+                    %                 end
+                    %                 if isempty(FinalMat{j}{i,k})
+                    %                     FinalMat{j}{i,k} = '';
+                    %                 end
+                    %                  eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
+                    if ~isempty(FinalMat{j}{i,k})
+                        eval(['Files_in.In' num2str(j) '{' num2str(k) '} = FinalMat{' num2str(j) '}{' num2str(i) ',' num2str(k) '};']);
+                        [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
+                        databtmp = TmpDatabase(TmpDatabase.Filename == categorical(cellstr(NAME)),:);
+                        databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
+                        assert(size(databtmp, 1) == 1);
+                        InTags = databtmp(1,:);
+                        table_in = [table_in; InTags];
+                    end
                 end
             end
+            New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
+            New_module.opt.Module_settings.Table_in = unique(table_in);
+            pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
+            Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
+            output_database = [output_database; Mod_Struct.opt.Table_out];
         end
-        New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
-        New_module.opt.Module_settings.Table_in = unique(table_in);
-        pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
-        Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
-        output_database = [output_database; Mod_Struct.opt.Table_out];
     end
+    
+else
+    table_in = table();
+    for i=1:length(DatabaseInput)
+        Table = DatabaseInput{i};
+        Files = cell(size(Table,1),1);
+        for j=1:size(Table,1)
+            Files{j} = [char(Table.Path(j)), char(Table.Filename(j)), '.nii'];
+            table_in = [table_in ; DatabaseInput{i}];
+        end
+        eval(['Files_in.In' num2str(i) ' = Files;']);
+    end
+    New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
+	New_module.opt.Module_settings.Table_in = unique(table_in);
+    NameMod = [New_module.module_name, num2str(1)];
+	pipeline = psom_add_job(pipeline, NameMod, New_module.module_name, Files_in, '', New_module.opt.Module_settings);
+    output_database = pipeline.(NameMod).opt.Table_out;
 end
+
+
 output_database = unique(output_database);
 
   
@@ -1521,11 +1551,22 @@ for i=1:length(Jobs)
                    outdb = outdb(outdb.Filename == name_out, :);
                    assert(height(outdb) == 1)
                    Folders = strsplit(path_out, filesep);
-                   Folders{end-1} = 'Derived_data';
+                   switch char(outdb.Type)
+                       case 'Scan'
+                           Folders{end-1} = 'Derived_data';
+                       case 'ROI'
+                           Folders{end-1} = 'ROI_data';
+                       case 'Cluster'
+                           Folders{end-1} = 'ROI_data';
+                   end
                    NewPath = strjoin(Folders, filesep);
                    [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                    
-                   [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   if strcmp(char(outdb.Type), 'Scan')
+                        [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                   else
+                       statusJson = 1;
+                   end
                    if statusNii && statusJson
                        outdb.Path = NewPath;
                        %eval(['delete ' B{k}]);
@@ -2317,8 +2358,12 @@ else
     Param = Job.(Fields{1});
     Entrie = Param.(Fields{2});
     if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
-        [~,name,~] = fileparts(Entrie{1});
-        Entrie = {name};
+        NewEntrie = [];
+        for i=1:length(Entrie)
+            [~,name,~] = fileparts(Entrie{i});
+            NewEntrie = [NewEntrie; {name}];
+        end
+        Entrie = NewEntrie;
     end
 end
 if ~islogical(Entrie) && ~istable(Entrie)
