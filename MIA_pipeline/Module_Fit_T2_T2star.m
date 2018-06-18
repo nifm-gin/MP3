@@ -135,7 +135,8 @@ firstecho = sum(echotime < opt.trash_below) + 1;
 first_echotime=echotime(firstecho);
 
 % Get information from the JSON data
-if isfield(J, 'SpinEchoTime')
+%if isfield(J, 'SpinEchoTime')
+if strcmp(J.MethodDiffusion.value, 'User:eb_MGEFIDSE')    
     lastecho = sum(echotime<J.SpinEchoTime.value/2);
 else
     lastecho = length(echotime);
