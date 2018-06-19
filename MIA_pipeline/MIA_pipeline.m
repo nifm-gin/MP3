@@ -1261,7 +1261,8 @@ for i=1:length(ScanInputs)
     end
 end
 
-if strcmp(New_module.opt.Module_settings.AutomaticJobsCreation, 'Yes')
+if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
+        isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation') && strcmp(New_module.opt.Module_settings.AutomaticJobsCreation, 'Yes')
     
     RefInput = New_module.opt.Module_settings.RefInput;
     RefDatab = DatabaseInput{RefInput};

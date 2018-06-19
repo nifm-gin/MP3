@@ -6898,8 +6898,8 @@ end
 
 ScansToRemove =name_option(ScansToRemove);
 nii_index = [];
-for i=numel(ScansToRemove)
-    nii_index = [nii_index find(handles.database.SequenceName == ScansToRemove(i))];
+for i=1:numel(ScansToRemove)
+    nii_index = [nii_index' find(handles.database.SequenceName == ScansToRemove(i))']';
 end
 
 
@@ -7094,201 +7094,92 @@ function MIA_menu_rename_from_database_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_menu_rename_from_database (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
 if ~isfield(handles, 'database')
     return
 end
 selection = questdlg('What do you want to rename?',...
     'Warning',...
     'Parameters','VOIs', 'Cancel', 'Cancel');
-switch selection,
+
+switch selection
     case 'Parameters'
-        listing = [];
-        for i=1:numel(get(handles.MIA_name_list, 'String'))
-            for j = 1:numel(handles.database(i).day)
-                listing = [listing handles.database(i).day(j).parameters];
-            end
-        end
-        listing = unique(listing);
+         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
+         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
     case 'VOIs'
-        listing = [];
-        for i=1:numel(get(handles.MIA_name_list, 'String'))
-            for j = 1:numel(handles.database(i).day)
-                listing = [listing handles.database(i).day(j).VOIs]; %#ok<AGROW>
-            end
-        end
-        listing = unique(listing);
-        if isempty(listing)
-            listing = {''};
-        end
+         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
+         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
     case 'Cancel'
         return
 end
-
-[list_to_rename,ok] = listdlg('Name', 'Question?', 'ListString', listing','SelectionMode','single','ListSize', [500 500],...
+  [old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','single','ListSize', [500 500],...
     'PromptString', 'Select the parameters/VOIs you want to rename');
-if ok == 0 || isempty(list_to_rename)
+if ok == 0 || isempty(old_scan_name)
     return
 end
+old_scan_name = categorical(old_name_listing(old_scan_name));
 
-name_option = [listing 'Other'];
-old_scan_name = listing(list_to_rename);
 
-[new_scan_name, ok1] = listdlg('PromptString',sprintf('Select the new name for replace %s',old_scan_name{:}),...
+[new_scan_name, ok1] = listdlg('PromptString','Select the new scan name:',...
     'Name', 'Select a Name',...
     'SelectionMode','single',...
-    'ListSize', [500 500],...
-    'ListString',name_option);
+    'ListSize', [400 300],...
+    'ListString',new_name_listing);
 
 if ok1 == 0
     return
 end
-
-switch selection
-    case 'VOIs'
-        if strcmp('Other', name_option(new_scan_name)) == 1
-            newparameter = inputdlg('Name of the new VOI ', 'Question?', 1, {''});
-        else
-            newparameter = name_option(new_scan_name);
-        end
-    case 'Parameters'
-        if strcmp('Other',name_option(new_scan_name)) == 1
-            newparameter = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
-            if isempty(newparameter)
-                return
-            end
-            if sum(strcmp(newparameter, handles.clips(:,1))) == 0
-                handles.clips(size(handles.clips,1)+1,1) = newparameter;
-                handles.clips(size(handles.clips,1),2) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),2);
-                handles.clips(size(handles.clips,1),3) = handles.clips(strcmp(old_scan_name, handles.clips(:,1)),3);
-            end
-        else
-            newparameter = name_option(new_scan_name);
-        end
+if strcmp('Other',new_name_listing(new_scan_name)) == 1
+    newparameter_name = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+     newparameter_name = clean_variable_name(newparameter_name, '');
+     newparameter_name =categorical(newparameter_name);
+else
+    newparameter_name =categorical(new_name_listing(new_scan_name));
 end
-
-for patient = 1:numel(handles.database)
-    for timepoint = 1:numel(handles.database(patient).day)
-        for ii = 1:numel(list_to_rename)
-            % rename the scan file
-            switch selection
-                case 'VOIs'
-                    id_param = strcmp(handles.database(patient).day(timepoint).VOIs, listing{list_to_rename(ii)});
-                    if sum(id_param)>0
-                        [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).VOIs_file{id_param}]);
-                        new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-                        if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-                            warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-                                fullfile(PATHSTR,[NAME,EXT]));
-                            msgbox(warning_text, 'rename file warning') ;
-                        elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-                            user_response = questdlg('The new file name for this ROI exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-                            if strcmp(user_response, 'No')
-                                return
-                            end
-                            user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-                            % overwrite the file if requested
-                            if strcmp(user_response, 'Yes')
-                                if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                                    movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                                    handles.database(patient).day(timepoint).VOIs_file{id_param} = [new_name,EXT];
-                                    handles.database(patient).day(timepoint).VOIs{id_param} = newparameter{1};
-                                end
-                                %% Add for modify name in ROI struct
-                                load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{id_param}])
-                                for itVoi = 1 : numel(uvascroi)
-                                    uvascroi(itVoi).name = newparameter{1};
-                                end
-                                save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{id_param}],'uvascroi')
-                            end
-                            
-                        else
-                            movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                            handles.database(patient).day(timepoint).VOIs_file{id_param} = [new_name,EXT];
-                            handles.database(patient).day(timepoint).VOIs{id_param} = newparameter{1};
-                            %% Add for modify name in ROI
-                            load([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{id_param}])
-                            for itRoi = 1 : numel(uvascroi)
-                                uvascroi(itRoi).name = newparameter{1};
-                            end
-                            save([PATHSTR filesep handles.database(patient).day(timepoint).VOIs_file{id_param}],'uvascroi')
-                        end
-                    end
-                case 'Parameters'
-                    id_param = strcmp(handles.database(patient).day(timepoint).parameters, listing{list_to_rename(ii)});
-                    if sum(id_param)>0
-                        [PATHSTR,NAME,EXT] = fileparts([handles.database(patient).path   handles.database(patient).day(timepoint).scans_file{id_param}]);
-                        new_name = [handles.database(patient).name '-' handles.database(patient).day(timepoint).date '-' newparameter{:}];
-                        new_name = strrep(new_name, '*', 'star');
-                        if  exist(fullfile(PATHSTR,[NAME,EXT]), 'file') == 0
-                            warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-                                fullfile(PATHSTR,[NAME,EXT]));
-                            msgbox(warning_text, 'rename file warning') ;
-                        elseif  exist(fullfile(PATHSTR,[new_name,EXT]), 'file') == 2
-                            user_response = questdlg('The new file name exist already for this patient/time point. Do you want to overwrite this file or no?','Warning', 'Yes', 'No', 'No');
-                            if strcmp(user_response, 'No')
-                                return
-                            end
-                            user_response = questdlg('Do you REALLY want to overwrite this file or no?','Warning', 'No', 'Yes', 'No');
-                            % overwrite the file if requested
-                            if strcmp(user_response, 'Yes')
-                                if ~strcmp(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]))
-                                    movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                                    handles.database(patient).day(timepoint).scans_file{id_param} = [new_name,EXT];
-                                    handles.database(patient).day(timepoint).parameters{id_param} = newparameter{1};
-                                end
-                            end
-                        else
-                            movefile(fullfile(PATHSTR,[NAME,EXT]), fullfile(PATHSTR,[new_name,EXT]), 'f');
-                            handles.database(patient).day(timepoint).scans_file{id_param} = [new_name,EXT];
-                            handles.database(patient).day(timepoint).parameters{id_param} = newparameter{1};
-                        end
-                    end
-            end
-        end
+idx_to_update = find(handles.database.SequenceName == old_scan_name);
+%% update the database with the new name
+% but first check if the new scan name does not exist for this patient and
+% time point
+for i = 1:numel(idx_to_update)
+    % faire le ROI vs SCAN
+    if find(handles.database.Patient == handles.database.Patient(idx_to_update(i)) &...
+            handles.database.Tp == handles.database.Tp(idx_to_update(i)) & ...
+            handles.database.SequenceName == newparameter_name) > 0
+        msgbox('A Scan with the same name already exist for this patient at this time point') ;
+        return
     end
-end
-
-guidata(hObject, handles);
-
-% Add new name to handles.VOIs
-if( strcmp('VOIs',selection) && strcmp('Other', handles.VOIs(new_scan_name)) )
-    handles.VOIs=[handles.VOIs(1:end-1), newparameter, handles.VOIs(end-1:end)];
-end
-
-% check if the old VOIs exist somewhere else, if not remove it
-vois_list = [];
-for i=1:numel(handles.database)
-    for j = 1:numel(handles.database(i).day)
-        vois_list = [vois_list handles.database(i).day(j).VOIs]; %#ok<AGROW>
+    
+    
+    new_nii_filename = strrep(cellstr(handles.database.Filename(idx_to_update(i))), cellstr(handles.database.SequenceName(idx_to_update(i))), cellstr(newparameter_name));
+    
+    % rename the scan file
+    if  exist(fullfilename(handles, idx_to_update(i), '.nii'), 'file') == 0
+        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+            fullfilename(handles, idx_to_update(i), '.nii'));
+        msgbox(warning_text, 'rename file warning') ;
+    elseif exist(string(strcat(cellstr(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii')), 'file') == 2
+        msgbox('The new .nii file exist already!!') ;
         
+    else
+        movefile(fullfilename(handles, idx_to_update(i), '.nii'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_to_update(i), '.json'), 'file') == 2
+            movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
+        end
     end
-end
-vois_list= unique(vois_list);
-
-if sum(strcmp(old_scan_name, vois_list')) == 0
-    match = find(strcmp(old_scan_name,handles.VOIs), 1);
-    handles.VOIs(match) = [];
-end
-
-% check if the old parameter exist somewhere else, if not remove it
-parameters_list = [];
-for i=1:numel(handles.database)
-    for j = 1:numel(handles.database(i).day)
-        parameters_list = [parameters_list handles.database(i).day(j).parameters]; %#ok<AGROW>
-        
-    end
-end
-parameters_list= unique(parameters_list);
-
-if sum(strcmp(old_scan_name, parameters_list')) == 0
-    match = find(strcmp(old_scan_name,handles.clips(:,1)), 1);
-    handles.clips(match,:) = [];
+    
+    % update the Filename field in the table
+    handles.database.SequenceName(idx_to_update(i)) = newparameter_name;
+    handles.database.Filename(idx_to_update(i)) = new_nii_filename;
+    
+    % save the structure
+    guidata(hObject, handles);
 end
 
-guidata(hObject, handles)
+%% update graph and display
+MIA_update_database_display(hObject, eventdata, handles);
 
-%%% update graph and display
-MIA_update_database_display(hObject, eventdata, handles)
 msgbox('Done', 'Message') ;
 
 
