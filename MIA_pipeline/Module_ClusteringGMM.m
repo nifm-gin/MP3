@@ -126,7 +126,7 @@ if strcmp(files_out, '')
         end
     end
     MaxTaille = max(Tailles);
-    TailleBin = Taille == MaxTaille;
+    TailleBin = Tailles == MaxTaille;
     ind = 0;
     
     for i=1:length(UTag1)
