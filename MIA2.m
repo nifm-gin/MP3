@@ -353,15 +353,15 @@ else %display VOIs list
     
     
 end
-% if the pipeline Manager is open, update the information : patient selected 
+% if the pipeline Manager is open, update the information : patient selected
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
 if ~isempty(findobj('Tag', 'MIA_pipeline_pushMIASelection'))
-    data_selected = finddata_selected(handles); 
-    if size(char(handles.database.Patient(data_selected)),1) > 1 
+    data_selected = finddata_selected(handles);
+    if size(char(handles.database.Patient(data_selected)),1) > 1
         return
     else
-    set(findobj('Tag', 'MIA_pipeline_pushMIASelection'), 'String', [char(handles.database.Patient(data_selected(1))) '-' char(handles.database.Tp(data_selected(1))) ' only'])
-    set(findobj('Tag', 'MIA_pipeline_pushMIATPSelection'), 'String', ['All time point of :' char(handles.database.Patient(data_selected(1)))])
+        set(findobj('Tag', 'MIA_pipeline_pushMIASelection'), 'String', [char(handles.database.Patient(data_selected(1))) '-' char(handles.database.Tp(data_selected(1))) ' only'])
+        set(findobj('Tag', 'MIA_pipeline_pushMIATPSelection'), 'String', ['All time point of :' char(handles.database.Patient(data_selected(1)))])
     end
 end
 
@@ -1474,7 +1474,7 @@ else
         handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Raw_data_path;
         handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
     end
-
+    
 end
 guidata(hObject, handles);
 
@@ -1565,21 +1565,21 @@ for i = 1:numel(data_selected)
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     if fid_nii>0
         fclose(fid_nii);
-       % scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
+        % scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
         if strcmp(char(handles.database(data_selected(i),:).Type), 'ROI')
             %% read and load the nii file
             handles.data_loaded.number_of_ROI = handles.data_loaded.number_of_ROI+1;
             handles.data_loaded.ROI(handles.data_loaded.number_of_ROI).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
-%           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
-%           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
+            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+            %           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
         elseif strcmp(char(handles.database(data_selected(i),:).Type), 'Cluster')
             %% read and load the nii file
             handles.data_loaded.number_of_Cluster = handles.data_loaded.number_of_Cluster+1;
             handles.data_loaded.Cluster(handles.data_loaded.number_of_Cluster).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
-%           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
-%           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
+            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+            %           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
         end
@@ -1628,7 +1628,7 @@ if numel(data_selected) > 1
     set(handles.MIA_orientation_space_popupmenu, 'Visible', 'on');
     set(handles.MIA_orientation_space_text, 'Visible', 'on');
 else
-    set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off'); 
+    set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
     set(handles.MIA_orientation_space_text, 'Visible', 'off');
 end
 handles.data_loaded.number_of_scan = numel(data_selected);
@@ -1692,7 +1692,7 @@ set(handles.MIA_data4, 'Visible', 'off');
 set(handles.MIA_data4_title, 'Visible', 'off');
 set(handles.MIA_data4, 'HandleVisibility', 'off');
 
-for i=1:2 
+for i=1:2
     stri = num2str(i);
     %  and clear Axes unused
     eval(['cla(handles.MIA_data' stri ');']);
@@ -1735,7 +1735,7 @@ for i=1:2
 end
 % update MIA_table_pixel_values header
 % guidata(hObject, handles);
-col_header{:,1} = ''; 
+col_header{:,1} = '';
 col_header{:,2} = [char(handles.database.SequenceName(data_to_load(1))) '_' char(handles.database.Tp(data_to_load(1)))];
 col_header{:,3} = [char(handles.database.SequenceName(data_to_load(2))) '_' char(handles.database.Tp(data_to_load(2)))];
 
@@ -1901,7 +1901,7 @@ else
     set(handles.MIA_slider_slice,'Value',1);
     set(handles.MIA_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
     %set(handles.MIA_slider_slice,'SliderStep',[1/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1) min(5/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1),1)]);
-
+    
 end
 
 % update MIA_table_pixel_values header
@@ -1936,18 +1936,18 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MIA_load_axes') && get(handles.MIA_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
-       
-        handles = MIA_update_image_displayed(hObject, eventdata, handles); 
+        
+        handles = MIA_update_image_displayed(hObject, eventdata, handles);
         
         % Setup every siders, popupmenu when new dataset are loaded
         if strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_Saggital_view_button')...
                 || strcmp(get(hObject, 'Tag'), 'MIA_Axial_view_button')  || ...
-              strcmp(get(hObject, 'Tag'), 'MIA_Coronal_view_button')|| ...
-              strcmp(get(hObject, 'Tag'), 'MIA_orientation_space_popupmenu')
-         handles =MIA_update_sliders(hObject, eventdata, handles);
+                strcmp(get(hObject, 'Tag'), 'MIA_Coronal_view_button')|| ...
+                strcmp(get(hObject, 'Tag'), 'MIA_orientation_space_popupmenu')
+            handles =MIA_update_sliders(hObject, eventdata, handles);
         end
         
-         guidata(hObject, handles);
+        guidata(hObject, handles);
     end
     
     % update the ROI matrix (new ROI, resized...)
@@ -1956,8 +1956,8 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
         
         %     %update MIA_plot1 if needed
         if (strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp') || ...
-               (strcmp(get(hObject, 'Tag'), 'MIA_PRM_CI')) || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu')) && ...
-                handles.display_option.view_plot == 1 
+                (strcmp(get(hObject, 'Tag'), 'MIA_PRM_CI')) || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu')) && ...
+                handles.display_option.view_plot == 1
             if handles.mode == 1
                 handles =MIA_update_plot1_single(hObject,handles);
             else
@@ -1966,7 +1966,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
             
         end
     end
-  
+    
     
     if isfield(handles.data_loaded, 'Cluster')
         handles = MIA_update_VOI_displayed(hObject, eventdata, handles);
@@ -2020,13 +2020,31 @@ if isfield(handles, 'data_displayed')
         %             case 1 % image only
         if isfield(handles.data_displayed, 'image')
             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
-            image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-            % Exlude the 2 extremum (min, max) of the Clim
-            min = prctile_copy(image_to_display(:),1);
-            max = prctile_copy(image_to_display(:),99);
-            if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
-                set(handles.(current_data), 'Clim', [min max]);
+            
+            
+            % update image and apply contrast using the values stored (if it is not a new scan
+            % loaded)
+            if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MIA_slider_slice') || ...
+                    strcmp(get(hObject, 'Tag'), 'MIA_new_roi') || strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp') || ...
+                    strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu') || ...
+                     strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_trans'))
+                
+                image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+                set(handles.(current_data), 'Clim', current_contrast );
+            else
+                % Exlude the 2 extremum (min, max) of the Clim
+                min = prctile_copy(image_to_display(:),1);
+                max = prctile_copy(image_to_display(:),99);
+                if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+                    image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+                    set(handles.(current_data), 'Clim', [min max]);
+                end
+                
             end
+            
+            
+            
+            
             % apply the colormap selected
             colormap(handles.(current_data),  colormap_selected{:})
             if isZoomed == true
@@ -2037,7 +2055,8 @@ if isfield(handles, 'data_displayed')
                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
             end
-            set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);            
+            set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+            
         end
         
         if isfield(handles.data_displayed, 'ROI')
@@ -2083,7 +2102,7 @@ if isfield(handles, 'data_displayed')
             end
             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
             hold(handles.(current_data), 'off');
-
+            
         end
         
         if isfield(handles.data_displayed, 'Cluster')
@@ -2104,394 +2123,389 @@ if isfield(handles, 'data_displayed')
         
         
         
-%         
-%         if isfield(handles.data_displayed, 'image') && ~isfield(handles.data_displayed, 'ROI') && ~isfield(handles.data_displayed, 'Cluster')
-%             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
-%             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-%             % Exlude the 2 extremum (min, max) of the Clim
-%             min = prctile_copy(image_to_display(:),1);
-%             max = prctile_copy(image_to_display(:),99);
-%             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
-%                 set(handles.(current_data), 'Clim', [min max]);
-%             end
-%             % apply the colormap selected
-%             colormap(handles.(current_data),  colormap_selected{:})
-%             if isZoomed == true
-%                 set(handles.(current_data),'XLim', XLim_zoomed);
-%                 set(handles.(current_data),'YLim', YLim_zoomed);
-%                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
-%             else
-%                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-%                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
-%             end
-%             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-%             %             case 2 % image + ROI
-%         elseif isfield(handles.data_displayed, 'image') && isfield(handles.data_displayed, 'ROI') && ~isfield(handles.data_displayed, 'Cluster')
-%             % Clip image displayed at the 2 extremum (min, max)
-%             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
-%             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data), 'Tag', current_data);
-%             % Exlude the 2 extremum (min, max) of the Clim
-%             min = prctile_copy(image_to_display(:),1);
-%             max = prctile_copy(image_to_display(:),99);
-%             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
-%                 set(handles.(current_data), 'Clim', [min max]);
-%             end
-%             % apply the colormap selected
-%             colormap(handles.(current_data),  colormap_selected{:})
-%             
-%             if isZoomed == true
-%                 set(handles.(current_data),'XLim', XLim_zoomed);
-%                 set(handles.(current_data),'YLim', YLim_zoomed);
-%                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
-%                 
-%             else
-%                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-%                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
-%             end
-%             hold(handles.(current_data), 'on');
-%             if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
-%                 fillroi = true;
-%                 trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
-%             else
-%                 fillroi = false;
-%             end
-%             % if ROI on the slice
-%             if handles.mode == 1
-%                 %  ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
-%                 for x = 1:numel(handles.data_loaded.ROI)
-%                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
-%                         
-%                         roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
-%                         if fillroi
-%                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
-%                             image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-%                         else
-%                             contour(handles.(current_data), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
-%                                 'Visible', 'on',...
-%                                 'tag','ROI_contour');
-%                         end
-%                     end
-%                 end
-%             else
-%                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
-%                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
-%                     if fillroi
-%                         roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{1}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
-%                         image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
-%                     else
-%                         contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{1}),...
-%                             'Visible', 'on',...
-%                             'tag','ROI_contour');
-%                     end
-%                     eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                     eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
-%                     eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%                 end
-%             end
-%             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-%             hold(handles.(current_data), 'off');
-%             %             case 3 % image + ROI + cluster
-%         elseif isfield(handles.data_displayed, 'image') && ~isfield(handles.data_displayed, 'ROI') && isfield(handles.data_displayed, 'Cluster')
-%             
-%             %On charge le fichier contenant : "uvascroi" : toutes les
-%             %donn?es du clustering (classement des pixels),
-%             %"Informations" : Les informations du clustering (Nombre de
-%             %classes, patients consid?r?s, cartes utilis?es),
-%             %"Statistiques" : Les statistiques calcul?es ? partir du
-%             %classement des pixels, par tranche, volume, etc..
-%             %load(handles.data_selected.roifile{:},'uvascroi','Informations','Statistiques');
-%             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
-%             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-%             % Exlude the 2 extremum (min, max) of the Clim
-%             min = prctile_copy(image_to_display(:),1);
-%             max = prctile_copy(image_to_display(:),99);
-%             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
-%                 set(handles.(current_data), 'Clim', [min max]);
-%             end
-%             % apply the colormap selected
-%             colormap(handles.(current_data),  colormap_selected{:})
-%             if isZoomed == true
-%                 set(handles.(current_data),'XLim', XLim_zoomed);
-%                 set(handles.(current_data),'YLim', YLim_zoomed);
-%                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
-%             else
-%                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-%                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
-%             end
-%             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-%             
-%             %                 % image
-%             %                 if  sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'Color')
-%             %                     eval(['image(uint8(squeeze(handles.data_selected_resized.image(i).reco.data(:,:,1,slice_nbr,:))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%             %                 elseif sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'Gray')
-%             %                     eval(['image(uint8(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%             %
-%             %                 else
-%             %
-%             %                     if( max(~isreal(handles.data_displayed.image(:)))==1 )    % complex data
-%             %                         eval(['image(squeeze(abs(handles.data_displayed.image(:,:,slice_nbr,i,1))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%             %                     else    % real data
-%             %                         eval(['image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1)),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
-%             %                     end
-%             %                 end
-%             %                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
-%             %                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
-%             %                 eval(['set(handles.MIA_data' stri ', ''Visible'', ''on'', ''XTick'' , [], ''YTick'', []);']);
-%             %                 if isZoomed == true
-%             %                     eval(['set(handles.MIA_data' stri ',''XLim'', XLim_zoomed);']);
-%             %                     eval(['set(handles.MIA_data' stri ',''YLim'', YLim_zoomed);']);
-%             %                     eval(['setappdata(handles.MIA_data' stri ',''matlab_graphics_resetplotview'', origInfo);']);
-%             %
-%             %                 else
-%             %                     eval(['set(handles.MIA_data' stri ', ''XLim'', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);']);
-%             %                     eval(['set(handles.MIA_data' stri ', ''YLim'', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);']);
-%             %                 end
-%             
-%             % cluster
-%             if handles.data_displayed.Cluster.on_slice(slice_nbr)
-%                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
-%                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
-%                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
-%                 
-%                 Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
-%                 hold(handles.(current_data), 'on');
-%                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
-%                 hold(handles.(current_data), 'off');
-%                 %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                 %                 eval(['image(squeeze(handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);    %Affichage du cluster selectionn??
-%                 %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%             end
-%             
-%             
-%             % Faire le lien entre toutes les images et les images o?
-%             % apparait le cluster, moins nombreuses
-%             % PresenceClustToutesTranches est un vecteur de taille
-%             % ?gale au nombre de tranches. Si la i?me tranche permet d'afficher
-%             % une ROI, et donc un cluster, alors la i?me composante du
-%             % vecteur PresenceClustToutesTranches contient un 1. Elle
-%             % contient un 0 s'il n'y a rien ? afficher
-%             %                 PresenceClustToutesTranches = zeros(1,size(handles.ROI_cluster_resized.map,3));
-%             %                 for ccc = 1:size(handles.ROI_cluster_resized.map,3)
-%             %                     if sum(sum(handles.data_displayed.VOI_cluster.trans(:,:,ccc))) == 0
-%             %                         PresenceClustToutesTranches(ccc) = 0;
-%             %                     else
-%             %                         PresenceClustToutesTranches(ccc) = 1;
-%             %                     end
-%             %                 end
-%             
-%             
-%             
-%             %On r?cup?re les bonnes statistiques (ie celles qui
-%             %correspondent au patient s?lectionn?)
-%             % En effet, le fichier "Statistiques" charg? pr?cedemment
-%             % contient les statistiques de tous les patients consid?r?s
-%             % lors du clustering.
-%             %                 if exist('Informations', 'var')
-%             %                     Sign = Informations.Sign;
-%             %                     for j = 1:length(Sign)
-%             %                         if handles.data_selected_resized.patient_info.name == Sign(1,j)
-%             %                             if handles.data_selected_resized.patient_info.timepoint == Sign(2,j)
-%             %                                 MoyCartesTranches = Statistiques(j).MoyCartesTranches;
-%             %                                 ProbTranches = Statistiques(j).ProbTranches;
-%             %                                 MoyCartesVolume = Statistiques(j).MoyCartesVolume;
-%             %                                 ProbVolume = Statistiques(j).ProbVolume;
-%             %                             end
-%             %                         end
-%             %                     end
-%             %
-%             %                     %On affiche d?somais les statistiques de volume du patient
-%             %                     %selectionn?. On cr?e donc un tableau.
-%             %
-%             %                     %Nom des lignes, avec les couleurs correspondant aux clusters
-%             %                     % La fonction colorgen necessite de formuler les
-%             %                     % composantes des couleurs en hexad?cimal. On utilise pour
-%             %                     % cel? la fonction rgb2hex (r?cup?r?e sur le matlab file
-%             %                     % exchange) qui permet de transformer en hexad?cimal une
-%             %                     % couleur formul?e en rgb.
-%             %
-%             %                     StatVol = cell(size(MoyCartesVolume,1),size(MoyCartesVolume,2)+2);
-%             %                     for ii=1:size(MoyCartesVolume,1)/2
-%             %                         colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
-%             %                         StatVol{2*ii-1,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Volume_Mean'));
-%             %                         StatVol{2*ii,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Volume_SD'));
-%             %                         StatVol{2*ii-1,size(MoyCartesVolume,2)+2} = ProbVolume(ii);
-%             %                     end
-%             %
-%             %                     %Affichage des statistiques de volume
-%             %                     for iii=1:size(MoyCartesVolume,1)
-%             %                         for iiii = 1:size(MoyCartesVolume,2)
-%             %                             StatVol{iii,iiii+1} = MoyCartesVolume(iii,iiii);
-%             %                         end
-%             %                     end
-%             %
-%             %                     %Affichage des noms des colonnes
-%             %                     NomsCartes = cell(1,length(Informations.Cartes));
-%             %                     for kk = 1:length(Informations.Cartes)
-%             %                         NomsCartes{kk+1} = char(Informations.Cartes(kk));
-%             %                     end
-%             %                     NomsCartes{length(Informations.Cartes)+2} = char('Repartition %');
-%             %                     NomsCartes{1} = char('_____________________');
-%             %
-%             %                     %L'image affichee dispose t elle d'un cluster ?
-%             %                     % Ce veteur est peut-etre redondant. Peut-etre que le
-%             %                     % vecteur PresenceClustToutesTranches suffit. A v?rifier.
-%             %                     PresenceCluster = zeros(1,slice_nbr);
-%             %                     for ccc = 1:slice_nbr
-%             %                         if sum(sum(handles.data_displayed.VOI_cluster.trans(:,:,ccc))) == 0
-%             %                             PresenceCluster(ccc) = 0;
-%             %                         else
-%             %                             PresenceCluster(ccc) = 1;
-%             %                         end
-%             %                     end
-%             %
-%             %                     %Si pas de cluster, pas de statistiques de la tranche
-%             %                     if PresenceCluster(slice_nbr) == 0
-%             %                         StatTranche = [];
-%             %                     else
-%             %                         %Si il y a un cluster a afficher, on affiche les statistiques et les noms des
-%             %                         %lignes comme precedemment
-%             %                         StatTranche = cell(size(MoyCartesTranches,1),size(MoyCartesTranches,2)+2);
-%             %                         for ii=1:size(MoyCartesVolume,1)/2
-%             %                             colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
-%             %                             StatTranche{2*ii-1,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Tranche_Mean'));
-%             %                             StatTranche{2*ii,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Tranche_SD'));
-%             %                             StatTranche{2*ii-1,size(MoyCartesTranches,2)+2} = ProbTranches(ii,sum(PresenceCluster(1:slice_nbr)));
-%             %                         end
-%             %
-%             %                         for iii=1:size(MoyCartesTranches,1)
-%             %                             for iiii = 1:size(MoyCartesTranches,2)
-%             %                                 StatTranche{iii,iiii+1} = MoyCartesTranches(iii,iiii,sum(PresenceCluster(1:slice_nbr)));
-%             %                             end
-%             %                         end
-%             %                     end
-%             %
-%             %                     %On laisse une ligne blanche entre les 2 tableaux, pour
-%             %                     %plus de clart??
-%             %                     Espace = cell(1,size(MoyCartesTranches,2)+2);
-%             %                 end
-%             % ROI if on the slice
-%             %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%             %                 if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
-%             %                     fillroi = true;
-%             %                     trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
-%             %                 else
-%             %                     fillroi = false;
-%             %                 end
-%             %                 for x = 1:numel(handles.ROI_selected_resized)
-%             %                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) ==1
-%             %                         roi_a_appliquer=handles.ROI_selected_resized(x).data.value(:,:,slice_nbr);
-%             %
-%             %                         if fillroi
-%             %                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]); %#ok<NASGU>
-%             %                             eval(['image(roiRGB,''AlphaData'',roi_a_appliquer*trans,''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri '2'');']);
-%             %                         else
-%             %                             warning('off')
-%             %                             contour(eval(['handles.MIA_data' stri]), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...     % Affichage contour (ROI) et modification du fond de l'image
-%             %                                 'Visible', 'on',...
-%             %                                 'tag','ROI_contour');
-%             %                             warning('on')
-%             %                         end
-%             %                     end
-%             %                 end
-%             %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%             
-%         elseif isfield(handles.data_displayed, 'image') && isfield(handles.data_displayed, 'ROI') && isfield(handles.data_displayed, 'Cluster')
-%             %% Image
-%             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
-%             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-%             % Exlude the 2 extremum (min, max) of the Clim
-%             min = prctile_copy(image_to_display(:),1);
-%             max = prctile_copy(image_to_display(:),99);
-%             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
-%                 set(handles.(current_data), 'Clim', [min max]);
-%             end
-%             % apply the colormap selected
-%             colormap(handles.(current_data),  colormap_selected{:})
-%             if isZoomed == true
-%                 set(handles.(current_data),'XLim', XLim_zoomed);
-%                 set(handles.(current_data),'YLim', YLim_zoomed);
-%                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
-%             else
-%                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
-%                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
-%             end
-%             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-%             hold(handles.(current_data), 'on');
-%             %% ROI
-%             if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
-%                 fillroi = true;
-%                 trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
-%             else
-%                 fillroi = false;
-%             end
-%             % if ROI on the slice
-%             if handles.mode == 1
-%                 %  ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
-%                 for x = 1:numel(handles.data_loaded.ROI)
-%                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
-%                         
-%                         roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
-%                         if fillroi
-%                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
-%                             image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
-%                         else
-%                             contour(handles.(current_data), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
-%                                 'Visible', 'on',...
-%                                 'tag','ROI_contour');
-%                         end
-%                     end
-%                 end
-%             else
-%                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
-%                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
-%                     if fillroi
-%                         roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{1}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
-%                         image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
-%                     else
-%                         contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{1}),...
-%                             'Visible', 'on',...
-%                             'tag','ROI_contour');
-%                     end
-%                     eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                     eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
-%                     eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%                 end
-%             end
-%             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
-%             hold(handles.(current_data), 'off');
-%             
-% 
-%             %% Cluster
-%             if handles.data_displayed.Cluster.on_slice(slice_nbr)
-%                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
-%                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
-%                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
-%                 
-%                 Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
-%                 hold on
-%                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
-%                 hold off
-%                 %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
-%                 %                 eval(['image(squeeze(handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);    %Affichage du cluster selectionn??
-%                 %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
-%             end
-%             
-%             
-%             
-%             
-%         end
+        %
+        %         if isfield(handles.data_displayed, 'image') && ~isfield(handles.data_displayed, 'ROI') && ~isfield(handles.data_displayed, 'Cluster')
+        %             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
+        %             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+        %             % Exlude the 2 extremum (min, max) of the Clim
+        %             min = prctile_copy(image_to_display(:),1);
+        %             max = prctile_copy(image_to_display(:),99);
+        %             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+        %                 set(handles.(current_data), 'Clim', [min max]);
+        %             end
+        %             % apply the colormap selected
+        %             colormap(handles.(current_data),  colormap_selected{:})
+        %             if isZoomed == true
+        %                 set(handles.(current_data),'XLim', XLim_zoomed);
+        %                 set(handles.(current_data),'YLim', YLim_zoomed);
+        %                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
+        %             else
+        %                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+        %                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+        %             end
+        %             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+        %             %             case 2 % image + ROI
+        %         elseif isfield(handles.data_displayed, 'image') && isfield(handles.data_displayed, 'ROI') && ~isfield(handles.data_displayed, 'Cluster')
+        %             % Clip image displayed at the 2 extremum (min, max)
+        %             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1));
+        %             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data), 'Tag', current_data);
+        %             % Exlude the 2 extremum (min, max) of the Clim
+        %             min = prctile_copy(image_to_display(:),1);
+        %             max = prctile_copy(image_to_display(:),99);
+        %             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+        %                 set(handles.(current_data), 'Clim', [min max]);
+        %             end
+        %             % apply the colormap selected
+        %             colormap(handles.(current_data),  colormap_selected{:})
+        %
+        %             if isZoomed == true
+        %                 set(handles.(current_data),'XLim', XLim_zoomed);
+        %                 set(handles.(current_data),'YLim', YLim_zoomed);
+        %                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
+        %
+        %             else
+        %                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+        %                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+        %             end
+        %             hold(handles.(current_data), 'on');
+        %             if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
+        %                 fillroi = true;
+        %                 trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
+        %             else
+        %                 fillroi = false;
+        %             end
+        %             % if ROI on the slice
+        %             if handles.mode == 1
+        %                 %  ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
+        %                 for x = 1:numel(handles.data_loaded.ROI)
+        %                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
+        %
+        %                         roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
+        %                         if fillroi
+        %                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+        %                             image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+        %                         else
+        %                             contour(handles.(current_data), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
+        %                                 'Visible', 'on',...
+        %                                 'tag','ROI_contour');
+        %                         end
+        %                     end
+        %                 end
+        %             else
+        %                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
+        %                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
+        %                     if fillroi
+        %                         roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{1}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+        %                         image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
+        %                     else
+        %                         contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{1}),...
+        %                             'Visible', 'on',...
+        %                             'tag','ROI_contour');
+        %                     end
+        %                     eval(['hold(handles.MIA_data' stri ', ''on'');']);
+        %                     eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
+        %                     eval(['hold(handles.MIA_data' stri ', ''off'');']);
+        %                 end
+        %             end
+        %             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+        %             hold(handles.(current_data), 'off');
+        %             %             case 3 % image + ROI + cluster
+        %         elseif isfield(handles.data_displayed, 'image') && ~isfield(handles.data_displayed, 'ROI') && isfield(handles.data_displayed, 'Cluster')
+        %
+        %             %On charge le fichier contenant : "uvascroi" : toutes les
+        %             %donn?es du clustering (classement des pixels),
+        %             %"Informations" : Les informations du clustering (Nombre de
+        %             %classes, patients consid?r?s, cartes utilis?es),
+        %             %"Statistiques" : Les statistiques calcul?es ? partir du
+        %             %classement des pixels, par tranche, volume, etc..
+        %             %load(handles.data_selected.roifile{:},'uvascroi','Informations','Statistiques');
+        %             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
+        %             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+        %             % Exlude the 2 extremum (min, max) of the Clim
+        %             min = prctile_copy(image_to_display(:),1);
+        %             max = prctile_copy(image_to_display(:),99);
+        %             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+        %                 set(handles.(current_data), 'Clim', [min max]);
+        %             end
+        %             % apply the colormap selected
+        %             colormap(handles.(current_data),  colormap_selected{:})
+        %             if isZoomed == true
+        %                 set(handles.(current_data),'XLim', XLim_zoomed);
+        %                 set(handles.(current_data),'YLim', YLim_zoomed);
+        %                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
+        %             else
+        %                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+        %                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+        %             end
+        %             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+        %
+        %             %                 % image
+        %             %                 if  sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'Color')
+        %             %                     eval(['image(uint8(squeeze(handles.data_selected_resized.image(i).reco.data(:,:,1,slice_nbr,:))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
+        %             %                 elseif sum(strcmp(handles.data_selected.list_scan{i}, handles.histo'))>0 && strcmp(handles.data_selected.image(i).reco.color_map, 'Gray')
+        %             %                     eval(['image(uint8(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
+        %             %
+        %             %                 else
+        %             %
+        %             %                     if( max(~isreal(handles.data_displayed.image(:)))==1 )    % complex data
+        %             %                         eval(['image(squeeze(abs(handles.data_displayed.image(:,:,slice_nbr,i,1))),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
+        %             %                     else    % real data
+        %             %                         eval(['image(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,1)),''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri ''');']);
+        %             %                     end
+        %             %                 end
+        %             %                 colormap_selected = handles.colormap(get(handles.MIA_colormap_popupmenu,'Value'));
+        %             %                 eval(['colormap(handles.MIA_data' stri ', ''' colormap_selected{:} ''');']);
+        %             %                 eval(['set(handles.MIA_data' stri ', ''Visible'', ''on'', ''XTick'' , [], ''YTick'', []);']);
+        %             %                 if isZoomed == true
+        %             %                     eval(['set(handles.MIA_data' stri ',''XLim'', XLim_zoomed);']);
+        %             %                     eval(['set(handles.MIA_data' stri ',''YLim'', YLim_zoomed);']);
+        %             %                     eval(['setappdata(handles.MIA_data' stri ',''matlab_graphics_resetplotview'', origInfo);']);
+        %             %
+        %             %                 else
+        %             %                     eval(['set(handles.MIA_data' stri ', ''XLim'', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);']);
+        %             %                     eval(['set(handles.MIA_data' stri ', ''YLim'', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);']);
+        %             %                 end
+        %
+        %             % cluster
+        %             if handles.data_displayed.Cluster.on_slice(slice_nbr)
+        %                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
+        %                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
+        %                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
+        %
+        %                 Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
+        %                 hold(handles.(current_data), 'on');
+        %                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
+        %                 hold(handles.(current_data), 'off');
+        %                 %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
+        %                 %                 eval(['image(squeeze(handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);    %Affichage du cluster selectionn??
+        %                 %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
+        %             end
+        %
+        %
+        %             % Faire le lien entre toutes les images et les images o?
+        %             % apparait le cluster, moins nombreuses
+        %             % PresenceClustToutesTranches est un vecteur de taille
+        %             % ?gale au nombre de tranches. Si la i?me tranche permet d'afficher
+        %             % une ROI, et donc un cluster, alors la i?me composante du
+        %             % vecteur PresenceClustToutesTranches contient un 1. Elle
+        %             % contient un 0 s'il n'y a rien ? afficher
+        %             %                 PresenceClustToutesTranches = zeros(1,size(handles.ROI_cluster_resized.map,3));
+        %             %                 for ccc = 1:size(handles.ROI_cluster_resized.map,3)
+        %             %                     if sum(sum(handles.data_displayed.VOI_cluster.trans(:,:,ccc))) == 0
+        %             %                         PresenceClustToutesTranches(ccc) = 0;
+        %             %                     else
+        %             %                         PresenceClustToutesTranches(ccc) = 1;
+        %             %                     end
+        %             %                 end
+        %
+        %
+        %
+        %             %On r?cup?re les bonnes statistiques (ie celles qui
+        %             %correspondent au patient s?lectionn?)
+        %             % En effet, le fichier "Statistiques" charg? pr?cedemment
+        %             % contient les statistiques de tous les patients consid?r?s
+        %             % lors du clustering.
+        %             %                 if exist('Informations', 'var')
+        %             %                     Sign = Informations.Sign;
+        %             %                     for j = 1:length(Sign)
+        %             %                         if handles.data_selected_resized.patient_info.name == Sign(1,j)
+        %             %                             if handles.data_selected_resized.patient_info.timepoint == Sign(2,j)
+        %             %                                 MoyCartesTranches = Statistiques(j).MoyCartesTranches;
+        %             %                                 ProbTranches = Statistiques(j).ProbTranches;
+        %             %                                 MoyCartesVolume = Statistiques(j).MoyCartesVolume;
+        %             %                                 ProbVolume = Statistiques(j).ProbVolume;
+        %             %                             end
+        %             %                         end
+        %             %                     end
+        %             %
+        %             %                     %On affiche d?somais les statistiques de volume du patient
+        %             %                     %selectionn?. On cr?e donc un tableau.
+        %             %
+        %             %                     %Nom des lignes, avec les couleurs correspondant aux clusters
+        %             %                     % La fonction colorgen necessite de formuler les
+        %             %                     % composantes des couleurs en hexad?cimal. On utilise pour
+        %             %                     % cel? la fonction rgb2hex (r?cup?r?e sur le matlab file
+        %             %                     % exchange) qui permet de transformer en hexad?cimal une
+        %             %                     % couleur formul?e en rgb.
+        %             %
+        %             %                     StatVol = cell(size(MoyCartesVolume,1),size(MoyCartesVolume,2)+2);
+        %             %                     for ii=1:size(MoyCartesVolume,1)/2
+        %             %                         colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+        %             %                         StatVol{2*ii-1,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Volume_Mean'));
+        %             %                         StatVol{2*ii,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Volume_SD'));
+        %             %                         StatVol{2*ii-1,size(MoyCartesVolume,2)+2} = ProbVolume(ii);
+        %             %                     end
+        %             %
+        %             %                     %Affichage des statistiques de volume
+        %             %                     for iii=1:size(MoyCartesVolume,1)
+        %             %                         for iiii = 1:size(MoyCartesVolume,2)
+        %             %                             StatVol{iii,iiii+1} = MoyCartesVolume(iii,iiii);
+        %             %                         end
+        %             %                     end
+        %             %
+        %             %                     %Affichage des noms des colonnes
+        %             %                     NomsCartes = cell(1,length(Informations.Cartes));
+        %             %                     for kk = 1:length(Informations.Cartes)
+        %             %                         NomsCartes{kk+1} = char(Informations.Cartes(kk));
+        %             %                     end
+        %             %                     NomsCartes{length(Informations.Cartes)+2} = char('Repartition %');
+        %             %                     NomsCartes{1} = char('_____________________');
+        %             %
+        %             %                     %L'image affichee dispose t elle d'un cluster ?
+        %             %                     % Ce veteur est peut-etre redondant. Peut-etre que le
+        %             %                     % vecteur PresenceClustToutesTranches suffit. A v?rifier.
+        %             %                     PresenceCluster = zeros(1,slice_nbr);
+        %             %                     for ccc = 1:slice_nbr
+        %             %                         if sum(sum(handles.data_displayed.VOI_cluster.trans(:,:,ccc))) == 0
+        %             %                             PresenceCluster(ccc) = 0;
+        %             %                         else
+        %             %                             PresenceCluster(ccc) = 1;
+        %             %                         end
+        %             %                     end
+        %             %
+        %             %                     %Si pas de cluster, pas de statistiques de la tranche
+        %             %                     if PresenceCluster(slice_nbr) == 0
+        %             %                         StatTranche = [];
+        %             %                     else
+        %             %                         %Si il y a un cluster a afficher, on affiche les statistiques et les noms des
+        %             %                         %lignes comme precedemment
+        %             %                         StatTranche = cell(size(MoyCartesTranches,1),size(MoyCartesTranches,2)+2);
+        %             %                         for ii=1:size(MoyCartesVolume,1)/2
+        %             %                             colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+        %             %                             StatTranche{2*ii-1,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Tranche_Mean'));
+        %             %                             StatTranche{2*ii,1} = colergen(rgb2hex(Informations(1).Couleurs(ii,:)), strcat('C_',num2str(ii),'_Tranche_SD'));
+        %             %                             StatTranche{2*ii-1,size(MoyCartesTranches,2)+2} = ProbTranches(ii,sum(PresenceCluster(1:slice_nbr)));
+        %             %                         end
+        %             %
+        %             %                         for iii=1:size(MoyCartesTranches,1)
+        %             %                             for iiii = 1:size(MoyCartesTranches,2)
+        %             %                                 StatTranche{iii,iiii+1} = MoyCartesTranches(iii,iiii,sum(PresenceCluster(1:slice_nbr)));
+        %             %                             end
+        %             %                         end
+        %             %                     end
+        %             %
+        %             %                     %On laisse une ligne blanche entre les 2 tableaux, pour
+        %             %                     %plus de clart??
+        %             %                     Espace = cell(1,size(MoyCartesTranches,2)+2);
+        %             %                 end
+        %             % ROI if on the slice
+        %             %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
+        %             %                 if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
+        %             %                     fillroi = true;
+        %             %                     trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
+        %             %                 else
+        %             %                     fillroi = false;
+        %             %                 end
+        %             %                 for x = 1:numel(handles.ROI_selected_resized)
+        %             %                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) ==1
+        %             %                         roi_a_appliquer=handles.ROI_selected_resized(x).data.value(:,:,slice_nbr);
+        %             %
+        %             %                         if fillroi
+        %             %                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]); %#ok<NASGU>
+        %             %                             eval(['image(roiRGB,''AlphaData'',roi_a_appliquer*trans,''CDataMapping'',''Scaled'',''Parent'', handles.MIA_data' stri ',''Tag'',''data' stri '2'');']);
+        %             %                         else
+        %             %                             warning('off')
+        %             %                             contour(eval(['handles.MIA_data' stri]), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...     % Affichage contour (ROI) et modification du fond de l'image
+        %             %                                 'Visible', 'on',...
+        %             %                                 'tag','ROI_contour');
+        %             %                             warning('on')
+        %             %                         end
+        %             %                     end
+        %             %                 end
+        %             %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
+        %
+        %         elseif isfield(handles.data_displayed, 'image') && isfield(handles.data_displayed, 'ROI') && isfield(handles.data_displayed, 'Cluster')
+        %             %% Image
+        %             image_to_display =squeeze(handles.data_displayed.image(:,:,slice_nbr,i));
+        %             image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+        %             % Exlude the 2 extremum (min, max) of the Clim
+        %             min = prctile_copy(image_to_display(:),1);
+        %             max = prctile_copy(image_to_display(:),99);
+        %             if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+        %                 set(handles.(current_data), 'Clim', [min max]);
+        %             end
+        %             % apply the colormap selected
+        %             colormap(handles.(current_data),  colormap_selected{:})
+        %             if isZoomed == true
+        %                 set(handles.(current_data),'XLim', XLim_zoomed);
+        %                 set(handles.(current_data),'YLim', YLim_zoomed);
+        %                 setappdata(handles.(current_data),'matlab_graphics_resetplotview', origInfo);
+        %             else
+        %                 set(handles.(current_data), 'XLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2)]);
+        %                 set(handles.(current_data), 'YLim', [1,size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1)]);
+        %             end
+        %             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+        %             hold(handles.(current_data), 'on');
+        %             %% ROI
+        %             if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
+        %                 fillroi = true;
+        %                 trans = get(handles.MIA_PRM_slider_trans, 'Value')/100;
+        %             else
+        %                 fillroi = false;
+        %             end
+        %             % if ROI on the slice
+        %             if handles.mode == 1
+        %                 %  ROI_indices = find(handles.data_loaded.info_data_loaded.Type == 'ROI');
+        %                 for x = 1:numel(handles.data_loaded.ROI)
+        %                     if handles.data_displayed.ROI.on_slice(x,slice_nbr) == 1
+        %
+        %                         roi_a_appliquer=handles.data_loaded.ROI(x).nii(:,:,slice_nbr);
+        %                         if fillroi
+        %                             roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{x}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+        %                             image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
+        %                         else
+        %                             contour(handles.(current_data), roi_a_appliquer, 1, 'Color',rgb(handles.colors{x}),...
+        %                                 'Visible', 'on',...
+        %                                 'tag','ROI_contour');
+        %                         end
+        %                     end
+        %                 end
+        %             else
+        %                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
+        %                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
+        %                     if fillroi
+        %                         roiRGB = repmat(roi_a_appliquer,[1 1 3]) .* permute(repmat(rgb(handles.colors{1}),[size(roi_a_appliquer,1) 1 size(roi_a_appliquer,1)]),[1 3 2]);
+        %                         image(roiRGB,'AlphaData',roi_a_appliquer*trans,'CDataMapping','Scaled','Parent', handles.(sprintf('MIA_data%d', i)),'Tag',sprintf('data%d', i));
+        %                     else
+        %                         contour(handles.(sprintf('MIA_data%d', i)), roi_a_appliquer, 1, 'Color',rgb(handles.colors{1}),...
+        %                             'Visible', 'on',...
+        %                             'tag','ROI_contour');
+        %                     end
+        %                     eval(['hold(handles.MIA_data' stri ', ''on'');']);
+        %                     eval(['image(squeeze(handles.data_loaded.PRM.map(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_loaded.PRM.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);
+        %                     eval(['hold(handles.MIA_data' stri ', ''off'');']);
+        %                 end
+        %             end
+        %             set(handles.(current_data), 'Visible', 'on', 'XTick' , [], 'YTick', []);
+        %             hold(handles.(current_data), 'off');
+        %
+        %
+        %             %% Cluster
+        %             if handles.data_displayed.Cluster.on_slice(slice_nbr)
+        %                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
+        %                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
+        %                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
+        %
+        %                 Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
+        %                 hold on
+        %                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
+        %                 hold off
+        %                 %                 eval(['hold(handles.MIA_data' stri ', ''on'');']);
+        %                 %                 eval(['image(squeeze(handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)), ''CDataMapping'',''Scaled'', ''parent'', handles.MIA_data' stri ', ''AlphaData'',handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr), ''Tag'', ''data' stri '_ROI_cluster'');']);    %Affichage du cluster selectionn??
+        %                 %                 eval(['hold(handles.MIA_data' stri ', ''off'');']);
+        %             end
+        %
+        %
+        %
+        %
+        %         end
         
         axe(i) = handles.(current_data);
         %%%%%%%% activate clic on graph MIA_dataXX_ButtonDownFcn
         set(get(handles.(current_data), 'Children'), 'HitTest', 'off');
         set(handles.(current_data),'ButtonDownFcn', @MIA_clic_on_image);
         set(get(handles.(current_data), 'Children'), 'ButtonDownFcn', @MIA_clic_on_image);
-        % update contrast using the values stored (if it is not a new scan
-        % loaded)
-        if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MIA_slider_slice') || ...
-                strcmp(get(hObject, 'Tag'), 'MIA_new_roi'))
-            set(handles.(current_data), 'Clim', current_contrast );
-        end
+        
         
     end
     
@@ -2536,7 +2550,7 @@ switch get(hObject, 'Tag')
                     scan_number = 1;
                 end
             end
-            handles.data_displayed.image(:,:,:,1) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data1_echo_nbr, data1_expt_nbr, handles.view_mode);    
+            handles.data_displayed.image(:,:,:,1) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data1_echo_nbr, data1_expt_nbr, handles.view_mode);
         end
     case {'MIA_data2_echo_slider', 'MIA_data2_expt_slider'}
         
@@ -2595,21 +2609,21 @@ switch get(hObject, 'Tag')
                 
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
                 
-                % update title 
+                % update title
                 eval(['set(handles.MIA_data' stri '_title, ''String'', [char(handles.data_loaded.info_data_loaded.SequenceName(scan_number)) ''_'' char(handles.data_loaded.info_data_loaded.Tp(scan_number))], ''Visible'', ''on'');']);
-
+                
             end
-          
+            
         end
-%         if ~strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp')
-%             if ~size(handles.data_displayed.image, 3) == 1
-%                 set(handles.MIA_slider_slice,'Visible', 'off');
-%             else
-%                 set(handles.MIA_slider_slice,'Visible', 'on');
-%                 set(handles.MIA_slider_slice,'Value', 1);
-%                 set(handles.MIA_slider_slice, 'max', size(handles.data_displayed.image, 3), 'Value', 1, 'SliderStep',[1/(size(handles.data_displayed.image, 3) -1) min(5/(size(handles.data_displayed.image, 3) -1),1)]);
-%             end
-%         end
+        %         if ~strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp')
+        %             if ~size(handles.data_displayed.image, 3) == 1
+        %                 set(handles.MIA_slider_slice,'Visible', 'off');
+        %             else
+        %                 set(handles.MIA_slider_slice,'Visible', 'on');
+        %                 set(handles.MIA_slider_slice,'Value', 1);
+        %                 set(handles.MIA_slider_slice, 'max', size(handles.data_displayed.image, 3), 'Value', 1, 'SliderStep',[1/(size(handles.data_displayed.image, 3) -1) min(5/(size(handles.data_displayed.image, 3) -1),1)]);
+        %             end
+        %         end
 end
 
 
@@ -2838,7 +2852,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
     if voi_empty == 0
         ROI_binary = handles.data_loaded.ROI(ii).nii;
         ROI_binary(abs(ROI_binary)>0) =1;
-      
+        
         switch handles.data_loaded(1).number_of_scan
             case 1
                 VOI_data  = handles.data_displayed.image .* ROI_binary;
@@ -2890,7 +2904,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3)) == 0,:) =[];
-
+                
                 scatter3(handles.MIA_plot1, VOI_data(:,1), VOI_data(:,2), VOI_data(:,3),...
                     'filled',...
                     'SizeData', 20,...
@@ -2899,7 +2913,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                     'Tag', strcat('MIA_plot1_3d', strii));
                 legende_txt(ii,:) = ROI_names(ii,:);
             case 4
-                 % find x data
+                % find x data
                 VOI_data_x  = squeeze(handles.data_displayed.image(:,:,:,1)) .* ROI_binary;
                 VOI_data(:,1) = reshape(VOI_data_x, [size(VOI_data_x,1)*size(VOI_data_x,2)*size(VOI_data_x,3),1]);
                 % find y data
@@ -2915,9 +2929,9 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 % keep only voxel which has x and y values
                 VOI_data((VOI_data(:,1).*VOI_data(:,2).*VOI_data(:,3).*VOI_data(:,4)) == 0,:) =[];
                 % remove nan
-%                 VOI_data(isnan(VOI_data(:,1)),:) = [];
+                %                 VOI_data(isnan(VOI_data(:,1)),:) = [];
                 VOI_data(isnan(mean(VOI_data,2)),:) = [];
-
+                
                 color4d = zeros(size(VOI_data(:,4),1),3);
                 tmp = jet(256);
                 mini=min(VOI_data(:,4));
@@ -2944,7 +2958,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
     end
     clear VOI_data
 end
-    
+
 clear index voi_data
 if ii == 1
     hold(handles.MIA_plot1, 'on');
@@ -3108,7 +3122,7 @@ dimension_size = zeros([size(handles.data_displayed.image,4),7]);
 for i=1:size(handles.data_displayed.image,4)
     dimension_size(i,1:numel(handles.data_loaded.Scan(i).V(1).private.dat.dim)) = handles.data_loaded.Scan(i).V(1).private.dat.dim;
 end
-%remove x, y and Z dimensions 
+%remove x, y and Z dimensions
 dimension_size(:,1:3) =[];
 % find only the 4D data (exclude < and > of 4d data)
 fourD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 1);
@@ -3122,12 +3136,12 @@ tag = get(get(hObject, 'Children'), 'Tag');
 if size(tag,1)>1
     currPt_on_axe=eval(['get(handles.' tag{end} ',''CurrentPoint'');']);
 else
-    currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']); 
+    currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']);
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
 if voxel(1) == 0 || voxel(2)==0
-     return  %bug somewhere
+    return  %bug somewhere
 end
 % clean old plot (if needed)
 if ~isempty(get(handles.MIA_plot1, 'Children'))
@@ -3160,7 +3174,7 @@ end
 
 set(handles.MIA_GUI, 'pointer', 'arrow');
 
-% 
+%
 % if handles.mode == 1
 %     if size(handles.data_selected_resized.image(1).reco.data,3) == 1 && ...
 %             size(handles.data_selected_resized.image(1).reco.data, 5) == 1
@@ -3187,15 +3201,15 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 % else
 %     currPt_on_axe=eval(['get(handles.MIA_' tag ',''CurrentPoint'');']);
 % end
-% 
-% 
+%
+%
 % [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
-% 
+%
 % voxel = pixel_coordinates_2d(1:2);
 % if voxel(1) == 0 || voxel(2)==0
 %     return  %bug somewhere
 % end
-% 
+%
 % if ~isempty(get(handles.MIA_plot1, 'Children'))
 %     delete(get(handles.MIA_plot1, 'Children'));
 %     legend(handles.MIA_plot1,'off');
@@ -3206,7 +3220,7 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 %     % single mode
 %     if size(handles.data_selected_resized.image(1).reco.data,3) > 1 && ...
 %             size(handles.data_selected_resized.image(1).reco.data, 5) > 1
-%         
+%
 %         % select repetition or echoes
 %     elseif size(handles.data_selected_resized.image(1).reco.data,3) > 1
 %         % plot echoes
@@ -3250,7 +3264,7 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 %                 %                     return
 %                 %                 end
 %                 user_response = 'VOI';
-%                 
+%
 %                 if strcmp(user_response, 'Voxels') ==1
 %                     for x = 1:numel(match_roi)
 %                         roi = []; tmp = [];
@@ -3287,7 +3301,7 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 %                         end
 %                     end
 %                 end
-%                 
+%
 %             end
 %             hold(handles.MIA_plot1, 'off');
 %         end
@@ -3381,13 +3395,13 @@ set(handles.MIA_GUI, 'pointer', 'arrow');
 %                     hold off
 %                 end
 %             end
-%             
+%
 %         end
 %         if ~isempty(legende_txt)
 %             legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
 %         end
 %     end
-%     
+%
 % else
 %     % PRM mode
 %     warndlg('The click function for the PRM mode is not coded yet', 'Warning');
@@ -3405,8 +3419,8 @@ if ~isfield(handles, 'data_displayed')
 end
 [pixel_coordinates_2d] = [round(pixel_coordinates(1,1)) round(pixel_coordinates(1,2)) round(pixel_coordinates(1,3))];
 if pixel_coordinates_2d(1)<=0 || pixel_coordinates_2d(1) > size(handles.data_displayed.image,2) || ...
-    pixel_coordinates_2d(2)<=0 || pixel_coordinates_2d(2) > size(handles.data_displayed.image,1) || ...
-      pixel_coordinates_2d(3)<=0 || pixel_coordinates_2d(3) > size(handles.data_displayed.image,3)
+        pixel_coordinates_2d(2)<=0 || pixel_coordinates_2d(2) > size(handles.data_displayed.image,1) || ...
+        pixel_coordinates_2d(3)<=0 || pixel_coordinates_2d(3) > size(handles.data_displayed.image,3)
     return
 end
 % if pixel_coordinates_2d(1) > handles.resolution_selected || pixel_coordinates_2d(2) > handles.resolution_selected ||...
@@ -4170,10 +4184,10 @@ if isfield(handles, 'data_ploted')
     handles = rmfield(handles, 'data_ploted');
 end
 
-% clear voxel table ColumName 
+% clear voxel table ColumName
 set(handles.MIA_table_pixel_values, 'ColumnName', {''});
 
-% clear table_1 
+% clear table_1
 set(handles.MIA_table1, 'ColumnName', {''});
 set(handles.MIA_table1, 'Data', {''});
 set(handles.MIA_patient_information_title, 'String', 'No images');
@@ -4376,7 +4390,7 @@ PRMb = VOI_data(:,5) < VOI_data(:,4)-CI;
 PRMg = ~or(PRMr, PRMb);
 
 scatter(handles.MIA_plot1,VOI_data(PRMr,4), VOI_data(PRMr,5), 20, [1 0 0]);%,'r')%...
-        % 'MarkerFaceColor','r');
+% 'MarkerFaceColor','r');
 %     'filled',...
 %     'SizeData', 20,...
 %     'MarkerEdgeColor','r',...
@@ -4420,7 +4434,7 @@ if numel(size(handles.data_loaded.ROI.nii)) == 2
 else
     handles.data_loaded.PRM.map=zeros([size(handles.data_loaded.ROI.nii),3]);
 end
- 
+
 handles.data_loaded.PRM.trans=zeros(size(handles.data_loaded.ROI.nii));
 trans = round(get(handles.MIA_PRM_slider_trans, 'Value'))/100;
 for i =1:numel(PRMr)
@@ -4512,7 +4526,7 @@ if strcmp(get(handles.MIA_menu_roi_fill, 'Checked'), 'on')
 elseif isfield(handles, 'brain_extraction_ROI')
     MIA_Brain_Extraction(hObject, eventdata, handles)
 else
-    if isfield(handles.data_loaded, 'PRM') 
+    if isfield(handles.data_loaded, 'PRM')
         trans = round(get(handles.MIA_PRM_slider_trans, 'Value'))/100;
         index = findn(handles.data_loaded.PRM.map ~=0);
         for i = 1: size(index,1)
@@ -5071,10 +5085,10 @@ function MIA_menu_save_database_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 if ~isfield(handles.database.Properties.UserData , 'db_filename')
-%     [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
-%     if pathname == 0
-%         return
-%     end
+    %     [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
+    %     if pathname == 0
+    %         return
+    %     end
     handles.database.Properties.UserData.db_filename = 'MIA_database.mat';
     %handles.database.Properties.UserData.MIA_data_path = pathname;
 end
@@ -5278,34 +5292,34 @@ switch ROI_case
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
         
     case 'New ROI'
-%         %% test
-
-%         % transform the ROI_matrix in order to match to the nii hearder
-%         % (rotation/translation)
-%         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
-%         % ROI_header.mat(3,4) = ROI_header.mat(3,4) + slice_nbr*ROI_header.mat(3,3);
-%         % update the matrice
-%         ROI_header = handles.data_loaded.Scan(Scan_of_reference_selected).V;
-%         ROI_header.dim(3) = 1;
-%         toto = [0 0  (322-slice_nbr)*ROI_header.mat(3,3) 1]';
-%         ROI_header.mat(:,4) = ROI_header.mat * toto;
-%         ROI_header.private.mat = ROI_header.mat;
-
-
+        %         %% test
+        
+        %         % transform the ROI_matrix in order to match to the nii hearder
+        %         % (rotation/translation)
+        %         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
+        %         % ROI_header.mat(3,4) = ROI_header.mat(3,4) + slice_nbr*ROI_header.mat(3,3);
+        %         % update the matrice
+        %         ROI_header = handles.data_loaded.Scan(Scan_of_reference_selected).V;
+        %         ROI_header.dim(3) = 1;
+        %         toto = [0 0  (322-slice_nbr)*ROI_header.mat(3,3) 1]';
+        %         ROI_header.mat(:,4) = ROI_header.mat * toto;
+        %         ROI_header.private.mat = ROI_header.mat;
+        
+        
         % tested code
         %create the VOI matrix
-                ROI_matrix=zeros([x y z]);
-                ROI_matrix(:,:,slice_nbr)=createMask(hroi);
+        ROI_matrix=zeros([x y z]);
+        ROI_matrix(:,:,slice_nbr)=createMask(hroi);
         
         %transform the ROI_matrix in order to match to the nii hearder
         %(rotation/translation)
         %ROI_matrix(:,:,1) = createMask(hroi);
         %adaptedstruct = handles.data_loaded.Scan(Scan_of_reference_selected).V;
-%         indextomove = 2;
-%         for i=1:length(adaptedstruct)
-%             adaptedstruct(i).dim = adaptedstruct(i).dim(1:2);
-%             adaptedstruct(i).mat(indextomove,4) = adaptedstruct(i).mat(indextomove,4)+(slice_nbr-1)*adaptedstruct(i).mat(indextomove,indextomove);
-%         end
+        %         indextomove = 2;
+        %         for i=1:length(adaptedstruct)
+        %             adaptedstruct(i).dim = adaptedstruct(i).dim(1:2);
+        %             adaptedstruct(i).mat(indextomove,4) = adaptedstruct(i).mat(indextomove,4)+(slice_nbr-1)*adaptedstruct(i).mat(indextomove,indextomove);
+        %         end
         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
         
     case 'Union'
@@ -5789,8 +5803,8 @@ end
 new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
 
 fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
-if fid_nii>0 
-     fclose(fid_nii);
+if fid_nii>0
+    fclose(fid_nii);
     % update the database
     new_scan = handles.database(data_selected,:);
     new_scan.SequenceName = new_parameter_name;
@@ -6865,18 +6879,18 @@ selection = questdlg('What do you want to delete?',...
     'Parameters','VOIs', 'Cancel', 'Cancel');
 
 switch selection
-    case 'Parameters' 
+    case 'Parameters'
         name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
-         if isempty(name_option)
-             warndlg('There are no Scan in the database', 'Warning');
-             return
+        if isempty(name_option)
+            warndlg('There are no Scan in the database', 'Warning');
+            return
         end
     case 'VOIs'
         name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
         if isempty(name_option)
-             warndlg('There are no ROI in the database', 'Warning');
-             return
-        end        
+            warndlg('There are no ROI in the database', 'Warning');
+            return
+        end
     case 'Cancel'
         return
 end
@@ -7029,9 +7043,9 @@ Indexs = indSeq;
 [~, index] = sortrows(cellstr(handles.database{:,:}), Indexs, handles.database.Properties.UserData.Order_data_display{3});
 handles.database = handles.database(index,:);
 
-%% Old Code 
+%% Old Code
 %handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
-%% 
+%%
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -7106,15 +7120,15 @@ selection = questdlg('What do you want to rename?',...
 
 switch selection
     case 'Parameters'
-         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
-         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
+        old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
+        new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
     case 'VOIs'
-         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
-         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
+        old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
+        new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
     case 'Cancel'
         return
 end
-  [old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','single','ListSize', [500 500],...
+[old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','single','ListSize', [500 500],...
     'PromptString', 'Select the parameters/VOIs you want to rename');
 if ok == 0 || isempty(old_scan_name)
     return
@@ -7133,8 +7147,8 @@ if ok1 == 0
 end
 if strcmp('Other',new_name_listing(new_scan_name)) == 1
     newparameter_name = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
-     newparameter_name = clean_variable_name(newparameter_name, '');
-     newparameter_name =categorical(newparameter_name);
+    newparameter_name = clean_variable_name(newparameter_name, '');
+    newparameter_name =categorical(newparameter_name);
 else
     newparameter_name =categorical(new_name_listing(new_scan_name));
 end
@@ -7451,7 +7465,7 @@ for i = 1:numel(unique(log_file.StudyName))
                     %%save the files (nii + json)
                     movefile(fullfile(MIA_tmp_folder, [NAME, '.nii']), [char(handles.database.Path(end)), char(handles.database.Filename(end)), '.nii']);
                     movefile(fullfile(MIA_tmp_folder, [NAME, '.json']), [char(handles.database.Path(end)), char(handles.database.Filename(end)), '.json']);
-                   
+                    
                     guidata(hObject, handles);
                 end
             end
@@ -7525,15 +7539,15 @@ for i=1:height(handles.database)
         
     else
         warning('Types allowed : Scan, ROI, Cluster. We found an unknown type : %s', handles.database(i,:).Type)
-    end 
+    end
 end
 
 %% If there is some invalid entries, the user can choose to delete all of them.
 if ~isempty(InvalidEntries)
-    text = ['We found some entries in the database for which file(s) are missing in ', Data_path, '. Do you want to delete them from the table ?']; 
+    text = ['We found some entries in the database for which file(s) are missing in ', Data_path, '. Do you want to delete them from the table ?'];
     answer = questdlg(text, 'Wrong entries', 'Yes', 'See wrong entries','No', 'No');
     %uiwait(gcf)
-    %function answer = DeleteWrongEntries(PushButton, EventData)    
+    %function answer = DeleteWrongEntries(PushButton, EventData)
     if strcmp(answer,'See wrong entries')
         f = figure;
         t = uitable(f, 'Position', [30,100,500,300],'ColumnName', handles.database.Properties.VariableNames,'Data',cellstr(handles.database{InvalidEntries, :}));
@@ -7591,7 +7605,7 @@ if isempty(MovedFiles)
     msgbox('The folders containing your database''s files are already pretty clean !')
     rmdir([Data_path, 'To_Trash']);
 else
-    text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.']; 
+    text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.'];
     answer = questdlg(text, 'Moved Files', 'OK !', 'See files moved','OK !');
     if strcmp(answer,'See files moved')
         f = figure;
@@ -7603,7 +7617,7 @@ guidata(hObject, handles)
 
 % scan_list = [];
 % VOIs_list = [];
-% 
+%
 % for i=1:size(handles.database,2)
 %     for j = 1:numel(handles.database(i).day)
 %         scan_list = [scan_list handles.database(i).day(j).scans_file]; %#ok<AGROW>
@@ -7611,12 +7625,12 @@ guidata(hObject, handles)
 %     end
 % end
 % database_file = cell([scan_list VOIs_list])';
-% 
+%
 % %%% create a listing of all matlab file in the Image_analyses_data folder
 % cellf = @(fun, arr) cellfun(fun, num2cell(arr), 'uniformoutput',0);
 % hard_drive_files=cellf(@(f) char(f.tochar()), java.io.File(handles.database(1).path).list());
 % hard_drive_files = cell2struct(hard_drive_files, 'name' , size(hard_drive_files,1));
-% 
+%
 % if exist(fullfile(handles.database(1).path, 'to_trash'), 'dir') ~= 7
 %     status = mkdir(fullfile(handles.database(1).path, 'to_trash'));
 %     if status == 0
@@ -7624,7 +7638,7 @@ guidata(hObject, handles)
 %         return
 %     end
 % end
-% 
+%
 % %% create a listing of all file how need to be deleted
 % file_moved = 0;
 % for i=1:size(hard_drive_files,1)
@@ -7637,7 +7651,7 @@ guidata(hObject, handles)
 %             [handles.database(1).path, 'to_trash', filesep,hard_drive_files(i).name])
 %     end
 % end
-% 
+%
 % msgbox([num2str(file_moved), ' Files have been moved to ', handles.database(1).path, 'to_trash'], 'Message') ;
 
 
@@ -7788,8 +7802,8 @@ function MIA_Brain_Extraction_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
- warndlg('Not implemented yet, Sorry!', 'Warning');
-    return
+warndlg('Not implemented yet, Sorry!', 'Warning');
+return
 if ~isfield(handles, 'data_loaded')
     warndlg('Please open 1 scan (in Single mode)!', 'Warning');
     return
@@ -8546,8 +8560,8 @@ ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_
 Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
 scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 texture_values = table;
- warning('off')
-for i = 1:handles.data_loaded.number_of_scan	
+warning('off')
+for i = 1:handles.data_loaded.number_of_scan
     for j = 1:handles.data_loaded.number_of_ROI
         volume = squeeze(handles.data_displayed.image(:,:,:,i));
         mask = handles.data_loaded.ROI(j).nii;
@@ -8557,7 +8571,7 @@ for i = 1:handles.data_loaded.number_of_scan
         texture_values.SequenceName(size(texture_values,1)+1) = nominal(Scan_names(i,:));
         texture_values.ROI(size(texture_values,1)) = nominal(ROI_names(j,:));
         texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:3)) * sum(mask(:));
-      %  texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
+        %  texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
         texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
         texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
         texture_values.Percentile_1(size(texture_values,1)) = prctile_copy(matrix_tmp(:),1);
@@ -8568,7 +8582,7 @@ for i = 1:handles.data_loaded.number_of_scan
         [ROIonly,~,~,~] = prepareVolume(volume,mask,'MRscan',...
             sum(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:2))/2 , ...
             handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(3), 1,...
-        'pixelW','Global','Equal',128);
+            'pixelW','Global','Equal',128);
         [texture] =  getGlobalTextures(ROIonly,100);
         texture_values.Kurtosis(size(texture_values,1)) = texture.Kurtosis;
         texture_values.Skewness(size(texture_values,1)) = texture.Skewness;
@@ -8578,7 +8592,7 @@ for i = 1:handles.data_loaded.number_of_scan
     end
 end
 disp(texture_values);
- warning('on')
+warning('on')
 
 
 % --------------------------------------------------------------------
@@ -8610,7 +8624,7 @@ if strcmp('Other', char(ROI_listing(VOI_number))) == 1
         msgbox(warning_text, 'ROI warning') ;
         return
     end
-
+    
 else
     newVOI_name = char(ROI_listing(VOI_number));
 end
@@ -8636,7 +8650,7 @@ file_name = strcat(char(Entry_Selected.Patient),...
     '-', char(Entry_Selected.Tp),...
     '-ROI',...
     '-', newVOI_name{1} ,...
-    '_',datestr(now,'yyyymmdd-HHMMSSFFF')); 
+    '_',datestr(now,'yyyymmdd-HHMMSSFFF'));
 
 
 ROI_dest = handles.database.Properties.UserData.MIA_ROI_path;
@@ -8682,5 +8696,5 @@ for i=1:size(table2,1)
     Mats{i} = info.Transform.T;
     uf = uifigure;
     %title(uf,[char(table2.Filename(i)), '.nii'])
-    t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);  
+    t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);
 end
