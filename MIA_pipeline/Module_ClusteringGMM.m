@@ -312,7 +312,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     % significative, on effectue cette regression sur au minimum 5 points.
     % Il faut donc calculer la vraisemblance sur 5 classes de plus que la
     % derni�re � tester.
-    ptsheurist = opt.NbClusters + 5;
+    ptsheurist = str2double(opt.NbClusters) + 5;
     
     
     %Vecteur pour stocker la logvraisemblance
@@ -342,7 +342,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %modele. Sa ieme composante contient le coefficient directeur de la
     %regression lineaire de la log vraisemblance en fonction du nombre de
     %classes du modele en ne prenant pas en compte les i-1 premiers points.
-    alpha = zeros(opt.NbClusters,2);
+    alpha = zeros(str2double(opt.NbClusters),2);
     
     %Le vecteur eqbic contient pour chaque valeur alpha l'equivalent BIC
     %applique a chaque valeur de la log vraisemblance. On obtient donc une
@@ -350,13 +350,13 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %chaque valeur de la log vraisemblance pour une valeur de alpha. On
     %passe ainsi d'une ligne a l'autre en modifiant alpha. Dans l'optique
     %de tracer les courbes uniquement a partir du point i, la matrice est initialisee a la valeur NaN.
-    eqbic = NaN(opt.NbClusters,length(loglike));
+    eqbic = NaN(str2double(opt.NbClusters),length(loglike));
     
     %Le vecteur eqbic2 est similaire au vecteur eqbic mais avec un autre
     %critere.
-    eqbic2 = NaN(opt.NbClusters,length(loglike));
+    eqbic2 = NaN(str2double(opt.NbClusters),length(loglike));
     
-    for j = 1:opt.NbClusters
+    for j = 1:str2double(opt.NbClusters)
         %La regression lineaire
         alpha(j,:) = polyfit(j:ptsheurist,loglike(j:end),1);
         for i=j:length(loglike)
@@ -392,7 +392,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     gmfit = modeles{k};
 else
     gmfit = fitgmdist( Clust_Data_In, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
-    k = opt.NbClusters;    
+    k = str2double(opt.NbClusters);    
 end
 
 
