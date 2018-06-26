@@ -71,7 +71,9 @@ handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
     'u5',	'orange',	'u6',	'u7',	'u8',	'gray'};
-handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
+%handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
+load('rgb_color_table.mat', 'num');
+handles.colors_rgb = num;
 handles.colormap = get(handles.MIA_colormap_popupmenu,'String');
 handles.markers ={'o','s', 'd', 'p', 'h', '+', '*', 'x'};
 table_data(1,1) = {'Voxel values'};
@@ -2033,9 +2035,12 @@ if isfield(handles, 'data_displayed')
                 set(handles.(current_data), 'Clim', current_contrast );
             else
                 % Exlude the 2 extremum (min, max) of the Clim
-                min = prctile_copy(image_to_display(:),1);
-                max = prctile_copy(image_to_display(:),99);
-                if  sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
+                tmp = image_to_display;
+                tmp(tmp ==0 ) = NaN;
+
+                min = prctile_copy(tmp(:),1);
+                max = prctile_copy(tmp(:),99);
+                if  ~isnan(min*max) && sum([min max] ~= [0 0]) ~= 0 &&  min ~= max
                     image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
                     set(handles.(current_data), 'Clim', [min max]);
                 end
@@ -2110,8 +2115,6 @@ if isfield(handles, 'data_displayed')
                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
-                load('rgb_color_table.mat');
-                handles.colors_rgb = num;
                 Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
                 hold(handles.(current_data), 'on');
                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
@@ -5287,7 +5290,7 @@ switch ROI_case
     case 'Delete'
         
     case 'New slice'  % new ROI slice added to an existing ROI
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = createMask(hroi);
+        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
@@ -5310,7 +5313,7 @@ switch ROI_case
         % tested code
         %create the VOI matrix
         ROI_matrix=zeros([x y z]);
-        ROI_matrix(:,:,slice_nbr)=createMask(hroi);
+        ROI_matrix(:,:,slice_nbr)=createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
         
         %transform the ROI_matrix in order to match to the nii hearder
         %(rotation/translation)
@@ -5324,13 +5327,13 @@ switch ROI_case
         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
         
     case 'Union'
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi);
+        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
         %         handles.data_loaded.ROI(ROI_loaded_idex).nii(handles.data_loaded.ROI(ROI_loaded_idex).nii > 0 ) = 1;
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
     case 'Instersection'
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi)) - createMask(hroi);
+        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi, findobj('Tag', ['MIA_data' image_number]))) - createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);

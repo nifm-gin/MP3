@@ -69,10 +69,11 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
+     'Texture Analyses', '   .Entropy',...
      'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
      'Clustering', '   .Clustering GMM', ...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Clustering' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -1053,6 +1054,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+     case '   .Entropy'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Texture_Entropy('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Texture_Entropy(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Texture_Entropy';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;     
     case '   .Clustering GMM'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ClusteringGMM('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ClusteringGMM(char(files_in),files_out,opt)';
@@ -1060,6 +1068,7 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+        
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
