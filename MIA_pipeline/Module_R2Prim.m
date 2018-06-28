@@ -108,8 +108,8 @@ if strcmp(opt.Output_orientation, 'First input')
 else
     ref_scan = 2;
 end
-T2Map = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
-T2StarCorr3D = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
+T2Map = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+T2StarCorr3D = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
 %T2Map = niftiread(files_in.In1{1});
 %T2StarCorr3D = niftiread(files_in.In2{1});
 
@@ -168,7 +168,7 @@ OutputImages = R2prim_map;
 % OutputImages(OutputImages > 5000) = -1;
 % OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
-    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
+    OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header, 'Axial');
 end
 
 
