@@ -1678,7 +1678,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
 end
 
 
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
@@ -1726,7 +1726,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
 
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
@@ -2513,11 +2513,13 @@ end
 PipelineName = list.mat{indx};
 pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
 Modules = fieldnames(pipeline);
+Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
-    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
+    Tmpdatab = [Tmpdatab; output_database_module];
 end
 handles.MIA_pipeline_ParamsModules = pipeline;
 
