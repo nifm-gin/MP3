@@ -69,7 +69,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
-     'Texture Analyses', '   .Entropy',...
+     'Texture Analyses', '   .Texture Matlab',...
      'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
      'Clustering', '   .Clustering GMM', ...
      };
@@ -1054,10 +1054,10 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-     case '   .Entropy'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Texture_Entropy('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Texture_Entropy(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Texture_Entropy';
+     case '   .Texture Matlab'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Texture_matlab('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Texture_matlab(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Texture_matlab';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;     

@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_Texture_Entropy(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_Texture_matlaby(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -11,14 +11,24 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'output_filename_ext','_Entropy'};
-    module_option(:,4)   = {'OutputSequenceName','Extension'};
-    module_option(:,5)   = {'Type','gaussian'};
-    module_option(:,6)   = {'Patch_size',9};
-    module_option(:,7)   = {'RefInput',1};
-    module_option(:,8)   = {'InputToReshape',1};
-    module_option(:,9)   = {'Table_in', table()};
-    module_option(:,10)   = {'Table_out', table()};
+    
+    module_option(:,3)   = {'Local_entropy', 'Yes'};
+    module_option(:,4)   = {'Output_filename_ext_Entropy','_Entropy'};
+    module_option(:,5)   = {'Local_Entropy_Patch_size',9};
+    
+    module_option(:,6)   = {'Range_Value', 'Yes'};
+    module_option(:,7)   = {'Output_filename_ext_Range','_Range'};
+    module_option(:,8)   = {'Range_Value_Patch_size',3};
+    
+    module_option(:,9)   = {'Standard_Deviation', 'Yes'};
+    module_option(:,10)   = {'Output_filename_ext_Std','_Std'};
+    module_option(:,11)   = {'Standard_Deviation_Patch_size',3};
+    
+    module_option(:,12)   = {'OutputSequenceName','Extension'};
+    module_option(:,13)   = {'RefInput',1};
+    module_option(:,14)   = {'InputToReshape',1};
+    module_option(:,15)   = {'Table_in', table()};
+    module_option(:,16)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
         %% list of everything displayed to the user associated to their 'type'
@@ -32,16 +42,42 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-    'This module return a Local entropy of grayscale 2D-3D image.  '
-    'The matlab function used is the entropyflit'
+    'Serveral texture analysis from a grayscale 2D-3D image can be computed within a patch'
+    ' --> Local entropy (matlab function called entropyfilt'
+    '           default patch is 9x9 voxels (Odd value only : 5, 7, 9 ,...)'
+    ' --> range value (maximum value - minimum value; matlab function called; rangefilt'
+    '           default patch is 3x3 voxels (Odd value only : 3, 5, 7,...)'
+    ' --> standard deviation value (matlab function called stdfilt'
+    '           default patch is 3x3 voxels (Odd value only : 3, 5, 7,...)'
     ''
-    'User can change the size of the patch used to calculate the Entropy'
-    '    --> the default value is 9x9 voxels (Odd value only : 5, 7, 9 ,...)'
+    'User can change the size of the patch used to calculate each map'
+  
     }'};
     user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
-    user_parameter(:,4)   = {'   .Output filename extension','char','_Entropy','output_filename_ext','', '',''};
-    user_parameter(:,5)   = {'   .Patch size','numeric',9,'Patch_size','', '',''};
+    
+    user_parameter(:,4)   = {'   .Local entropy map','cell',{'No', 'Yes'},'Local_entropy','','',...
+        'J = ENTROPYFILT(I) returns the array J, where each output pixel contains the'
+        'entropy value of the 9-by-9 neighborhood around the corresponding'
+        'pixel in the input image I. I can have any dimension'};  
+    user_parameter(:,5)   = {'   .Output filename extension','char','_Range','Output_filename_ext_Entropy','', '',''};
+    user_parameter(:,6)   = {'   .Patch size','numeric',9,'Local_Entropy_Patch_size','', '',''};  
+    
+    user_parameter(:,7)   = {'   .Rang Value map','cell',{'No', 'Yes'},'Range_Value','','',...
+        'J = RANGEFILT(I) returns the array J, where each output pixel contains the'
+        'range value (maximum value - minimum value) of the 3-by-3 neighborhood around the corresponding'
+        'pixel in the input image I'};    
+    user_parameter(:,8)   = {'   .Output filename extension','char','_Std','Output_filename_ext_Range','', '',''};
+    user_parameter(:,9)   = {'   .Patch size','numeric',3,'Range_Value_Patch_size','', '',''};
+    
+    user_parameter(:,10)   = {'   .Standard Deviation map','cell',{'No', 'Yes'},'Standard_Deviation','','',...
+        'J = STDFILT(I) returns the array J, where each output pixel contains'
+        'the standard deviation value of the 3-by-3 neighborhood around the'
+        ' corresponding pixel in the input image I'};
+    user_parameter(:,11)   = {'   .Output filename extension','char','_Std','Output_filename_ext_Std','', '',''};
+    user_parameter(:,12)   = {'   .Patch size','numeric',3,'Standard_Deviation_Patch_size','', '',''};
+    
+    
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
