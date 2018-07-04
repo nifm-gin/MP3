@@ -7347,6 +7347,7 @@ else
     handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
     handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_Derived_data_path = [MIA_data_path, 'Derived_data', filesep];
     handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI_data', filesep];
     handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
@@ -7722,74 +7723,182 @@ function MIA_menu_Importing_form_another_database_Callback(hObject, eventdata, h
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[filename, pathname]=uigetfile('*.mat','Load database','MultiSelect','off');
-
-if pathname == 0
+dir = uigetdir(pwd, 'Select the project to import');
+if dir == 0
     return
-else
-    if ~strcmp(class(filename),'double') %#ok<STISA>
-        
-        tmp_database = load(fullfile(pathname,filename));
-        data_listing = {};
-        patient_id_timepoint = [];
-        for i = 1:numel(tmp_database.database)
-            for j=1:numel(tmp_database.database(i).day)
-                data_listing(size(data_listing, 1)+1,:) = {[tmp_database.database(i).name, char(tmp_database.database(i).day(j).date)]};
-                patient_id_timepoint(size(patient_id_timepoint, 1)+1,:) = [i, j];
-            end
-        end
-        
-        [data_to_import, ok] = listdlg('PromptString','Select a the data you want to import',...
-            'Name', 'Select a data',...
-            'ListSize', [400 300],...
-            'ListString',data_listing);
-        
-        if ok == 0
-            return
-        end
-        
-        % for old database
-        for i = 1:numel(data_to_import)
-            
-            % upadate the database
-            if sum(strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name)) == 0
-                
-                handles.database(numel(handles.database)+1).name =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name;
-                handles.database(numel(handles.database)).path =  handles.database(1).path;
-                handles.database(numel(handles.database)).group =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).group;
-                handles.database(numel(handles.database)).omit =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).omit;
-                handles.database(numel(handles.database)).day = ...
-                    tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
-                
-            else
-                potistion_in_database = strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name);
-                handles.database(potistion_in_database).day(numel(handles.database(potistion_in_database).day)+1) = ...
-                    tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
-            end
-            % copy the ROI files
-            for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file)
-                if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))) , 'file') == 2
-                    copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))),...
-                        char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))), 'f');
-                end
-            end
-            % copy the parameter files
-            for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file)
-                if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))) , 'file') == 2
-                    copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))),...
-                        char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))), 'f');
-                end
-            end
-            guidata(hObject, handles);
-            MIA_update_database_display(hObject, eventdata, handles);
-        end
+end
+DatabPath = [dir, filesep, 'MIA_database.mat'];
+other_database = load(DatabPath);
+other_database = other_database.database;
+UPatients = unique(other_database.Patient);
+data_listing = {};
+linked_table = {};
+for i=1:length(UPatients)
+    tmp_database = other_database(other_database.Patient == UPatients(i),:);
+    UTp = unique(tmp_database.Tp);
+    for j=1:length(UTp)
+        tmp2_database = table();
+        data_listing = [data_listing; {[char(UPatients(i)), ' - ', char(UTp(j))]}];
+        tmp2_database = tmp_database(tmp_database.Tp == UTp(j),:);
+        linked_table = [linked_table; {tmp2_database}];
     end
 end
-num_timepoint = 0;
-for i=1:numel(handles.database)
-    num_timepoint = num_timepoint+ numel({handles.database(i).day.date});
+
+
+
+
+[data_to_import, ok] = listdlg('PromptString','Select the data you want to import',...
+    'Name', 'Select a data',...
+    'ListSize', [400 300],...
+    'ListString',data_listing);
+
+if ok == 0
+    return
 end
-title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' patients and ',  num2str(num_timepoint), ' ','time points'];
+
+database_to_import = table();
+for i = 1:length(data_to_import)
+    database_to_import = [database_to_import; linked_table{data_to_import(i)}];
+end
+
+for i=1:size(database_to_import,1)
+    switch char(database_to_import.Type(i))
+        case 'Scan'
+            if char(database_to_import.IsRaw(i)) == '1'
+                outfolder = handles.database.Properties.UserData.MIA_Raw_data_path;
+                
+            else
+                outfolder = handles.database.Properties.UserData.MIA_Derived_data_path;
+            end
+            % Copy nifti file 
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
+                status1 = copyfile(filename, outfolder);
+            else
+                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
+                msgbox(text);
+                status1 = 0;
+            end
+            % Copy json file
+            filename = strrep(filename, '.nii', '.json');
+            if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
+                status2 = copyfile(filename, outfolder);
+            else
+                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
+                msgbox(text);
+                status2 = 0;
+            end
+            
+
+            
+        case {'ROI', 'Cluster'}
+            outfolder = handles.database.Properties.UserData.MIA_ROI_path;
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
+                status1 = copyfile(filename, outfolder);
+                status2 = 1;
+            else
+                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
+                msgbox(text);
+                status1 = 0;
+                status2 = 0;
+            end
+           
+            
+    end
+    if status1 && status2
+        tags = database_to_import(i,:);
+        tags.Path = categorical(cellstr(outfolder));
+        flag = 1;
+        idx = 2;
+        while flag
+            tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+            tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+            %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+            tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+            if size(tmpdatab,1) == 0
+                flag = 0;
+            else
+                tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+                idx = idx+1;
+            end
+        end
+        handles.database = [handles.database; tags];
+    end
+    
+end
+
+
+
+% [filename, pathname]=uigetfile('*.mat','Load database','MultiSelect','off');
+% 
+% if pathname == 0
+%     return
+% else
+%     if ~strcmp(class(filename),'double') %#ok<STISA>
+%         
+%         tmp_database = load(fullfile(pathname,filename));
+%         data_listing = {};
+%         patient_id_timepoint = [];
+%         for i = 1:numel(tmp_database.database)
+%             for j=1:numel(tmp_database.database(i).day)
+%                 data_listing(size(data_listing, 1)+1,:) = {[tmp_database.database(i).name, char(tmp_database.database(i).day(j).date)]};
+%                 patient_id_timepoint(size(patient_id_timepoint, 1)+1,:) = [i, j];
+%             end
+%         end
+%         
+%         [data_to_import, ok] = listdlg('PromptString','Select a the data you want to import',...
+%             'Name', 'Select a data',...
+%             'ListSize', [400 300],...
+%             'ListString',data_listing);
+%         
+%         if ok == 0
+%             return
+%         end
+%         
+%         % for old database
+%         for i = 1:numel(data_to_import)
+%             
+%             % upadate the database
+%             if sum(strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name)) == 0
+%                 
+%                 handles.database(numel(handles.database)+1).name =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name;
+%                 handles.database(numel(handles.database)).path =  handles.database(1).path;
+%                 handles.database(numel(handles.database)).group =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).group;
+%                 handles.database(numel(handles.database)).omit =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).omit;
+%                 handles.database(numel(handles.database)).day = ...
+%                     tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
+%                 
+%             else
+%                 potistion_in_database = strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name);
+%                 handles.database(potistion_in_database).day(numel(handles.database(potistion_in_database).day)+1) = ...
+%                     tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
+%             end
+%             % copy the ROI files
+%             for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file)
+%                 if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))) , 'file') == 2
+%                     copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))),...
+%                         char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))), 'f');
+%                 end
+%             end
+%             % copy the parameter files
+%             for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file)
+%                 if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))) , 'file') == 2
+%                     copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))),...
+%                         char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))), 'f');
+%                 end
+%             end
+%             guidata(hObject, handles);
+%             MIA_update_database_display(hObject, eventdata, handles);
+%         end
+%     end
+% end
+% num_timepoint = 0;
+% for i=1:numel(handles.database)
+%     num_timepoint = num_timepoint+ numel({handles.database(i).day.date});
+% end
+%title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' patients and ',  num2str(num_timepoint), ' ','time points'];
+title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' files.'];
 set(handles.MIA_GUI, 'Name', title);
 set(handles.MIA_name_list, 'Value', 1);
 
@@ -8630,7 +8739,7 @@ if strcmp('Other', char(ROI_listing(VOI_number))) == 1
     end
     
 else
-    newVOI_name = char(ROI_listing(VOI_number));
+    newVOI_name = {char(ROI_listing(VOI_number))};
 end
 
 
