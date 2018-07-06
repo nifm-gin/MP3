@@ -1475,6 +1475,7 @@ else
         handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Derived_data_path ;
         handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Raw_data_path;
         handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
+        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MIA_ROI_path;
     end
     
 end
@@ -1796,7 +1797,7 @@ if handles.mode == 1
                 set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
                 set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
                 
-            elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 5 % 5D data
+            elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(i).V(1).private.dat.dim) == 5 % 5D data
                 set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
                     'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
                 
@@ -2540,8 +2541,8 @@ switch get(hObject, 'Tag')
         return
     case {'MIA_data1_echo_slider', 'MIA_data1_expt_slider'}
         
-        data1_echo_nbr = get(handles.MIA_data1_echo_slider, 'Value');
-        data1_expt_nbr = get(handles.MIA_data1_expt_slider, 'Value');
+        data1_echo_nbr = round(get(handles.MIA_data1_echo_slider, 'Value'));
+        data1_expt_nbr = round(get(handles.MIA_data1_expt_slider, 'Value'));
         if handles.mode == 1
             handles.data_displayed.image(:,:,:,1) = read_slice(handles.data_loaded.Scan(1).V, handles.data_loaded.Scan(scan_of_reference).V, data1_echo_nbr, data1_expt_nbr, handles.view_mode);
         else
@@ -2558,8 +2559,8 @@ switch get(hObject, 'Tag')
         end
     case {'MIA_data2_echo_slider', 'MIA_data2_expt_slider'}
         
-        data2_echo_nbr = get(handles.MIA_data2_echo_slider, 'Value');
-        data2_expt_nbr = get(handles.MIA_data2_expt_slider, 'Value');
+        data2_echo_nbr = round(get(handles.MIA_data2_echo_slider, 'Value'));
+        data2_expt_nbr = round(get(handles.MIA_data2_expt_slider, 'Value'));
         if handles.mode == 1
             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(2).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         else
@@ -2567,12 +2568,12 @@ switch get(hObject, 'Tag')
             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         end
     case {'MIA_data3_echo_slider', 'MIA_data3_expt_slider'}
-        data3_echo_nbr = get(handles.MIA_data3_echo_slider, 'Value');
-        data3_expt_nbr = get(handles.MIA_data3_expt_slider, 'Value');
+        data3_echo_nbr = round(get(handles.MIA_data3_echo_slider, 'Value'));
+        data3_expt_nbr = round(get(handles.MIA_data3_expt_slider, 'Value'));
         handles.data_displayed.image(:,:,:,3) = read_slice(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V, data3_echo_nbr, data3_expt_nbr, handles.view_mode);
     case {'MIA_data4_echo_slider', 'MIA_data4_expt_slider'}
-        data4_echo_nbr = get(handles.MIA_data4_echo_slider, 'Value');
-        data4_expt_nbr = get(handles.MIA_data4_expt_slider, 'Value');
+        data4_echo_nbr = round(get(handles.MIA_data4_echo_slider, 'Value'));
+        data4_expt_nbr = round(get(handles.MIA_data4_expt_slider, 'Value'));
         handles.data_displayed.image(:,:,:,4) = read_slice(handles.data_loaded.Scan(4).V, handles.data_loaded.Scan(scan_of_reference).V, data4_echo_nbr, data4_expt_nbr, handles.view_mode);
     otherwise
         if isfield(handles, 'data_displayed')
@@ -2582,8 +2583,8 @@ switch get(hObject, 'Tag')
             
             for i=1:handles.data_loaded.number_of_scan
                 stri = num2str(i);
-                eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
-                eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
+                eval(['data' stri '_echo_nbr = round(get(handles.MIA_data' stri '_echo_slider, ''Value''));']);
+                eval(['data' stri '_expt_nbr = round(get(handles.MIA_data' stri '_expt_slider, ''Value''));']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
                 
@@ -2607,8 +2608,8 @@ switch get(hObject, 'Tag')
                     
                 end
                 stri = num2str(i);
-                eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
-                eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
+                eval(['data' stri '_echo_nbr = round(get(handles.MIA_data' stri '_echo_slider, ''Value''));']);
+                eval(['data' stri '_expt_nbr = round(get(handles.MIA_data' stri '_expt_slider, ''Value''));']);
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
                 
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
