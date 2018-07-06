@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
      'Clustering', '   .Clustering GMM', ...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
@@ -960,6 +960,21 @@ switch char(handles.Modules_listing(module_selected))
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Normalization('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Normalization(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_Normalization';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+     case '   .Clip Image'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Clipping('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Clipping(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Clipping';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;    
+
+    case '   .Brain Extraction (BET Function from FSL)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_BET('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_BET(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_FSL_BET';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
