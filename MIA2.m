@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 07-Jun-2018 19:18:01
+% Last Modified by GUIDE v2.5 09-Jul-2018 17:04:40
 
 
 % Begin initialization code - DO NOT EDIT
@@ -8828,3 +8828,81 @@ for i=1:size(table2,1)
     %title(uf,[char(table2.Filename(i)), '.nii'])
     t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);
 end
+
+
+% --------------------------------------------------------------------
+function MIA_menu_Import_BIDS_data_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Import_BIDS_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if isfield(handles, 'database')
+    answer = questdlg('Please be sure that the merged database will not contain some files with the same Patient - Tp - SequenceName tags. This case is currently not implemented. Continue ?');
+    if any(strcmp(answer, {'No', 'Cancel'}))
+        return
+    end
+    MIA_data_path = handles.database.Properties.UserData.MIA_data_path;
+    %     MIA_data_path = handles.database.Properties.UserData.MIA_data_path ;
+    handles.database = table();
+else
+    MIA_root_path = uigetdir(pwd, 'Select the directory to save your new projet');
+    if sum(MIA_root_path) == 0
+        return
+    end
+    
+    MIA_root_path = [MIA_root_path filesep];
+    %% create the output folder ('MIA_data')
+    MIA_data_path = MIA_root_path;%[MIA_root_path, 'MIA_data', filesep];
+    % Create the output folder if needed
+    if exist(MIA_data_path, 'dir') ~= 7
+        status = mkdir(MIA_data_path);
+        if status == 0
+            warndlg('You do not have the right to write in the folder!', 'Warning');
+            return
+        end
+    end
+    % Create the RAW data folder if needed
+    if exist([MIA_data_path, 'Raw_data', filesep], 'dir') ~= 7
+        status = mkdir([MIA_data_path, 'Raw_data', filesep]);
+        if status == 0
+            warndlg('You do not have the right to write in the folder!', 'Warning');
+            return
+        end
+    end
+    
+    
+    %% create the database structure
+    handles.database =  table;%
+    handles.database = cell2table(cell(0,8));
+    handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
+    handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
+    handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_Derived_data_path = [MIA_data_path, 'Derived_data', filesep];
+    handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI_data', filesep];
+    handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
+    
+end
+
+BIDS_Path = uigetdir(pwd, 'Select the directory containing the BIDS data you want to import');
+if sum(BIDS_Path) == 0
+    return
+end
+if ~strcmp(BIDS_Path(end), filesep)
+    BIDS_Path = [BIDS_Path, filesep];
+end
+if ~strcmp(MIA_data_path(end), filesep)
+    MIA_data_path = [MIA_data_path, filesep];
+end
+database = CreateTableFromBIDS(BIDS_Path, MIA_data_path,0);
+if ~isempty(database)
+    handles.database = [handles.database; database];
+end
+guidata(hObject, handles);
+MIA_update_database_display(hObject, eventdata, handles)
+
+
+
+
+
+
+
+
