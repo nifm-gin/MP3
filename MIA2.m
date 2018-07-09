@@ -631,6 +631,8 @@ end
 % save the structure
 guidata(hObject, handles);
 
+set(handles.MIA_name_list, 'Value', 1);
+
 % update graph and display
 MIA_update_database_display(hObject, eventdata, handles);
 
@@ -7772,37 +7774,54 @@ for i=1:size(database_to_import,1)
             end
             % Copy nifti file 
             filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
-            if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
-                status1 = copyfile(filename, outfolder);
-            else
-                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
-                msgbox(text);
-                status1 = 0;
+            database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            original_filename = char(database_to_import.Filename(i));
+            idx2=2;
+            while exist(outfilename)
+                database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                idx2=idx2+1;
             end
+            status1 = copyfile(filename, outfilename);
+%             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
+%                 status1 = copyfile(filename, outfolder);
+%             else
+%                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+%                 msgbox(text);
+%                 status1 = 0;
+%             end
             % Copy json file
             filename = strrep(filename, '.nii', '.json');
-            if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
-                status2 = copyfile(filename, outfolder);
-            else
-                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
-                msgbox(text);
-                status2 = 0;
+            outfilename = strrep(outfilename, '.nii', '.json');
+            while exist(outfilename)
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.json'];
+                idx2=idx2+1;
             end
+            status2 = copyfile(filename, outfilename);
+%             if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
+%                 status2 = copyfile(filename, outfolder);
+%             else
+%                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+%                 msgbox(text);
+%                 status2 = 0;
+%             end
             
 
             
         case {'ROI', 'Cluster'}
             outfolder = handles.database.Properties.UserData.MIA_ROI_path;
             filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
-            if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
-                status1 = copyfile(filename, outfolder);
-                status2 = 1;
-            else
-                text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', handles.database.Properties.UserData.MIA_Raw_data_path];
-                msgbox(text);
-                status1 = 0;
-                status2 = 0;
+            database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+            original_filename = char(database_to_import.Filename(i));
+            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            idx2=2;
+            while exist(outfilename)
+                database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                idx2=idx2+1;
             end
+            status1 = copyfile(filename, outfilename);
            
             
     end
@@ -8713,9 +8732,6 @@ function MIA_Import_ROI_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_Import_ROI (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-
 
 
 ROI_listing = [unique(handles.database.SequenceName(handles.database.Type == 'ROI'))', 'Other']';
