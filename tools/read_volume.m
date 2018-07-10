@@ -9,7 +9,11 @@ function Y = read_volume(Vi,Vo,interpolation, view_mode)
 %              2->127    : Higher order Lagrange (polynomial) interpolation
 %                          using different holds (second-order upwards)
 %              -127 - -1 : Different orders of sinc interpolation
-
+% View_mode --> 'Axial', 'Saggital', or 'Coronal' (default : 'Axial')
+if ~exist('view_mode', 'var')
+    view_mode = 'Axial';
+end
+    
 Y   = zeros(Vo(1).dim(1:3));       % initialize output volume
 Vi_size = Vi(1).private.dat.dim;
 

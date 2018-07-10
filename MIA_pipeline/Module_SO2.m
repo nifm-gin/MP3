@@ -136,14 +136,14 @@ end
 R2Prim = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
 BVf = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
 
-if ~isempty(files_in.In3{1})
+if isfield(files_in, 'In3') &&  ~isempty(files_in.In3{1})
     input(3).nifti_header = spm_vol(files_in.In3{1});
     J3 = spm_jsonread(strrep(files_in.In3{1}, '.nii', '.json'));
     T1Map = read_volume(input(3).nifti_header, input(ref_scan).nifti_header, 0);
 else
     T1Map = [];
 end
-if ~isempty(files_in.In4{1})
+if isfield(files_in, 'In4') && ~isempty(files_in.In4{1})
     input(4).nifti_header = spm_vol(files_in.In4{1});
     J4 = spm_jsonread(strrep(files_in.In4{1}, '.nii', '.json'));
     HCTMap = read_volume(input(4).nifti_header, input(ref_scan).nifti_header, 0);
