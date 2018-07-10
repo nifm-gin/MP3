@@ -1,4 +1,4 @@
-function [database] = CreateTableFromBIDS(folderBIDS, PathProject, SaveFlag)
+function [database] = CreateTableFromBIDS(folderBIDS, PathProject, SaveDbFlag)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 if ~exist('folderBIDS')
@@ -8,7 +8,7 @@ if ~exist('PathProject')
     PathProject = '/home/cbrossard/Documents/TestBIDS/';
 end
 if ~exist('SaveFlag')
-    SaveFlag = 0;
+    SaveDbFlag = 0;
 end
 
 if ~exist(PathProject)
@@ -31,14 +31,18 @@ for i=1:length(listPatients)
         listTP = dir([folderBIDS, listPatients(i).name, filesep, 'ses-*']);
         for j=1:length(listTP)
             if listTP(j).isdir
-                listScansToUnzip = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '*.nii.gz']);
+                % Unzip all .nii.gz files
+                listScansToUnzip = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '**/*.nii.gz']);
                 for ll=1:length(listScansToUnzip)
-                    NameCompressedFile = [folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, listScansToUnzip(ll).name];
-                    gunzip(NameCompressedFile)
+                    NameCompressedFile = [listScansToUnzip(ll).folder, filesep, listScansToUnzip(ll).name];
+                    NameUncompressedFile = strrep(NameCompressedFile, '.nii.gz', '.nii');
+                    if ~exist(NameUncompressedFile)
+                        gunzip(NameCompressedFile)
+                    end
                 end
-                listScans = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '*.nii']);
+                listScans = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '**/*.nii']);
                 for k=1:length(listScans)
-                    info = niftiinfo([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, listScans(k).name]);
+                    info = niftiinfo([listScans(k).folder, filesep, listScans(k).name]);
                     N = niftiread(info);
                     NbValeurs = unique(N);
                     if length(NbValeurs)<6
@@ -56,7 +60,7 @@ for i=1:length(listPatients)
                             Tags.IsRaw = categorical(1);
                             Tags.SequenceName = categorical(cellstr([listScans(k).name(1:end-4), '_', num2str(NbValeurs(l))]));
                             filename = [PathProject, 'ROI_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l)), '.nii'];
-                            copyfile([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, listScans(k).name], filename)
+                            %copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
                             N2=int16((N==NbValeurs(l)));
                             info.Datatype = 'int16';
                             %N2 = permute(N2, [2,1,3]);
@@ -74,7 +78,7 @@ for i=1:length(listPatients)
                         Tags.IsRaw = categorical(1);
                         Tags.SequenceName = categorical(cellstr(listScans(k).name(1:end-4)));
                         filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '.nii'];
-                        copyfile([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, listScans(k).name], filename)
+                        copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
                         CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
                         database = [database; Tags];
                     end
@@ -94,7 +98,7 @@ database.Properties.UserData.MIA_Derived_data_path = [PathProject, 'Derived_data
 database.Properties.UserData.MIA_ROI_path = [PathProject, 'ROI_data/'];
 database.Properties.UserData.db_filename = 'MIA_database.mat';
 
-if SaveFlag
+if SaveDbFlag
     save([PathProject, 'MIA_database.mat'], 'database')
 end
 

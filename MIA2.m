@@ -8842,7 +8842,7 @@ if isfield(handles, 'database')
     end
     MIA_data_path = handles.database.Properties.UserData.MIA_data_path;
     %     MIA_data_path = handles.database.Properties.UserData.MIA_data_path ;
-    handles.database = table();
+    %handles.database = table();
 else
     MIA_root_path = uigetdir(pwd, 'Select the directory to save your new projet');
     if sum(MIA_root_path) == 0
