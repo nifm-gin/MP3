@@ -172,32 +172,55 @@ FixedImJSON = jsondecode(raw);
 matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {[files_in.In1{1}, ',1']};
 matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
 
-
+% if the image of reference is > to 3D need to split the data
+% header = niftiinfo(files_out.In2{1});
+header = spm_vol(files_in.In2{1});
+if numel(header) > 1
+     other = {};
+    for j=2:numel(header)
+        other= [other, [files_out.In2{1}, ',', num2str(j)]];
+    end
+end
 
 if isfield(files_in, 'In3')
-    other = {};
+    if ~exist('other', 'var')
+        other = {};
+    end
     for i=1:length(files_in.In3)
         if ~isempty(files_in.In3{i})
-            header = niftiinfo(files_in.In3{i});
-            if length(header.ImageSize) > 3
-                for j=1:header.ImageSize(4)
-                    other= [other, [files_out.In3{i}, ',', num2str(j)]];
+            %header = niftiinfo(files_in.In3{i});
+            header = spm_vol(files_in.In3{i});
+            if numel(header) > 1
+                for j=1:numel(header)
+                    other= [other, [files_in.In3{i}, ',', num2str(j)]];
                 end
             else
-                other = [other, [files_out.In3{i}, ',1']];
+                other = [other, [files_in.In3{i}, ',1']];
             end
         end
     end
-    matlabbatch{1}.spm.spatial.coreg.estwrite.other = other;
+    matlabbatch{1}.spm.spatial.coreg.estwrite.other = other';
 end
 
+% 
+% 
+% if isfield(files_in, 'In3')
+%     other = {};
+%     for i=1:length(files_in.In3)
+%         if ~isempty(files_in.In3{i})
+%             header = niftiinfo(files_in.In3{i});
+%             if length(header.ImageSize) > 3
+%                 for j=1:header.ImageSize(4)
+%                     other= [other, [files_out.In3{i}, ',', num2str(j)]];
+%                 end
+%             else
+%                 other = [other, [files_out.In3{i}, ',1']];
+%             end
+%         end
+%     end
+%     matlabbatch{1}.spm.spatial.coreg.estwrite.other = other;
+% end
 
-header = niftiinfo(files_in.In2{1});
-if length(header.ImageSize) > 3
-    for j=2:header.ImageSize(4)
-        other= [other, [files_in.In2{1}, ',', num2str(j)]];
-    end
-end
 
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
