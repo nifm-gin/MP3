@@ -7,7 +7,7 @@ end
 if ~exist('PathProject')
     PathProject = '/home/cbrossard/Documents/TestBIDS/';
 end
-if ~exist('SaveFlag')
+if ~exist('SaveDbFlag')
     SaveDbFlag = 0;
 end
 
@@ -33,10 +33,11 @@ for i=1:length(listPatients)
             if listTP(j).isdir
                 % Unzip all .nii.gz files
                 listScansToUnzip = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '**/*.nii.gz']);
+                NameUncompressedFile = cell(length(listScansToUnzip),1);
                 for ll=1:length(listScansToUnzip)
                     NameCompressedFile = [listScansToUnzip(ll).folder, filesep, listScansToUnzip(ll).name];
-                    NameUncompressedFile = strrep(NameCompressedFile, '.nii.gz', '.nii');
-                    if ~exist(NameUncompressedFile)
+                    NameUncompressedFile{ll} = strrep(NameCompressedFile, '.nii.gz', '.nii');
+                    if ~exist(NameUncompressedFile{ll})
                         gunzip(NameCompressedFile)
                     end
                 end
@@ -62,9 +63,13 @@ for i=1:length(listPatients)
                             filename = [PathProject, 'ROI_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l)), '.nii'];
                             %copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
                             N2=int16((N==NbValeurs(l)));
-                            info.Datatype = 'int16';
+                            info2 = info;
+                            info2.Datatype = 'int16';
+                            [N3, Mat3] = CropROI(N2, info.Transform.T.');
+                            info2.Transform.T = Mat3.';
+                            info2.ImageSize = size(N3);
                             %N2 = permute(N2, [2,1,3]);
-                            niftiwrite(N2, filename, info)
+                            niftiwrite(N3, filename, info2)
                             database = [database; Tags];
                         end
                     else
@@ -78,12 +83,22 @@ for i=1:length(listPatients)
                         Tags.IsRaw = categorical(1);
                         Tags.SequenceName = categorical(cellstr(listScans(k).name(1:end-4)));
                         filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '.nii'];
-                        copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
-                        CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+                        infilename = [listScans(k).folder, filesep, listScans(k).name];
+                        copyfile(infilename, filename)
+                        jsonInfilename = strrep(infilename, '.nii', '.json');
+                        if exist(jsonInfilename)
+                            copyfile(jsonInfilename, strrep(filename, '.nii', '.json'))
+                        else
+                            CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+                        end
                         database = [database; Tags];
                     end
+                    
                 end
                 
+            end
+            for ll=1:length(NameUncompressedFile)
+                delete(NameUncompressedFile{ll})
             end
         end
 
