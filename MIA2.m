@@ -357,6 +357,30 @@ else %display VOIs list
 end
 % if the pipeline Manager is open, update the information : patient selected
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
+
+
+
+
+if ~isempty(findobj('type', 'figure', 'name', 'MIA pipeline Manager'))
+    % Get the hObject of MIA_pipeline
+    h = findobj('Tag', 'MIA_pipeline_manager_GUI');
+    % Get the handles of MIA_pipeline
+    data = guidata(h);
+    % Update the handles of MIA_pipeline by stocking the latest version of
+    % MIA handles.
+    data.MIA_data = handles;
+
+    % Don't touch the original eventdata, just in case.
+    eventdata2 = eventdata;
+    %Update the MIA_pipeline tmp_database
+    [h, ~, data] = MIA_pipeline('UpdateTmpDatabase', h, eventdata2, data);
+    [~, ~, data] = MIA_pipeline('MIA_pipeline_UpdateTables', h, eventdata2, data);
+    clear('eventdata2')
+    guidata(h, data)
+end
+
+
+
 if ~isempty(findobj('Tag', 'MIA_pipeline_pushMIASelection'))
     data_selected = finddata_selected(handles);
     if size(char(handles.database.Patient(data_selected)),1) > 1

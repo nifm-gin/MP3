@@ -112,6 +112,7 @@ handles.MIA_pipeline_Unique_Values_Selection = {};
 
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
 data_selected =  MIA2('finddata_selected',handles.MIA_data);
+%if data_selected == 0
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
@@ -188,6 +189,7 @@ merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
 function [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles)
 %% Update of Filtering/Filtered Tables
+%[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 NewTable = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
@@ -1102,7 +1104,7 @@ if ismodule
     handles.module_parameters_string = module_parameters_string;
     handles.module_parameters_fields = module_parameters_fields;
     
-[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 else
     table.data = '';
     table.columnName = '';
@@ -1119,7 +1121,7 @@ end
    
 
 %% save the data
-guidata(hObject, handles);
+%guidata(hObject, handles);
 guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 
@@ -1635,11 +1637,14 @@ end
 %a=0;
 function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
 
+
 Datab = handles.MIA_data.database;
-Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
-for i=1:length(Names_Mod)
-    Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
-    Datab = [Datab ; Mod.OutputDatabase];
+if isfield(handles, 'MIA_ParamsModules')
+    Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+    for i=1:length(Names_Mod)
+        Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+        Datab = [Datab ; Mod.OutputDatabase];
+    end
 end
 handles.MIA_pipeline_TmpDatabase = unique(Datab);
 
@@ -1792,7 +1797,8 @@ function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % define which patient is selected
-data_selected =  MIA2('get_data_selected',handles.MIA_data);
+%data_selected =  MIA2('get_data_selected',handles.MIA_data);
+data_selected =  MIA2('finddata_selected',handles.MIA_data);
 % add the patient filter
 handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
@@ -1851,7 +1857,9 @@ function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % define which patient is selected
-data_selected =  MIA2('get_data_selected',handles.MIA_data);
+%data_selected =  MIA2('get_data_selected',handles.MIA_data);
+data_selected =  MIA2('finddata_selected',handles.MIA_data);
+
 % add the patient filter
 handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
