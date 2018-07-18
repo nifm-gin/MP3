@@ -7585,6 +7585,7 @@ if ~isempty(InvalidEntries)
         t = uitable(f, 'Position', [30,100,500,300],'ColumnName', handles.database.Properties.VariableNames,'Data',cellstr(handles.database{InvalidEntries, :}));
         %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
         %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+        uiwait(f)
         answer = questdlg('So, should I delete them ?', 'It''s time to choose', 'Yes', 'No', 'No');
     end
     if strcmp(answer, 'Yes')

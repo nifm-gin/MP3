@@ -1538,6 +1538,49 @@ if exist('biograph') == 2
     
 end
 
+%% Check if some existing files will be rewrited
+
+Name_Jobs = fieldnames(Pipeline);
+Files_out = {};
+for i=1:length(Name_Jobs)
+    Job = Pipeline.(Name_Jobs{i});
+    for j=1:size(Job.opt.Table_out,1)
+        switch char(Job.opt.Table_out.Type(j))
+            case 'Scan'
+                Folder = '/Derived_data/';
+            case {'ROI', 'Cluster'}
+                Folder = '/ROI_data/';
+        end
+        FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
+        Files_out = [Files_out; {FileName}];
+    end
+end
+
+
+Overwrite_Files = {};
+for i=1:length(Files_out)
+    if exist(Files_out{i},'file')
+        Overwrite_Files = [Overwrite_Files; Files_out{i}];
+    end
+end
+
+if ~isempty(Overwrite_Files)
+    text = 'WARNING : The execution of this pipeline will overwrite one or several existing files ! Continue ?';
+    answer = questdlg(text, 'Overwritting', 'Yes', 'See those files','No', 'No');
+    if strcmp(answer,'See those files')
+        f = figure;
+        t = uitable(f, 'Position', [30,100,500,300],'Data',Overwrite_Files);
+        %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
+        %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+        uiwait(f)
+        answer = questdlg('So, execute the pipeline ?', 'It''s time to choose', 'Yes', 'No', 'No');
+    end
+    if strcmp(answer, 'No')
+        return
+    end
+end
+
+
 %% exectute the pipeline
 
 if handles.MIA_pipeline_radiobuttonPSOM.Value
@@ -1639,7 +1682,7 @@ function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, h
 
 
 Datab = handles.MIA_data.database;
-if isfield(handles, 'MIA_ParamsModules')
+if isfield(handles, 'MIA_pipeline_ParamsModules')
     Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
     for i=1:length(Names_Mod)
         Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
