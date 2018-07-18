@@ -2536,7 +2536,20 @@ end
 PipelineName = list.mat{indx};
 pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
 Modules = fieldnames(pipeline);
-Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Table)
+    quest = 'Would you like to apply the loaded pipeline on the whole database or on the filtered one you defined ?';
+    answer = questdlg(quest, 'On which data apply the pipeline ?', 'Whole database', 'Filtered database', 'Whole database');
+    if isempty(answer)
+        return
+    end
+    switch answer
+        case 'Whole database'
+            Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+        case 'Filtered database'
+            Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+    end
+end
+%Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
