@@ -2548,6 +2548,8 @@ if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Tabl
         case 'Filtered database'
             Tmpdatab = handles.MIA_pipeline_Filtered_Table;
     end
+else
+    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 end
 %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
