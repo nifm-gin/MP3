@@ -126,6 +126,7 @@ switch opt.Operation
         end
     case'Division'
         OutputImages = input2 ./ input1;
+        OutputImages(isinf(OutputImages)) = nan;
     case 'Percentage'
         OutputImages = ((input2 - input1) ./ input1 .* 100);
         OutputImages(isinf(OutputImages)) = nan;
