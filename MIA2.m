@@ -1590,7 +1590,9 @@ end
 handles.data_loaded.number_of_ROI = 0;
 handles.data_loaded.number_of_Cluster = 0;
 for i = 1:numel(data_selected)
-    
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     if fid_nii>0
         fclose(fid_nii);
@@ -1633,6 +1635,9 @@ if numel(data_selected) > 4  % select only the 4 first scan
     data_selected = data_selected(1:4);
 end
 for i = 1:numel(data_selected)
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_selected(i), '.json'),'r');
     if fid_nii>0 && fid_json>0
@@ -1689,6 +1694,9 @@ if numel(data_to_load) <2
 end
 
 for i = 1:numel(data_to_load)
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_to_load(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_to_load(i), '.json'),'r');
     if fid_nii>0 && fid_json>0
@@ -2918,7 +2926,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
                     'Visible', 'on',...
                     'Tag', strcat('MIA_plot1_2d', strii));
-                uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
+                %uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
                 legende_txt(ii,:) = ROI_names(ii,:);
                 
             case 3
@@ -5832,7 +5840,9 @@ if numel(data_selected) >1
     return
 end
 new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
-
+if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
+    gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+end
 fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
 if fid_nii>0
     fclose(fid_nii);
@@ -7293,6 +7303,9 @@ for i=1:numel(time_point)
     new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
     % check if the scan already exist for this time point
     if sum(ismember(handles.database, new_entry)) == 0
+        if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
+            gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+        end
         fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
         if fid_nii>0
             fclose(fid_nii);
@@ -7545,9 +7558,10 @@ InvalidJsonFiles = {};
 for i=1:height(handles.database)
     if handles.database(i,:).Type == 'Scan'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
+        Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
         Json_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.json'];
         
-        if exist(Nifti_file, 'file')==2 && exist(Json_file, 'file') == 2
+        if (exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2) && exist(Json_file, 'file') == 2
             ValidEntries = [ValidEntries, i];
             ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
             ValidJsonFiles = [ValidJsonFiles, {Json_file}];
@@ -7561,7 +7575,8 @@ for i=1:height(handles.database)
         end
     elseif handles.database(i,:).Type == 'ROI' || handles.database(i,:).Type == 'Cluster'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
-        if exist(Nifti_file, 'file')==2
+        Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
+        if exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2
             ValidEntries = [ValidEntries, i];
             ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
         else
@@ -7621,7 +7636,7 @@ for i=1:length(DirectoriesToProcess)
     for j=1:size(Files,2)
         file = Files(:,j);
         if ~file{5}
-            if ~contains([file{2}, filesep, file{1}], ValidFiles)
+            if ~contains(strrep([file{2}, filesep, file{1}], '.nii.gz', '.nii'), ValidFiles) 
                 [status, msg] = movefile([file{2}, filesep, file{1}], [Data_path,  'To_Trash']);
                 if status
                     MovedFiles = [MovedFiles; {[file{2}, filesep, file{1}]}];
@@ -7636,7 +7651,7 @@ end
 
 if isempty(MovedFiles)
     msgbox('The folders containing your database''s files are already pretty clean !')
-    rmdir([Data_path, 'To_Trash']);
+    %rmdir([Data_path, 'To_Trash']);
 else
     text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.'];
     answer = questdlg(text, 'Moved Files', 'OK !', 'See files moved','OK !');
