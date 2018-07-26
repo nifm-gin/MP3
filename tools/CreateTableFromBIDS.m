@@ -45,6 +45,11 @@ for i=1:length(listPatients)
                 for k=1:length(listScans)
                     info = niftiinfo([listScans(k).folder, filesep, listScans(k).name]);
                     N = niftiread(info);
+                    if isempty(N)
+                        ProcessWrongNifti([listScans(k).folder, filesep, listScans(k).name]);
+                        info = niftiinfo([listScans(k).folder, filesep, listScans(k).name]);
+                        N = niftiread(info);
+                    end
                     NbValeurs = unique(N);
                     if length(NbValeurs)<6
                         for l=1:length(NbValeurs)
@@ -62,14 +67,16 @@ for i=1:length(listPatients)
                             Tags.SequenceName = categorical(cellstr([listScans(k).name(1:end-4), '_', num2str(NbValeurs(l))]));
                             filename = [PathProject, 'ROI_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l)), '.nii'];
                             %copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
-                            N2=int16((N==NbValeurs(l)));
-                            info2 = info;
-                            info2.Datatype = 'int16';
-                            [N3, Mat3] = CropROI(N2, info.Transform.T.');
-                            info2.Transform.T = Mat3.';
-                            info2.ImageSize = size(N3);
-                            %N2 = permute(N2, [2,1,3]);
-                            niftiwrite(N3, filename, info2)
+                            if ~exist(filename)
+                                N2=int16((N==NbValeurs(l)));
+                                info2 = info;
+                                info2.Datatype = 'int16';
+                                [N3, Mat3] = CropROI(N2, info.Transform.T.');
+                                info2.Transform.T = Mat3.';
+                                info2.ImageSize = size(N3);
+                                %N2 = permute(N2, [2,1,3]);
+                                niftiwrite(N3, filename, info2)
+                            end
                             database = [database; Tags];
                         end
                     else
@@ -84,13 +91,16 @@ for i=1:length(listPatients)
                         Tags.SequenceName = categorical(cellstr(listScans(k).name(1:end-4)));
                         filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '.nii'];
                         infilename = [listScans(k).folder, filesep, listScans(k).name];
-                        copyfile(infilename, filename)
-                        jsonInfilename = strrep(infilename, '.nii', '.json');
-                        if exist(jsonInfilename)
-                            copyfile(jsonInfilename, strrep(filename, '.nii', '.json'))
-                        else
-                            CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+                        if ~exist(filename)
+                            copyfile(infilename, filename)
                         end
+                        jsonInfilename = strrep(infilename, '.nii', '.json');
+%                         if exist(jsonInfilename)
+%                             copyfile(jsonInfilename, strrep(filename, '.nii', '.json'))
+%                         else
+%                             CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+%                         end
+                        CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
                         database = [database; Tags];
                     end
                     
@@ -112,6 +122,63 @@ database.Properties.UserData.MIA_Raw_data_path = [PathProject, 'Raw_data/'];
 database.Properties.UserData.MIA_Derived_data_path = [PathProject, 'Derived_data/'];
 database.Properties.UserData.MIA_ROI_path = [PathProject, 'ROI_data/'];
 database.Properties.UserData.db_filename = 'MIA_database.mat';
+
+
+REF_BIDS_Folder = folderBIDS;
+databasePwi = database(contains(cellstr(database.SequenceName),'pwi'),:);
+
+for i=1:size(databasePwi,1)
+    %% JSON automatically created by my script 'Import BIDS data'
+    filename = [char(databasePwi.Path(i)), char(databasePwi.Filename(i)), '.json'];
+    fid = fopen(filename, 'r');
+    raw = fread(fid, inf, 'uint8=>char');
+    fclose(fid);
+    %raw = reshape(raw, 1,length(raw));
+    J = jsondecode(raw);
+    
+    %% JSON where the valid data are stocked
+    
+    RecJSON = [REF_BIDS_Folder, 'sub-', char(databasePwi.Patient(i)), filesep, 'ses-', char(databasePwi.Tp(i)), filesep, 'pwi', filesep, '*.json'];
+    listJSON = dir(RecJSON);
+    for ll=1:length(listJSON)
+        if contains(filename, listJSON(ll).name)
+            listJSON = listJSON(ll);
+            break
+        end
+    end
+    assert(length(listJSON) == 1 )
+    filename2 = [listJSON.folder, filesep, listJSON.name];
+    fid2 = fopen(filename2, 'r');
+    raw2 = fread(fid2, inf, 'uint8=>char');
+    fclose(fid2);
+    %raw = reshape(raw, 1,length(raw));
+    J2 = jsondecode(raw2);
+    
+    %%
+    J.RepetitionTime.value = J2.RepetitionTime*1000; %The J JSON specify the repetition time in ms, while the J2 JSON uses s.
+    J.EchoTime.value = J2.EchoTime*1000; %The J JSON specify the echo time in ms, while the J2 JSON uses s.
+
+    JMod = jsonencode(J);
+    delete(filename)
+    fidmod = fopen(filename, 'w');
+    fwrite(fidmod, JMod, 'uint8');
+    fclose(fidmod);
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if SaveDbFlag
     save([PathProject, 'MIA_database.mat'], 'database')
