@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 09-Jul-2018 17:04:40
+% Last Modified by GUIDE v2.5 26-Jul-2018 19:12:00
 
 
 % Begin initialization code - DO NOT EDIT
@@ -8940,9 +8940,36 @@ guidata(hObject, handles);
 MIA_update_database_display(hObject, eventdata, handles)
 
 
+% --------------------------------------------------------------------
+function MIA_menu_Compress_database_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Compress_database (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+Data_path = handles.database.Properties.UserData.MIA_data_path;
+DirectoriesToProcess = {'Derived_data', 'Raw_data', 'ROI_data'};
 
 
+if exist([Data_path, 'Uncompressed_Trash'],'dir') ~= 7
+    [status, ~, ~] = mkdir([Data_path, 'Uncompressed_Trash']);
+    if status == false
+        error('Cannot create the Uncompressed_Thrash folder to move the uncompressed files in after compression.')
+    end
+end
 
-
-
+Files_To_Compress = {};
+NbCompressions = 0;
+for i=1:length(DirectoriesToProcess)
+    Files = dir([Data_path, DirectoriesToProcess{i}, '/*.nii']);
+    for j=1:length(Files)
+        filename = [Files(j).folder, filesep, Files(j).name];
+        if ~exist(strrep(filename, '.nii', '.nii.gz'), 'file')
+            Files_To_Compress = [Files_To_Compress, {filename}];
+            gzip(filename);
+            NbCompressions = NbCompressions+1;
+        end
+        movefile(filename, strrep(filename, ['/', DirectoriesToProcess{i}, '/'], ['/', 'Uncompressed_Trash', '/']));
+    end
+end
+Mess = ['Done! ', num2str(NbCompressions), ' files were compressed and the useless uncompressed files were moved to the ''Uncompressed_Thrash'' folder.'];
+msgbox(Mess)
 
