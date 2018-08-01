@@ -166,7 +166,13 @@ th_bg = opt.th_bg;  %% threshold for removing background
 N_region = opt.N_regions; %% number of tissue types, e.g. WM, GM, CSF
 tissueLabel=opt.tissueLabel;
 
-Fold = [opt.folder_out, filesep, 'TMP_Folder', filesep];
+unique_name = tempname;
+Fold = [opt.folder_out, unique_name, filesep];
+
+while exist(Fold, 'dir')
+    unique_name = tempname;
+    Fold = [opt.folder_out, unique_name, filesep];
+end
 mkdir(Fold);
 
 
@@ -230,13 +236,13 @@ for nn = 1:N_scan
             PC2d = PC2d +  tissueLabel(k)*M(:,:,N_slc,k);
         end
         pause(0.1);
-        figure(1);
-        subplot(1,2,1);
-        imagesc(Img3D(:,:,N_slc));colormap(gray);
-        title('a 2D slice of 3D image');
-        subplot(1,2,2);
-        imagesc(PC2d);colormap(gray);  
-        title('a 2D slice of 3D segmentation result');
+%         figure(1);
+%         subplot(1,2,1);
+%         imagesc(Img3D(:,:,N_slc));colormap(gray);
+%         title('a 2D slice of 3D image');
+%         subplot(1,2,2);
+%         imagesc(PC2d);colormap(gray);  
+%         title('a 2D slice of 3D segmentation result');
         C_new = C/norm(C);
 
         chg= max(abs(C_new(:)-C_old(:)));
