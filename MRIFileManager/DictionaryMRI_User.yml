@@ -293,31 +293,17 @@ dictionaryMRI:
 
   SliceSpoiler:
                   description: {info: ""}
-                  whereBruker:  {file: method, keyName: $SliceSpoiler=(, type: string, format: ~, units: ~}
+                  whereBruker:  {file: method, keyName: $SliceSpoiler=, type: string, format: ~, units: ~}
                    
                   viewer: {category: MRI parameters}
                   json:   {tagJson: SliceSpoiler, type: string, format: ~, units: ~} 
 
-  SliceSpoiler2:
-                  description: {info: ""}
-                  whereBruker:  {file: method, keyName: $SliceSpoiler=, type: string, format: ~, units: ~}
-                   
-                  viewer: {category: MRI parameters}
-                  json:   {tagJson: SliceSpoiler2, type: string, format: ~, units: ~} 
-
   ExcPul:
-                  description: {info: ""}
-                  whereBruker:  {file: method, keyName: $ExcPul=(, type: string, format: ~, units: ~}
-                   
-                  viewer: {category: MRI parameters}
-                  json:   {tagJson: ExcPul, type: string, format: ~, units: ~} 
-
-  ExcPul2:
                   description: {info: ""}
                   whereBruker:  {file: method, keyName: $ExcPul=, type: string, format: ~, units: ~}
                    
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: ExcPul2, type: string, format: ~, units: ~} 
+                  json:   {tagJson: ExcPul, type: string, format: ~, units: ~} 
 
   RefPul:
                   description: {info: ""}
