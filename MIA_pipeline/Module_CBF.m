@@ -134,12 +134,12 @@ end
 
 %% load input Nii file
 
-if strcmp(opt.Output_orientation, 'First input')   
-    ref_scan = 1;
-else
-    ref_scan = 2;
-end
-
+% if strcmp(opt.Output_orientation, 'First input')   
+%     ref_scan = 1;
+% else
+%     ref_scan = 2;
+% end
+ref_scan = 2 ;
 
 input(1).nifti_header = spm_vol(files_in.In1{1});
 input(2).nifti_header = spm_vol(files_in.In2{1});

@@ -147,12 +147,12 @@ Ca = opt.Ca; %14.7*1.39;  % 14.7g/dl d'Hb      1g Hb transporte 1.39mL d'O2
 
 
 % check data compatibility (slice thickness and slice number)
-if J_CBF.SliceThickness.value ~= J_SO2.SliceThickness.value
-    warning_text = sprintf('##$ Can not calculate the CMRO2 map because there is\n##$ a slice thickness missmatch between\n##$SO2map=%s\n##$ and \n##$CBFmap=%s',...
-        files_in.In2{1},files_in.In1{1});
-    msgbox(warning_text, 'CMRO2 map warning') ;
-    return
-end
+% if J_CBF.SliceThickness.value ~= J_SO2.SliceThickness.value
+%     warning_text = sprintf('##$ Can not calculate the CMRO2 map because there is\n##$ a slice thickness missmatch between\n##$SO2map=%s\n##$ and \n##$CBFmap=%s',...
+%         files_in.In2{1},files_in.In1{1});
+%     msgbox(warning_text, 'CMRO2 map warning') ;
+%     return
+% end
 
 
 if size(CBF,3) ~= size(SO2,3)
@@ -179,13 +179,9 @@ end
 CMRO2 = data;
 
 
-
-
-
-
 OutputImages = CMRO2;
 OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
+OutputImages(OutputImages > 1000) = -1;
 OutputImages(isnan(OutputImages)) = -1;
 
 
