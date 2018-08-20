@@ -666,7 +666,7 @@ files_necessary = all_in(~ismember(all_in,all_out));
 mask_missing = false(length(files_necessary),1);
 flag_OK = true;
 for num_f = 1:length(files_necessary)
-    if ~psom_exist(files_necessary{num_f})
+    if ~psom_exist(files_necessary{num_f}) && ~psom_exist(strrep(files_necessary{num_f}, '.nii', '.nii.gz'))
         if flag_OK
             fprintf('The following file(s) are missing to process the pipeline : %s',files_necessary{num_f});
         else

@@ -120,8 +120,8 @@ end
 
 N = niftiread(files_in.In1{1});
 if size(N,4) == 1
-   warndlg([files_in.In1{1} ' is not a 4d image'], 'Warning');
-    return
+   error([files_in.In1{1} ' is not a 4d image']);
+    %return
 end
 
 N = double(N);

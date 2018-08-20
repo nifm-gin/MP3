@@ -1,0 +1,16 @@
+function [M_out, C_out]=sortMemC(M, C)
+
+[C_out IDX]=sort(C);
+if size(M,3) ==3   % for 3D image
+    for k = 1 : length(C)
+        M_out(:,:,:,k) = M(:,:,:,IDX(k));
+    end
+    if size(M,3) ==1   % for 2D image
+        for k = 1 : length(C)
+            M_out(:,:,k) = M(:,:,IDX(k));
+        end
+    else
+        error('MICO_3D: wrong fuzzifizer');
+    end
+
+

@@ -149,7 +149,7 @@ if strcmp(files_out, '')
                 tags.Patient = UTag1(i);
                 tags.Tp = UTag2(j);
                 tags.Type = categorical(cellstr('Cluster'));
-                tags.IsRaw = categorical(0);
+                tags.IsRaw = categorical(1);
                 Cluster_path = opt.folder_out; % strrep(opt.folder_out, 'Derived_data', 'ROI_data');
                 tags.Path = categorical(cellstr([Cluster_path, filesep]));
                 tags.SequenceName = categorical(cellstr([opt.output_cluster_Name]));

@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 07-Jun-2018 19:18:01
+% Last Modified by GUIDE v2.5 26-Jul-2018 19:12:00
 
 
 % Begin initialization code - DO NOT EDIT
@@ -357,6 +357,30 @@ else %display VOIs list
 end
 % if the pipeline Manager is open, update the information : patient selected
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
+
+
+
+
+if ~isempty(findobj('type', 'figure', 'name', 'MIA pipeline Manager'))
+    % Get the hObject of MIA_pipeline
+    h = findobj('Tag', 'MIA_pipeline_manager_GUI');
+    % Get the handles of MIA_pipeline
+    data = guidata(h);
+    % Update the handles of MIA_pipeline by stocking the latest version of
+    % MIA handles.
+    data.MIA_data = handles;
+
+    % Don't touch the original eventdata, just in case.
+    eventdata2 = eventdata;
+    %Update the MIA_pipeline tmp_database
+    [h, ~, data] = MIA_pipeline('UpdateTmpDatabase', h, eventdata2, data);
+    [~, ~, data] = MIA_pipeline('MIA_pipeline_UpdateTables', h, eventdata2, data);
+    clear('eventdata2')
+    guidata(h, data)
+end
+
+
+
 if ~isempty(findobj('Tag', 'MIA_pipeline_pushMIASelection'))
     data_selected = finddata_selected(handles);
     if size(char(handles.database.Patient(data_selected)),1) > 1
@@ -630,6 +654,8 @@ end
 
 % save the structure
 guidata(hObject, handles);
+
+set(handles.MIA_name_list, 'Value', 1);
 
 % update graph and display
 MIA_update_database_display(hObject, eventdata, handles);
@@ -1475,6 +1501,7 @@ else
         handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Derived_data_path ;
         handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Raw_data_path;
         handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
+        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MIA_ROI_path;
     end
     
 end
@@ -1563,7 +1590,9 @@ end
 handles.data_loaded.number_of_ROI = 0;
 handles.data_loaded.number_of_Cluster = 0;
 for i = 1:numel(data_selected)
-    
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     if fid_nii>0
         fclose(fid_nii);
@@ -1606,6 +1635,9 @@ if numel(data_selected) > 4  % select only the 4 first scan
     data_selected = data_selected(1:4);
 end
 for i = 1:numel(data_selected)
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_selected(i), '.json'),'r');
     if fid_nii>0 && fid_json>0
@@ -1662,6 +1694,9 @@ if numel(data_to_load) <2
 end
 
 for i = 1:numel(data_to_load)
+    if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
+        gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+    end
     fid_nii=fopen(fullfilename(handles, data_to_load(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_to_load(i), '.json'),'r');
     if fid_nii>0 && fid_json>0
@@ -1796,7 +1831,7 @@ if handles.mode == 1
                 set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Visible', 'off');
                 set(eval(['handles.MIA_data', stri, '_expt_slider']), 'Value', 1);
                 
-            elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 5 % 5D data
+            elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(i).V(1).private.dat.dim) == 5 % 5D data
                 set(eval(['handles.MIA_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
                     'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
                 
@@ -2540,8 +2575,8 @@ switch get(hObject, 'Tag')
         return
     case {'MIA_data1_echo_slider', 'MIA_data1_expt_slider'}
         
-        data1_echo_nbr = get(handles.MIA_data1_echo_slider, 'Value');
-        data1_expt_nbr = get(handles.MIA_data1_expt_slider, 'Value');
+        data1_echo_nbr = round(get(handles.MIA_data1_echo_slider, 'Value'));
+        data1_expt_nbr = round(get(handles.MIA_data1_expt_slider, 'Value'));
         if handles.mode == 1
             handles.data_displayed.image(:,:,:,1) = read_slice(handles.data_loaded.Scan(1).V, handles.data_loaded.Scan(scan_of_reference).V, data1_echo_nbr, data1_expt_nbr, handles.view_mode);
         else
@@ -2558,8 +2593,8 @@ switch get(hObject, 'Tag')
         end
     case {'MIA_data2_echo_slider', 'MIA_data2_expt_slider'}
         
-        data2_echo_nbr = get(handles.MIA_data2_echo_slider, 'Value');
-        data2_expt_nbr = get(handles.MIA_data2_expt_slider, 'Value');
+        data2_echo_nbr = round(get(handles.MIA_data2_echo_slider, 'Value'));
+        data2_expt_nbr = round(get(handles.MIA_data2_expt_slider, 'Value'));
         if handles.mode == 1
             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(2).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         else
@@ -2567,12 +2602,12 @@ switch get(hObject, 'Tag')
             handles.data_displayed.image(:,:,:,2) = read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data2_echo_nbr, data2_expt_nbr, handles.view_mode);
         end
     case {'MIA_data3_echo_slider', 'MIA_data3_expt_slider'}
-        data3_echo_nbr = get(handles.MIA_data3_echo_slider, 'Value');
-        data3_expt_nbr = get(handles.MIA_data3_expt_slider, 'Value');
+        data3_echo_nbr = round(get(handles.MIA_data3_echo_slider, 'Value'));
+        data3_expt_nbr = round(get(handles.MIA_data3_expt_slider, 'Value'));
         handles.data_displayed.image(:,:,:,3) = read_slice(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V, data3_echo_nbr, data3_expt_nbr, handles.view_mode);
     case {'MIA_data4_echo_slider', 'MIA_data4_expt_slider'}
-        data4_echo_nbr = get(handles.MIA_data4_echo_slider, 'Value');
-        data4_expt_nbr = get(handles.MIA_data4_expt_slider, 'Value');
+        data4_echo_nbr = round(get(handles.MIA_data4_echo_slider, 'Value'));
+        data4_expt_nbr = round(get(handles.MIA_data4_expt_slider, 'Value'));
         handles.data_displayed.image(:,:,:,4) = read_slice(handles.data_loaded.Scan(4).V, handles.data_loaded.Scan(scan_of_reference).V, data4_echo_nbr, data4_expt_nbr, handles.view_mode);
     otherwise
         if isfield(handles, 'data_displayed')
@@ -2582,8 +2617,8 @@ switch get(hObject, 'Tag')
             
             for i=1:handles.data_loaded.number_of_scan
                 stri = num2str(i);
-                eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
-                eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
+                eval(['data' stri '_echo_nbr = round(get(handles.MIA_data' stri '_echo_slider, ''Value''));']);
+                eval(['data' stri '_expt_nbr = round(get(handles.MIA_data' stri '_expt_slider, ''Value''));']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
                 
@@ -2607,8 +2642,8 @@ switch get(hObject, 'Tag')
                     
                 end
                 stri = num2str(i);
-                eval(['data' stri '_echo_nbr = get(handles.MIA_data' stri '_echo_slider, ''Value'');']);
-                eval(['data' stri '_expt_nbr = get(handles.MIA_data' stri '_expt_slider, ''Value'');']);
+                eval(['data' stri '_echo_nbr = round(get(handles.MIA_data' stri '_echo_slider, ''Value''));']);
+                eval(['data' stri '_expt_nbr = round(get(handles.MIA_data' stri '_expt_slider, ''Value''));']);
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(scan_number).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
                 
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
@@ -2891,7 +2926,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                     'MarkerEdgeColor',rgb(handles.colors{ii}),...
                     'Visible', 'on',...
                     'Tag', strcat('MIA_plot1_2d', strii));
-                uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
+                %uistack(findobj('Tag', strcat('MIA_plot1_2d', strii)), 'bottom');
                 legende_txt(ii,:) = ROI_names(ii,:);
                 
             case 3
@@ -5805,7 +5840,9 @@ if numel(data_selected) >1
     return
 end
 new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
-
+if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
+    gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+end
 fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
 if fid_nii>0
     fclose(fid_nii);
@@ -7266,6 +7303,9 @@ for i=1:numel(time_point)
     new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
     % check if the scan already exist for this time point
     if sum(ismember(handles.database, new_entry)) == 0
+        if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
+            gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+        end
         fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
         if fid_nii>0
             fclose(fid_nii);
@@ -7347,6 +7387,7 @@ else
     handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
     handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
     handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_Derived_data_path = [MIA_data_path, 'Derived_data', filesep];
     handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI_data', filesep];
     handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
@@ -7517,9 +7558,10 @@ InvalidJsonFiles = {};
 for i=1:height(handles.database)
     if handles.database(i,:).Type == 'Scan'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
+        Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
         Json_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.json'];
         
-        if exist(Nifti_file, 'file')==2 && exist(Json_file, 'file') == 2
+        if (exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2) && exist(Json_file, 'file') == 2
             ValidEntries = [ValidEntries, i];
             ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
             ValidJsonFiles = [ValidJsonFiles, {Json_file}];
@@ -7533,7 +7575,8 @@ for i=1:height(handles.database)
         end
     elseif handles.database(i,:).Type == 'ROI' || handles.database(i,:).Type == 'Cluster'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
-        if exist(Nifti_file, 'file')==2
+        Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
+        if exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2
             ValidEntries = [ValidEntries, i];
             ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
         else
@@ -7557,6 +7600,7 @@ if ~isempty(InvalidEntries)
         t = uitable(f, 'Position', [30,100,500,300],'ColumnName', handles.database.Properties.VariableNames,'Data',cellstr(handles.database{InvalidEntries, :}));
         %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
         %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+        uiwait(f)
         answer = questdlg('So, should I delete them ?', 'It''s time to choose', 'Yes', 'No', 'No');
     end
     if strcmp(answer, 'Yes')
@@ -7592,7 +7636,7 @@ for i=1:length(DirectoriesToProcess)
     for j=1:size(Files,2)
         file = Files(:,j);
         if ~file{5}
-            if ~contains([file{2}, filesep, file{1}], ValidFiles)
+            if ~contains(strrep([file{2}, filesep, file{1}], '.nii.gz', '.nii'), ValidFiles) 
                 [status, msg] = movefile([file{2}, filesep, file{1}], [Data_path,  'To_Trash']);
                 if status
                     MovedFiles = [MovedFiles; {[file{2}, filesep, file{1}]}];
@@ -7607,7 +7651,7 @@ end
 
 if isempty(MovedFiles)
     msgbox('The folders containing your database''s files are already pretty clean !')
-    rmdir([Data_path, 'To_Trash']);
+    %rmdir([Data_path, 'To_Trash']);
 else
     text = [num2str(length(MovedFiles)), ' files were just moved from your data folders to the To_Trash folder.'];
     answer = questdlg(text, 'Moved Files', 'OK !', 'See files moved','OK !');
@@ -7722,74 +7766,199 @@ function MIA_menu_Importing_form_another_database_Callback(hObject, eventdata, h
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[filename, pathname]=uigetfile('*.mat','Load database','MultiSelect','off');
-
-if pathname == 0
+dir = uigetdir(pwd, 'Select the project to import');
+if dir == 0
     return
-else
-    if ~strcmp(class(filename),'double') %#ok<STISA>
-        
-        tmp_database = load(fullfile(pathname,filename));
-        data_listing = {};
-        patient_id_timepoint = [];
-        for i = 1:numel(tmp_database.database)
-            for j=1:numel(tmp_database.database(i).day)
-                data_listing(size(data_listing, 1)+1,:) = {[tmp_database.database(i).name, char(tmp_database.database(i).day(j).date)]};
-                patient_id_timepoint(size(patient_id_timepoint, 1)+1,:) = [i, j];
-            end
-        end
-        
-        [data_to_import, ok] = listdlg('PromptString','Select a the data you want to import',...
-            'Name', 'Select a data',...
-            'ListSize', [400 300],...
-            'ListString',data_listing);
-        
-        if ok == 0
-            return
-        end
-        
-        % for old database
-        for i = 1:numel(data_to_import)
-            
-            % upadate the database
-            if sum(strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name)) == 0
-                
-                handles.database(numel(handles.database)+1).name =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name;
-                handles.database(numel(handles.database)).path =  handles.database(1).path;
-                handles.database(numel(handles.database)).group =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).group;
-                handles.database(numel(handles.database)).omit =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).omit;
-                handles.database(numel(handles.database)).day = ...
-                    tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
-                
-            else
-                potistion_in_database = strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name);
-                handles.database(potistion_in_database).day(numel(handles.database(potistion_in_database).day)+1) = ...
-                    tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
-            end
-            % copy the ROI files
-            for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file)
-                if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))) , 'file') == 2
-                    copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))),...
-                        char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))), 'f');
-                end
-            end
-            % copy the parameter files
-            for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file)
-                if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))) , 'file') == 2
-                    copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))),...
-                        char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))), 'f');
-                end
-            end
-            guidata(hObject, handles);
-            MIA_update_database_display(hObject, eventdata, handles);
-        end
+end
+DatabPath = [dir, filesep, 'MIA_database.mat'];
+other_database = load(DatabPath);
+other_database = other_database.database;
+UPatients = unique(other_database.Patient);
+data_listing = {};
+linked_table = {};
+for i=1:length(UPatients)
+    tmp_database = other_database(other_database.Patient == UPatients(i),:);
+    UTp = unique(tmp_database.Tp);
+    for j=1:length(UTp)
+        tmp2_database = table();
+        data_listing = [data_listing; {[char(UPatients(i)), ' - ', char(UTp(j))]}];
+        tmp2_database = tmp_database(tmp_database.Tp == UTp(j),:);
+        linked_table = [linked_table; {tmp2_database}];
     end
 end
-num_timepoint = 0;
-for i=1:numel(handles.database)
-    num_timepoint = num_timepoint+ numel({handles.database(i).day.date});
+
+
+
+
+[data_to_import, ok] = listdlg('PromptString','Select the data you want to import',...
+    'Name', 'Select a data',...
+    'ListSize', [400 300],...
+    'ListString',data_listing);
+
+if ok == 0
+    return
 end
-title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' patients and ',  num2str(num_timepoint), ' ','time points'];
+
+database_to_import = table();
+for i = 1:length(data_to_import)
+    database_to_import = [database_to_import; linked_table{data_to_import(i)}];
+end
+
+for i=1:size(database_to_import,1)
+    switch char(database_to_import.Type(i))
+        case 'Scan'
+            if char(database_to_import.IsRaw(i)) == '1'
+                outfolder = handles.database.Properties.UserData.MIA_Raw_data_path;
+                
+            else
+                outfolder = handles.database.Properties.UserData.MIA_Derived_data_path;
+            end
+            % Copy nifti file 
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            original_filename = char(database_to_import.Filename(i));
+            idx2=2;
+            while exist(outfilename)
+                database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                idx2=idx2+1;
+            end
+            status1 = copyfile(filename, outfilename);
+%             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
+%                 status1 = copyfile(filename, outfolder);
+%             else
+%                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+%                 msgbox(text);
+%                 status1 = 0;
+%             end
+            % Copy json file
+            filename = strrep(filename, '.nii', '.json');
+            outfilename = strrep(outfilename, '.nii', '.json');
+            while exist(outfilename)
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.json'];
+                idx2=idx2+1;
+            end
+            status2 = copyfile(filename, outfilename);
+%             if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
+%                 status2 = copyfile(filename, outfolder);
+%             else
+%                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+%                 msgbox(text);
+%                 status2 = 0;
+%             end
+            
+
+            
+        case {'ROI', 'Cluster'}
+            outfolder = handles.database.Properties.UserData.MIA_ROI_path;
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+            original_filename = char(database_to_import.Filename(i));
+            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            idx2=2;
+            while exist(outfilename)
+                database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                idx2=idx2+1;
+            end
+            status1 = copyfile(filename, outfilename);
+           
+            
+    end
+    if status1 && status2
+        tags = database_to_import(i,:);
+        tags.Path = categorical(cellstr(outfolder));
+        flag = 1;
+        idx = 2;
+        while flag
+            tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+            tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+            %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+            tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+            if size(tmpdatab,1) == 0
+                flag = 0;
+            else
+                tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+                idx = idx+1;
+            end
+        end
+        handles.database = [handles.database; tags];
+    end
+    
+end
+
+
+
+% [filename, pathname]=uigetfile('*.mat','Load database','MultiSelect','off');
+% 
+% if pathname == 0
+%     return
+% else
+%     if ~strcmp(class(filename),'double') %#ok<STISA>
+%         
+%         tmp_database = load(fullfile(pathname,filename));
+%         data_listing = {};
+%         patient_id_timepoint = [];
+%         for i = 1:numel(tmp_database.database)
+%             for j=1:numel(tmp_database.database(i).day)
+%                 data_listing(size(data_listing, 1)+1,:) = {[tmp_database.database(i).name, char(tmp_database.database(i).day(j).date)]};
+%                 patient_id_timepoint(size(patient_id_timepoint, 1)+1,:) = [i, j];
+%             end
+%         end
+%         
+%         [data_to_import, ok] = listdlg('PromptString','Select a the data you want to import',...
+%             'Name', 'Select a data',...
+%             'ListSize', [400 300],...
+%             'ListString',data_listing);
+%         
+%         if ok == 0
+%             return
+%         end
+%         
+%         % for old database
+%         for i = 1:numel(data_to_import)
+%             
+%             % upadate the database
+%             if sum(strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name)) == 0
+%                 
+%                 handles.database(numel(handles.database)+1).name =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name;
+%                 handles.database(numel(handles.database)).path =  handles.database(1).path;
+%                 handles.database(numel(handles.database)).group =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).group;
+%                 handles.database(numel(handles.database)).omit =  tmp_database.database(patient_id_timepoint(data_to_import(i),1)).omit;
+%                 handles.database(numel(handles.database)).day = ...
+%                     tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
+%                 
+%             else
+%                 potistion_in_database = strcmp({handles.database.name}', tmp_database.database(patient_id_timepoint(data_to_import(i),1)).name);
+%                 handles.database(potistion_in_database).day(numel(handles.database(potistion_in_database).day)+1) = ...
+%                     tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2));
+%             end
+%             % copy the ROI files
+%             for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file)
+%                 if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))) , 'file') == 2
+%                     copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))),...
+%                         char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).VOIs_file(j))), 'f');
+%                 end
+%             end
+%             % copy the parameter files
+%             for j=1:numel(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file)
+%                 if exist(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))) , 'file') == 2
+%                     copyfile(char(fullfile(tmp_database.database(patient_id_timepoint(data_to_import(i),1)).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))),...
+%                         char(fullfile(handles.database(1).path, tmp_database.database(patient_id_timepoint(data_to_import(i),1)).day(patient_id_timepoint(data_to_import(i),2)).scans_file(j))), 'f');
+%                 end
+%             end
+%             guidata(hObject, handles);
+%             MIA_update_database_display(hObject, eventdata, handles);
+%         end
+%     end
+% end
+% num_timepoint = 0;
+% for i=1:numel(handles.database)
+%     num_timepoint = num_timepoint+ numel({handles.database(i).day.date});
+% end
+%title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' patients and ',  num2str(num_timepoint), ' ','time points'];
+title = ['database name: ',filename,'; ', num2str(numel(handles.database)), ' files.'];
 set(handles.MIA_GUI, 'Name', title);
 set(handles.MIA_name_list, 'Value', 1);
 
@@ -8606,9 +8775,6 @@ function MIA_Import_ROI_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-
-
-
 ROI_listing = [unique(handles.database.SequenceName(handles.database.Type == 'ROI'))', 'Other']';
 % Enter the ROI's name
 [VOI_number,ok] = listdlg('Name', 'Bip', 'SelectionMode', 'single', 'ListString',  ROI_listing,'ListSize', [200 150],...
@@ -8630,7 +8796,7 @@ if strcmp('Other', char(ROI_listing(VOI_number))) == 1
     end
     
 else
-    newVOI_name = char(ROI_listing(VOI_number));
+    newVOI_name = {char(ROI_listing(VOI_number))};
 end
 
 
@@ -8702,3 +8868,108 @@ for i=1:size(table2,1)
     %title(uf,[char(table2.Filename(i)), '.nii'])
     t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);
 end
+
+
+% --------------------------------------------------------------------
+function MIA_menu_Import_BIDS_data_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Import_BIDS_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if isfield(handles, 'database')
+    answer = questdlg('Please be sure that the merged database will not contain some files with the same Patient - Tp - SequenceName tags. This case is currently not implemented. Continue ?');
+    if any(strcmp(answer, {'No', 'Cancel'}))
+        return
+    end
+    MIA_data_path = handles.database.Properties.UserData.MIA_data_path;
+    %     MIA_data_path = handles.database.Properties.UserData.MIA_data_path ;
+    %handles.database = table();
+else
+    MIA_root_path = uigetdir(pwd, 'Select the directory to save your new projet');
+    if sum(MIA_root_path) == 0
+        return
+    end
+    
+    MIA_root_path = [MIA_root_path filesep];
+    %% create the output folder ('MIA_data')
+    MIA_data_path = MIA_root_path;%[MIA_root_path, 'MIA_data', filesep];
+    % Create the output folder if needed
+    if exist(MIA_data_path, 'dir') ~= 7
+        status = mkdir(MIA_data_path);
+        if status == 0
+            warndlg('You do not have the right to write in the folder!', 'Warning');
+            return
+        end
+    end
+    % Create the RAW data folder if needed
+    if exist([MIA_data_path, 'Raw_data', filesep], 'dir') ~= 7
+        status = mkdir([MIA_data_path, 'Raw_data', filesep]);
+        if status == 0
+            warndlg('You do not have the right to write in the folder!', 'Warning');
+            return
+        end
+    end
+    
+    
+    %% create the database structure
+    handles.database =  table;%
+    handles.database = cell2table(cell(0,8));
+    handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
+    handles.database.Properties.UserData.MIA_data_path = MIA_data_path;
+    handles.database.Properties.UserData.MIA_Raw_data_path = [MIA_data_path, 'Raw_data', filesep];
+    handles.database.Properties.UserData.MIA_Derived_data_path = [MIA_data_path, 'Derived_data', filesep];
+    handles.database.Properties.UserData.MIA_ROI_path = [MIA_data_path, 'ROI_data', filesep];
+    handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
+    
+end
+
+BIDS_Path = uigetdir(pwd, 'Select the directory containing the BIDS data you want to import');
+if sum(BIDS_Path) == 0
+    return
+end
+if ~strcmp(BIDS_Path(end), filesep)
+    BIDS_Path = [BIDS_Path, filesep];
+end
+if ~strcmp(MIA_data_path(end), filesep)
+    MIA_data_path = [MIA_data_path, filesep];
+end
+database = CreateTableFromBIDS(BIDS_Path, MIA_data_path,0);
+if ~isempty(database)
+    handles.database = [handles.database; database];
+end
+guidata(hObject, handles);
+MIA_update_database_display(hObject, eventdata, handles)
+
+
+% --------------------------------------------------------------------
+function MIA_menu_Compress_database_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Compress_database (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+Data_path = handles.database.Properties.UserData.MIA_data_path;
+DirectoriesToProcess = {'Derived_data', 'Raw_data', 'ROI_data'};
+
+
+if exist([Data_path, 'Uncompressed_Trash'],'dir') ~= 7
+    [status, ~, ~] = mkdir([Data_path, 'Uncompressed_Trash']);
+    if status == false
+        error('Cannot create the Uncompressed_Thrash folder to move the uncompressed files in after compression.')
+    end
+end
+
+Files_To_Compress = {};
+NbCompressions = 0;
+for i=1:length(DirectoriesToProcess)
+    Files = dir([Data_path, DirectoriesToProcess{i}, '/*.nii']);
+    for j=1:length(Files)
+        filename = [Files(j).folder, filesep, Files(j).name];
+        if ~exist(strrep(filename, '.nii', '.nii.gz'), 'file')
+            Files_To_Compress = [Files_To_Compress, {filename}];
+            gzip(filename);
+            NbCompressions = NbCompressions+1;
+        end
+        movefile(filename, strrep(filename, ['/', DirectoriesToProcess{i}, '/'], ['/', 'Uncompressed_Trash', '/']));
+    end
+end
+Mess = ['Done! ', num2str(NbCompressions), ' files were compressed and the useless uncompressed files were moved to the ''Uncompressed_Thrash'' folder.'];
+msgbox(Mess)
+

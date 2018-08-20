@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization',...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .Bias Estimation (MICO algorithm)',...
      'Clustering', '   .Clustering GMM', ...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
@@ -112,6 +112,7 @@ handles.MIA_pipeline_Unique_Values_Selection = {};
 
 % update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
 data_selected =  MIA2('finddata_selected',handles.MIA_data);
+%if data_selected == 0
 set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
 set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
 
@@ -188,6 +189,7 @@ merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
 function [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles)
 %% Update of Filtering/Filtered Tables
+%[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 NewTable = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
@@ -963,6 +965,21 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+     case '   .Clip Image'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Clipping('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Clipping(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Clipping';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;    
+
+    case '   .Brain Extraction (BET Function from FSL)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_BET('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_BET(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_FSL_BET';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     case '   .Inversion Efficiency (ASL_InvEff)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
@@ -1068,6 +1085,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .Bias Estimation (MICO algorithm)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MICO('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_MICO(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_MICO';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
         
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
@@ -1087,7 +1111,7 @@ if ismodule
     handles.module_parameters_string = module_parameters_string;
     handles.module_parameters_fields = module_parameters_fields;
     
-[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
+    [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 else
     table.data = '';
     table.columnName = '';
@@ -1104,7 +1128,7 @@ end
    
 
 %% save the data
-guidata(hObject, handles);
+%guidata(hObject, handles);
 guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 
@@ -1521,6 +1545,49 @@ if exist('biograph') == 2
     
 end
 
+%% Check if some existing files will be rewrited
+
+Name_Jobs = fieldnames(Pipeline);
+Files_out = {};
+for i=1:length(Name_Jobs)
+    Job = Pipeline.(Name_Jobs{i});
+    for j=1:size(Job.opt.Table_out,1)
+        switch char(Job.opt.Table_out.Type(j))
+            case 'Scan'
+                Folder = '/Derived_data/';
+            case {'ROI', 'Cluster'}
+                Folder = '/ROI_data/';
+        end
+        FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
+        Files_out = [Files_out; {FileName}];
+    end
+end
+
+
+Overwrite_Files = {};
+for i=1:length(Files_out)
+    if exist(Files_out{i},'file')
+        Overwrite_Files = [Overwrite_Files; Files_out{i}];
+    end
+end
+
+if ~isempty(Overwrite_Files)
+    text = 'WARNING : The execution of this pipeline will overwrite one or several existing files ! Continue ?';
+    answer = questdlg(text, 'Overwritting', 'Yes', 'See those files','No', 'No');
+    if strcmp(answer,'See those files')
+        f = figure;
+        t = uitable(f, 'Position', [30,100,500,300],'Data',Overwrite_Files);
+        %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
+        %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+        uiwait(f)
+        answer = questdlg('So, execute the pipeline ?', 'It''s time to choose', 'Yes', 'No', 'No');
+    end
+    if strcmp(answer, 'No')
+        return
+    end
+end
+
+
 %% exectute the pipeline
 
 if handles.MIA_pipeline_radiobuttonPSOM.Value
@@ -1620,11 +1687,14 @@ end
 %a=0;
 function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
 
+
 Datab = handles.MIA_data.database;
-Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
-for i=1:length(Names_Mod)
-    Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
-    Datab = [Datab ; Mod.OutputDatabase];
+if isfield(handles, 'MIA_pipeline_ParamsModules')
+    Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+    for i=1:length(Names_Mod)
+        Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+        Datab = [Datab ; Mod.OutputDatabase];
+    end
 end
 handles.MIA_pipeline_TmpDatabase = unique(Datab);
 
@@ -1777,7 +1847,8 @@ function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % define which patient is selected
-data_selected =  MIA2('get_data_selected',handles.MIA_data);
+%data_selected =  MIA2('get_data_selected',handles.MIA_data);
+data_selected =  MIA2('finddata_selected',handles.MIA_data);
 % add the patient filter
 handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
@@ -1836,7 +1907,9 @@ function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % define which patient is selected
-data_selected =  MIA2('get_data_selected',handles.MIA_data);
+%data_selected =  MIA2('get_data_selected',handles.MIA_data);
+data_selected =  MIA2('finddata_selected',handles.MIA_data);
+
 % add the patient filter
 handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
@@ -2513,7 +2586,22 @@ end
 PipelineName = list.mat{indx};
 pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
 Modules = fieldnames(pipeline);
-Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Table)
+    quest = 'Would you like to apply the loaded pipeline on the whole database or on the filtered one you defined ?';
+    answer = questdlg(quest, 'On which data apply the pipeline ?', 'Whole database', 'Filtered database', 'Whole database');
+    if isempty(answer)
+        return
+    end
+    switch answer
+        case 'Whole database'
+            Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+        case 'Filtered database'
+            Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+    end
+else
+    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+end
+%Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);

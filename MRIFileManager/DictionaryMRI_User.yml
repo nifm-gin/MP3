@@ -160,29 +160,218 @@ dictionaryMRI:
 
   SpatDimEnum:
                   description: {info: ""}
-                  whereBruker:  {file: method, keyName: $PVM_SpatDimEnum=, type: float, format: ~, units: ms}
+                  whereBruker:  {file: method, keyName: $PVM_SpatDimEnum=, type: string, format: ~, units: ~}
                    
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: SpatDimEnum, type: float, format: ~, units: ms}  
+                  json:   {tagJson: SpatDimEnum, type: string, format: ~, units: ~}  
 
   ObjOrderList:
                   description: {info: ""}
                   whereBruker:  {file: method, keyName: $PVM_ObjOrderList=, type: float, format: ~, units: ms}
                    
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: ObjOrderList, type: float, format: ~, units: ms}  
-
-  FovSatOnOff:
-                  description: {info: ""}
-                  whereBruker:  {file: method, keyName: $PVM_FovSatOnOff=, type: float, format: ~, units: ms}
-                   
-                  viewer: {category: MRI parameters}
-                  json:   {tagJson: FovSatOnOff, type: float, format: ~, units: ms}  
+                  json:   {tagJson: ObjOrderList, type: float, format: ~, units: ms}   
 
   RepetitionTimePVM:
                   description: {info: ""}
                   whereBruker:  {file: method, keyName: $PVM_RepetitionTime=, type: float, format: ~, units: ms}
                    
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: RepetitionTimePVM, type: float, format: ~, units: ms}           
+                  json:   {tagJson: RepetitionTimePVM, type: float, format: ~, units: ms}    
+
+  MagTransOnOff:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_MagTransOnOff=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: MagTransOnOff, type: string, format: ~, units: ~}         
+
+  FovSatOnOff:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_FovSatOnOff=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FovSatOnOff, type: string, format: ~, units: ~}  
+
+  FatSupOnOff:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_FatSupOnOff=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FatSupOnOff, type: string, format: ~, units: ~}  
+
+  TriggerModule:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerModule=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerModule, type: string, format: ~, units: ~}  
+
+  TriggerOutOnOff:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerOutOnOff=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerOutOnOff, type: string, format: ~, units: ~} 
+
+  MagTransModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_MagTransModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: MagTransModuleTime, type: float, format: ~, units: ms} 
+
+  FovSatModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_FovSatModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FovSatModuleTime, type: float, format: ~, units: ms} 
+
+  FatSupModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_FatSupModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FatSupModuleTime, type: float, format: ~, units: ms} 
+
+  RephaseTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $RephaseTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: RephaseTime, type: float, format: ~, units: ms} 
+
+  SignalType:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SignalType=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SignalType, type: string, format: ~, units: ~} 
+
+  SPackArrNSlices:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SPackArrNSlices=( 1 ), type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SPackArrNSlices, type: float, format: ~, units: ~} 
+
+  EpiModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_EpiModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: EpiModuleTime, type: float, format: ~, units: ms} 
+
+  EpiEchoDelay:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_EpiEchoDelay=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: EpiEchoDelay, type: float, format: ~, units: ms} 
+
+  TaggingModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TaggingModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TaggingModuleTime, type: float, format: ~, units: ms} 
+
+  ASL_ModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: ASL_ModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ASL_ModuleTime, type: float, format: ~, units: ms} 
+
+  PackDel:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PackDel=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: PackDel, type: float, format: ~, units: ~} 
+
+  SliceSpoiler:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $SliceSpoiler=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceSpoiler, type: string, format: ~, units: ~} 
+
+  ExcPul:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $ExcPul=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ExcPul, type: string, format: ~, units: ~} 
+
+  RefPul:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $RefPul=(, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: RefPul, type: string, format: ~, units: ~} 
+
+  TriggerMode:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerMode=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerMode, type: string, format: ~, units: ~} 
+
+  TriggerDelay:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerDelay=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerDelay, type: float, format: ~, units: ~} 
+
+  TrigD0:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TrigD0=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TrigD0, type: float, format: ~, units: ~} 
+
+  TrigOutD0:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TrigOutD0=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TrigOutD0, type: float, format: ~, units: ~} 
+
+  TriggerOutModuleTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerOutModuleTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerOutModuleTime, type: float, format: ~, units: ms}
+
+  TriggerOutMode:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_TriggerOutMode=, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: TriggerOutMode, type: string, format: ~, units: ~}
+
+  SliceSpoilerDuration:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $SliceSpoilerDuration=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceSpoilerDuration, type: float, format: ~, units: ms}
+
+  ExcPulse:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $ExcPulse=(, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ExcPulse, type: string, format: ~, units: ~}
+
+  RefPulse:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $RefPulse=(, type: string, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: RefPulse, type: string, format: ~, units: ~}
              

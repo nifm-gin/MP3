@@ -34,6 +34,10 @@ for i=1:length(Fields)
         end
         [fid, message]=fopen(file ,'r');
         if fid == -1
+            if exist(strrep(file, '.nii', '.nii.gz'),'file')
+                gunzip(strrep(file, '.nii', '.nii.gz'))
+                continue
+            end
             Status = 0;
             Message = message;
             Wrong_File = file;

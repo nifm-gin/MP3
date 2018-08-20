@@ -2,6 +2,11 @@ function Data = write_volume(Data,Vo, view_mode)
 %% apply the inverse transformation (rotation/translation) in order 
 %% to go back the the Vo referencial
 %% Coded by BL 10102017
+% View_mode --> 'Axial', 'Saggital', or 'Coronal' (default : 'Axial')
+if ~exist('view_mode', 'var')
+    view_mode = 'Axial';
+end
+    
 
 tolerance = 1;
 R = Vo(1).mat(1:3,1:3);
