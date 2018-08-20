@@ -1681,7 +1681,7 @@ for i = 1:numel(data_to_load)
 end
 
 set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_to_load))) '_' char(unique(handles.database.SequenceName(data_to_load)))]);
-set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
+set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off', 'Value', 1);
 handles.data_loaded.number_of_scan = numel(data_to_load);
 handles.data_loaded.info_data_loaded = handles.database(data_to_load,:);
 
