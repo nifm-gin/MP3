@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 26-Jul-2018 19:12:00
+% Last Modified by GUIDE v2.5 14-Aug-2018 10:20:47
 
 
 % Begin initialization code - DO NOT EDIT
@@ -796,36 +796,29 @@ else
         
         database = load(filename);
         handles.database = database.database;
-        
-        %         VOIs_list = {};
-        %         for i=1:numel(handles.database)
-        %             for j = 1:numel(handles.database(i).day)
-        %                 VOIs_list = [VOIs_list handles.database(i).day(j).VOIs];
-        %             end
-        %         end
-        %
-        %         handles.VOIs = [unique(VOIs_list), 'Automatic', 'Other'];
-        %update the database ... because there is a bug somewhere...
-        %         database.database(1).databaseinfo.VOIs = handles.VOIs;
-        
-        %         handles.clips = database.database(1).databaseinfo.clips;
-        %         if isfield(database.database(1).databaseinfo, 'histo');
-        %             handles.histo = database.database(1).databaseinfo.histo;
-        %         end
-        %         if ~isfield(handles.database(1).databaseinfo, 'voxels_database_filename')
-        %             handles.database(1).databaseinfo.voxels_database_filename = [];
-        %             handles.database(1).databaseinfo.voxels_database_need_to_update = 0;
-        %             handles.database(1).databaseinfo.voxels_database_voxels_to_update = [];
-        %         end
+
         set(handles.MIA_name_list, 'String', handles.database.Properties.UserData.db_filename)
+        
+        % update database path (in case the directory has moved) 
+        new_patient_directory = strcat(pathname, filesep);
+        handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
+        handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
+        handles.database.Properties.UserData.MIA_ROI_path = [new_patient_directory, 'ROI_data', filesep];
+        handles.database.Properties.UserData.MIA_Derived_data_path = [new_patient_directory, 'Derived_data', filesep];
+        handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
+        % update the path in the table
+        %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MIA_Raw_data_path;
+        handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Derived_data_path ;
+        handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MIA_Raw_data_path;
+        handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MIA_ROI_path;
+        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MIA_ROI_path;
+        
+        
         guidata(hObject, handles);
     end
     cd(path_root);
 end
 MIA_update_figureName(hObject, eventdata, handles)
-% update database.mat path (required if this file has been moved
-% handles.database(1).databaseinfo.pathname = pathname;
-% handles.database(1).databaseinfo.filename = filename;
 
 guidata(hObject, handles);
 MIA_update_database_display(hObject, eventdata, handles);
@@ -5144,9 +5137,16 @@ guidata(hObject, handles)
 
 msgbox('Done', 'Information') ;
 
-% --- Executes on button press in MIA_new_roi.
+% --- Executes on button press in MIA_new_ROI_dyn.
+function MIA_new_ROI_dyn_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_new_ROI_dyn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ MIA_new_roi_Callback(hObject, eventdata, handles)
+
+% --- Executes on button press in MIA_new_ROI_dyn.
 function MIA_new_roi_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_new_roi (see GCBO)
+% hObject    handle to MIA_new_ROI_dyn (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -5262,21 +5262,40 @@ end
 switch ROI_case
     case {'New ROI', 'Union', 'Instersection', 'New slice'}
         if handles.display_option.view_pixel_on_map
+            % unselect the option 'view_pixel_on_map' 
             set(handles.MIA_menu_view_voxel_on_map, 'Check', 'off');
             handles.display_option.view_pixel_on_map = 0;
             guidata(hObject, handles);
             
-            eval(['hroi=impoly(handles.MIA_data' image_number ',[]);']);
+            if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+                eval(['hroi=impoly(handles.MIA_data' image_number ',[]);']);
+                position = getPosition(hroi);
+            elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+                Img=squeeze(handles.data_displayed.image(:,:,get(handles.MIA_slider_slice, 'Value'), str2double(image_number)));
+                eval(['[Drawn_ROI_matrice, position] = MIA_new_ROI_dyn(hObject, eventdata, handles, handles.MIA_data' image_number ', Img, str2double(image_number));']);
+                position = position'; %#ok<NODEF>
+            end
             
+            % select the option 'view_pixel_on_map' 
             set(handles.MIA_menu_view_voxel_on_map, 'Check', 'on');
             handles.display_option.view_pixel_on_map = 1;
             guidata(hObject, handles);
         else
-            eval(['hroi=impoly(handles.MIA_data' image_number ',[]);']);
+            if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+                eval(['hroi=impoly(handles.MIA_data' image_number ',[]);']);
+                position = getPosition(hroi);
+            elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+                Img=squeeze(handles.data_displayed.image(:,:,get(handles.MIA_slider_slice, 'Value'), str2double(image_number)));
+                eval(['[Drawn_ROI_matrice, position] = MIA_new_ROI_dyn(hObject, eventdata, handles, handles.MIA_data' image_number ', Img, str2double(image_number));']);             
+                if isempty(Drawn_ROI_matrice)
+                    return
+                end
+                position = position'; %#ok<NODEF>
+            end
             
         end
     case 'Delete'
-        
+        position = getPosition(hroi);
         %         handles.ROI_selected(ROI_selected_nbr).data(match_slice) = [];
         %         % delete the roi file and the roi from the database if empty
         %         if isempty(handles.ROI_selected(ROI_selected_nbr).data)
@@ -5314,7 +5333,7 @@ end
 
 
 
-position = getPosition(hroi);
+
 Scan_of_reference_selected = get(handles.MIA_orientation_space_popupmenu, 'Value');
 % Scan_of_reference_listing = get(handles.MIA_orientation_space_popupmenu, 'String');
 % Scan_of_reference = Scan_of_reference_listing(Scan_of_reference_selected,:);
@@ -5327,30 +5346,28 @@ switch ROI_case
     case 'Delete'
         
     case 'New slice'  % new ROI slice added to an existing ROI
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = Drawn_ROI_matrice;
+        end
+        
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
         
     case 'New ROI'
-        %         %% test
-        
-        %         % transform the ROI_matrix in order to match to the nii hearder
-        %         % (rotation/translation)
-        %         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
-        %         % ROI_header.mat(3,4) = ROI_header.mat(3,4) + slice_nbr*ROI_header.mat(3,3);
-        %         % update the matrice
-        %         ROI_header = handles.data_loaded.Scan(Scan_of_reference_selected).V;
-        %         ROI_header.dim(3) = 1;
-        %         toto = [0 0  (322-slice_nbr)*ROI_header.mat(3,3) 1]';
-        %         ROI_header.mat(:,4) = ROI_header.mat * toto;
-        %         ROI_header.private.mat = ROI_header.mat;
-        
-        
+
         % tested code
         %create the VOI matrix
         ROI_matrix=zeros([x y z]);
-        ROI_matrix(:,:,slice_nbr)=createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        
+         if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+                ROI_matrix(:,:,slice_nbr)=createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+            elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+                ROI_matrix(:,:,slice_nbr)=Drawn_ROI_matrice;
+         end
+            
         
         %transform the ROI_matrix in order to match to the nii hearder
         %(rotation/translation)
@@ -5364,13 +5381,23 @@ switch ROI_case
         ROI_matrix = write_volume(ROI_matrix, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode );
         
     case 'Union'
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+          if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+             handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + Drawn_ROI_matrice;
+          end
+       
+       
         %         handles.data_loaded.ROI(ROI_loaded_idex).nii(handles.data_loaded.ROI(ROI_loaded_idex).nii > 0 ) = 1;
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
     case 'Instersection'
-        handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi, findobj('Tag', ['MIA_data' image_number]))) - createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        if strcmp(get(hObject, 'Tag'), 'MIA_new_roi')
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi, findobj('Tag', ['MIA_data' image_number]))) - createMask(hroi, findobj('Tag', ['MIA_data' image_number]));
+        elseif strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), Drawn_ROI_matrice) - Drawn_ROI_matrice;        
+        end
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
@@ -5453,11 +5480,159 @@ end
 
 guidata(hObject, handles)
 MIA_update_axes(hObject, eventdata, handles)
+% if strcmp(get(hObject, 'Tag'), 'MIA_new_ROI_dyn')
+%     if get(handles.MIA_slider_slice, 'Value') < get(handles.MIA_slider_slice, 'Max')
+%         set(handles.MIA_slider_slice, 'Value', get(handles.MIA_slider_slice, 'Value') + 1)
+%         MIA_update_axes(hObject, eventdata, handles)
+%     end
+% end
+
+
+
+% --- Executes on button press in MIA_test_button.
+function [ROI_matrice, position] = MIA_new_ROI_dyn(hObject, eventdata, handles, axe, Img, image_selected)
+% hObject    handle to MIA_test_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% this function is adapted from 
+% Reference: <Li Wang, Lei He, Arabinda Mishra, Chunming Li. 
+% Active Contours Driven by Local Gaussian Distribution Fitting Energy.
+% Signal Processing, 89(12), 2009,p. 2435-2447>
+
+
+NumIter = 5000; %iterations
+timestep=0.1; %time step
+mu=0.1/timestep;% level set regularization term, please refer to "Chunming Li and et al. Level Set Evolution Without Re-initialization: A New Variational Formulation, CVPR 2005"
+sigma = 5;%size of kernel
+
+epsilon = 1;
+c0 = 2; % the constant value 
+lambda1=1.0;%outer weight, please refer to "Chunming Li and et al,  Minimization of Region-Scalable Fitting Energy for Image Segmentation, IEEE Trans. Image Processing, vol. 17 (10), pp. 1940-1949, 2008"
+lambda2=1.0;%inner weight
+%if lambda1>lambda2; tend to inflate
+%if lambda1<lambda2; tend to deflate
+nu = 0.0005*255*255;%length term
+
+% terme important, lié à la définition de la limite de la ROI 
+% alf = 30 by default
+alf = 30;%data term weight 
+
+
+h = imellipse(axe);
+phi =createMask(h);
+phi=double(phi);
+phi(phi==0) = -1;
+phi = sign(phi).*c0.*-1;
+
+first_ellipse = phi;
+tmp = h.getPosition;
+first_centroid = [tmp(1) + tmp(3)/2, tmp(2) + tmp(4)/2];
+delete(h);
+
+Ksigma=fspecial('gaussian',round(2*sigma)*2 + 1,sigma); %  kernel
+
+
+ONE=ones(size(Img));
+KONE = imfilter(ONE,Ksigma,'replicate');  
+KI = imfilter(Img,Ksigma,'replicate');  
+KI2 = imfilter(Img.^2,Ksigma,'replicate'); 
+
+hold on,[~,~] = contour(axe, phi,[0 0],'r','linewidth',1, 'tag','ROI_active'); hold off
+pause(0.5)
+
+edges_found = 0;
+slice_selected = get(handles.MIA_slider_slice, 'Value');
+nbr_of_slice = get(handles.MIA_slider_slice, 'Max');
+
+indice=0;
+ROI_size = nan([NumIter, 1]);
+for_loop_stopped = 0;
+for iter = 1:NumIter
+    
+    phi =evolution_LGD(Img,phi,epsilon,Ksigma,KONE,KI,KI2,mu,nu,lambda1,lambda2,timestep,alf);
+    
+    if(mod(iter,10) == 0)
+        indice = indice+1;
+        if ~isempty(findobj('Tag', 'ROI_active'))
+            delete(findobj('Tag', 'ROI_active'))
+        end
+        hold on,[~,~] = contour(axe, phi,[0 0],'r','linewidth',1, 'tag','ROI_active'); hold off
+        
+        BW = ~imbinarize(phi, 0);
+        if sum(BW(:)) == 0
+            
+            ROI_matrice = [];
+            position = [];
+            return
+        end
+        test = regionprops(BW);
+        test = struct2table(test);
+        
+        idx = findClosestCentroids(first_centroid, test.Centroid);
+        ROI_size(indice)=test.Area(idx);
+        
+        if indice > 3 && ...
+                isequal(ROI_size(indice),ROI_size(indice-1), ROI_size(indice-2)) %, ROI_size(indice-3), ROI_size(indice-4), ROI_size(indice-5))
+            break
+        end
+        pause(0.01);
+    end
+    
+end
+
+% distance_btw_centroids = sqrt((test.Centroid(idx,1)-first_centroid(1))^2+(test.Centroid(idx,2)-first_centroid(2))^2);
+% if distance_btw_centroids > max(tmp(3),tmp(4))
+%     selection = questdlg('Do you want to keep this ROI (only the selected one will be saved)?',...
+%         'Warning',...
+%         'Yes','No', 'Cancel', 'Cancel');
+%     switch selection
+%         case 'No'
+%             delete(findobj('Tag', 'ROI_active'))
+%             ROI_matrice = [];
+%             position = [];
+%             
+%             return
+%     end
+% end
+
+ROI_matrice = bwlabel(BW);
+blob_to_select = ROI_matrice(round(first_centroid(2)),round(first_centroid(1)));
+ROI_matrice(ROI_matrice~=blob_to_select)=0;
+ROI_matrice = imbinarize(ROI_matrice);
+
+if ~isempty(findobj('Tag', 'ROI_active'))
+    delete(findobj('Tag', 'ROI_active'))
+end
+
+if sum(ROI_matrice(:)) == 0
+    ROI_matrice = [];
+    position = [];
+    
+    return
+end
+hold on,[position, ~] = contour(axe, ROI_matrice,1,'r','linewidth',1, 'tag','ROI_active'); hold off
+
+if ~exist('position', 'var')
+    position = [];
+end
 
 
 
 
+function idx = findClosestCentroids(X, centroids)
 
+% findClosestCentroids computes the closest centroid for each point based
+% on the Euclidean distance between the point and the centroid
+
+% Initialize variables
+K = size(centroids, 1); 
+idx = zeros(size(X,1), 1); % returns index of closest centroid
+
+for i=1:size(X,1)
+    temp = X(i,:);
+    [~,idx(i,1)] = min(sum(((bsxfun(@minus,temp,centroids)).^2),2));
+end
 
 % % save handles
 % guidata(hObject, handles)
@@ -8206,6 +8381,9 @@ if ~isempty(findobj('Tag', 'Brain_Extraction_Cancel'))
     delete(findobj('Tag', 'Brain_Extraction_Cancel'))
 end
 
+
+
+
 % --- Executes on button press in MIA_test_button.
 function MIA_test_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_test_button (see GCBO)
@@ -8215,15 +8393,22 @@ function MIA_test_button_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data(:,1) = get(get(handles.MIA_plot1, 'Children'), 'XData');
-data(:,2) = get(get(handles.MIA_plot1, 'Children'), 'YData');
-data(isnan(data(:,1)),:) = [];
-data(isnan(data(:,2)),:) = [];
-mat2clipboard(data)
+
+
+% %% code to copy plotted data to clipboard
+% data(:,1) = get(get(handles.MIA_plot1, 'Children'), 'XData');
+% data(:,2) = get(get(handles.MIA_plot1, 'Children'), 'YData');
+% data(isnan(data(:,1)),:) = [];
+% data(isnan(data(:,2)),:) = [];
+% mat2clipboard(data)
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 % handles.database.Type(handles.database.SequenceName == 'Mask') = 'ROI';
 % guidata(hObject, handles)
 %mat2clipboard(get(handles.MIA_table1, 'Data'));
 %msgbox('Data copied!', 'logbook') ;
+
 
 %
 % %% code to extact fingerprint from cluster-ROI
@@ -8974,4 +9159,3 @@ for i=1:length(DirectoriesToProcess)
 end
 Mess = ['Done! ', num2str(NbCompressions), ' files were compressed and the useless uncompressed files were moved to the ''Uncompressed_Thrash'' folder.'];
 msgbox(Mess)
-
