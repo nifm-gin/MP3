@@ -1442,7 +1442,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                 end
             end
             New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
-            New_module.opt.Module_settings.Table_in = unique(table_in);
+            New_module.opt.Module_settings.Table_in = unique(table_in, 'stable');
             pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
             Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
             output_database = [output_database; Mod_Struct.opt.Table_out];
