@@ -3532,8 +3532,6 @@ if ~isfield(handles, 'database')
     return
 end
 
-handles = MIA_clear_data(hObject, eventdata, handles);
-
 MIA_menu_save_database_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
