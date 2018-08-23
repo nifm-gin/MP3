@@ -958,6 +958,7 @@ function MIA_load_axes_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
+%tstart = tic;
 scan = get(handles.MIA_scans_list, 'Value');
 % Load VOIs
 if handles.mode == 2 && numel(scan) > 1
@@ -973,6 +974,7 @@ if get(handles.MIA_scan_VOIs_button, 'Value') && isfield(handles, 'data_loaded')
     
     handles = MIA_load_VOIs(hObject, eventdata, handles);
     MIA_update_axes(hObject, eventdata, handles)
+    %toc(tstart)
     return
 elseif get(handles.MIA_scan_VOIs_button, 'Value') && ~isfield(handles, 'data_loaded')
     warndlg('Please load a scan first','Warning');
@@ -1007,12 +1009,12 @@ drawnow;
 MIA_update_axes(hObject, eventdata, handles)
 
 set(handles.MIA_GUI, 'pointer', 'arrow');
+%toc(tstart)
 
 
 function handles = MIA_load_VOIs(hObject, ~, handles)
 
 data_selected = finddata_selected(handles);
-
 handles.data_loaded.info_data_loaded(handles.data_loaded.info_data_loaded.Type == 'ROI',:) =[];
 if isfield(handles.data_loaded, 'ROI')
     handles.data_loaded= rmfield(handles.data_loaded, 'ROI');
