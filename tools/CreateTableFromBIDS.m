@@ -29,6 +29,11 @@ listPatients = dir([folderBIDS, 'sub-*']);
 for i=1:length(listPatients)
     if listPatients(i).isdir
         listTP = dir([folderBIDS, listPatients(i).name, filesep, 'ses-*']);
+        if isempty(listTP)
+            listTP = struct;
+            listTP.isdir=1;
+            listTP.name='';
+        end
         for j=1:length(listTP)
             if listTP(j).isdir
                 % Unzip all .nii.gz files
@@ -59,13 +64,14 @@ for i=1:length(listPatients)
                             Tags = table();
                             Tags.Group = categorical(cellstr('Undefined'));
                             Tags.Patient = categorical(cellstr(listPatients(i).name(5:end)));
-                            Tags.Tp = categorical(cellstr(listTP(j).name(5:end)));
+                            Tags.Tp = categorical(cellstr(listTP(j).name(max(end:5):end)));
+                            Tags.Tp(isundefined(Tags.Tp)) = 'initial';
                             Tags.Path = categorical(cellstr([PathProject, 'ROI_data', filesep]));
-                            Tags.Filename = categorical(cellstr([listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l))]));
+                            Tags.Filename = categorical(cellstr([listPatients(i).name(5:end), '_', listTP(j).name(max(end:5):end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l))]));
                             Tags.Type = categorical(cellstr('ROI'));
                             Tags.IsRaw = categorical(1);
                             Tags.SequenceName = categorical(cellstr([listScans(k).name(1:end-4), '_', num2str(NbValeurs(l))]));
-                            filename = [PathProject, 'ROI_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l)), '.nii'];
+                            filename = [PathProject, 'ROI_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(max(end:5):end), '_', listScans(k).name(1:end-4), '_', num2str(NbValeurs(l)), '.nii'];
                             %copyfile([listScans(k).folder, filesep, listScans(k).name], filename)
                             if ~exist(filename)
                                 N2=int16((N==NbValeurs(l)));
@@ -83,13 +89,14 @@ for i=1:length(listPatients)
                         Tags = table();
                         Tags.Group = categorical(cellstr('Undefined'));
                         Tags.Patient = categorical(cellstr(listPatients(i).name(5:end)));
-                        Tags.Tp = categorical(cellstr(listTP(j).name(5:end)));
+                        Tags.Tp = categorical(cellstr(listTP(j).name(max(end:5):end)));
+                        Tags.Tp(isundefined(Tags.Tp)) = 'initial';
                         Tags.Path = categorical(cellstr([PathProject, 'Raw_data', filesep]));
-                        Tags.Filename = categorical(cellstr([listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4)]));
+                        Tags.Filename = categorical(cellstr([listPatients(i).name(5:end), '_', listTP(j).name(max(end:5):end), '_', listScans(k).name(1:end-4)]));
                         Tags.Type = categorical(cellstr('Scan'));
                         Tags.IsRaw = categorical(1);
                         Tags.SequenceName = categorical(cellstr(listScans(k).name(1:end-4)));
-                        filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', listScans(k).name(1:end-4), '.nii'];
+                        filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(max(end:5):end), '_', listScans(k).name(1:end-4), '.nii'];
                         infilename = [listScans(k).folder, filesep, listScans(k).name];
                         if ~exist(filename)
                             copyfile(infilename, filename)
@@ -98,9 +105,9 @@ for i=1:length(listPatients)
 %                         if exist(jsonInfilename)
 %                             copyfile(jsonInfilename, strrep(filename, '.nii', '.json'))
 %                         else
-%                             CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+%                             CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(max(end:5):end))
 %                         end
-                        CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(5:end))
+                        CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(max(end:5):end))
                         database = [database; Tags];
                     end
                     
