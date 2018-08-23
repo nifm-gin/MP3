@@ -95,6 +95,7 @@ end
 
 %% load input Nii file
 input(1).nifti_header = spm_vol(files_in.In1{1});
+%input(1).nifti_header.pinfo(1 ) = 1;
 input(2).nifti_header = spm_vol(files_in.In2{1});
 
 
@@ -122,6 +123,7 @@ info2 = niftiinfo(files_in.In1{1});
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(scan);
+info2.MultiplicativeScaling = 1;
 
 
 % save the new .nii file
