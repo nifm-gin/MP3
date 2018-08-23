@@ -3,7 +3,7 @@ function [status] = CreateJsonFromNifti(Nifti_filename, SequenceName, Tp, templa
 %   Detailed explanation goes here
 
 if ~exist('template_json')
-    template_json = fullfile([fileparts(mfilename('full')),'template.json']);
+    template_json = fullfile(fileparts(mfilename('fullpath')),'template.json');
 end
 if ~exist('SequenceName')
     SequenceName = 'Undefined';
