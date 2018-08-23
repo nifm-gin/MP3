@@ -267,16 +267,28 @@ for i=1:length(roi_files)
     ROI_nifti_header{i} = spm_vol(roi_filename);
     ROI{i} = read_volume(ROI_nifti_header{i}, ROI_nifti_header{i}, 0, 'axial');
     NbVox = int64(sum(sum(sum(ROI{i}))));
-    Data = zeros(NbVox, length(Files));
+   %Data = zeros(NbVox, length(Files));
+    Data = zeros(NbVox, 1);
     for j=1:length(Files)
         nifti_header = spm_vol(Files{j});
         ROI_NaN = ROI{i};
         ROI_NaN(ROI_NaN == 0) = NaN;
         input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
-        Vec = mean(input{j},4);
-        Vec(isnan(Vec)) = [];
-        Data(:,j) = Vec.';
+        %% merge the 4th and the 5th dimenssion (mean data)
+        %         Vec = mean(input{j},4);
+        %         Vec(isnan(Vec)) = [];
+        %         Data(:,j) = Vec.';
+        %% create one row for each 4th and 5th dimenssion
+        for x = 1:size(input{j},4)
+            for xx= 1:size(input{j},5)
+                Vec = input{j}(:,:,:,x,xx);
+                Vec(isnan(Vec)) = [];
+                Data(:,size(Data,2)+1) = Vec.';
+            end
+        end
+         
     end
+    Data(:,1) = [];
     All_Data = [All_Data, {Data}];
 end
 
@@ -391,13 +403,21 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     end
     gmfit = modeles{k};
 else
-    gmfit = fitgmdist( Clust_Data_In, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
+    %gmfit = fitgmdist( Clust_Data_In, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
     k = str2double(opt.NbClusters);    
 end
 
+%ClusteredVox = cluster(gmfit, Clust_Data_In);
+
+%% apply trained model
+load('trainedModel_K10.mat')
+toto = table;
+toto.t1 = Clust_Data_In(:,1);
+toto.t2 = Clust_Data_In(:,2);
+%toto = array2table(Clust_Data_In);
+ClusteredVox = trainedModel_K10.predictFcn(toto);
 
 
-ClusteredVox = cluster(gmfit, Clust_Data_In);
 ind = 1;
 for i=1:length(All_Data)
     Cluster = ROI{i};
