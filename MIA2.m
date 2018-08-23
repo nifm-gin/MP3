@@ -3536,6 +3536,31 @@ handles = MIA_clear_data(hObject, eventdata, handles);
 
 MIA_menu_save_database_Callback(hObject, eventdata, handles)
 
+% --------------------------------------------------------------------
+function MIA_menu_save_database_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_save_database (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if ~isfield(handles.database.Properties.UserData , 'db_filename')
+    %     [filename,pathname] = uiputfile('.mat','Please enter the name of the database', handles.database.Properties.UserData.MIA_data_path );%pathstr(1:file_sep(end)));
+    %     if pathname == 0
+    %         return
+    %     end
+    handles.database.Properties.UserData.db_filename = 'MIA_database.mat';
+    %handles.database.Properties.UserData.MIA_data_path = pathname;
+end
+
+handles.database.Properties.UserData.VOIs = handles.VOIs;
+handles.database.Properties.UserData.histo = handles.histo;
+database = handles.database; %#ok<NASGU>
+save(fullfile(handles.database.Properties.UserData.MIA_data_path, handles.database.Properties.UserData.db_filename), 'database');
+
+% save handles
+guidata(hObject, handles)
+
+msgbox('Done', 'Information') ;
+
 
 % --------------------------------------------------------------------
 function MIA_show_group_Callback(hObject, eventdata, handles)
