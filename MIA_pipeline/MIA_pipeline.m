@@ -1640,17 +1640,24 @@ for i=1:length(Jobs)
                    [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                    
                    if strcmp(char(outdb.Type), 'Scan')
-                        [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                       [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                       statusMat = 1;
+                   elseif strcmp(char(outdb.Type), 'Cluster')
+                       [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                       statusJson = 1;
                    else
                        statusJson = 1;
+                       statusMat = 1;
                    end
-                   if statusNii && statusJson
+                   if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.nii'])
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
                    elseif ~statusJson
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.json'])
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.json'])
+                   elseif ~statusMat
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
                    end
                    handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                end

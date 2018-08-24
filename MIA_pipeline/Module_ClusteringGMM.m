@@ -261,47 +261,83 @@ ROI_nifti_header = cell(length(roi_files),1);
 ROI = cell(length(roi_files),1);
 
 
+
+
 for i=1:length(roi_files)
     roi_filename = roi_files{i};
+    [~, fname] = fileparts(roi_filename);
     Files = in_files{i};
+    Name_ROI = opt.Table_in.SequenceName(opt.Table_in.Filename == categorical(cellstr(fname)));
     ROI_nifti_header{i} = spm_vol(roi_filename);
     ROI{i} = read_volume(ROI_nifti_header{i}, ROI_nifti_header{i}, 0, 'axial');
     NbVox = int64(sum(sum(sum(ROI{i}))));
    %Data = zeros(NbVox, length(Files));
     Data = zeros(NbVox, 1);
+    NameScans = {};
     for j=1:length(Files)
+        [~, sname] = fileparts(Files{j});
+        Name_Scan = opt.Table_in.SequenceName(opt.Table_in.Filename == categorical(cellstr(sname)));
+        Name_Patient = opt.Table_in.Patient(opt.Table_in.Filename == categorical(cellstr(sname)));
+        Name_TP = opt.Table_in.Tp(opt.Table_in.Filename == categorical(cellstr(sname)));
+        Name_Group = opt.Table_in.Group(opt.Table_in.Filename == categorical(cellstr(sname)));
         nifti_header = spm_vol(Files{j});
         ROI_NaN = ROI{i};
         ROI_NaN(ROI_NaN == 0) = NaN;
         input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
-        %% merge the 4th and the 5th dimenssion (mean data)
-        %         Vec = mean(input{j},4);
-        %         Vec(isnan(Vec)) = [];
-        %         Data(:,j) = Vec.';
-        %% create one row for each 4th and 5th dimenssion
+        %% merge the 4th and the 5th dimension (mean data)
+%         Vec = mean(input{j},4);
+%         NameScans = [NameScans, {char(Name_Scan)}];
+%         Vec(isnan(Vec)) = [];
+%         Data(:,j) = Vec.';
+        %% create one row for each 4th and 5th dimension
         for x = 1:size(input{j},4)
             for xx= 1:size(input{j},5)
+                if x==1 && xx==1
+                    suffix = '';
+                elseif size(input{j},5) == 1
+                    suffix = ['_Ech', num2str(x)];
+                else
+                    suffix = ['_Ech', num2str(x), '_Rep', num2str(xx)];
+                end
+                NameScans = [NameScans, {[char(Name_Scan), suffix]}];
                 Vec = input{j}(:,:,:,x,xx);
                 Vec(isnan(Vec)) = [];
                 Data(:,size(Data,2)+1) = Vec.';
+                
             end
         end
-         
     end
+    Names_Patients = repmat({char(Name_Patient)},NbVox,1);
+    Names_TPs = repmat({char(Name_TP)},NbVox,1);
+    Names_Groups = repmat({char(Name_Group)},NbVox,1);
+    NameScans = [{'Group', 'Patient', 'Tp'}, NameScans];
     Data(:,1) = [];
+    Data = [Names_Groups, Names_Patients, Names_TPs, num2cell(Data)];
+    
+    
+    Data = cell2table(Data, 'VariableNames', NameScans);
+    
+    
     All_Data = [All_Data, {Data}];
 end
+
 
 Clust_Data_In = [];
 for i=1:length(All_Data)
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
 end
 
+%% Code to convert table to array and come back
+% VoxValues = table2array(Clust_Data_In(:,4:end));
+% VoxValues(1,1) = 0;
+% Clust_Data_In(:,3:end) = array2table(VoxValues);
+%%
 
 if strcmp(opt.Normalization_mode, 'All database')
+    VoxValues = table2array(Clust_Data_In(:,4:end));
 %     Mean = nanmean(Data);
 %     STD = nanstd(Data);
-    Clust_Data_In = (Clust_Data_In-nanmean(Clust_Data_In))./nanstd(Clust_Data_In);
+    VoxValues = (VoxValues-nanmean(VoxValues))./nanstd(VoxValues);
 %     for i=1:numel(All_Pameter_list)
 %         para_name = char(All_Pameter_list(i));
 %         para_name = clean_variable_name(para_name);
@@ -309,9 +345,10 @@ if strcmp(opt.Normalization_mode, 'All database')
 %         eval(['tmp_std = nanstd(data_in_table.' para_name ');']);
 %         eval(['data_in_table.' para_name '=(data_in_table.' para_name ' - tmp_mean )/ tmp_std;']);
 %     end
+    Clust_Data_In(:,3:end) = array2table(VoxValues);
 end
 
-
+VoxValues = table2array(Clust_Data_In(:,4:end));
 
 
 
@@ -339,7 +376,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
         %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
         %modele en modifiant l'initialisation. Le modele renvoye est celui
         %de plus grande vraisemblance.
-        modeles{kk} = fitgmdist( Clust_Data_In, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 10);
+        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 10);
         
         loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
         
@@ -347,7 +384,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
         %calcul des modeles
         disp(strcat('Modele_', num2str(kk)))
     end
-    NbCartes = size(Clust_Data_In,2);
+    NbCartes = size(VoxValues,2);
     
     %Le vecteur alpha contient les coefficients directeurs des regresions
     %lineaires de la logvraisemblance en fonction du nombre de classes du
@@ -403,19 +440,52 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     end
     gmfit = modeles{k};
 else
-    %gmfit = fitgmdist( Clust_Data_In, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
+    gmfit = fitgmdist( VoxValues, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
     k = str2double(opt.NbClusters);    
 end
 
-%ClusteredVox = cluster(gmfit, Clust_Data_In);
+
 
 %% apply trained model
-load('trainedModel_K10.mat')
-toto = table;
-toto.t1 = Clust_Data_In(:,1);
-toto.t2 = Clust_Data_In(:,2);
-%toto = array2table(Clust_Data_In);
-ClusteredVox = trainedModel_K10.predictFcn(toto);
+% load('trainedModel_K10.mat')
+% toto = table;
+% toto.t1 = Clust_Data_In(:,1);
+% toto.t2 = Clust_Data_In(:,2);
+% %toto = array2table(Clust_Data_In);
+% ClusteredVox = trainedModel_K10.predictFcn(toto);
+
+
+% load('/home/cbrossard/Bureau/trainedModel_K6.mat', 'gmfit')
+% VoxValues = table2array(Clust_Data_In(:,4:end));
+
+ClusteredVox = cluster(gmfit, VoxValues);
+Clust_Data_In.Cluster = ClusteredVox;
+
+[MoyCartesVolume, ProbVolume, Ecart_Type_Global, Sign, MoyGlobal] = AnalyseClusterGMM(Clust_Data_In);
+
+
+%On cree 2 strutures que l'on va sauvegarder avec chaque uvascroi. Ces
+%structures contiennent les informations et les statistiques du clustering.
+Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Sign);
+Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
+% IA_patient_list = {handles.MIA_data.database.name};
+% NomDossier = [];
+% for i = 1:length(Informations.Cartes)
+%     NomDossier = [NomDossier '_' char(Informations.Cartes(i))];
+% end
+% NomDossier2 = [num2str(length(Informations.Cartes)) 'Cartes' filesep NomDossier];
+% logbook = {};
+% answer = inputdlg('Comment voulez vous nommer ce clustering ?', 'Choix du nom du clustering', 1,{strcat(num2str(k),'C_',NomDossier)});
+% if ~exist(strcat(handles.MIA_data.database(1).path,NomDossier2), 'dir')
+%     mkdir(strcat(handles.MIA_data.database(1).path,NomDossier2));
+% end
+
+for i=1:length(files_out.In1)
+    save(strrep(files_out.In1{i}, '.nii', '.mat'),'Informations', 'Statistiques');
+end
+
+
+
 
 
 ind = 1;

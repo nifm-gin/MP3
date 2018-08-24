@@ -3375,7 +3375,7 @@ lambda2=1.0;%inner weight
 %if lambda1<lambda2; tend to deflate
 nu = 0.0005*255*255;%length term
 
-% terme important, lié à la définition de la limite de la ROI 
+% terme important, liï¿½ ï¿½ la dï¿½finition de la limite de la ROI 
 % alf = 30 by default
 alf = 30;%data term weight 
 
@@ -4868,15 +4868,15 @@ function MIA_stats_clustering_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %if exist(handles.data_selected.roifile{:},'file') == 0
-if isfield(handles,'data_selected') == 0
+if isfield(handles,'data_displayed') && isfield(handles.data_displayed, 'Cluster')== 0
     [filename,pathname] = uigetfile('.mat',...
         'Select a cluster to print its statistics',...
         strcat(pwd,'/ClustersGMM'));
     load(strcat(pathname,filename),'Informations','Statistiques');
 else
-    load(handles.data_selected.roifile{:},'uvascroi','Informations', 'Statistiques');
+    load(strrep(handles.data_loaded.Cluster.V.fname, '.nii', '.mat'),'Informations', 'Statistiques');
 end
-Signatures(Informations, Statistiques)
+Signatures(Informations, Statistiques, handles.colors_rgb)
 
 
 % --- Executes on slider movement.

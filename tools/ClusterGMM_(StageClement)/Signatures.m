@@ -3,7 +3,7 @@
 % b = bar([ProbVolume1.ProbVolume.'; nan(size(ProbVolume1.ProbVolume.'))],'Stacked');
 % set(gca, 'xtick',1:size(ProbVolume1.ProbVolume,1));
 
-function Signatures(Informations,Statistiques)
+function Signatures(Informations,Statistiques, Couleurs)
 
 % La syntaxe classique de la creation d'histogramme ne permet pas de
 % n'afficher qu'un seul histogramme. Pour faire cela, il faut la modifier
@@ -13,15 +13,15 @@ function Signatures(Informations,Statistiques)
 % Cas ou le clustering ne concerne qu'un seul couple Patient/Timepoint
 % (tres rare ...). On ne doit afficher qu'un histogramme (ie qu'une signature).
 % PAS ENCORE TESTE 
-if length(Informations(1).Sign) == 1
+if size(Informations(1).Sign,2) == 1
     
     figure('units','normalized','outerposition',[0 0 1 1])
     subplot(2,2,1)
-    b = bar([Statistiques(1).ProbVolume.'; nan(size(Statistiques(1).ProbVolume.'))],'Stacked');
+    b = bar([Statistiques(1).ProbVolume; nan(size(Statistiques(1).ProbVolume))],'Stacked');
     set(gca, 'xtick',1:size(Statistiques(1).ProbVolume,1));
     
     for ii = 1:length(Statistiques(1).ProbVolume)
-        b(1,ii).FaceColor = Informations(1).Couleurs(ii,:);
+        b(1,ii).FaceColor = Couleurs(ii,:);
     end
     
     MoyClust = zeros(size(Statistiques(1).MoyCartesVolume));
@@ -36,7 +36,7 @@ if length(Informations(1).Sign) == 1
         colonnes{1,i} = char(Informations.Cartes(i));
     end
     
-    for i = 1:size(Statistiques(1).MoyCartesTranches,1)/2
+    for i = 1:size(Statistiques(1).MoyCartesVolume,1)/2
         colergen = @(color,text) ['<html><table border=0 width=20 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
         lignes{1,2*i-1} = strcat('Cluster_',num2str(i),'_Mean');
         lignes{1,2*i} = strcat('Cluster_',num2str(i),'_SD');
@@ -85,7 +85,7 @@ else            % Cas courant, avec plusieurs couples Patient/Timepoint
     for k = 1:length(UniGroup)
         for i = 1:length(Statistiques)
             if strcmp(char(Informations.Sign(3,i)),char(UniGroup(k)))
-                ProbasClass = [ProbasClass; Statistiques(i).ProbVolume.'];
+                ProbasClass = [ProbasClass; Statistiques(i).ProbVolume];
                 IndClass = [IndClass Informations.Sign(1,i)];
                 TP = [TP Informations.Sign(2,i)];
             end
@@ -102,10 +102,10 @@ else            % Cas courant, avec plusieurs couples Patient/Timepoint
     %histogrammes sont classes par groupes pathologiques.
     b = bar(ProbasClass,'stacked');  
     
-    % On attribue à chaque partie des histogrammes la couleur du cluster
+    % On attribue ï¿½ chaque partie des histogrammes la couleur du cluster
     % qu'elle represente.
     for ii = 1:length(Statistiques(1).ProbVolume)
-        b(1,ii).FaceColor = Informations.Couleurs(ii,:);
+        b(1,ii).FaceColor = Couleurs(ii,:);
     end
     
     title(strcat('Signatures ',num2str(length(Statistiques(1).ProbVolume)), ' Clusters, ',num2str(length(colonnes)), ' Cartes'));
@@ -138,8 +138,8 @@ for k = 1:length(UniGroup)
     colonnesgroups{1,k} = strcat(char(UniGroup(k)), ' (%)');
 end
 
-MoyProb = zeros(length(Statistiques(1).MoyCartesVolume),length(UniGroup));
-for i = 1:length(Statistiques(1).MoyCartesVolume)/2
+MoyProb = zeros(size(Statistiques(1).MoyCartesVolume,1),length(UniGroup));
+for i = 1:size(Statistiques(1).MoyCartesVolume,1)/2
     MoyProb(2*i-1,:) = ProbStat(i,:);
     MoyProb(2*i,:) = EcTy(i,:);
 end
@@ -152,14 +152,14 @@ if length(UniGroup) == 1
     set(gca, 'xtick',1:size(ProbStat,1));
     
     
-else         %On revient au cas classique à plusieurs groupes donc plusieurs histogrammes
+else         %On revient au cas classique ï¿½ plusieurs groupes donc plusieurs histogrammes
     subplot(2,2,2)
     bmoy = bar(ProbStat.','stacked');
 end
 
 % On fait correspondre les couleurs des histogrammes et des clusters.
 for ii = 1:length(Statistiques(1).ProbVolume)
-    bmoy(ii).FaceColor = Informations.Couleurs(ii,:);
+    bmoy(ii).FaceColor = Couleurs(ii,:);
 end
 title(strcat('Signatures moyennes ',num2str(length(Statistiques(1).ProbVolume)), ' Clusters, ',num2str(length(colonnes)), ' Cartes'))
 ylabel('Pourcents')
@@ -179,7 +179,7 @@ MoyClust = nanmean(cell2mat(ConvertStat(3,1,:)),3);
 %meme nombre de pixels et biaisent donc le poids de leur moyennes. J'ai
 %donc rajoute dans la fonction AnalyseClusterGMM le calcul global de la
 %moyenne et des ecarts types. C'est ces valeurs que l'on affiche desormais.
-for i = 1:length(Statistiques(1).MoyCartesVolume)/2
+for i = 1:size(Statistiques(1).MoyCartesVolume,1)/2
     MoyClust(2*i-1,:) = Statistiques(1).MoyGlobal(2*i-1,:);
     MoyClust(2*i,:) = Statistiques(1).Ecart_Type_Global(2*i,:);
 end
@@ -228,7 +228,7 @@ end
     
     %Puisque le graphique araignee n'affiche que les moyennes, il est
     %inutile de conserver les ecarts types.
-    for i = 1:length(MoyClust)/2
+    for i = 1:size(MoyClust,1)/2
         MoyClust2(i,:) = MoyClust(2*i-1,:);
     end
     
@@ -236,7 +236,7 @@ end
     % La fonction radarplot (recuperee sur le file exchange) parmet de
     % tracer des graphiques araignee. Je l'ai legerement modifie pour
     % qu'elle affiche les bonnes couleurs et les bons titres.
-    radarPlot(MoyClust2.',Informations)
+    radarPlot(MoyClust2.',Informations, Couleurs)
 
    
    
