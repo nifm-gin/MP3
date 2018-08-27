@@ -466,7 +466,7 @@ Clust_Data_In.Cluster = ClusteredVox;
 
 %On cree 2 strutures que l'on va sauvegarder avec chaque uvascroi. Ces
 %structures contiennent les informations et les statistiques du clustering.
-Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Sign);
+Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Sign, 'ROI', char(Name_ROI));
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
 % IA_patient_list = {handles.MIA_data.database.name};
 % NomDossier = [];
