@@ -1,9 +1,7 @@
 
 function[MoyCartesVolume, ProbVolume, Ecart_Type_Global, Sign, MoyGlobal] = AnalyseClusterGMM(data_in_table)
 
-% MoyCartesTranches : moyenne et ecart type des valeurs des cartes par
-%       cluster sur chaque tranche.
-% ProbTranche : proportion de chaque cluster sur chaque tranche.
+
 % MoyCartesVolume : moyenne et ecart type des valeurs des cartes par
 %       cluster sur chaque volume, donc sur l'ensemble des tranches de
 %       chaque couple Patient/Timepoint.
