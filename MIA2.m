@@ -4253,6 +4253,8 @@ ValidNiftiFiles = {};
 InvalidNiftiFiles = {};
 ValidJsonFiles = {};
 InvalidJsonFiles = {};
+ValidMatFiles = {};
+InvalidMatFiles = {};
 for i=1:height(handles.database)
     if handles.database(i,:).Type == 'Scan'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
@@ -4271,7 +4273,7 @@ for i=1:height(handles.database)
                 InvalidJsonFiles = [InvalidJsonFiles, {Json_file}];
             end
         end
-    elseif handles.database(i,:).Type == 'ROI' || handles.database(i,:).Type == 'Cluster'
+    elseif handles.database(i,:).Type == 'ROI'
         Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
         Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
         if exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2
@@ -4280,6 +4282,23 @@ for i=1:height(handles.database)
         else
             InvalidEntries = [InvalidEntries, i];
             InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+        end
+    elseif handles.database(i,:).Type == 'Cluster'
+        Nifti_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.nii'];
+        Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
+        Mat_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.mat'];
+        
+        if (exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2) && exist(Mat_file, 'file') == 2
+            ValidEntries = [ValidEntries, i];
+            ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+            ValidMatFiles = [ValidMatFiles, {Mat_file}];
+        else
+            InvalidEntries = [InvalidEntries, i];
+            if exist(Nifti_file, 'file')~=2
+                InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
+            elseif exist(Json_file, 'file')~=2
+                InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
+            end
         end
         
     else
@@ -4303,14 +4322,14 @@ if ~isempty(InvalidEntries)
     end
     if strcmp(answer, 'Yes')
         handles.database(InvalidEntries,:) = [];
-        ValidFiles = [ValidNiftiFiles, ValidJsonFiles];
+        ValidFiles = [ValidNiftiFiles, ValidJsonFiles, ValidMatFiles];
         msgbox('Done')
     else
-        ValidFiles = [ValidNiftiFiles, ValidJsonFiles, InvalidNiftiFiles, InvalidJsonFiles];
+        ValidFiles = [ValidNiftiFiles, ValidJsonFiles, InvalidNiftiFiles, InvalidJsonFiles, ValidMatFiles, InvalidMatFiles];
     end
 else
     msgbox('All your database''s entries are correctly linked to the files !')
-    ValidFiles = [ValidNiftiFiles, ValidJsonFiles];
+    ValidFiles = [ValidNiftiFiles, ValidJsonFiles, ValidMatFiles];
 end
 
 % ValidFiles is the list of all files linked to the database. Other files
@@ -4868,13 +4887,22 @@ function MIA_stats_clustering_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %if exist(handles.data_selected.roifile{:},'file') == 0
-if isfield(handles,'data_displayed') && isfield(handles.data_displayed, 'Cluster')== 0
+if ~isfield(handles,'data_displayed') || ~isfield(handles.data_displayed, 'Cluster')
     [filename,pathname] = uigetfile('.mat',...
         'Select a cluster to print its statistics',...
         strcat(pwd,'/ClustersGMM'));
+    if filename == 0
+        return
+    end
     load(strcat(pathname,filename),'Informations','Statistiques');
 else
-    load(strrep(handles.data_loaded.Cluster.V.fname, '.nii', '.mat'),'Informations', 'Statistiques');
+    if exist(strrep(handles.data_loaded.Cluster.V.fname, '.nii', '.mat'), 'file')
+        load(strrep(handles.data_loaded.Cluster.V.fname, '.nii', '.mat'),'Informations', 'Statistiques');
+    else
+        msg = ['Cannot open ', strrep(handles.data_loaded.Cluster.V.fname, '.nii', '.mat'), ' : No such file.'];
+        warndlg(msg)
+        return
+    end
 end
 Signatures(Informations, Statistiques, handles.colors_rgb)
 
