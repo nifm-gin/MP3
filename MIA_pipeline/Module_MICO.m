@@ -230,13 +230,13 @@ for nn = 1:N_scan
         totaltime = totaltime + toc
      
         [M, C]=sortMemC(M, C);
-        PC2d=zeros(size(Img3D(:,:,1)));
-        PC3d=zeros(DimX1, DimY1, DimZ1);
-        N_slc=70;
-        for k=1:N_region
-            PC2d = PC2d +  tissueLabel(k)*M(:,:,N_slc,k);
-        end
-        pause(0.1);
+%         PC2d=zeros(size(Img3D(:,:,1)));
+         PC3d=zeros(DimX1, DimY1, DimZ1);
+%         N_slc=70;
+%         for k=1:N_region
+%             PC2d = PC2d +  tissueLabel(k)*M(:,:,N_slc,k);
+%         end
+%         pause(0.1);
 %         figure(1);
 %         subplot(1,2,1);
 %         imagesc(Img3D(:,:,N_slc));colormap(gray);
