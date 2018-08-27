@@ -37,7 +37,7 @@ for i=1:length(listPatients)
         for j=1:length(listTP)
             if listTP(j).isdir
                 % Unzip all .nii.gz files
-                listScansToUnzip = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '**/*.nii.gz']);
+               listScansToUnzip = dir([folderBIDS, listPatients(i).name, filesep, listTP(j).name, filesep, '**/*.nii.gz']);
                 NameUncompressedFile = cell(length(listScansToUnzip),1);
                 for ll=1:length(listScansToUnzip)
                     NameCompressedFile = [listScansToUnzip(ll).folder, filesep, listScansToUnzip(ll).name];
@@ -99,7 +99,7 @@ for i=1:length(listPatients)
                                 info2.Transform.T = Mat3.';
                                 info2.ImageSize = size(N3);
                                 %N2 = permute(N2, [2,1,3]);
-                                niftiwrite(N3, filename, info2)
+                                niftiwrite(N3, filename, info2, 'Compressed', true)
                             end
                             database = [database; Tags];
                         end
@@ -135,7 +135,7 @@ for i=1:length(listPatients)
                         filename = [PathProject, 'Raw_data', filesep, listPatients(i).name(5:end), '_', listTP(j).name(5:end), '_', nameSeq, '.nii'];
                         infilename = [listScans(k).folder, filesep, listScans(k).name];
                         if ~exist(filename)
-                            copyfile(infilename, filename)
+                            copyfile(strrep(infilename, '.nii', '.nii.gz'), strrep(filename, '.nii', '.nii.gz'))
                         end
                         jsonInfilename = strrep(infilename, '.nii', '.json');
 %                         if exist(jsonInfilename)
@@ -143,7 +143,7 @@ for i=1:length(listPatients)
 %                         else
 %                             CreateJsonFromNifti(filename, listScans(k).name(1:end-4), listTP(j).name(max(end:5):end))
 %                         end
-                        CreateJsonFromNifti(filename, listScans(k).name(8:end-4), listTP(j).name(max(end:5):end))
+                        CreateJsonFromNifti(strrep(filename, '.nii', '.nii.gz'), listScans(k).name(8:end-4), listTP(j).name(max(end:5):end))
                         database = [database; Tags];
                     end
                     

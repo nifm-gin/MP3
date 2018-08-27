@@ -5157,11 +5157,16 @@ end
 %set(handles.MIA_scan_VOIs_button, 'Value',1);
 Entry_Selected = handles.database(Index,:);
 
+if size(Entry_Selected,1)>1
+    Entry_Selected = Entry_Selected(1,:);
+end
+
 file_name = strcat(char(Entry_Selected.Patient),...
     '-', char(Entry_Selected.Tp),...
     '-ROI',...
     '-', newVOI_name{1} ,...
     '_',datestr(now,'yyyymmdd-HHMMSSFFF'));
+
 
 
 ROI_dest = handles.database.Properties.UserData.MIA_ROI_path;
@@ -5170,7 +5175,14 @@ if ~exist(ROI_dest)
 end
 %status = copyfile([path, file],ROI_dest);
 
-status = copyfile([path, file], [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii']);
+if endsWith(file, '.nii.gz')
+    gunzip([path, file]);
+    file = strrep(file, '.nii.gz', '.nii');
+    status = copyfile([path, file], [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii']);
+    delete([path, file]);
+else
+    status = copyfile([path, file], [handles.database.Properties.UserData.MIA_ROI_path, file_name, '.nii']);
+end
 
 if ~status
     msgbox('An error occured when trying to copy your ROI file into the MIA ROI_data folder of your project.', 'Copy error') ;

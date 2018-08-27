@@ -21,7 +21,8 @@ new_JSON = JSON;
 
 info = niftiinfo(Nifti_filename);
 
-json_filename = strrep(Nifti_filename, '.nii', '.json');
+newStr = extractBefore(Nifti_filename,'.nii');
+json_filename = [newStr, '.json'];
 new_JSON.DatasetDataFile = {Nifti_filename};
 new_JSON.DatasetHeaderFile = {Nifti_filename};
 
