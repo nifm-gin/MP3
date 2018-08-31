@@ -1512,6 +1512,10 @@ end
 
 
 %% Create the pipeline from the modules.
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    warndlg('No pipeline to execute ...')
+    return
+end
 Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
 %Pipeline = handles.psom.Modules.(Names_Mod{1});
 Pipeline = struct();
