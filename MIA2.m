@@ -3913,7 +3913,22 @@ for i = 1:numel(idx_to_update)
     
     new_nii_filename = strrep(cellstr(handles.database.Filename(idx_to_update(i))), cellstr(handles.database.SequenceName(idx_to_update(i))), cellstr(newparameter_name));
     
-    % rename the scan file
+    % rename the scan file .nii.gz
+    if  exist(fullfilename(handles, idx_to_update(i), '.nii.gz'), 'file') == 0
+        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+            fullfilename(handles, idx_to_update(i), '.nii.gz'));
+        msgbox(warning_text, 'rename file warning') ;
+    elseif exist(string(strcat(cellstr(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii.gz')), 'file') == 2
+        msgbox('The new .nii.gz file exist already!!') ;
+        
+    else
+        movefile(fullfilename(handles, idx_to_update(i), '.nii.gz'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii.gz'), 'f')
+        if exist(fullfilename(handles, idx_to_update(i), '.json'), 'file') == 2
+            movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
+        end
+    end
+    
+    % rename the scan file .nii
     if  exist(fullfilename(handles, idx_to_update(i), '.nii'), 'file') == 0
         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
             fullfilename(handles, idx_to_update(i), '.nii'));
@@ -3927,6 +3942,7 @@ for i = 1:numel(idx_to_update)
             movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
         end
     end
+    
     
     % update the Filename field in the table
     handles.database.SequenceName(idx_to_update(i)) = newparameter_name;
@@ -5315,11 +5331,9 @@ for i=1:length(DirectoriesToProcess)
     Files = dir([Data_path, DirectoriesToProcess{i}, '/*.nii']);
     for j=1:length(Files)
         filename = [Files(j).folder, filesep, Files(j).name];
-        if ~exist(strrep(filename, '.nii', '.nii.gz'), 'file')
-            Files_To_Compress = [Files_To_Compress, {filename}];
-            gzip(filename);
-            NbCompressions = NbCompressions+1;
-        end
+        Files_To_Compress = [Files_To_Compress, {filename}];
+        gzip(filename);
+        NbCompressions = NbCompressions+1;
         movefile(filename, strrep(filename, ['/', DirectoriesToProcess{i}, '/'], ['/', 'Uncompressed_Trash', '/']));
     end
 end
