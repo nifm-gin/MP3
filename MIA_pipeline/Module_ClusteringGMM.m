@@ -259,7 +259,7 @@ end
 All_Data = {};
 ROI_nifti_header = cell(length(roi_files),1);
 ROI = cell(length(roi_files),1);
-
+VecVoxToDelete = {};
 
 
 
@@ -272,7 +272,8 @@ for i=1:length(roi_files)
     ROI{i} = read_volume(ROI_nifti_header{i}, ROI_nifti_header{i}, 0, 'axial');
     NbVox = int64(sum(sum(sum(ROI{i}))));
    %Data = zeros(NbVox, length(Files));
-    Data = zeros(NbVox, 1);
+    %Data = zeros(NbVox, 1);
+    Data = [];
     NameScans = {};
     for j=1:length(Files)
         [~, sname] = fileparts(Files{j});
@@ -301,30 +302,52 @@ for i=1:length(roi_files)
                 end
                 NameScans = [NameScans, {[char(Name_Scan), suffix]}];
                 Vec = input{j}(:,:,:,x,xx);
-                Vec(isnan(Vec)) = [];
-                Data(:,size(Data,2)+1) = Vec.';
+                %Vec(isnan(Vec)) = [];
+                Data(:,size(Data,2)+1) = Vec(:);
                 
             end
         end
     end
-    Names_Patients = repmat({char(Name_Patient)},NbVox,1);
-    Names_TPs = repmat({char(Name_TP)},NbVox,1);
-    Names_Groups = repmat({char(Name_Group)},NbVox,1);
+    VecVoxToDelete{i} = sum(isnan(Data),2)~=0;
+    Data(VecVoxToDelete{i},:) = []; % Exclude any voxel that have at least one NaN parameter.
+    Names_Patients = repmat({char(Name_Patient)},size(Data,1),1);
+    Names_TPs = repmat({char(Name_TP)},size(Data,1),1);
+    Names_Groups = repmat({char(Name_Group)},size(Data,1),1);
     NameScans = [{'Group', 'Patient', 'Tp'}, NameScans];
-    Data(:,1) = [];
+    %Data(:,1) = [];
+    if size(Data, 2) ~= length(Files)
+        continue
+    end
     Data = [Names_Groups, Names_Patients, Names_TPs, num2cell(Data)];
     
     
     Data = cell2table(Data, 'VariableNames', NameScans);
     
-    
     All_Data = [All_Data, {Data}];
 end
 
-
-Clust_Data_In = [];
+Size = [];
 for i=1:length(All_Data)
+    Size = [Size, size(All_Data{i},2)];
+end
+SizeMax = max(Size);
+%SizeMaxVec = Size == SizeMax;
+
+
+All_Data_Clean = {};
+ROI_Clean = {};
+VecVoxToDeleteClean = {};
+Clust_Data_In = [];
+ROI_nifti_header_Clean = {};
+for i=1:length(All_Data)
+    if size(All_Data{i},2) ~= SizeMax
+        continue
+    end
+    All_Data_Clean = [All_Data_Clean, All_Data(i)];
+    ROI_Clean = [ROI_Clean, ROI(i)];
+    VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete{i}];
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
+    ROI_nifti_header_Clean = [ROI_nifti_header_Clean, ROI_nifti_header{i}];
 end
 
 %% Code to convert table to array and come back
@@ -489,19 +512,19 @@ end
 
 
 ind = 1;
-for i=1:length(All_Data)
-    Cluster = ROI{i};
-    ROI_Clust = logical(ROI{i});
-    Cluster(ROI_Clust) = ClusteredVox(ind:ind+size(All_Data{i},1)-1);
-    ind = ind+size(All_Data{i},1);
+for i=1:length(All_Data_Clean)
+    Cluster = ROI_Clean{i};
+    %ROI_Clust = logical(ROI{i});
+    Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    ind = ind+size(All_Data_Clean{i},1);
     
-    ROI_cluster_header = ROI_nifti_header{i};
+    ROI_cluster_header = ROI_nifti_header_Clean{i};
     % On a fait le même traitement sur les files_out (tout début du code) que sur l'ouverture des ROI. Il y a donc tout à penser que l'ordre des fichiers correspondra.
     ROI_cluster_header.fname = files_out.In1{i}; 
     ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
-    Cluster = write_volume(Cluster,ROI_nifti_header{i}, 'axial');
+    Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
     Out = spm_write_vol(ROI_cluster_header, Cluster);
 end
 
