@@ -34,7 +34,7 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
     user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
+    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage', 'Union', 'Intersection'},'Operation','', '',''};
     user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','','',...
         {'Specify the string to be added to the first filename.'
@@ -138,6 +138,10 @@ switch opt.Operation
 %         end
 %         result_map.reco.data = (1./(image1.uvascim.image.reco.data/1000) - 1/(image2.uvascim.image.reco.data/1000)) / str2double(relaxivity{:}) ;
 %         Methode_info = ['relaxivity = ' relaxivity{:} ' mM-1.sec-1'];
+    case 'Union'
+        OutputImages = double(input1 | input2);
+    case 'Intersection'
+        OutputImages = double(input1 & input2);
 end
 
 % transform the OutputImages matrix in order to match to the nii header of the
@@ -159,7 +163,9 @@ info2.Datatype = class(OutputImages);
 niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
 
 % so far copy the .json file of the first input
-copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+if opt.Table_in.Type(1) == categorical(cellstr('Scan'))
+    copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+end
 % 
 
 

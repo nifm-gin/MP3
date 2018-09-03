@@ -3,7 +3,7 @@ function [status] = CreateJsonFromNifti(Nifti_filename, SequenceName, Tp, templa
 %   Detailed explanation goes here
 
 if ~exist('template_json')
-    template_json = '/home/cbrossard/Bureau/TemplateJSON.json';
+    template_json = fullfile([fileparts(mfilename('fullpath')),filesep, 'TemplateJSON.json']);
 end
 if ~exist('SequenceName')
     SequenceName = 'Undefined';
@@ -21,7 +21,8 @@ new_JSON = JSON;
 
 info = niftiinfo(Nifti_filename);
 
-json_filename = strrep(Nifti_filename, '.nii', '.json');
+newStr = extractBefore(Nifti_filename,'.nii');
+json_filename = [newStr, '.json'];
 new_JSON.DatasetDataFile = {Nifti_filename};
 new_JSON.DatasetHeaderFile = {Nifti_filename};
 

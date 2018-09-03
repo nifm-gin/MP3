@@ -8,7 +8,7 @@
 % applied to the datapoint lines in the radar plot
 %
 % h = radarPlot(...) returns the handles to the line objects.
-function varargout = radarPlot( P, Informations,varargin )
+function varargout = radarPlot( P, Informations,Couleurs, varargin )
 
 %%% Get the number of dimensions and points
 [M, N] = size(P);
@@ -82,7 +82,7 @@ Th = (2*pi/M) * ((M:-1:0)'*ones(1,N));
 for i = 1:size(X,2)%/2
     hold on
     %h = plot(X(:,2*i-1),Y(:,2*i-1),'Color',Informations(1).Couleurs(i,:),'LineWidth',3);
-    h = plot(X(:,i),Y(:,i),'Color',Informations(1).Couleurs(i,:),'LineWidth',3);
+    h = plot(X(:,i),Y(:,i),'Color',Couleurs(i,:),'LineWidth',3);
 end
 warning off
 legend('Cluster1','Cluster2','Cluster3','Cluster4','Cluster5','Cluster6','Cluster7','Cluster8','Cluster9','Cluster10')

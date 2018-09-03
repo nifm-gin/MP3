@@ -180,6 +180,7 @@ N_scan = length(files_in.In1);
 for nn = 1:N_scan
     str=files_in.In1{nn};
     data = load_untouch_nii(str);
+    %hist = data.hdr.hist;
     Img=data.img;
     Img = double(Img);      
     save temp_info.mat data;
@@ -229,13 +230,13 @@ for nn = 1:N_scan
         totaltime = totaltime + toc
      
         [M, C]=sortMemC(M, C);
-        PC2d=zeros(size(Img3D(:,:,1)));
-        PC3d=zeros(DimX1, DimY1, DimZ1);
-        N_slc=70;
-        for k=1:N_region
-            PC2d = PC2d +  tissueLabel(k)*M(:,:,N_slc,k);
-        end
-        pause(0.1);
+%         PC2d=zeros(size(Img3D(:,:,1)));
+         PC3d=zeros(DimX1, DimY1, DimZ1);
+%         N_slc=70;
+%         for k=1:N_region
+%             PC2d = PC2d +  tissueLabel(k)*M(:,:,N_slc,k);
+%         end
+%         pause(0.1);
 %         figure(1);
 %         subplot(1,2,1);
 %         imagesc(Img3D(:,:,N_slc));colormap(gray);
@@ -269,12 +270,38 @@ for nn = 1:N_scan
     img_bc(x1:x2,y1:y2,z1:z2)=Img3D./b;
     B_field = zeros(size(img_bc));
     B_field(x1:x2, y1:y2, z1:z2) = b;
+    N_initial = niftiinfo(str);
+    TransfMat = N_initial.Transform.T;
     BC = make_nii(B_field);
-    save_nii(BC,files_out.In1{nn}); 
+%     BC.hdr.hist.quatern_b = hist.quatern_b;
+%     BC.hdr.hist.quatern_c = hist.quatern_c;
+%     BC.hdr.hist.quatern_d = hist.quatern_d;
+%     BC.hdr.hist.qoffset_x = hist.qoffset_x;
+%     BC.hdr.hist.qoffset_y = hist.qoffset_y;
+%     BC.hdr.hist.qoffset_z = hist.qoffset_z;
+%     BC.hdr.hist.srow_x = hist.srow_x;
+%     BC.hdr.hist.srow_y = hist.srow_y;
+%     BC.hdr.hist.srow_z = hist.srow_z;
+    save_nii(BC,files_out.In1{nn});
+    N_bc = niftiinfo(files_out.In1{nn});
+    N_bc.Transform.T = TransfMat;
+    niftiwrite(niftiread(files_out.In1{nn}), files_out.In1{nn},N_bc);
     CreateJsonFromNifti(files_out.In1{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Field])), opt.Table_in.Tp(nn))
     clear b Img3D;
     Img_bc=make_nii(img_bc);
+%     Img_bc.hdr.hist.quatern_b = hist.quatern_b;
+%     Img_bc.hdr.hist.quatern_c = hist.quatern_c;
+%     Img_bc.hdr.hist.quatern_d = hist.quatern_d;
+%     Img_bc.hdr.hist.qoffset_x = hist.qoffset_x;
+%     Img_bc.hdr.hist.qoffset_y = hist.qoffset_y;
+%     Img_bc.hdr.hist.qoffset_z = hist.qoffset_z;
+%     Img_bc.hdr.hist.srow_x = hist.srow_x;
+%     Img_bc.hdr.hist.srow_y = hist.srow_y;
+%     Img_bc.hdr.hist.srow_z = hist.srow_z;
     save_nii(Img_bc,files_out.In2{nn});  % save bias field corrected image
+    N_Ibc = niftiinfo(files_out.In2{nn});
+    N_Ibc.Transform.T = TransfMat;
+    niftiwrite(niftiread(files_out.In2{nn}), files_out.In2{nn},N_Ibc);
     CreateJsonFromNifti(files_out.In2{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Scan])), opt.Table_in.Tp(nn))
     
     clear Membership Bias U image_bc;

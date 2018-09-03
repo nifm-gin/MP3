@@ -1442,7 +1442,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                 end
             end
             New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
-            New_module.opt.Module_settings.Table_in = unique(table_in);
+            New_module.opt.Module_settings.Table_in = unique(table_in, 'stable');
             pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
             Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
             output_database = [output_database; Mod_Struct.opt.Table_out];
@@ -1512,6 +1512,10 @@ end
 
 
 %% Create the pipeline from the modules.
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    warndlg('No pipeline to execute ...')
+    return
+end
 Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
 %Pipeline = handles.psom.Modules.(Names_Mod{1});
 Pipeline = struct();
@@ -1640,17 +1644,24 @@ for i=1:length(Jobs)
                    [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                    
                    if strcmp(char(outdb.Type), 'Scan')
-                        [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                       [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                       statusMat = 1;
+                   elseif strcmp(char(outdb.Type), 'Cluster')
+                       [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                       statusJson = 1;
                    else
                        statusJson = 1;
+                       statusMat = 1;
                    end
-                   if statusNii && statusJson
+                   if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.nii'])
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
                    elseif ~statusJson
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data'' folder.', [name_out, '.json'])
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.json'])
+                   elseif ~statusMat
+                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
                    end
                    handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                end
