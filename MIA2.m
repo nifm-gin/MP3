@@ -1039,6 +1039,9 @@ handles.data_loaded.number_of_Cluster = 0;
 for i = 1:numel(data_selected)
     if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file'))
+        delete(fullfilename(handles, data_selected(i), '.nii.gz'))
+        
     end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     if fid_nii>0
@@ -1084,6 +1087,8 @@ end
 for i = 1:numel(data_selected)
     if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
+        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file'))
+        delete(fullfilename(handles, data_selected(i), '.nii.gz'))
     end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_selected(i), '.json'),'r');
@@ -1143,6 +1148,8 @@ end
 for i = 1:numel(data_to_load)
     if ~exist(fullfilename(handles, data_to_load(i), '.nii'), 'file') && exist(fullfilename(handles, data_to_load(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_to_load(i), '.nii.gz'));
+        assert(exist(fullfilename(handles, data_to_load(i), '.nii'), 'file'))
+        delete(fullfilename(handles, data_to_load(i), '.nii.gz'))
     end
     fid_nii=fopen(fullfilename(handles, data_to_load(i), '.nii'),'r');
     fid_json=fopen(fullfilename(handles, data_to_load(i), '.json'),'r');
@@ -3500,6 +3507,8 @@ end
 new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
 if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
     gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+    assert(exist(fullfilename(handles, data_selected, '.nii'), 'file'))
+    delete(fullfilename(handles, data_selected, '.nii.gz'))
 end
 fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
 if fid_nii>0
@@ -4025,6 +4034,8 @@ for i=1:numel(time_point)
     if sum(ismember(handles.database, new_entry)) == 0
         if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
             gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+            assert(exist(fullfilename(handles, data_selected, '.nii'), 'file'))
+            delete(fullfilename(handles, data_selected, '.nii.gz'))
         end
         fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
         if fid_nii>0
@@ -4452,14 +4463,19 @@ for i=1:size(database_to_import,1)
                 outfolder = handles.database.Properties.UserData.MIA_Derived_data_path;
             end
             % Copy nifti file 
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            extension = '.nii.gz';
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            if ~exist(filename, 'file')
+                extension = '.nii';
+                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
-            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
             original_filename = char(database_to_import.Filename(i));
             idx2=2;
             while exist(outfilename)
                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
-                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
@@ -4471,8 +4487,8 @@ for i=1:size(database_to_import,1)
 %                 status1 = 0;
 %             end
             % Copy json file
-            filename = strrep(filename, '.nii', '.json');
-            outfilename = strrep(outfilename, '.nii', '.json');
+            filename = strrep(filename, extension, '.json');
+            outfilename = strrep(outfilename, extension, '.json');
             while exist(outfilename)
                 outfilename = [outfolder, char(database_to_import.Filename(i)), '.json'];
                 idx2=idx2+1;
@@ -4489,15 +4505,20 @@ for i=1:size(database_to_import,1)
 
             
         case {'ROI', 'Cluster'}
+            extension = '.nii.gz';
             outfolder = handles.database.Properties.UserData.MIA_ROI_path;
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), '.nii'];
+            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            if ~exist(filename, 'file')
+                extension = '.nii';
+                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
             original_filename = char(database_to_import.Filename(i));
-            outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+            outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
             idx2=2;
             while exist(outfilename)
                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
-                outfilename = [outfolder, char(database_to_import.Filename(i)), '.nii'];
+                outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
@@ -5003,7 +5024,12 @@ function MIA_remove_scan(hObject, eventdata, handles, nii_index)
 % delete the file (nii/json) from the hard drive
 for i=1:numel(nii_index)
     % delete the nii file
-    delete(fullfilename(handles, nii_index(i), '.nii'))
+    if exist(fullfilename(handles, nii_index(i), '.nii'), 'file')
+        delete(fullfilename(handles, nii_index(i), '.nii'))
+    end
+    if exist(fullfilename(handles, nii_index(i), '.nii.gz'), 'file')
+        delete(fullfilename(handles, nii_index(i), '.nii.gz'))
+    end
     % delete the json file if it exist
     if exist(fullfilename(handles, nii_index(i), '.json'), 'file') == 2
         delete(fullfilename(handles, nii_index(i), '.json'))
