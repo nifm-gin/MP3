@@ -123,40 +123,46 @@ T2StarCorr3D = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 
 % end
 
 
-R2prim_map = T2StarCorr3D;
-if size(T2Map,3) ~= size(T2StarCorr3D,3)
-    for i = 1:size(T2StarCorr3D, 3)
-        for j = 1:size(T2Map, 3)
-            R2prim_slice_nbr = R2prim_slice_nbr+1;
-            % Compute the CMRO2 map each slice with the same offset
-            R2prim_map(:,:,R2prim_slice_nbr,1)=1./(RAW_T2star.data(:,:,i,1)*10^-3)-1./(RAW_T2map.data(:,:,j,1)*10^-3);
-        end
-    end
-    if R2prim_slice_nbr == 0
-        warning_text = sprintf('##$ Can not calculate the R2prim map because there is\n##$ no slice offset match between\n##$T2*map=%s\n##$ and \n##$T2map=%s',...
-            files_in.In2{1},files_in.In1{1});
-        msgbox(warning_text, 'R2prim map warning') ;
-        return
-    end
-else
-    final_res = max([size(T2Map,1), size(T2Map, 2), size(T2StarCorr3D, 1), size(T2StarCorr3D, 2)]);
-    if size(T2StarCorr3D,1) ~= final_res || size(T2StarCorr3D,2) ~= final_res
-        for i = 1:size(T2StarCorr3D, 3)
-            tmp(:,:,i,1)= imresize(T2StarCorr3D(:,:,i,1),[final_res final_res],'bilinear');
-        end
-        T2StarCorr3D = tmp;
-    end
-    if size(T2Map,1) ~= final_res || size(T2Map,2) ~= final_res
-        for i = 1:size(T2Map,3)
-            tmp(:,:,i,1)= imresize(T2Map(:,:,i,1),[final_res final_res],'bilinear');
-        end
-        T2Map = tmp;
-    end
-    clear tmp
-    
-    % Compute the R2prim map for all slices
-    R2prim_map=1./(T2StarCorr3D*10^-3)-1./(T2Map*10^-3);
-end
+%R2prim_map = T2StarCorr3D;
+% if size(T2Map,3) ~= size(T2StarCorr3D,3)
+%     for i = 1:size(T2StarCorr3D, 3)
+%         for j = 1:size(T2Map, 3)
+%             R2prim_slice_nbr = R2prim_slice_nbr+1;
+%             % Compute the CMRO2 map each slice with the same offset
+%             R2prim_map(:,:,R2prim_slice_nbr,1)=1./(RAW_T2star.data(:,:,i,1)*10^-3)-1./(RAW_T2map.data(:,:,j,1)*10^-3);
+%         end
+%     end
+%     if R2prim_slice_nbr == 0
+%         warning_text = sprintf('##$ Can not calculate the R2prim map because there is\n##$ no slice offset match between\n##$T2*map=%s\n##$ and \n##$T2map=%s',...
+%             files_in.In2{1},files_in.In1{1});
+%         msgbox(warning_text, 'R2prim map warning') ;
+%         return
+%     end
+% else
+%     final_res = max([size(T2Map,1), size(T2Map, 2), size(T2StarCorr3D, 1), size(T2StarCorr3D, 2)]);
+%     if size(T2StarCorr3D,1) ~= final_res || size(T2StarCorr3D,2) ~= final_res
+%         for i = 1:size(T2StarCorr3D, 3)
+%             tmp(:,:,i,1)= imresize(T2StarCorr3D(:,:,i,1),[final_res final_res],'bilinear');
+%         end
+%         T2StarCorr3D = tmp;
+%     end
+%     if size(T2Map,1) ~= final_res || size(T2Map,2) ~= final_res
+%         for i = 1:size(T2Map,3)
+%             tmp(:,:,i,1)= imresize(T2Map(:,:,i,1),[final_res final_res],'bilinear');
+%         end
+%         T2Map = tmp;
+%     end
+%     clear tmp
+%     
+%     % Compute the R2prim map for all slices
+%     R2prim_map=1./(T2StarCorr3D*10^-3)-1./(T2Map*10^-3);
+% end
+
+
+R2prim_map=1./(T2StarCorr3D*10^-3)-1./(T2Map*10^-3);
+
+
+
 
 %replace negative value of R2prim by the interpolation of their neibourgh 
 R2prim_map_m = convn(R2prim_map,ones(3,3,3)./26,'same');
