@@ -1039,7 +1039,7 @@ handles.data_loaded.number_of_Cluster = 0;
 for i = 1:numel(data_selected)
     if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
-        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file'))
+        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file')==2)
         delete(fullfilename(handles, data_selected(i), '.nii.gz'))
         
     end
@@ -1087,7 +1087,7 @@ end
 for i = 1:numel(data_selected)
     if ~exist(fullfilename(handles, data_selected(i), '.nii'), 'file') && exist(fullfilename(handles, data_selected(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_selected(i), '.nii.gz'));
-        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file'))
+        assert(exist(fullfilename(handles, data_selected(i), '.nii'), 'file')==2)
         delete(fullfilename(handles, data_selected(i), '.nii.gz'))
     end
     fid_nii=fopen(fullfilename(handles, data_selected(i), '.nii'),'r');
@@ -1148,7 +1148,7 @@ end
 for i = 1:numel(data_to_load)
     if ~exist(fullfilename(handles, data_to_load(i), '.nii'), 'file') && exist(fullfilename(handles, data_to_load(i), '.nii.gz'), 'file')
         gunzip(fullfilename(handles, data_to_load(i), '.nii.gz'));
-        assert(exist(fullfilename(handles, data_to_load(i), '.nii'), 'file'))
+        assert(exist(fullfilename(handles, data_to_load(i), '.nii'), 'file')==2)
         delete(fullfilename(handles, data_to_load(i), '.nii.gz'))
     end
     fid_nii=fopen(fullfilename(handles, data_to_load(i), '.nii'),'r');
@@ -3507,7 +3507,7 @@ end
 new_parameter_name = strcat(char(handles.database.SequenceName(data_selected)), '-cloned');
 if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
     gunzip(fullfilename(handles, data_selected, '.nii.gz'));
-    assert(exist(fullfilename(handles, data_selected, '.nii'), 'file'))
+    assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
     delete(fullfilename(handles, data_selected, '.nii.gz'))
 end
 fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
@@ -4034,7 +4034,7 @@ for i=1:numel(time_point)
     if sum(ismember(handles.database, new_entry)) == 0
         if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
             gunzip(fullfilename(handles, data_selected, '.nii.gz'));
-            assert(exist(fullfilename(handles, data_selected, '.nii'), 'file'))
+            assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
             delete(fullfilename(handles, data_selected, '.nii.gz'))
         end
         fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
