@@ -63,7 +63,7 @@ for j = 1:M
     msg = strcat(char(Informations.Cartes(j)),sprintf(' = %5.2f ... %5.2f',...
         minV(j), maxV(j)));
     [mx, my] = pol2cart( th(1, j), 1.1);
-    text(mx, my, msg);
+    text(mx, my, msg, 'Interpreter', 'none');
 end
 axis([-1,1,-1,1]*1.5)
 

@@ -1345,7 +1345,9 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
         InToReshape = FinalMat{InputToReshape};
         %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
         InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
-        InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+        % Ligne commentee pour debeuger le pipeline de Ludovic . .. . .  YO
+        % NO SE :/
+        %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
         
         %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
         if EmptyParams{InputToReshape} == 0
@@ -1487,6 +1489,8 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
 %     rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
+opt_pipe.max_queued = Inf;
+%opt_pipe.mode = 'session';
 
 if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data']);

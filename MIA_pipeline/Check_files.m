@@ -36,6 +36,8 @@ for i=1:length(Fields)
         if fid == -1
             if exist(strrep(file, '.nii', '.nii.gz'),'file')
                 gunzip(strrep(file, '.nii', '.nii.gz'))
+                assert(exist(file, 'file')==2)
+                delete(strrep(file, '.nii', '.nii.gz'))
                 continue
             end
             Status = 0;
