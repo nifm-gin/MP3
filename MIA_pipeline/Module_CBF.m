@@ -430,7 +430,7 @@ PostLabelTime = J_pCasl.PostLabelTime.value;
 if strcmp(AcqDim, '3D') == 1
     interSliceTime=0;
 else
-    interSliceTime = InterSliceTimeCaslEpi_Adapted(pCasl, J_pCasl);
+    interSliceTime = InterSliceTimeCaslEpi_Adapted(J_pCasl);
 end
 % Ordre d'acquisition des slices
 if strcmp(AcqDim, '3D') == 1 || (size(pCasl,3)==1)
@@ -643,19 +643,21 @@ switch quantification_method
 %                 if ~isfield(J_T1Map,'echo_label')
 %                      J_T1Map.echo_label.value= '';
 %                 end
-                if(strcmp(J_T1Map.echo_label.value(1),'CBF')==1)
-                    num_echo_t1_map = 3;
-                    T1app = T1Map(:,:,it_sl, num_echo_t1_map,1);
-                elseif(strcmp(J_T1Map.echo_label.value(1),'fit_T1')==1)
-                    num_echo_t1_map = 1;
-                    T1app = T1Map(:,:,it_sl,num_echo_t1_map,1);
-                else
-                    num_echo_t1_map = 1;
-                    T1app = T1Map(:,:,it_sl,num_echo_t1_map,1);
-                    %                     num_echo_t1_map = 5;
-                    %                     T1app = T1map.reco.data(:,:,1,it_sl,num_echo_t1_map);
-                end
-                
+                T1app = T1Map(:,:,it_sl);
+                T1app(isnan(T1app)) = T1value;
+%                 if(strcmp(J_T1Map.echo_label.value(1),'CBF')==1)
+%                     num_echo_t1_map = 3;
+%                     T1app = T1Map(:,:,it_sl, num_echo_t1_map,1);
+%                 elseif(strcmp(J_T1Map.echo_label.value(1),'fit_T1')==1)
+%                     num_echo_t1_map = 1;
+%                     T1app = T1Map(:,:,it_sl,num_echo_t1_map,1);
+%                 else
+%                     num_echo_t1_map = 1;
+%                     T1app = T1Map(:,:,it_sl,num_echo_t1_map,1);
+%                     %                     num_echo_t1_map = 5;
+%                     %                     T1app = T1map.reco.data(:,:,1,it_sl,num_echo_t1_map);
+%                 end
+%                 
             end
             
             %% Transit delay map
@@ -856,9 +858,9 @@ end
 
 
 OutputImages = output_data{1};
-% OutputImages(OutputImages < 0) = -1;
-% OutputImages(OutputImages > 5000) = -1;
-% OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = -1;
+OutputImages(OutputImages > 10000) = -1;
+OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end
