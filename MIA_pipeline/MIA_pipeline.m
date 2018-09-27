@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .Bias Estimation (MICO algorithm)',...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
@@ -1057,13 +1057,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-%     case '   .T1map (Multi Inversion Time)'
-%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
-%         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
-%         handles.new_module.module_name = 'Module_T1map_MIT';
-%         module_parameters_string = handles.new_module.opt.table.Names_Display;
-%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-%         ismodule = 1;
+    case '   .T1map (Multi Inversion Time)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_T1map_MIT';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     case '   .Cerebral blood flow (ASL)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CBF('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_CBF(char(files_in),files_out,opt)';
@@ -1089,6 +1089,13 @@ switch char(handles.Modules_listing(module_selected))
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MICO('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_MICO(char(files_in),files_out,opt)';
         handles.new_module.module_name = 'Module_MICO';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Reshape (Extraction)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Reshape('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Reshape(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Reshape';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
