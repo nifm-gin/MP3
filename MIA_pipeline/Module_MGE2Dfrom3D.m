@@ -166,7 +166,7 @@ if size(N,1) ~= size(N,2)
     error('The input image hasn''t a squared resolution. This case is not implemented')
 end
 facteur = size(N,1) / str2double(opt.OutputResolution);
-if floor(facteur)==facteur
+if floor(facteur)~=facteur
     error('The initial resolution is not a multiple of the wanted output one.')
 end
 
