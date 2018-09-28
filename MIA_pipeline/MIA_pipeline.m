@@ -1885,7 +1885,7 @@ end
 
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -1945,7 +1945,7 @@ end
 %% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -1980,7 +1980,7 @@ end
 
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end

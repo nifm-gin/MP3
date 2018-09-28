@@ -244,7 +244,7 @@ if(~isempty(regexpi(T1map_method,'\w*fair\w*')))
         NumFairMode = 2;
     end
 else
-    error('scan not implemented')
+    error('Wrong scan selected ?')
 end
 
 %% slice acquisition order for correct inversion time
