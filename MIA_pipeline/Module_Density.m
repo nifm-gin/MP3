@@ -113,42 +113,36 @@ end
 DeltaR2 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
 DeltaR2Star = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
 
+%DeltaR2 = niftiread(files_in.In1{1});
+%DeltaR2Star = niftiread(files_in.In2{1});
 
 
-Density_map = DeltaR2Star;
 
-% check data compatibility (slice thickness and slice number)
-if J1.SliceThickness.value ~= J2.SliceThickness.value
-    warning_text = sprintf('##$ Can not calculate the Density map because there is\n##$ a slice thickness missmatch between\n##$deltaR2star map=%s\n##$ and \n##$deltaR2 map=%s',...
-        files_in.In2{1},files_in.In1{1});
-    msgbox(warning_text, 'Density map warning') ;
-     Density_map = [];
-    return
-end
 
-if size(DeltaR2Star, 3) ~= size(DeltaR2, 3)
-    for i = 1:size(DeltaR2, 3)
-        for j = 1:size(DeltaR2Star, 3)
-%            if abs(deltaR2.reco.fov_offsets(3,1,i) - deltaR2star.reco.fov_offsets(3,1,j)) < 1e-5
-                Density_map_slice_nbr = Density_map_slice_nbr+1;
-                %ref lemasson et al 2013
-                data(:,:,Density_map_slice_nbr,:)=329000.*((DeltaR2(:,:,i,:).^3)./(DeltaR2Star(:,:,j,:).^2));
-                
-%            end
-        end
-    end
-    if Density_map_slice_nbr == 0
-        warning_text = sprintf('##$ Can not calculate the Density map because there is\n##$ no slice offset match between\n##$DeltaR2=%s\n##$ and \n##$DeltaR2*=%s',...
-            filename_SO2map,filename_CBF);
-        msgbox(warning_text, 'Density map warning') ;
-        return
-    end
-    Density_map.reco.no_slices=Density_map_slice_nbr;
-else
-    % Compute theDensity_map for all slices
-    data=329000.*((DeltaR2.^3)./(DeltaR2Star.^2));
-end
-
+% 
+% if size(DeltaR2Star, 3) ~= size(DeltaR2, 3)
+%     for i = 1:size(DeltaR2, 3)
+%         for j = 1:size(DeltaR2Star, 3)
+% %            if abs(deltaR2.reco.fov_offsets(3,1,i) - deltaR2star.reco.fov_offsets(3,1,j)) < 1e-5
+%                 Density_map_slice_nbr = Density_map_slice_nbr+1;
+%                 %ref lemasson et al 2013
+%                 data(:,:,Density_map_slice_nbr,:)=329000.*((DeltaR2(:,:,i,:).^3)./(DeltaR2Star(:,:,j,:).^2));
+%                 
+% %            end
+%         end
+%     end
+%     if Density_map_slice_nbr == 0
+%         warning_text = sprintf('##$ Can not calculate the Density map because there is\n##$ no slice offset match between\n##$DeltaR2=%s\n##$ and \n##$DeltaR2*=%s',...
+%             filename_SO2map,filename_CBF);
+%         msgbox(warning_text, 'Density map warning') ;
+%         return
+%     end
+%     Density_map.reco.no_slices=Density_map_slice_nbr;
+% else
+%     % Compute theDensity_map for all slices
+%     data=329000.*((DeltaR2.^3)./(DeltaR2Star.^2));
+% end
+data=329000.*((DeltaR2.^3)./(DeltaR2Star.^2));
 
 
 Density_map = data;
@@ -158,9 +152,9 @@ Density_map = data;
 % first input (rotation/translation)
 
 OutputImages = Density_map;
-% OutputImages(OutputImages < 0) = -1;
-% OutputImages(OutputImages > 5000) = -1;
-% OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = -1;
+OutputImages(OutputImages > 1000) = -1;
+OutputImages(isnan(OutputImages)) = -1;
 OutputImages(isinf(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);

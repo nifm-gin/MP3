@@ -170,9 +170,9 @@ R2prim_map(R2prim_map(:)<=0) =R2prim_map_m(R2prim_map(:)<=0);
 
 
 OutputImages = R2prim_map;
-% OutputImages(OutputImages < 0) = -1;
-% OutputImages(OutputImages > 5000) = -1;
-% OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = -1;
+OutputImages(OutputImages > 25) = -1;
+OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header, 'Axial');
 end

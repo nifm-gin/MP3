@@ -227,7 +227,7 @@ end
 
 OutputImages = VSImap;
 OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
+OutputImages(OutputImages > 50) = -1;
 OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
