@@ -12,13 +12,14 @@ if isempty(opt)
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'OutputSequenceName','Extension'};
-    module_option(:,4)   = {'RefInput',1};
-    module_option(:,5)   = {'InputToReshape',1};
-    module_option(:,6)   = {'Table_in', table()};
-    module_option(:,7)   = {'Table_out', table()};
-    module_option(:,8)   = {'Operation', 'Addition'};
-    module_option(:,9)   = {'output_filename_ext','_Arith'};
-    module_option(:,10)  = {'Output_orientation','First input'};
+    module_option(:,4)   = {'Constant',1};
+    module_option(:,5)   = {'RefInput',1};
+    module_option(:,6)   = {'InputToReshape',1};
+    module_option(:,7)   = {'Table_in', table()};
+    module_option(:,8)   = {'Table_out', table()};
+    module_option(:,9)   = {'Operation', 'Addition'};
+    module_option(:,10)   = {'output_filename_ext','_Arith'};
+    module_option(:,11)  = {'Output_orientation','First input'};
 
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -34,12 +35,13 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
     user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage', 'Union', 'Intersection'},'Operation','', '',''};
-    user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication (Between Scans)', 'Division', 'Percentage', 'Union', 'Intersection', 'Multiplication (Between Scan 1 and Scalar)'},'Operation','', '',''};
+    user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','','',...
         {'Specify the string to be added to the first filename.'
         'Default filename extension is ''_Arith''.'}'};
-    user_parameter(:,6)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
+    user_parameter(:,6)   = {'   .Select the constant to multiply your scan with','numeric', '', 'Constant', '', '', ''};
+    user_parameter(:,7)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
         {'Specify the output orientation'
         '--> Output orienation = First input'
         '--> Output orientation = Second input'
@@ -98,22 +100,27 @@ end
 
 %% load input Nii file
 input(1).nifti_header = spm_vol(files_in.In1{1});
-input(2).nifti_header = spm_vol(files_in.In2{1});
+if isfield(files_in, 'In2')
+    input(2).nifti_header = spm_vol(files_in.In2{1});
+end
 
-if strcmp(opt.Output_orientation, 'First input')   
+
+if strcmp(opt.Output_orientation, 'First input') || ~isfield(files_in, 'In2')
     ref_scan = 1;
 else
     ref_scan = 2;
 end
 input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
-input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+if isfield(files_in, 'In2')
+    input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+end
 
 switch opt.Operation
     case 'Addition'
         OutputImages = input1 + input2;
     case 'Subtraction'
         OutputImages = input2 - input1;
-    case 'Multiplication'
+    case 'Multiplication (Between Scans)'
        
         if sum(opt.Table_in.Type == 'ROI') > 0
             if length(size(input1)) > length(size(input2))
@@ -142,6 +149,8 @@ switch opt.Operation
         OutputImages = double(input1 | input2);
     case 'Intersection'
         OutputImages = double(input1 & input2);
+    case 'Multiplication (Between Scan 1 and Scalar)'
+        OutputImages = input1 .* opt.Constant;
 end
 
 % transform the OutputImages matrix in order to match to the nii header of the

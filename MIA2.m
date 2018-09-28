@@ -2278,6 +2278,7 @@ if ~isfield(handles, 'data_displayed')
     return
 end
 values = zeros(1,size(handles.data_displayed.image, 4));
+Sizes = zeros(1,size(handles.data_displayed.image, 4));
 for i = 1:size(handles.data_displayed.image, 4)
     if numel(size(handles.data_displayed.image))>4 && max(max(handles.data_displayed.image(:, :,pixel_coordinates_2d(3),i, 2))) > 0
         histo_data_in_gray = rgb2gray(uint8(squeeze(handles.data_displayed.image(:, :,pixel_coordinates_2d(3),i,:))));
@@ -2286,15 +2287,18 @@ for i = 1:size(handles.data_displayed.image, 4)
             pixel_value = 0;
         end
         values(i) = pixel_value;
+        Sizes(i) = length(num2str(values(i)))+100;
         
     else
         % rgb2ind(uint8(squeeze(handles.data_displayed.image(pixel_coordinates_2d(2), pixel_coordinates_2d(1),pixel_coordinates_2d(3),2, :))), 32)
         values(i) = handles.data_displayed.image(pixel_coordinates_2d(2), pixel_coordinates_2d(1),pixel_coordinates_2d(3),i,1);
-        
+        Sizes(i) = length(num2str(values(i)))+100;
     end
 end
 table_data = get(handles.MIA_table_pixel_values, 'data');
 table_data(1,2:1+size(handles.data_displayed.image, 4)) = num2cell(values);
+
+set(handles.MIA_table_pixel_values, 'ColumnWidth', [{'auto'},num2cell(Sizes)]);
 set(handles.MIA_table_pixel_values, 'Data', table_data);
 
 

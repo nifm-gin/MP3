@@ -1,4 +1,4 @@
-function interSliceTime = InterSliceTimeCaslEpi_Adapted(Map, Json)
+function interSliceTime = InterSliceTimeCaslEpi_Adapted(Json)
 %% Function for calculate interslice delay for CASL or pCASL labeling module with EPI acquisition module
 % written by C.Debacker & Lydiane Hirschler for PV6
 
@@ -232,5 +232,5 @@ interSliceTime = 0.02 + PVM_TriggerModuleTime + PVM_TriggerOutModuleTime + PVM_M
 
 if isnan(interSliceTime)
     interSliceTime = 50;
-    disp('Warning error on interslice time of %s',Map.acq.ppl_name)
+    disp('Warning error on interslice time')
 end

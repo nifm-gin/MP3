@@ -464,7 +464,23 @@ dictionaryMRI:
   Scaling slope and intercept:
                   description: {info: ""}
   
-                  whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}                  
+                  whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}               
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Scale Intercept:
+                  description: {info: ""}
+  
+                  whereDicom:   {file: ~, keyName: Rescale Intercept, type: string, format: ~, units: ~}               
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Scale Slope:
+                  description: {info: ""}
+  
+                  whereDicom:   {file: ~, keyName: Rescale Slope, type: string, format: ~, units: ~}               
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}

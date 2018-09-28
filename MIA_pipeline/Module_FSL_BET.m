@@ -63,7 +63,7 @@ if isempty(files_out)
     opt.Table_out = opt.Table_in;
     opt.Table_out.IsRaw = categorical(0);   
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
-    opt.Table_out.Type = 'ROI';
+    opt.Table_out.Type = categorical(cellstr('ROI'));
     if strcmp(opt.OutputSequenceName, 'AllName')
         opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
     elseif strcmp(opt.OutputSequenceName, 'Extension')

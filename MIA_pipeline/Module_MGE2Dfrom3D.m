@@ -17,10 +17,11 @@ if isempty(opt)
     module_option(:,5)   = {'first_slice', 4};
     module_option(:,6)   = {'number_of_slices',4};
     module_option(:,7)   = {'echo_to_trash','end'};
-    module_option(:,8)   = {'RefInput',1};
-    module_option(:,9)   = {'InputToReshape',1};
-    module_option(:,10)  = {'Table_in', table()};
-    module_option(:,11)  = {'Table_out', table()};
+    module_option(:,8)   = {'OutputResolution','128'};
+    module_option(:,9)   = {'RefInput',1};
+    module_option(:,10)   = {'InputToReshape',1};
+    module_option(:,11)  = {'Table_in', table()};
+    module_option(:,12)  = {'Table_out', table()};
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
         %% list of everything displayed to the user associated to their 'type'
@@ -42,6 +43,7 @@ user_parameter(:,4)   = {'   .Output filename extension','char','MGE2Dfrom3D','o
 user_parameter(:,5)   = {'   .First slice','numeric','','first_slice','', '',''};
 user_parameter(:,6)   = {'   .Number of slices','numeric','','number_of_slices','', '',''};
 user_parameter(:,7)   = {'   .Echo to trash','char','','echo_to_trash','', '',''};
+user_parameter(:,8)   = {'   .Output Resolution','cell',{'64', '128', '256'},'OutputResolution','', '',''};
 
 
 
@@ -160,10 +162,28 @@ end
 % x = 1:rows3d;
 % y = 1:cols3d;
 %MGE2Dfrom3D = NaN(size(MGE3D));
-MGE2Dfrom3D = temp2;
+if size(N,1) ~= size(N,2)
+    error('The input image hasn''t a squared resolution. This case is not implemented')
+end
+facteur = size(N,1) / str2double(opt.OutputResolution);
+if floor(facteur)~=facteur
+    error('The initial resolution is not a multiple of the wanted output one.')
+end
 
-
+mask = ones(facteur);
+Test = zeros([size(temp2,1)/facteur,size(temp2,2)/facteur,size(temp2,3), size(temp2,4)]);
+Test2 = zeros(size(temp2));
+for i=1:size(temp2,3)
+    for j=1:size(temp2,4)
+        Test2(:,:,i,j) = conv2(temp2(:,:,i,j), mask, 'same');
+        Test(:,:,i,j) = Test2(1:facteur:end, 1:facteur:end,i,j);
+    end
+end
 % 
+
+MGE2Dfrom3D = Test;
+
+
 J.SliceThickness.value = J.SliceThickness.value*nbr_of_slice;
 J.ImageInAcquisition.value = nbr_of_final_slice*length(J.EchoTime.value);
 
@@ -184,6 +204,8 @@ info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(OutputImages_reoriented);
 info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reoriented)));
 info2.PixelDimensions(3) = info2.PixelDimensions(3)*nbr_of_slice;
+info2.Transform.T(1,1) = info2.Transform.T(1,1)*facteur;
+info2.Transform.T(2,2) = info2.Transform.T(2,2)*facteur;
 info2.Transform.T(4,3) = info2.Transform.T(4,3)+first_slice*info.Transform.T(3,3);
 info2.Transform.T(3,3) = info2.Transform.T(3,3)*nbr_of_slice;
 info2.ImageSize = size(OutputImages_reoriented);
