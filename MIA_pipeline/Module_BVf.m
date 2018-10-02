@@ -17,7 +17,7 @@ if isempty(opt)
     module_option(:,5)   = {'output_filename_ext','BVf'};
     module_option(:,6)   = {'B0',4.7};
     module_option(:,7)   = {'Gamma',2.67502};
-    module_option(:,8)   = {'deltaxi_CA',0.264};
+    module_option(:,8)   = {'deltaxi_CA',0.1867};
     module_option(:,9)   = {'HCT',0.375};
     module_option(:,10)  = {'UseT1Map','No'};
     module_option(:,11)  = {'HTC_map','None'};

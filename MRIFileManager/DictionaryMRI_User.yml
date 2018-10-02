@@ -480,6 +480,13 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: TriggerModuleTime, type: float, format: ~, units: ~}
 
+  ScanTime:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_ScanTime=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ScanTime, type: float, format: ~, units: ~}
+
 
 
              
