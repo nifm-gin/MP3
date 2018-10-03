@@ -161,7 +161,24 @@ J = jsondecode(raw);
 % additional_parameters correspond to the size of the windows used for the loating mean and the beggining of the bolus 
 
 DCE = N;
-TR = J.RepetitionTime.value/1000; %(From ms to s)
+%TR = J.RepetitionTime.value/1000; %(From ms to s)
+%TR=TR*19;%%Test Clement
+
+
+
+
+
+% timing = sscanf(scan_acqp('##$PVM_ScanTimeStr=',data.uvascim.image.texte,2),'%dh%dm%ds%dms');
+% duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
+% TR = duree_tot / data.uvascim.image.reco.no_expts;
+
+
+duree_tot = J.ScanTime.value/1000; %% Conversion from ms to s
+TR = duree_tot / size(N, 4);
+
+
+
+
 repetition_nbr = size(DCE,4);
 if ~strcmp(opt.Las_dyn_before_bolus, 'Auto')
     debut = str2double(opt.Las_dyn_before_bolus);

@@ -240,13 +240,6 @@ end
 
 
 
-
-
-
-
-
-
-
 % %% Alpha value : inversion efficiency % On utilise La carte Inv_eff et la ROI pour sortir une unique valeur (un pourcentage)
 % % Load Alpha scan if necessary
 % AlphaScanMethod = 'Not loaded';
@@ -387,7 +380,6 @@ elseif strcmp(ASLprefix,'C') && strcmp(alpha,'Default')
 end
 if strcmp(T1Sang,'Default'), T1sang = T1sangD; end
 if strcmp(T1value,'Default'), T1value = T1valueD; end
-
 
 % %% Apply script of exclusion of outlier
 % if size(pCasl,5) < 2 && strcmp(opt.OutExcl, 'Yes')

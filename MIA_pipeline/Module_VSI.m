@@ -14,7 +14,7 @@ if isempty(opt)
     module_option(:,3)   = {'OutputSequenceName','AllName'};
     module_option(:,4)   = {'B0',4.7};
     module_option(:,5)   = {'Gamma',2.67502};
-    module_option(:,6)   = {'deltaxi_CA',0.264};
+    module_option(:,6)   = {'deltaxi_CA',0.1867};
     module_option(:,7)   = {'RefInput',1};
     module_option(:,8)   = {'InputToReshape',1};
     module_option(:,9)   = {'Table_in', table()};
@@ -227,7 +227,7 @@ end
 
 OutputImages = VSImap;
 OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
+OutputImages(OutputImages > 50) = -1;
 OutputImages(isnan(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
