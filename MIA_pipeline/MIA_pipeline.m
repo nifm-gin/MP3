@@ -1496,7 +1496,7 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
 %     rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
-opt_pipe.max_queued = Inf;
+opt_pipe.max_queued = 3;
 %opt_pipe.mode = 'session';
 
 if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
@@ -2295,6 +2295,7 @@ SaveModule.ModuleParams = handles.new_module;
 SaveModule.OutputDatabase = output_database;
 SaveModule.Jobs = new_pipeline;
 handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
+handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
 
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
