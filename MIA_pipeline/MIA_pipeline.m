@@ -2633,6 +2633,10 @@ end
 %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
+    %% Delete all modules filters for now, as we don't really use them efficiently.
+    % This allow us to apply on a filtered database an already filtered designed pipeline. 
+    Module.Filters = {};
+    %%
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
