@@ -14,10 +14,11 @@ if isempty(opt)
     module_option(:,3)   = {'output_filename_ext','Brain_BET'};
     module_option(:,4)   = {'OutputSequenceName','AllName'};
     module_option(:,5)   = {'Fractional_intensity_threshold',0.35};
-    module_option(:,6)   = {'RefInput',1};
-    module_option(:,7)   = {'InputToReshape',1};
-    module_option(:,8)   = {'Table_in', table()};
-    module_option(:,9)   = {'Table_out', table()};
+    module_option(:,6)   = {'Fill_Holes','No'};
+    module_option(:,7)   = {'RefInput',1};
+    module_option(:,8)   = {'InputToReshape',1};
+    module_option(:,9)   = {'Table_in', table()};
+    module_option(:,10)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     %
     %% list of everything displayed to the user associated to their 'type'
@@ -44,6 +45,7 @@ if isempty(opt)
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .Output filename','char','Brain_BET','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Fractional Intensity Threshold','numeric',0.35,'Fractional_intensity_threshold','', '',''};
+     user_parameter(:,6)   = {'   .Fill holes in the brain?','cell',{'Yes', 'No'},'Fill_Holes','', '',''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
     %%
@@ -107,12 +109,26 @@ setenv('FSLOUTPUTTYPE', 'NIFTI_GZ'); % this to tell what the output type would b
 
 % set FSL-BET command
 cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.In1{:},  ' -f', {' '}, num2str(opt.Fractional_intensity_threshold), {' '}, '-g 0 -n -m -t');
-% execute the command 
+% execute the command
 system(cmd{:});
 
 %unzip the mask
 gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
 
+
+if strcmp(opt.Fill_Holes, 'Yes')
+    N = niftiread(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
+    info = niftiinfo(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
+    
+    
+    for j=1:size(N,4)
+        parfor i=1:size(N,3)
+            N(:,:,i,j) = imfill(N(:,:,i,j), 'holes');
+        end
+    end
+    
+    niftiwrite(N, strrep(files_out.In1{:}, '.nii', '_mask.nii'), info);
+end
+
 % rename the output file (BET add by default '_mask' the the file name)
 movefile(strrep(files_out.In1{:}, '.nii', '_mask.nii'), strrep(files_out.In1{:}, '.nii', '.nii'), 'f')
-
