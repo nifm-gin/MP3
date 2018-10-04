@@ -1283,6 +1283,23 @@ for i=1:NbScanInput
             Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
             for n=1:length(UTag1)
                 Datab3 = Datab2(getfield(Datab2,Tag1) == UTag1(n),:);
+                % Check if this database contains some entries which shares
+                % all the fields but the Path one (One might be in the Tmp
+                % folder). It means that the automatic generation doesn't
+                % know which file take. The one already existing or the
+                % virtual (temporary) one ? We currently don't deal with
+                % this issue.
+                if size(Datab3, 1) > 1
+                    FNames = fieldnames(Datab3);
+                    RestrictedDatab = Datab3(:,~strcmp(FNames(1:end-3), 'Path'));
+                    if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
+                        output_database = table();
+                        pipeline = struct();
+                        text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
+                        warndlg(text)
+                        return
+                    end
+                end
                 for o=1:size(Datab3,1)
                     Mat{m,n,o} = [char(Datab3.Path(o)) char(Datab3.Filename(o)) '.nii'];
                 end
@@ -2639,6 +2656,9 @@ for i=1:length(Modules)
     Module.Filters = {};
     %%
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
+        return
+    end
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];
