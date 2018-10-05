@@ -2206,9 +2206,13 @@ if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
 else 
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
     set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
+    set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
     set(handles.MIA_pipeline_JobsList, 'String', {''});
+    set(handles.MIA_pipeline_JobsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', {''});
+    set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
+    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
     
 end
 guidata(hObject, handles);
