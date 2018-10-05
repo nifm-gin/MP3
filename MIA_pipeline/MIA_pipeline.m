@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
@@ -972,11 +972,18 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;    
-
+    case '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_FLIRT('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_FLIRT(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_FSL_FLIRT';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+        
     case '   .Brain Extraction (BET Function from FSL)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_BET('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_BET(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_FSL_BET';
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_FLIRT('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_FLIRT(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_FSL_FLIRT';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
@@ -1276,6 +1283,23 @@ for i=1:NbScanInput
             Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
             for n=1:length(UTag1)
                 Datab3 = Datab2(getfield(Datab2,Tag1) == UTag1(n),:);
+                % Check if this database contains some entries which shares
+                % all the fields but the Path one (One might be in the Tmp
+                % folder). It means that the automatic generation doesn't
+                % know which file take. The one already existing or the
+                % virtual (temporary) one ? We currently don't deal with
+                % this issue.
+                if size(Datab3, 1) > 1
+                    FNames = fieldnames(Datab3);
+                    RestrictedDatab = Datab3(:,~strcmp(FNames(1:end-3), 'Path'));
+                    if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
+                        output_database = table();
+                        pipeline = struct();
+                        text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
+                        warndlg(text)
+                        return
+                    end
+                end
                 for o=1:size(Datab3,1)
                     Mat{m,n,o} = [char(Datab3.Path(o)) char(Datab3.Filename(o)) '.nii'];
                 end
@@ -1496,7 +1520,7 @@ if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'
 %     rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
-opt_pipe.max_queued = Inf;
+opt_pipe.max_queued = 3;
 %opt_pipe.mode = 'session';
 
 if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
@@ -2295,6 +2319,7 @@ SaveModule.ModuleParams = handles.new_module;
 SaveModule.OutputDatabase = output_database;
 SaveModule.Jobs = new_pipeline;
 handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
+handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
 
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
@@ -2626,7 +2651,14 @@ end
 %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
+    %% Delete all modules filters for now, as we don't really use them efficiently.
+    % This allow us to apply on a filtered database an already filtered designed pipeline. 
+    Module.Filters = {};
+    %%
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
+        return
+    end
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];

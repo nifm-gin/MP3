@@ -54,7 +54,7 @@ if size(Informations(1).Sign,2) == 1
     
     
     subplot(2,2,4)
-    radarPlot(MoyClust.',Informations)
+    radarPlot(MoyClust.',Informations,Couleurs)
     
     
     

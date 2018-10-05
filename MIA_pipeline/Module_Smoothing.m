@@ -13,13 +13,13 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'output_filename_ext','_Smooth'};
     module_option(:,4)   = {'OutputSequenceName','Extension'};
-    module_option(:,5)   = {'Type','gaussian'};
-    module_option(:,6)   = {'HSize',3};
-    module_option(:,7)   = {'Sigma',1};
-    module_option(:,8)   = {'RefInput',1};
-    module_option(:,9)   = {'InputToReshape',1};
-    module_option(:,10)   = {'Table_in', table()};
-    module_option(:,11)   = {'Table_out', table()};
+    module_option(:,5)   = {'Type','2-D Gaussian'};
+    %module_option(:,6)   = {'HSize',3};
+    module_option(:,6)   = {'Sigma',1};
+    module_option(:,7)   = {'RefInput',1};
+    module_option(:,8)   = {'InputToReshape',1};
+    module_option(:,9)   = {'Table_in', table()};
+    module_option(:,10)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
         %% list of everything displayed to the user associated to their 'type'
@@ -34,9 +34,9 @@ if isempty(opt)
     user_parameter(:,1)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,2)   = {'Parameters','','','','', '', ''};
     user_parameter(:,3)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', '',''};
-    user_parameter(:,4)   = {'   .Type','cell', {'gaussian'},'Type','', '',''};
-    user_parameter(:,5)   = {'   .HSize','numeric',3,'HSize','', '',''};
-    user_parameter(:,6)   = {'   .Sigma','numeric',1,'Sigma','', '',''};
+    user_parameter(:,4)   = {'   .Type','cell', {'2-D Gaussian', '3-D Gaussian'},'Type','', '',''};
+    %user_parameter(:,4)   = {'   .HSize','numeric',3,'HSize','', '',''};
+    user_parameter(:,5)   = {'   .Sigma','numeric',1,'Sigma','', '',''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
@@ -129,14 +129,20 @@ end
 
 
 
-h = fspecial(opt.Type, opt.HSize, opt.Sigma);
-for i=1:size(NewN,3)
-    for j=1:size(NewN,4)
-        FilteredImages(:,:,i,j) = imfilter(NewN(:,:,i,j), h, 'replicate');
+%h = fspecial(opt.Type, opt.HSize, opt.Sigma);
+Sigma = opt.Sigma;
+if strcmp(opt.Type, '2-D Gaussian') 
+    for i=1:size(NewN,3)
+        for j=1:size(NewN,4)
+            FilteredImages(:,:,i,j) = imgaussfilt(NewN(:,:,i,j), Sigma);
+        end
     end
+elseif strcmp(opt.Type, '3-D Gaussian')
+    for j=1:size(NewN,4)
+        FilteredImages(:,:,:,j) = imgaussfilt3(NewN(:,:,:,j), Sigma);
+    end
+    
 end
-
-
 
 NewFilteredImages = reshape(FilteredImages, Size);
 
