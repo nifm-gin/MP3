@@ -2202,6 +2202,9 @@ handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules,
 set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
+    set(handles.MIA_pipeline_JobsList, 'Value', 1);
+    set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
+    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
     MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 else 
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
