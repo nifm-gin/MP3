@@ -5263,9 +5263,9 @@ for i=1:size(table2,1)
     file = [char(table2.Path(i)), char(table2.Filename(i)), '.nii'];
     info = niftiinfo(file);
     Mats{i} = info.Transform.T;
-    uf = uifigure;
+    f = figure('Name', char(table2.Filename(i)));
     %title(uf,[char(table2.Filename(i)), '.nii'])
-    t = uitable(uf,'Data',Mats{i});%,'Position',[20 20 260 204]);
+    t = uitable(f,'Data',Mats{i});%,'Position',[20 20 260 204]);
 end
 
 
