@@ -14,6 +14,10 @@ if ~exist('view_mode', 'var')
     view_mode = 'Axial';
 end
     
+if ~exist('interpolation', 'var')
+    interpolation = 3;
+end
+
 Y   = zeros(Vo(1).dim(1:3));       % initialize output volume
 Vi_size = Vi(1).private.dat.dim;
 
