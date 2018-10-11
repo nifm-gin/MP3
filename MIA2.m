@@ -1051,7 +1051,7 @@ for i = 1:numel(data_selected)
             %% read and load the nii file
             handles.data_loaded.number_of_ROI = handles.data_loaded.number_of_ROI+1;
             handles.data_loaded.ROI(handles.data_loaded.number_of_ROI).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
-            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
             %           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
@@ -1059,7 +1059,7 @@ for i = 1:numel(data_selected)
             %% read and load the nii file
             handles.data_loaded.number_of_Cluster = handles.data_loaded.number_of_Cluster+1;
             handles.data_loaded.Cluster(handles.data_loaded.number_of_Cluster).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
-            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+            %           handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
             %           handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
@@ -1750,7 +1750,7 @@ if isfield(handles.data_loaded, 'ROI')
     for i = 1:numel(handles.data_loaded.ROI)
         switch get(hObject, 'Tag')
             case {'MIA_load_axes', 'MIA_Axial_view_button', 'MIA_Saggital_view_button', 'MIA_Coronal_view_button'}
-                handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+                handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
                 handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
         end
         for slice_nbr=1:get(handles.MIA_slider_slice, 'Max')
@@ -1770,7 +1770,7 @@ if isfield(handles.data_loaded, 'Cluster')
     for i = 1:numel(handles.data_loaded.Cluster)
         switch get(hObject, 'Tag')
             case {'MIA_load_axes', 'MIA_Axial_view_button', 'MIA_Saggital_view_button', 'MIA_Coronal_view_button'}
-                handles.data_loaded.Cluster(i).nii = read_volume(handles.data_loaded.Cluster(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+                handles.data_loaded.Cluster(i).nii = read_volume(handles.data_loaded.Cluster(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
                 
                 handles.data_loaded.Cluster(i).nii(0<handles.data_loaded.Cluster(i).nii & handles.data_loaded.Cluster(i).nii<1) = 1;
                 handles.data_loaded.Cluster(i).nii = round(handles.data_loaded.Cluster(i).nii);
@@ -2238,7 +2238,7 @@ scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 legende_txt = cell(numel(fourD_data),1);
 for i = 1:numel(fourD_data)
     strii = num2str(i);
-    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
     y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
     x_data = 1:size(tmp,4);
     plot(handles.MIA_plot1,x_data,y_data,...
@@ -2252,6 +2252,16 @@ end
 if ~isempty(legende_txt)
     legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
 end
+
+% CBV_G_Norm  = read_volume(handles.data_loaded.Scan(2).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
+% CBV_Norm  = read_volume(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
+% 
+% Voxel3D = [voxel, slice_nbre];
+% 
+% A = struct('File', handles.data_loaded.Scan(fourD_data(i)).V(1).fname, 'Curve', y_data, 'Voxel', Voxel3D, 'CBV_G_Norm', CBV_G_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)), 'CBV_Norm', CBV_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)))
+
+
+%save('/home/cbrossard/Bureau/Comparaison_Courbes_Perf/Type1_2.mat','A')
 
 set(handles.MIA_GUI, 'pointer', 'arrow');
 
@@ -3152,10 +3162,10 @@ else
             % load the ROI
             if isfield(handles.data_loaded, 'ROI')
                 handles.data_loaded.ROI(numel(handles.data_loaded.ROI)+1).V = spm_vol(fullfilename(handles, ROI_idex, '.nii'));
-                handles.data_loaded.ROI(end).nii = read_volume(handles.data_loaded.ROI(end).V , handles.data_loaded.Scan(which_image).V(1), 0, handles.view_mode);
+                handles.data_loaded.ROI(end).nii = read_volume(handles.data_loaded.ROI(end).V , handles.data_loaded.Scan(which_image).V(1), 3, handles.view_mode);
             else
                 handles.data_loaded.ROI.V = spm_vol(fullfilename(handles, ROI_idex, '.nii'));
-                handles.data_loaded.ROI.nii = read_volume(handles.data_loaded.ROI.V , handles.data_loaded.Scan(which_image).V(1),0, handles.view_mode);
+                handles.data_loaded.ROI.nii = read_volume(handles.data_loaded.ROI.V , handles.data_loaded.Scan(which_image).V(1),3, handles.view_mode);
             end
             % update the data_loaded structure with the new ROI
             handles.data_loaded.number_of_ROI = size(handles.data_loaded.ROI,1);
@@ -3324,14 +3334,14 @@ spm_write_vol(V_ROI,ROI_matrix);
 if isfield(handles.data_loaded, 'ROI')
     if sum(ROI_loaded_idex) ~= 0 % update the structre for an updated ROI
         handles.data_loaded.ROI(ROI_loaded_idex).V = spm_vol(V_ROI.fname);
-        handles.data_loaded.ROI(ROI_loaded_idex).nii = read_volume(handles.data_loaded.ROI(ROI_loaded_idex).V , handles.data_loaded.Scan(Scan_of_reference_selected).V,0, handles.view_mode);
+        handles.data_loaded.ROI(ROI_loaded_idex).nii = read_volume(handles.data_loaded.ROI(ROI_loaded_idex).V , handles.data_loaded.Scan(Scan_of_reference_selected).V,3, handles.view_mode);
     else %% add new ROI to the data_loaded_ROI structure (another ROI is already loaded)
         handles.data_loaded.ROI(numel(handles.data_loaded.ROI)+1).V = spm_vol(V_ROI.fname);
-        handles.data_loaded.ROI(end).nii = read_volume(handles.data_loaded.ROI(end).V , handles.data_loaded.Scan(Scan_of_reference_selected).V,0, handles.view_mode);
+        handles.data_loaded.ROI(end).nii = read_volume(handles.data_loaded.ROI(end).V , handles.data_loaded.Scan(Scan_of_reference_selected).V,3, handles.view_mode);
     end
 else %% add the new ROI as load ROI
     handles.data_loaded.ROI.V = spm_vol(V_ROI.fname);
-    handles.data_loaded.ROI.nii = read_volume(handles.data_loaded.ROI.V , handles.data_loaded.Scan(Scan_of_reference_selected).V,0, handles.view_mode);
+    handles.data_loaded.ROI.nii = read_volume(handles.data_loaded.ROI.V , handles.data_loaded.Scan(Scan_of_reference_selected).V,3, handles.view_mode);
 end
 %% if an ROI has been updated --> delete the old nii file and update the database
 if ~isempty(ROI_idex)
@@ -4974,14 +4984,14 @@ function MIA_orientation_space_popupmenu_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from MIA_orientation_space_popupmenu
 scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 % for i=1:handles.data_loaded.number_of_scan
-%      handles.data_loaded.Scan(i).nii = read_volume(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+%      handles.data_loaded.Scan(i).nii = read_volume(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
 % end
 if ~isfield(handles, 'data_loaded')
     return
 end
 if isfield(handles.data_loaded, 'ROI')
     for i=1:numel(handles.data_loaded.ROI)
-        handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,0, handles.view_mode);
+        handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
     end
 end
 % % update slider_slice
