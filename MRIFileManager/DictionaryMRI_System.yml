@@ -197,7 +197,7 @@ dictionaryMRI:
                   whereDicom:   {file: dirfile, keyName: Image Orientation (Patient), type: float, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: ImageOrientationPatient, type: float, format: ~, units: ~}
 
-                  viewer: {category: ~}
+                  viewer: {category: PositionOrientation}
                   json:   {tagJson: ImageOrientationPatient, type: float, format: ~, units: ~}
   
   Image Position Patient:
@@ -208,7 +208,7 @@ dictionaryMRI:
                   whereDicom:   {file: dirfile, keyName: Image Position (Patient), type: float, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: ImagePositionPatient, type: float, format: ~, units: ~}
 
-                  viewer: {category: ~}
+                  viewer: {category: PositionOrientation}
                   json:   {tagJson: ImagePositionPatient, type: float, format: ~, units: ~}  
   
   Image Type:
@@ -242,6 +242,15 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: InversionTime, type: float, format: ~, units: ms}
 
+  Label Type (ASL):
+                  description: {info: "position of Arterial Spin Labeling "}
+  
+                  wherePhilips: {file: PAR ; Xml, keyName: label type   ; Label Type, type: int   ; string, format: ~, units: ~}
+                  whereDicom: {file: ~, keyName: "2005,1429", type: string, format: ~, units: ~}
+
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: LabelType, type: string, format: ~, units: ~}
+
   Manufacturer:
                   description: {info: "Manufacturer of the equipment that produced the composite instances"}
           
@@ -264,6 +273,7 @@ dictionaryMRI:
                   description: {info: ""}
   
                   whereDicom:   {file: ~, keyName: Modality, type: string, format: ~, units: ~}
+                  
                   viewer: {category: Test}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
@@ -469,10 +479,22 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
-  Scale Intercept:
+  Rescale Intercept:
                   description: {info: ""}
   
-                  whereDicom:   {file: ~, keyName: Rescale Intercept, type: string, format: ~, units: ~}               
+                  whereDicom:   {file: ~, keyName: Rescale Intercept, type: string, format: ~, units: ~}
+                  #wherePhilips: {file: PAR ; Xml, keyName: rescale intercept ; Rescale Intercept, type: float ; double, format: ~, units: ~}
+                            
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Rescale Slope:
+                  description: {info: ""}
+  
+                  whereDicom:   {file: ~, keyName: Rescale Slope, type: string, format: ~, units: ~}
+                  #wherePhilips: {file: PAR ; Xml, keyName: rescale slope ; Rescale Slope, type: float ; double, format: ~, units: ~}
+                  
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -480,10 +502,13 @@ dictionaryMRI:
   Scale Slope:
                   description: {info: ""}
   
-                  whereDicom:   {file: ~, keyName: Rescale Slope, type: string, format: ~, units: ~}               
+                  whereDicom:   {file: ~, keyName: "2005,100E", type: string, format: ~, units: ~}
+                  #wherePhilips: {file: PAR ; Xml, keyName: scale slope ; Scale Slope, type: float ; float, format: ~, units: ~}
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  
   
   Scan Mode:
                   description: {info: ""}
