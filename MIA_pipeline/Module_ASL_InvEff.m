@@ -108,7 +108,7 @@ N = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 
 %% load input JSON file
-J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
+%J = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
 
 
 
@@ -135,6 +135,18 @@ info2.ImageSize = size(OutputImages);
 % save the new .nii file
 niftiwrite(OutputImages, files_out.In1{1}, info2);
 
-% so far copy the .json file of the first input
-copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+% % so far copy the .json file of the first input
+% copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
 % 
+
+%% Json processing
+[path, name, ~] = fileparts(files_in.In1{1});
+jsonfile = [path, '/', name, '.json'];
+J = ReadJson(jsonfile);
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In1{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
+

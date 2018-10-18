@@ -105,13 +105,15 @@ end
 
 N = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
+[path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
+% fid = fopen(jsonfile, 'r');
+% raw = fread(fid, inf, 'uint8=>char');
+% fclose(fid);
+% %raw = reshape(raw, 1,length(raw));
+% J = jsondecode(raw);
+
+J = ReadJson(jsonfile);
 
 Informations = whos('N');
 FilteredImages = zeros(size(N), Informations.class);
@@ -153,10 +155,14 @@ info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
+
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+
+    
 niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
+
+[path, name, ~] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+WriteJson(J, jsonfile)
+

@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 23-Aug-2018 16:16:18
+% Last Modified by GUIDE v2.5 18-Oct-2018 15:52:27
 
 
 % Begin initialization code - DO NOT EDIT
@@ -65,9 +65,9 @@ handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
     'u5',	'orange',	'u6',	'u7',	'u8',	'gray'};
-%handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
-load('rgb_color_table.mat', 'num');
-handles.colors_rgb = num;
+handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
+%load('rgb_color_table.mat', 'num');
+%handles.colors_rgb = num;
 handles.colormap = get(handles.MIA_colormap_popupmenu,'String');
 handles.markers ={'o','s', 'd', 'p', 'h', '+', '*', 'x'};
 table_data(1,1) = {'Voxel values'};
@@ -1121,6 +1121,35 @@ handles.data_loaded.number_of_scan = numel(data_selected);
 handles.data_loaded.info_data_loaded = handles.database(data_selected,:);
 
 guidata(hObject, handles);
+
+
+
+
+
+if ~isempty(findobj('type', 'figure', 'name', 'FileHistory'))
+    % Get the hObject of MIA_pipeline
+    h = findobj('type', 'figure', 'name', 'FileHistory');
+    % Get the handles of MIA_pipeline
+    data = guidata(h);
+    % Update the handles of MIA_pipeline by stocking the latest version of
+    % MIA handles.
+    data.MIA_data = handles;
+
+    % Don't touch the original eventdata, just in case.
+    %Update the MIA_pipeline tmp_database
+    [h,data] = FileHistory('UpdateJobsList', h, data);
+    %[~, ~, data] = MIA_pipeline('MIA_pipeline_UpdateTables', h, eventdata2, data);
+    guidata(h, data)
+end
+
+
+
+
+
+
+
+
+
 
 
 function handles = MIA_load_axes_PRM(hObject, ~, handles)
@@ -2253,13 +2282,14 @@ if ~isempty(legende_txt)
     legend(handles.MIA_plot1, legende_txt, 'Location','NorthEast');
 end
 
-% CBV_G_Norm  = read_volume(handles.data_loaded.Scan(2).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
-% CBV_Norm  = read_volume(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
+%% Code pour extraire les courbes de bolus d'un pixel de perf.
+% CBV_G_Norm  = read_volume(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
+% CBV_Norm  = read_volume(handles.data_loaded.Scan(4).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
 % 
 % Voxel3D = [voxel, slice_nbre];
 % 
 % A = struct('File', handles.data_loaded.Scan(fourD_data(i)).V(1).fname, 'Curve', y_data, 'Voxel', Voxel3D, 'CBV_G_Norm', CBV_G_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)), 'CBV_Norm', CBV_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)))
-
+% 
 
 %save('/home/cbrossard/Bureau/Comparaison_Courbes_Perf/Type1_2.mat','A')
 
@@ -5402,3 +5432,38 @@ if ~isempty(findobj('type', 'figure', 'name', 'MIA pipeline Manager'))
 end
 
 delete(handles.MIA_GUI);
+
+
+% --------------------------------------------------------------------
+function MIA_tools_file_history_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_tools_file_history (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+if ~isfield(handles, 'data_loaded')
+    warndlg('Please load the scan you want to display the history.');
+    return
+end
+
+if length(handles.data_loaded.Scan) ~= 1
+    warndlg('Please load only one scan to display its history.');
+    return
+end
+
+% JSON = handles.data_loaded.Scan.json;
+% 
+% if ~isfield(JSON, 'Bricks')
+%     warndlg('There is no history available for this file. It might be raw data of the processing has not be done by the Pipeline Manager.');
+%     return
+% end
+% 
+% 
+% Jobs = JSON.Bricks;
+
+
+FileHistory(hObject, eventdata, handles)
+
+
+
+

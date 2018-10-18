@@ -286,7 +286,17 @@ for nn = 1:N_scan
     N_bc = niftiinfo(files_out.In1{nn});
     N_bc.Transform.T = TransfMat;
     niftiwrite(niftiread(files_out.In1{nn}), files_out.In1{nn},N_bc);
-    CreateJsonFromNifti(files_out.In1{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Field])), opt.Table_in.Tp(nn))
+    %% Json Processing
+    [path, name, ~] = fileparts(files_in.In1{nn});
+    jsonfile = [path, '/', name, '.json'];
+    J = ReadJson(jsonfile);
+
+    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+    [path, name, ~] = fileparts(files_out.In1{nn});
+    jsonfile = [path, '/', name, '.json'];
+    WriteJson(J, jsonfile)
+    %CreateJsonFromNifti(files_out.In1{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Field])), opt.Table_in.Tp(nn))
     clear b Img3D;
     Img_bc=make_nii(img_bc);
 %     Img_bc.hdr.hist.quatern_b = hist.quatern_b;
@@ -302,7 +312,17 @@ for nn = 1:N_scan
     N_Ibc = niftiinfo(files_out.In2{nn});
     N_Ibc.Transform.T = TransfMat;
     niftiwrite(niftiread(files_out.In2{nn}), files_out.In2{nn},N_Ibc);
-    CreateJsonFromNifti(files_out.In2{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Scan])), opt.Table_in.Tp(nn))
+    %% Json Processing
+    [path, name, ~] = fileparts(files_in.In1{nn});
+    jsonfile = [path, '/', name, '.json'];
+    J = ReadJson(jsonfile);
+
+    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+    [path, name, ~] = fileparts(files_out.In2{nn});
+    jsonfile = [path, '/', name, '.json'];
+    WriteJson(J, jsonfile)
+    %CreateJsonFromNifti(files_out.In2{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Scan])), opt.Table_in.Tp(nn))
     
     clear Membership Bias U image_bc;
     

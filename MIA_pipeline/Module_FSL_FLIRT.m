@@ -221,7 +221,18 @@ system(cmd{:});
 gunzip(strrep(files_out.In2{:}, '.nii', '.nii.gz'))
 
 % copy the corresponding json file
-copyfile(strrep(files_in.In2{:},'.nii','.json'),  strrep(files_out.In2{:},'.nii','.json'))
+%copyfile(strrep(files_in.In2{:},'.nii','.json'),  strrep(files_out.In2{:},'.nii','.json'))
+
+%% Json Processing
+[path, name, ~] = fileparts(files_in.In2{1});
+jsonfile = [path, '/', name, '.json'];
+J = ReadJson(jsonfile);
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In2{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
 
 
 %[Mov] = ExtractMovement('Patient1-J3-T2_EG_AXIAL_HEMO_20180504-163255801.nii','Patient1_J3_CoregADC.nii');
@@ -242,7 +253,17 @@ if isfield(files_in, 'In3')
             % Otherwise the CoregEstimate will overwrite the raw files!!
             copyfile(files_in.In3{i},  files_out.In3{i})
             if isfile(strrep(files_in.In3{i},'.nii','.json'))
-                copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
+                %% Json Processing
+                [path, name, ~] = fileparts(files_in.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                J = ReadJson(jsonfile);
+
+                J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+                [path, name, ~] = fileparts(files_out.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
+                                copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
             end
             % first apply reslice the 'other scan' to the image moved
             P.which = 1; % spm_reslice's option

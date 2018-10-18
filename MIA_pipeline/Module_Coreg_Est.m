@@ -163,6 +163,16 @@ matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
 % Otherwise the CoregEstimate will overwrite the file!!
 copyfile(files_in.In2{1},  files_out.In2{1})
 copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
+%% Json Processing
+[path, name, ~] = fileparts(files_in.In2{1});
+jsonfile = [path, '/', name, '.json'];
+J = ReadJson(jsonfile);
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In2{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
 % if the image of reference is > to 3D need to split the data
 % header = niftiinfo(files_out.In2{1});
 header = spm_vol(files_out.In2{1});
@@ -186,7 +196,16 @@ if isfield(files_in, 'In3')
             % Otherwise the CoregEstimate will overwrite the raw files!!
             copyfile(files_in.In3{i},  files_out.In3{i})
             if isfile(strrep(files_in.In3{i},'.nii','.json'))
-                copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
+                %% Json Processing
+                [path, name, ~] = fileparts(files_in.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                J = ReadJson(jsonfile);
+
+                J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+                [path, name, ~] = fileparts(files_out.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
             end
             if numel(header) > 1
                 for j=1:numel(header)

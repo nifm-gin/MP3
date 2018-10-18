@@ -882,8 +882,21 @@ info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reorient
 % save the new .nii file
 niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
 
-% so far copy the .json file of the first input
-copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
-% 
+% % so far copy the .json file of the first input
+% copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
+% % 
+
+
+%% Json processing
+[path, name, ~] = fileparts(files_in.In1{1});
+jsonfile = [path, '/', name, '.json'];
+J = ReadJson(jsonfile);
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In1{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
+
 end
 
