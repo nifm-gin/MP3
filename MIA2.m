@@ -1137,6 +1137,7 @@ if ~isempty(findobj('type', 'figure', 'name', 'FileHistory'))
 
     % Don't touch the original eventdata, just in case.
     %Update the MIA_pipeline tmp_database
+    data.FileHistory_JobsListbox.Value = 1;
     [h,data] = FileHistory('UpdateJobsList', h, data);
     %[~, ~, data] = MIA_pipeline('MIA_pipeline_UpdateTables', h, eventdata2, data);
     guidata(h, data)

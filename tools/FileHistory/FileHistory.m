@@ -173,8 +173,8 @@ function [hObject, handles] = UpdateJobsList(hObject, handles)
     set(handles.Filename, 'String', {ShortFilename});
     Jobs = fieldnames(handles.JSON.Bricks);
     set(handles.FileHistory_JobsListbox, 'String', Jobs);
-    [hObject, handles] = UpdateJobsFieldsList(hObject, handles);
     set(handles.FileHistory_JobsFieldsListbox, 'Value', 1);
+    [hObject, handles] = UpdateJobsFieldsList(hObject, handles);
     set(handles.FileHistory_JobsValuesListbox, 'Value', 1);
     guidata(hObject, handles);
     
@@ -201,8 +201,8 @@ function [hObject, handles] = UpdateJobsFieldsList(hObject, handles)
     end
 
     set(handles.FileHistory_JobsFieldsListbox, 'String', FieldsToDisplay);
-    [hObject, handles] = UpdateJobsValuesList(hObject, handles);
     set(handles.FileHistory_JobsValuesListbox, 'Value', 1);
+    [hObject, handles] = UpdateJobsValuesList(hObject, handles);
     guidata(hObject, handles);
     
     
