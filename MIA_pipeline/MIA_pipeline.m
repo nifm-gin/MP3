@@ -2153,7 +2153,11 @@ if ~isfield(handles, 'MIA_pipeline_ParamsModules')
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-    JobNames = fieldnames(Module.Jobs);
+    if isfield(handles, 'MIA_pipeline_ParamsModules')
+        JobNames = fieldnames(Module.Jobs);
+    else
+        JobNames = {''};
+    end
 end
 set(handles.MIA_pipeline_JobsList, 'String',JobNames);
 set(handles.MIA_pipeline_JobsList, 'Value', 1);
@@ -2253,7 +2257,7 @@ module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
 handles.module_parameters_string = module_parameters_string;
 handles.module_parameters_fields = module_parameters_fields;
     
-handles.FilterParameters = Module.Filters;
+handles.FilterParameters = [handles.FilterParameters, Module.Filters];
 [hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
@@ -2664,7 +2668,7 @@ for i=1:length(Modules)
     %%
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
-        return
+        continue
     end
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
