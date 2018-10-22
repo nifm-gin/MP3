@@ -1321,7 +1321,7 @@ for i=1:length(ScanInputs)
         warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
         pipeline = struct();
         output_database = table();
-        return
+        continue
     end
 end
 
