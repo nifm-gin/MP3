@@ -231,7 +231,7 @@ for i=1:length(mapsVar)
 
     J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
-    [path, name, ~] = fileparts(files_out.In1{1});
+    [path, name, ~] = fileparts(files_out.In1{i});
     jsonfile = [path, '/', name, '.json'];
     WriteJson(J, jsonfile)
 end
