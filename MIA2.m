@@ -686,6 +686,7 @@ else
         set(handles.MIA_name_list, 'String', handles.database.Properties.UserData.db_filename)
         
         % update database path (in case the directory has moved) 
+        handles.database.Properties.UserData.db_filename = filename;
         new_patient_directory = strcat(pathname, filesep);
         handles.database.Properties.UserData.MIA_data_path  = new_patient_directory;
         handles.database.Properties.UserData.MIA_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
@@ -1200,7 +1201,7 @@ for i = 1:numel(data_to_load)
 end
 
 set(handles.MIA_patient_information_title, 'String', [char(unique(handles.database.Patient(data_to_load))) '_' char(unique(handles.database.SequenceName(data_to_load)))]);
-set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off');
+set(handles.MIA_orientation_space_popupmenu, 'Visible', 'off', 'Value', 1);
 handles.data_loaded.number_of_scan = numel(data_to_load);
 handles.data_loaded.info_data_loaded = handles.database(data_to_load,:);
 
@@ -4297,14 +4298,12 @@ end
 % delete temps files and folder
 rmdir(MIA_tmp_folder, 's')
 
-%   MIA_add_name_Callback(hObject, eventdata, handles)
-
 guidata(hObject, handles);
 
 MIA_update_database_display(hObject, eventdata, handles);
-msgbox('Import Done!', 'Message') ;
+
 MIA_menu_save_database_Callback(hObject, eventdata, handles)
-msgbox('Database saved!', 'Message') ;
+msgbox('Import Done and database saved!', 'Message') ;
 
 
 % --------------------------------------------------------------------
