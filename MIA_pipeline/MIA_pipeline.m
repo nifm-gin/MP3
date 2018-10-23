@@ -2480,7 +2480,7 @@ function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     String = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') %|| ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs')
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}).Jobs))
     String = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
@@ -2545,7 +2545,7 @@ function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, hand
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     Entrie = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')% || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs')
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}).Jobs))
     Entrie = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
@@ -2727,9 +2727,9 @@ for i=1:length(Modules)
     Module.Filters = {};
     %%
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
-    if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
-        continue
-    end
+%     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
+%         continue
+%     end
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];
