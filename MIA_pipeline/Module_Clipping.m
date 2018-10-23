@@ -110,10 +110,8 @@ data = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-J = jsondecode(raw);
+J = ReadJson(jsonfile);
+
 
 
 data(data<opt.Clim_Min) = NaN;
@@ -126,9 +124,9 @@ info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
 niftiwrite(data, files_out.In1{1}, info2)
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
+%% Json processing
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+WriteJson(J, jsonfile)

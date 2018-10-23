@@ -265,10 +265,10 @@ for i=1:length(mapsVar)
     %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
     niftiwrite(mapsVar{i}, files_out.In1{i}, info2)
 
-    JMod = jsonencode(J);
-    [path, name, ext] = fileparts(files_out.In1{i});
+    %% Json Processing
+    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+    [path, name, ~] = fileparts(files_out.In1{i});
     jsonfile = [path, '/', name, '.json'];
-    fidmod = fopen(jsonfile, 'w');
-    fwrite(fidmod, JMod, 'uint8');
-    fclose(fidmod);
+    WriteJson(J, jsonfile)
+
 end

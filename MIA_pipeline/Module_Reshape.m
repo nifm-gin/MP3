@@ -101,17 +101,17 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Get data from a specific axe      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
+
+J = ReadJson(jsonfile);
+
 Informations = whos('N');
 axes = str2double(opt.Axes);
 index = str2double(opt.IndexVector);
@@ -162,15 +162,15 @@ info.PixelDimensions = info.PixelDimensions(1:length(size(NewIm)));
 info.ImageSize = size(NewIm);
 
 
-info2 = info
+info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
 
 niftiwrite(NewIm, files_out.In1{1}, info2)
-JMod = jsonencode(J);
-[path, name, ext] = fileparts(files_out.In1{1});
+
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+[path, name, ~] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fidmod = fopen(jsonfile, 'w');
-fwrite(fidmod, JMod, 'uint8');
-fclose(fidmod);
+WriteJson(J, jsonfile)
