@@ -18,6 +18,11 @@ if ~exist('interpolation', 'var')
     interpolation = 3;
 end
 
+if strcmp(interpolation, 'auto')
+    interpolation = 0;
+end
+
+
 Y   = zeros(Vo(1).dim(1:3));       % initialize output volume
 Vi_size = Vi(1).private.dat.dim;
 
