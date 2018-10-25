@@ -1674,7 +1674,7 @@ function handles = MIA_update_image_displayed(hObject, eventdata, handles)
 scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
 
 switch get(hObject, 'Tag')
-    case {'MIA_new_roi', 'MIA_PRM_slider_trans', 'MIA_PRM_CI'}
+    case {'MIA_new_roi', 'MIA_PRM_slider_trans', 'MIA_PRM_CI',"MIA_new_ROI_dyn"}
         return
     case {'MIA_data1_echo_slider', 'MIA_data1_expt_slider'}
         
