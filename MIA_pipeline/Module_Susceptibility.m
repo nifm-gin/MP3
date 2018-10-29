@@ -224,10 +224,11 @@ if strcmp(opt.RemoveBackground, 'Yes')
     m2 = mean(FirstVol(Mask2(:)));
     
     Seuil = opt.Seuil;
+    
     ArithmMean = mean([m1,m2]);
     OldArithmMean = ArithmMean - Seuil;
     
-    while abs(ArithmMean - OldArithmMean) >= 2
+    while abs(ArithmMean - OldArithmMean) >= Seuil
         Mask1 = FirstVol<ArithmMean;
         m1 = mean(FirstVol(Mask1(:)));
         Mask2 = ~Mask1;
