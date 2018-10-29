@@ -3,7 +3,7 @@ function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr, view_mode)
 % Vi = image to move
 % Vref = reference image (voxel space)
 %-Loop over planes reading to Y
-
+interpolation = 0;
 			
 
 Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
@@ -20,7 +20,7 @@ parfor p = 1:Vref(1).dim(3)
     M = inv(B*mat_tmp);
 %     d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
 %     Y(:,:,p) = reshape(d,xy);
-    Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
+    Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,interpolation);
 end
 
 
