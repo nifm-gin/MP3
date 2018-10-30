@@ -361,21 +361,53 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = '';
         table.editable = false;
     case '1Scan1TPXP'
+        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
+        TP_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Tp(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
+        Patients_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Patient(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
            
-            TP_listing = unique(handles.MIA_pipeline_Filtered_Table.Tp(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
             table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
             table.data(1:numel(TP_listing),4) = {false};
-            %table.data(1,2) = {'Choose'};
-            
-            Patients_listing = unique(handles.MIA_pipeline_Filtered_Table.Patient(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+
             table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
             table.data(1:numel(Patients_listing),6) = {false};
         else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            Def2 = Def(:,2);
+            Def = Def(~cellfun('isempty', Def2'),1:2);
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            Def2 = Def(:,4);
+            Def = Def(~cellfun('isempty', Def2'),3:4);
+            table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
+            table.data(1:numel(TP_listing),4) = {false};
+            TPSelected = {Def{cell2mat(Def(:,2)),1}};
+            IndSelected = find(ismember(TP_listing, TPSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),4) = {true};
+            end
+            
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            Def2 = Def(:,6);
+            Def = Def(~cellfun('isempty', Def2'),5:6);
+            table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
+            table.data(1:numel(Patients_listing),6) = {false};
+            PatientSelected = {Def{cell2mat(Def(:,2)),1}};
+            IndSelected = find(ismember(Patients_listing, PatientSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),6) = {true};
+            end
+            
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
         end
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName', 'Tp', 'Patient'};
         table.columnName = {'SequenceName', 'Select ONE Input','Tp', 'Select ONE Input', 'Patient', 'Select Input'};
@@ -383,55 +415,68 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.editable = [false true false true false true];
         table.ColumnFormat = {'char'}; 
         
-    case '1Scan'
-        if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
-            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-            table.data(1:numel(SequenceType_listing),2) = {false};
-        else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
-        end
-        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
-        %% New Test
+%     case '1Scan'
 %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
 %         else
+%             Def = handles.new_module.opt.table.Default{parameter_selected};
+%             NamesSelected = {Def{cell2mat(Def(:,2)),1}};
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
-%             NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
 %             for i=1:length(NamesSelected)
-%                 IndSelected = find(strcmp(cellstr(SequenceType_listing), NamesSelected(i))) ;
+%                 IndSelected = find(strcmp(cellstr(SequenceType_listing), NamesSelected(i)));
 %                 table.data(IndSelected,2) = {true};
 %             end
 %             %table.data = handles.new_module.opt.table.Default{parameter_selected};
 %         end
-        %% Test
-%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
-%         table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-%         table.data(1:numel(SequenceType_listing),2) = {false};
-%         if ~isempty(handles.new_module.opt.table.Default{parameter_selected}) && sum(strcmp(handles.new_module.opt.table.Default{parameter_selected}(2), cellstr(SequenceType_listing)))==1
-%             table.data(strcmp(handles.new_module.opt.table.Default{parameter_selected}(2), cellstr(SequenceType_listing)), 2) = {true};
-%         end
-%         
-        table.columnName = {'SequenceName', 'Select ONE Input'};
-        table.editable = [false true];
-        table.ColumnFormat = {'char'};
-    case 'XScan'
-        SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+%         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+%         %% New Test
+% %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+% %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
+% %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+% %             table.data(1:numel(SequenceType_listing),2) = {false};
+% %         else
+% %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+% %             table.data(1:numel(SequenceType_listing),2) = {false};
+% %             NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+% %             for i=1:length(NamesSelected)
+% %                 IndSelected = find(strcmp(cellstr(SequenceType_listing), NamesSelected(i))) ;
+% %                 table.data(IndSelected,2) = {true};
+% %             end
+% %             %table.data = handles.new_module.opt.table.Default{parameter_selected};
+% %         end
+%         %% Test
+% %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+% %         table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+% %         table.data(1:numel(SequenceType_listing),2) = {false};
+% %         if ~isempty(handles.new_module.opt.table.Default{parameter_selected}) && sum(strcmp(handles.new_module.opt.table.Default{parameter_selected}(2), cellstr(SequenceType_listing)))==1
+% %             table.data(strcmp(handles.new_module.opt.table.Default{parameter_selected}(2), cellstr(SequenceType_listing)), 2) = {true};
+% %         end
+% %         
+%         table.columnName = {'SequenceName', 'Select ONE Input'};
+%         table.editable = [false true];
+%         table.ColumnFormat = {'char'};
+    case {'XScan', '1Scan'}
+        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
         else
-%             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-%             table.data(1:numel(SequenceType_listing),2) = {false};
-%             NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
-%             IndSelected = find(strcmp(SequenceType_listing, NamesSelected)) ;
-%             for i=1:length(IndSelected)
-%                table.data(IndSelected(i),2) = {true};
-%             end
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
         end
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
         
@@ -440,57 +485,101 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.editable = [false true];
         table.ColumnFormat = {'char'};
         
-    case '1ScanOr1ROI'
+    case {'1ScanOr1ROI', 'XScanOrXROI'}
+        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
             for i=1:numel(SequenceType_listing)
                 table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
             end
         else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            for i=1:numel(SequenceType_listing)
+                table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+            end
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
         end
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
-        table.columnName = {'SequenceName', 'Select ONE Input', 'Type'};
+        
+        
+        table.columnName = {'SequenceName', 'Select Input', 'Type'};
         table.editable = [false true false];
-        table.ColumnFormat = {'char'};  
-    case '1ROI'
-        if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
-            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-            table.data(1:numel(SequenceType_listing),2) = {false};
-        else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
-        end
-        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
-        table.columnName = {'SequenceName', 'Select ONE Input'};
-        table.editable = [false true];
         table.ColumnFormat = {'char'};
-    case 'XROI'
+%         if isempty(handles.new_module.opt.table.Default{parameter_selected})
+%             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+%             table.data(1:numel(SequenceType_listing),2) = {false};
+%             for i=1:numel(SequenceType_listing)
+%                 table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+%             end
+%         else
+%             table.data = handles.new_module.opt.table.Default{parameter_selected};
+%         end
+%         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+%         table.columnName = {'SequenceName', 'Select ONE Input', 'Type'};
+%         table.editable = [false true false];
+%         table.ColumnFormat = {'char'};  
+%     case '1ROI'
+%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+%         if isempty(handles.new_module.opt.table.Default{parameter_selected})
+%             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+%             table.data(1:numel(SequenceType_listing),2) = {false};
+%         else
+%             table.data = handles.new_module.opt.table.Default{parameter_selected};
+%         end
+%         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+%         table.columnName = {'SequenceName', 'Select ONE Input'};
+%         table.editable = [false true];
+%         table.ColumnFormat = {'char'};
+    case {'XROI', '1ROI'}
+        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
         else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
         end
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        
+        
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
-     case 'XScanOrXROI'
-        if isempty(handles.new_module.opt.table.Default{parameter_selected})
-            SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
-            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
-            table.data(1:numel(SequenceType_listing),2) = {false};
-        else
-            table.data = handles.new_module.opt.table.Default{parameter_selected};
-        end
-        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
-        table.columnName = {'SequenceName', 'Select Input'};
-        table.editable = [false true];
-        table.ColumnFormat = {'char'};
+%      case 'XScanOrXROI'
+%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
+%         if isempty(handles.new_module.opt.table.Default{parameter_selected})
+%             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+%             table.data(1:numel(SequenceType_listing),2) = {false};
+%         else
+%             table.data = handles.new_module.opt.table.Default{parameter_selected};
+%         end
+%         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+%         table.columnName = {'SequenceName', 'Select Input'};
+%         table.editable = [false true];
+%         table.ColumnFormat = {'char'};
     case 'cell'
         table.ColumnFormat = handles.new_module.opt.table.Default(parameter_selected);
         table.data = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
@@ -633,7 +722,7 @@ end
 
 %handles.tmp_database = table();
 handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
-MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
@@ -759,6 +848,7 @@ else
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
+[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
     %patient_listing = table_data(:,1);
 % patient_selected = patient_listing(find([table_data{:,2}]' == true));
 
@@ -1180,30 +1270,46 @@ guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
 
 
 function [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles)
-    ActualValues = cell(size(handles.module_parameters_string));
-    StrToDisplay = cell(size(handles.module_parameters_string));
-    LString = zeros(size(handles.module_parameters_string));
-    for i=1:length(handles.module_parameters_fields)
-        if strcmp(handles.module_parameters_fields{i}, '')
-            ActualValues{i} = ' ';
-        else
-            if isnumeric(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}))
-                ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+ActualValues = cell(size(handles.module_parameters_string));
+StrToDisplay = cell(size(handles.module_parameters_string));
+LString = zeros(size(handles.module_parameters_string));
+for i=1:length(handles.module_parameters_fields)
+    if strcmp(handles.module_parameters_fields{i}, '') && any(any(strcmp(handles.new_module.opt.table.Default{i}, '')))
+        ActualValues{i} = ' ';
+    else
+        if ~strcmp(handles.module_parameters_fields{i}, '') && isnumeric(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}))
+            ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI'))
+            if isempty(handles.new_module.opt.table.Default{i})
+                Scan = [];
             else
-                ActualValues{i} = char(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+                Scan = handles.new_module.opt.table.Default{i}(cell2mat(handles.new_module.opt.table.Default{i}(:,2)),1);
             end
+            if isempty(Scan)
+                ActualValues{i} = ' ';
+            elseif length(Scan)>1
+                ActualValues{i} = '';
+                for j=1:length(Scan)
+                    ActualValues(i) = {[ActualValues{i},'  ', Scan{j}]};
+                end
+            else
+                ActualValues(i) = Scan;
+            end
+        else
+            ActualValues{i} = char(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
         end
-        LString(i) = length(handles.module_parameters_string{i})+length(ActualValues{i});
     end
-    %FinalLength = floor(TableSizeInChar);
-    FinalLength = 90;
-    for i=1:length(handles.module_parameters_fields)
-        StrToDisplay{i} = [handles.module_parameters_string{i}, repmat(' ',1,FinalLength-LString(i)), ActualValues{i}];
-    end
-    
-    
-    %set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
-    set(handles.MIA_pipeline_module_parameters, 'String', char(StrToDisplay));
+    LString(i) = length(handles.module_parameters_string{i})+length(ActualValues{i});
+end
+%FinalLength = floor(TableSizeInChar);
+FinalLength = 90;
+for i=1:length(handles.module_parameters_fields)
+    StrToDisplay{i} = [handles.module_parameters_string{i}, repmat(' ',1,FinalLength-LString(i)), ActualValues{i}];
+end
+
+
+%set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
+set(handles.MIA_pipeline_module_parameters, 'String', char(StrToDisplay));
 
 
 
@@ -1324,6 +1430,7 @@ for i=1:NbScanInput
             Datab = Databtmp;
         else
             EmptyParams{i} = EmptyParams{i} +1;
+            Datab = table();
         end
     end
 
@@ -1438,6 +1545,10 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
         InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
         % Ligne commentee pour debeuger le pipeline de Ludovic . .. . .  YO
         % NO SE :/
+        % Cette ligne permet l'execution du pipeline de Ludovic mais
+        % empeche du coup celle d'un module Coreg dont l'entrée 1 est
+        % un fichier unique (1 Scan + 1 TP + 1 Patient selectionné)... A
+        % investiguer
         %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
         
         %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
@@ -1926,7 +2037,6 @@ handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
-
 
 guidata(hObject, handles);
 
@@ -2730,6 +2840,7 @@ for i=1:length(Modules)
 %     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
 %         continue
 %     end
+    pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];
