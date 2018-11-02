@@ -18,11 +18,13 @@ if isempty(opt)
     module_option(:,7)   = {'output_filename_ext_TMAX','TMAX'};
     module_option(:,8)   = {'output_filename_ext_TTP','TTP'};
     module_option(:,9)   = {'output_filename_ext_T0','T0'};
-    module_option(:,10)   = {'Realign','No'};
-    module_option(:,11)   = {'RefInput', 1};
-    module_option(:,12)   = {'InputToReshape',1};
-    module_option(:,13)   = {'Table_in', table()};
-    module_option(:,14)   = {'Table_out', table()};
+    module_option(:,10)   = {'RemoveBackground','No'};
+    module_option(:,11)   = {'Realign','No'};
+    module_option(:,12)   = {'Seuil',2};
+    module_option(:,13)   = {'RefInput', 1};
+    module_option(:,14)   = {'InputToReshape',1};
+    module_option(:,15)   = {'Table_in', table()};
+    module_option(:,16)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
     opt.NameOutFiles = {opt.Module_settings.output_filename_ext_CBV, opt.Module_settings.output_filename_ext_CBF, opt.Module_settings.output_filename_ext_MTT, opt.Module_settings.output_filename_ext_TMAX, opt.Module_settings.output_filename_ext_TTP, opt.Module_settings.output_filename_ext_T0};
@@ -38,13 +40,15 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',{'SequenceName'},'Mandatory',''};
     user_parameter(:,2)   = {'Parameters','','','','','',''};
-    user_parameter(:,3)   = {'   .Realign 4th dimension','cell',{'No','Yes'},'Realign','','',''};
-    user_parameter(:,4)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','','',''};
-    user_parameter(:,5)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','','',''};
-    user_parameter(:,6)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','','',''};
-    user_parameter(:,7)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','','',''};
-    user_parameter(:,8)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
-    user_parameter(:,9)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','','',''};
+    user_parameter(:,3)   = {'   .Remove background','cell',{'No','Yes'},'RemoveBackground','','','Remove the background of the perf image before comlputation. Method by Jean-Albert Lotterie (CHU Toulouse)'};
+    user_parameter(:,4)   = {'       .Threshold on the variation','numeric','','Seuil','','','The algorithm to remove the background will stop if the variation of the criteria is lower than this threshold.'};
+    user_parameter(:,5)   = {'   .Realign 4th dimension','cell',{'No','Yes'},'Realign','','',''};
+    user_parameter(:,6)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','','',''};
+    user_parameter(:,7)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','','',''};
+    user_parameter(:,8)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','','',''};
+    user_parameter(:,9)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','','',''};
+    user_parameter(:,10)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
+    user_parameter(:,11)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','','',''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %     
@@ -199,6 +203,50 @@ if strcmp(opt.Realign, 'Yes')
 end
 
 
+%% Remove Background
+
+if strcmp(opt.RemoveBackground, 'Yes')
+    FirstVol = N(:,:,:,1);
+    % m1 mean on the 8 voxels on the 8 corners of the volume. Those voxels
+    % belongs to the background. It's the first zone.
+    Mask1 = false(size(FirstVol));
+    Mask1(1,1,1) = 1;
+    Mask1(end,1,1) = 1;
+    Mask1(1,end,1) = 1;
+    Mask1(end,end,1) = 1;
+    Mask1(1,1,end) = 1;
+    Mask1(end,1,end) = 1;
+    Mask1(1,end,end) = 1;
+    Mask1(end,end,end) = 1;
+    m1 = mean(FirstVol(Mask1(:)));
+    %The second zone is the complementary of the first one. Its mean is m2.
+    Mask2 = ~Mask1;
+    m2 = mean(FirstVol(Mask2(:)));
+    
+    Seuil = opt.Seuil;
+    
+    ArithmMean = mean([m1,m2]);
+    OldArithmMean = ArithmMean - Seuil;
+    
+    while abs(ArithmMean - OldArithmMean) >= Seuil
+        Mask1 = FirstVol<ArithmMean;
+        m1 = mean(FirstVol(Mask1(:)));
+        Mask2 = ~Mask1;
+        m2 = mean(FirstVol(Mask2(:)));
+        OldArithmMean = ArithmMean;
+        ArithmMean = mean([m1,m2]);
+    end
+    
+    Mask = FirstVol >= ArithmMean;
+    ExcluededVoxels = ~Mask;
+    B = repmat(ExcluededVoxels, [1, 1, 1, size(N,4)]);
+    N(B) = NaN;
+    
+    
+end
+
+
+
 %% Processing
 meansignal = mean(squeeze(N),4);
 volume_mask = meansignal>max(N(:))*0.01;
@@ -225,6 +273,7 @@ for i=1:length(mapsVar)
     info2.Datatype = class(mapsVar{i});
     info2.PixelDimensions = info.PixelDimensions(1:length(size(mapsVar{i})));
     info2.ImageSize = size(mapsVar{i});
+    info2.MultiplicativeScaling = 1;
     %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
     niftiwrite(mapsVar{i}, files_out.In1{i}, info2)
     

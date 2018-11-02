@@ -2334,6 +2334,8 @@ for i = 1:size(handles.data_displayed.image, 4)
     else
         % rgb2ind(uint8(squeeze(handles.data_displayed.image(pixel_coordinates_2d(2), pixel_coordinates_2d(1),pixel_coordinates_2d(3),2, :))), 32)
         values(i) = handles.data_displayed.image(pixel_coordinates_2d(2), pixel_coordinates_2d(1),pixel_coordinates_2d(3),i,1);
+        %[pixel_coordinates_2d(2),pixel_coordinates_2d(1), pixel_coordinates_2d(3)]
+        %values(i)
         Sizes(i) = length(num2str(values(i)))+100;
     end
 end

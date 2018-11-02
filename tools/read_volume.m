@@ -14,11 +14,7 @@ if ~exist('view_mode', 'var')
     view_mode = 'Axial';
 end
     
-if ~exist('interpolation', 'var')
-    interpolation = 3;
-end
-
-if strcmp(interpolation, 'auto')
+if ~exist('interpolation', 'var') || strcmp(interpolation, 'auto')
     interpolation = 0;
 end
 
