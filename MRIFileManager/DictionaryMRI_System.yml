@@ -291,7 +291,7 @@ dictionaryMRI:
                   description: {info: ""}
   
                   wherePhilips: {file: PAR ; Xml, keyName: diffusion b value number  ; BValue, type: int   ; int, format: ~, units: ~}
-                  whereDicom:   {file: ~, keyName: Diffusion b-value, type: int, format: ~, units: ~}
+                  whereDicom:   {file: ~, keyName: "0018,9087", type: float, format: ~, units: ~}
                   
                   viewer: {category: Dimensions}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
