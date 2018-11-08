@@ -1474,7 +1474,8 @@ if ~strcmp(get(hObject, 'Tag'), 'MIA_slider_slice')
         
         %     %update MIA_plot1 if needed
         if (strcmp(get(hObject, 'Tag'), 'MIA_load_axes') || strcmp(get(hObject, 'Tag'), 'MIA_PRM_slider_tp') || ...
-                (strcmp(get(hObject, 'Tag'), 'MIA_PRM_CI')) || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu')) && ...
+                (strcmp(get(hObject, 'Tag'), 'MIA_PRM_CI')) || strcmp(get(hObject, 'Tag'), 'MIA_PRM_ref_popupmenu') ...
+               || strcmp(get(hObject, 'Tag'), 'MIA_orientation_space_popupmenu'))  && ...
                 handles.display_option.view_plot == 1
             if handles.mode == 1
                 handles =MIA_update_plot1_single(hObject,handles);
@@ -2061,12 +2062,20 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 end
                 legende_txt(ii,:) = ROI_names(ii,:);
         end
-        %update tablee
-        table_data(ii*2-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-mean']};
-        table_data(ii*2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
+        %update table
+        % first compute the volume of one voxel
+        scan_of_reference = get(handles.MIA_orientation_space_popupmenu, 'Value');
+        nifti_info = niftiinfo(handles.data_loaded.Scan(scan_of_reference).V(1).fname);
+        voxel_volume = prod(nifti_info.raw.pixdim(2:4));
+        
+        table_data(ii*3-2,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-Volume (mm3)']};
+        table_data(ii*3-1,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-mean']};
+        table_data(ii*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
         VOI_data(VOI_data==0)=nan;
-        table_data(ii*2-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
-        table_data(ii*2,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
+        
+        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(numel(VOI_data)*voxel_volume);
+        table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
+        table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
     end
     clear VOI_data
 end
@@ -2092,6 +2101,38 @@ hold(handles.MIA_plot1, 'off');
 %update table1
 
 set(handles.MIA_table1, 'Data', table_data);
+
+if ~isempty(table_data)
+    % set ColumnWidth to auto
+
+    merge_Data = [get(handles.MIA_table1, 'ColumnName')'; table_data];
+    %merge_Data = table_data;
+    dataSize = size(merge_Data);
+    % Create an array to store the max length of data for each column
+    maxLen = zeros(1,dataSize(2));
+    % Find out the max length of data for each column
+    % Iterate over each column
+    for i=1:dataSize(2)
+        % Iterate over each row
+        for j=1:dataSize(1)
+            if strcmp(class(merge_Data{j,i}), 'char') %#ok<ISCHR>
+                len = length(merge_Data{j,i});
+            elseif strcmp(class(merge_Data{j,i}), 'double') %#ok<STISA>
+                len = length(num2str(merge_Data{j,i}));
+            end
+            
+            % Store in maxLen only if its the data is of max length
+            if(len > maxLen(1,i))
+                maxLen(1,i) = len;
+            end
+        end
+    end
+    % Some calibration needed as ColumnWidth is in pixels
+    cellMaxLen = num2cell(maxLen*7.5);
+    % Set ColumnWidth of UITABLE
+    set(handles.MIA_table1, 'ColumnWidth', cellMaxLen);
+    
+end
 
 
 
