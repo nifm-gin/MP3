@@ -257,9 +257,18 @@ if sum(cell2num(scores(:,5))) > 10
 else
     [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime.value(1)*10^(-3),J.EchoTime.value*10^(-3));
     %maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
+    if strcmp(opt.RemoveBackground, 'Yes')
+        CBV(ExcluededVoxels) = NaN;
+        CBF(ExcluededVoxels) = NaN;
+        MTT(ExcluededVoxels) = NaN;
+        TMAX(ExcluededVoxels) = NaN;
+        TTP(ExcluededVoxels) = NaN;
+        T0(ExcluededVoxels) = NaN;
+    end
     mapsVar = {CBV, CBF, MTT, TMAX, TTP, T0};
 
 end
+
 
 
 %% Reshape to the input scan size
@@ -278,11 +287,11 @@ for i=1:length(mapsVar)
     niftiwrite(mapsVar{i}, files_out.In1{i}, info2)
     
 
-    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+    J2 = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
     [path, name, ~] = fileparts(files_out.In1{i});
     jsonfile = [path, '/', name, '.json'];
-    WriteJson(J, jsonfile)
+    WriteJson(J2, jsonfile)
 end
 
 
