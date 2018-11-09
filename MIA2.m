@@ -2109,8 +2109,8 @@ set(handles.MIA_table1, 'Data', table_data);
 if ~isempty(table_data)
     % set ColumnWidth to auto
 
-    merge_Data = [get(handles.MIA_table1, 'ColumnName')'; table_data];
-    %merge_Data = table_data;
+   % merge_Data = [get(handles.MIA_table1, 'ColumnName')'; table_data];
+   merge_Data = table_data;
     dataSize = size(merge_Data);
     % Create an array to store the max length of data for each column
     maxLen = zeros(1,dataSize(2));
