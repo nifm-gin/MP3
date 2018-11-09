@@ -1229,6 +1229,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .SPM: Realign'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Realign_Est('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Realign_Est(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Realign_Est';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
         
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
@@ -1776,7 +1783,7 @@ end
 
 Overwrite_Files = {};
 for i=1:length(Files_out)
-    if exist(Files_out{i},'file')
+    if exist(Files_out{i},'file') || exist(strrep(Files_out{i},'.nii', '.nii.gz'),'file')
         Overwrite_Files = [Overwrite_Files; Files_out{i}];
     end
 end

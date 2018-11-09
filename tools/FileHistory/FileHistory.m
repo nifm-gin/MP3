@@ -219,7 +219,9 @@ function [hObject, handles] = UpdateJobsValuesList(hObject, handles)
     if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
         NewEntrie = [];
         for i=1:length(Entrie)
-            [~,name,~] = fileparts(Entrie{i});
+            EntrieSpl = split(Entrie{i}, filesep);
+            name = strjoin(EntrieSpl(end-1:end), filesep);
+            %[~,name,~] = fileparts(Entrie{i});
             NewEntrie = [NewEntrie; {name}];
         end
         Entrie = NewEntrie;
