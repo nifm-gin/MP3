@@ -158,6 +158,8 @@ OutputImages(isnan(OutputImages)) = -1;
 OutputImages(isinf(OutputImages)) = -1;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
+else 
+    OutputImages_reoriented = OutputImages;
 end
 
 
@@ -172,9 +174,9 @@ info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
-info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
-info2.ImageSize = size(OutputImages);
+info2.Datatype = class(OutputImages_reoriented);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reoriented)));
+info2.ImageSize = size(OutputImages_reoriented);
 %info2.Description = [info.Description, 'Modified by T2map Module'];
 
 
