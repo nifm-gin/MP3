@@ -130,7 +130,7 @@ fid = fopen(jsonfile, 'r');
 raw = fread(fid, inf, 'uint8=>char');
 fclose(fid);
 %raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
+J = jsondecode(raw');
 
 %Informations = whos('N');
 
