@@ -128,6 +128,9 @@ switch opt.Operation
             else
                 OutputImages =  repmat(input1, [1 1 1 size(input1,4) size(input1,5) size(input1,6) size(input1,7)]) .* input2;    
             end
+           % OutputImages = OutputImages + abs(min(OutputImages(:)));
+            OutputImages(OutputImages == 0) = min(OutputImages(:));
+           OutputImages(isnan(OutputImages)) = min(OutputImages(:));
         else
             OutputImages = input1 .* input2;
         end
