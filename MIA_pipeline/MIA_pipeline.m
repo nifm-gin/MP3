@@ -70,7 +70,8 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
+     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
+     '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
@@ -1110,6 +1111,15 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+     case '   .Brain Mask (using PCNN3D function)'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Brain_Mask_PCNN3D('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Brain_Mask_PCNN3D(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Brain_Mask_PCNN3D';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;   
+        
+           
     case '   .Inversion Efficiency (ASL_InvEff)'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
