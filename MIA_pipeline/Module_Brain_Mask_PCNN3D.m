@@ -123,7 +123,7 @@ voxel_surface = prod(nifti_info.raw.pixdim(2:3));
 BrSize = [1200 4400];
 maxiter = 200;
 OptMask = 0;
-[I_border, ~, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
+[I_border, Plot, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
 %[I_border] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
 
 mtx=size(I);
