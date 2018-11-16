@@ -151,15 +151,6 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% FixedImInfo = niftiinfo(files_in.In1{1});
-% [path, name, ~] = fileparts(files_in.In1{1});
-% FixedImJsonfile = [path, filesep, name, '.json'];
-% fid = fopen(FixedImJsonfile, 'r');
-% raw = fread(fid, inf, 'uint8=>char');
-% fclose(fid);
-% %raw = reshape(raw, 1,length(raw));
-% FixedImJSON = jsondecode(raw);
-
 
 matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[files_in.In1{1}, ',1']};
 % First duplicate the source scan using the prefix string (user-defined)
@@ -223,13 +214,9 @@ if isfield(files_in, 'In3')
 end
 
 
-% 
-% matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = opt.Function;
-% if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-%     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
-% else
-    matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = str2num(opt.Separation);
-% end
+
+matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = str2num(opt.Separation);
+
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = str2num(opt.Tolerence); %#ok<*ST2NM>
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = str2num(opt.Hist_Smooth);
 
