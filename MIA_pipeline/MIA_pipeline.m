@@ -639,17 +639,17 @@ if ~isempty(table.data)
     % Find out the max length of data for each column
     % Iterate over each column
     for i=1:dataSize(2)
-        % Iterate over each row
-        for j=1:dataSize(1)
-            len = length(merge_Data{j,i});
-            % Store in maxLen only if its the data is of max length
-            if(len > maxLen(1,i))
-                maxLen(1,i) = len;
-            end
+        
+        % 2 cases: the ColumnName is longer than any of the text contained
+        % in this column or otherwise
+        if max(cellfun('length',merge_Data(2:end,i))) >= length(merge_Data{1,i})
+            maxLen(1,i) = max(cellfun('length',merge_Data(2:end,i)))*13;
+        else
+            maxLen(1,i) = length(merge_Data{1,i})*7;
         end
     end
     % Some calibration needed as ColumnWidth is in pixels
-    cellMaxLen = num2cell(maxLen*6.5);
+    cellMaxLen = num2cell(maxLen);
     % Set ColumnWidth of UITABLE
     set(handles.MIA_pipeline_parameter_setup_table, 'ColumnWidth', cellMaxLen);
     
