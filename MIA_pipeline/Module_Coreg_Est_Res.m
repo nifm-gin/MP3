@@ -160,24 +160,24 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FixedImInfo = niftiinfo(files_in.In1{1});
-[path, name, ~] = fileparts(files_in.In1{1});
-FixedImJsonfile = [path, filesep, name, '.json'];
-fid = fopen(FixedImJsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-FixedImJSON = jsondecode(raw);
-
-
-
 
 matlabbatch{1}.spm.spatial.coreg.estwrite.ref = {[files_in.In1{1}, ',1']};
-matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_in.In2{1}, ',1']};
+% First duplicate the source scan using the prefix string (user-defined)
+% Otherwise the Coregestwrite will overwrite the file!!
+copyfile(files_in.In2{1},  files_out.In2{1})
+copyfile(strrep(files_in.In2{1},'.nii','.json'),  strrep(files_out.In2{1},'.nii','.json'))
+%% Json Processing
+[path, name, ~] = fileparts(files_in.In2{1});
+jsonfile = [path, '/', name, '.json'];
+J = ReadJson(jsonfile);
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
+[path, name, ~] = fileparts(files_out.In2{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
 % if the image of reference is > to 3D need to split the data
 % header = niftiinfo(files_out.In2{1});
-header = spm_vol(files_in.In2{1});
+header = spm_vol(files_out.In2{1});
 if numel(header) > 1
      other = {};
     for j=2:numel(header)
@@ -185,6 +185,9 @@ if numel(header) > 1
     end
 end
 
+
+% Use the files_out as source (the Coregestwrite will overwrite the file)
+matlabbatch{1}.spm.spatial.coreg.estwrite.source = {[files_out.In2{1}, ',1']};
 if isfield(files_in, 'In3')
     if ~exist('other', 'var')
         other = {};
@@ -193,50 +196,38 @@ if isfield(files_in, 'In3')
         if ~isempty(files_in.In3{i})
             %header = niftiinfo(files_in.In3{i});
             header = spm_vol(files_in.In3{i});
+            % First duplicate all the 'Other' scans using the prefix string (user-defined)
+            % Otherwise the Coregestwrite will overwrite the raw files!!
+            copyfile(files_in.In3{i},  files_out.In3{i})
+            if isfile(strrep(files_in.In3{i},'.nii','.json'))
+                %% Json Processing
+                [path, name, ~] = fileparts(files_in.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                J = ReadJson(jsonfile);
+
+                J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+
+                [path, name, ~] = fileparts(files_out.In3{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
+            end
             if numel(header) > 1
                 for j=1:numel(header)
-                    other= [other, [files_in.In3{i}, ',', num2str(j)]];
+                    other= [other, [files_out.In3{i}, ',', num2str(j)]];
                 end
             else
-                other = [other, [files_in.In3{i}, ',1']];
+                other = [other, [files_out.In3{i}, ',1']];
             end
         end
     end
     matlabbatch{1}.spm.spatial.coreg.estwrite.other = other';
 end
-
-% 
-% 
-% if isfield(files_in, 'In3')
-%     other = {};
-%     for i=1:length(files_in.In3)
-%         if ~isempty(files_in.In3{i})
-%             header = niftiinfo(files_in.In3{i});
-%             if length(header.ImageSize) > 3
-%                 for j=1:header.ImageSize(4)
-%                     other= [other, [files_out.In3{i}, ',', num2str(j)]];
-%                 end
-%             else
-%                 other = [other, [files_out.In3{i}, ',1']];
-%             end
-%         end
-%     end
-%     matlabbatch{1}.spm.spatial.coreg.estwrite.other = other;
-% end
-
-
-
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
-
-if strcmp(opt.Separation, 'Auto= [slice thickness voxel_size voxel_size/2]') 
-    matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [FixedImJSON.SliceThickness.value, FixedImInfo.PixelDimensions(2)*10, FixedImInfo.PixelDimensions(3)/2*10];
-
-    %matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = [fixed.uvascim.image.reco.thickness fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples  fixed.uvascim.image.reco.fov(1)/fixed.uvascim.image.reco.no_samples/2];
-else
-    matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = str2num(opt.Separation);
-end
+matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = str2num(opt.Separation);
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.tol = str2num(opt.Tolerence); %#ok<*ST2NM>
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.fwhm = str2num(opt.Hist_Smooth);
+
+
 %define options
 % Type of interpolation
 switch opt.Interpolation
@@ -281,6 +272,10 @@ end
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.mask= 0;
 matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_ext;
 
+
+
+
+
 [SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
 jobs = repmat(matlabbatch, 1, 1);
 inputs = cell(0, 1);
@@ -291,49 +286,7 @@ spm_jobman('initcfg');
 spm_jobman('run', jobs, inputs{:});
 
 
-
-%% JSON de l'input 2
-[path, name, ext] = fileparts(files_in.In2{1});
-SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, ext];
-if exist(SpmOutputFile, 'file') ~=2
-    error('Cannot find the file %s', SpmOutputFile);
-end
-movefile(SpmOutputFile,files_out.In2{1});
-
-jsonfile = [path, filesep, name, '.json'];
-J = ReadJson(jsonfile);
-
-J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
-[path, name, ~] = fileparts(files_out.In2{1});
-jsonfile = [path, '/', name, '.json'];
-WriteJson(J, jsonfile)
-
-%% JSON de l'input 3
-if isfield(files_out, 'In3')
-    for i=1:length(files_out.In3)
-        [path, name, ext] = fileparts(files_in.In3{i});
-        SpmOutputFile  = [path, filesep, opt.output_filename_ext, name, '.nii'];
-        if exist(SpmOutputFile, 'file') ~=2
-            error('Cannot find the file %s', SpmOutputFile);
-        end
-        movefile(SpmOutputFile,files_out.In3{i})
-        jsonfile = [path, filesep, name, '.json'];
-
-        J = ReadJson(jsonfile);
-
-        J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
-        [path, name, ~] = fileparts(files_out.In3{i});
-        jsonfile = [path, '/', name, '.json'];
-        WriteJson(J, jsonfile)
-
-    end
-end
-
-
-
 close(SPMinter)
 close(SPMgraph)
 
-
+% 
