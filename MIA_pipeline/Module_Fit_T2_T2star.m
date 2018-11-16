@@ -36,7 +36,8 @@ if isempty(opt)
         {'This module performs a voxel-by-voxel fitting using the following formula.'
     'y=abs(x(2) * exp(-xdata/x(1)))'
     'If a value equal to -1: the voxel signal is below the threshold or the fitting algorithm did not converge'}'};
-user_parameter(:,2)   = {'Select a Multi Gradient Echo or a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+user_parameter(:,2)   = {'Select a Multi Gradient Echo or a Multi Spin Echo scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',...
+    'If a MultiGgradienEchoFIDSpinEcho scan is seclected, the algo detect automatically the SpinEcho, and remove every echo after the SpinEcho/2'};
 user_parameter(:,3)   = {'Parameters','','','','', '',''};
 user_parameter(:,4)   = {'   .Output filename extension','char','_Fit_T2_T2star','output_filename_ext','','',...
     {'Specify the string to be added to the filename input.'
