@@ -55,7 +55,7 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
     user_parameter(:,2)   = {'Select the ASL_InvEff scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the pCaslEffInv scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the pCasl scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'   .Output filename','char','CBF','output_filename_ext','','',...
         {'Specify the name of the output scan.'
         'Default filename extension is ''CBF''.'}'};
