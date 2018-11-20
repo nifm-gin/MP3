@@ -629,6 +629,14 @@ dictionaryMRI:
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Spin Echo Time:
+                  description: {info: ""}
+                  
+                  whereBruker:  {file: method, keyName: $SpinEchoTime= (or) $PVM_EchoTime=, type: float, format: ~, units: ms}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SpinEchoTime, type: float, format: ~, units: ms} 
 
   Station Name:
                   description: {info: ""}
