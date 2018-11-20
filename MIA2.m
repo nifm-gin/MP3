@@ -554,15 +554,18 @@ function MIA_remove_name_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data_selected = finddata_selected(handles);
-patient_name = unique(handles.database.Patient(data_selected));
-user_response = questdlg(['Do you want to delete every data of ' char(patient_name) '??'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+%data_selected = finddata_selected(handles);
+patient_seleted = get(handles.MIA_name_list, 'String');
+patient_name = patient_seleted(get(handles.MIA_name_list, 'Value'),:);
+%patient_name = unique(handles.database.Patient(data_selected));
+user_response = questdlg(['Do you want to delete every data of ' string(patient_name)'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
 end
-
-nii_index = find(handles.database.Patient == patient_name);
-
+nii_index = [];
+for i=1:size(patient_name,1)
+    nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))))']';
+end
 MIA_remove_scan(hObject, eventdata, handles, nii_index)
 
 
