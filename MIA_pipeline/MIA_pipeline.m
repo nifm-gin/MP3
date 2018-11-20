@@ -387,25 +387,35 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             end
             
             Def = handles.new_module.opt.table.Default{parameter_selected};
-            Def2 = Def(:,4);
-            Def = Def(~cellfun('isempty', Def2'),3:4);
-            table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
-            table.data(1:numel(TP_listing),4) = {false};
-            TPSelected = {Def{cell2mat(Def(:,2)),1}};
-            IndSelected = find(ismember(TP_listing, TPSelected)) ;
-            for i=1:length(IndSelected)
-               table.data(IndSelected(i),4) = {true};
+            if size(Def,2)<4
+                table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
+                table.data(1:numel(TP_listing),4) = {false};
+            else
+                Def2 = Def(:,4);
+                Def = Def(~cellfun('isempty', Def2'),3:4);
+                table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
+                table.data(1:numel(TP_listing),4) = {false};
+                TPSelected = {Def{cell2mat(Def(:,2)),1}};
+                IndSelected = find(ismember(TP_listing, TPSelected)) ;
+                for i=1:length(IndSelected)
+                   table.data(IndSelected(i),4) = {true};
+                end
             end
             
             Def = handles.new_module.opt.table.Default{parameter_selected};
-            Def2 = Def(:,6);
-            Def = Def(~cellfun('isempty', Def2'),5:6);
-            table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
-            table.data(1:numel(Patients_listing),6) = {false};
-            PatientSelected = {Def{cell2mat(Def(:,2)),1}};
-            IndSelected = find(ismember(Patients_listing, PatientSelected)) ;
-            for i=1:length(IndSelected)
-               table.data(IndSelected(i),6) = {true};
+            if size(Def,2)<6
+                table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
+                table.data(1:numel(Patients_listing),6) = {false};
+            else
+                Def2 = Def(:,6);
+                Def = Def(~cellfun('isempty', Def2'),5:6);
+                table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
+                table.data(1:numel(Patients_listing),6) = {false};
+                PatientSelected = {Def{cell2mat(Def(:,2)),1}};
+                IndSelected = find(ismember(Patients_listing, PatientSelected)) ;
+                for i=1:length(IndSelected)
+                   table.data(IndSelected(i),6) = {true};
+                end
             end
             
             %table.data = handles.new_module.opt.table.Default{parameter_selected};
@@ -840,7 +850,16 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
         %    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         %end
         if (sum(cell2mat(A)) == 1 || sum(cell2mat(A)) == 0) && (sum(cell2mat(B)) == 1 || sum(cell2mat(B)) == 0)
-            handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+            C = handles.MIA_pipeline_parameter_setup_table.Data(:,6);
+            C = C(~cellfun('isempty',C));
+            if any(cell2mat(C))
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data;
+            elseif any(cell2mat(B))
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:4);
+            else
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:2);
+            end
+            handles.new_module.opt.table.Default{parameter_selected} = DataToStore;
         end
     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
@@ -1434,6 +1453,9 @@ for i=1:NbScanInput
         A = Input(:,2*j);
         A = A(~cellfun('isempty',A));
         ParamsSelected = Input(cell2mat(A),2*j-1);
+        if isempty(ParamsSelected) || NbParameters ~= length(New_module.opt.table.Scans_Input_DOF{ScanInputs(i)})
+            EmptyParams{i} = 1;
+        end
         if ~isempty(ParamsSelected)
             Databtmp = table();
             for k = 1:length(ParamsSelected)
@@ -1446,7 +1468,7 @@ for i=1:NbScanInput
             end
             Datab = Databtmp;
         else
-            EmptyParams{i} = EmptyParams{i} +1;
+            %EmptyParams{i} = EmptyParams{i} +1;
             Datab = table();
         end
     end
