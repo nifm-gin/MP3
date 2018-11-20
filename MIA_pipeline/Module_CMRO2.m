@@ -14,7 +14,7 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'trash_below',0};
     module_option(:,4)   = {'trash_after',Inf};
-    module_option(:,5)   = {'output_filename_ext','CMRO2'};
+    module_option(:,5)   = {'output_filename','CMRO2'};
     module_option(:,6)   = {'Ca',20.43};
     module_option(:,7)  = {'OutputSequenceName','AllName'};
     module_option(:,8)  = {'RefInput',1};
@@ -34,15 +34,12 @@ if isempty(opt)
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
      user_parameter(:,1)   = {'Description','Text','','','','',...
-        {'BVf Module'}'};
+        {'This module compute a CMRO2 (oxygen consumption) using a SO2 and a CBF map (see SO2 and CBF modules for more information)'}'};
     user_parameter(:,2)   = {'Select a CBF scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select a SO2 scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'Parameters','','','','', '',''};
-    user_parameter(:,5)   = {'   .Output filename extension','char','CMRO2','output_filename_ext','','',...
-        {'Specify the string to be added to the filename input.'
-        'Default filename extension is ''CMRO2''.'}'};
-    user_parameter(:,6)   = {'   .Constant (Ca)','numeric', '','Ca','','',...
-        {''}'};
+    user_parameter(:,5)   = {'   .Output filename','char','CMRO2','output_filename','','','Specify the name of the output file.'};
+    user_parameter(:,6)   = {'   .Constant (Ca)','numeric', '','Ca','','',{''}'};
     user_parameter(:,7)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
         {'Specify the output orientation'
         '--> Output orienation = First input'
@@ -64,16 +61,16 @@ opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:
   
 end
 %%%%%%%%
-opt.NameOutFiles = {opt.output_filename_ext};
+opt.NameOutFiles = {opt.output_filename};
 
 if isempty(files_out)
     opt.Table_out = opt.Table_in(opt.RefInput,:);
     opt.Table_out.IsRaw = categorical(0);   
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
     if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
@@ -99,7 +96,7 @@ end
 % end
 
 if isempty(files_out)
-   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename_ext,ext_nii)};
+   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename,ext_nii)};
 end
 
 %% If the test flag is true, stop here !

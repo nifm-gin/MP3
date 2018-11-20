@@ -32,7 +32,10 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
+    user_parameter(:,1)   = {'Description','Text','','','', '',{'Description of the module',...
+        'this module compute a R2prim map from a T2map and from a T2corrected3D (see module MGE2Dfrom3D) ',...
+        'If you use this function, please refere to this article : Christen et al. NMR in bimed 2011'}};
+    
     user_parameter(:,2)   = {'Select the T2_map scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the T2*corr3D scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'   .Output filename','char','R2Prim','output_filename_ext','','',...

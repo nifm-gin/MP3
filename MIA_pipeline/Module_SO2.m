@@ -14,7 +14,7 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'trash_below',0};
     module_option(:,4)   = {'trash_after',Inf};
-    module_option(:,5)   = {'output_filename_ext','SO2'};
+    module_option(:,5)   = {'output_filename','SO2'};
     module_option(:,6)   = {'B0',4.7};
     module_option(:,7)   = {'Gamma',2.67502};
     module_option(:,8)   = {'deltaxi_HBC',0.264};
@@ -38,12 +38,13 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-     user_parameter(:,1)   = {'Description','Text','','','','',...
-        {'BVf Module'}'};
+    user_parameter(:,1)   = {'Description','Text','','','', '',{'Description of the module',...
+        'this module compute a SO2 map from a R2prim and a BVf maps (see R2prim and BVf maps for more information) ',...
+        'If you use this function, please refere to this article : Christen et al. NMR in bimed 2011'}};
     user_parameter(:,2)   = {'Select a R2Prim scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select a BVf scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'Parameters','','','','', '',''};
-    user_parameter(:,5)   = {'   .Output filename extension','char','SO2','output_filename_ext','','',...
+    user_parameter(:,5)   = {'   .Output filename','char','SO2','output_filename','','',...
         {'Specify the string to be added to the filename input.'
         'Default filename extension is ''SO2''.'}'};
     user_parameter(:,6)   = {'   .B0','numeric', '','B0','','',...
@@ -76,16 +77,16 @@ opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:
   
 end
 %%%%%%%%
-opt.NameOutFiles = {opt.output_filename_ext};
+opt.NameOutFiles = {opt.output_filename};
 
 if isempty(files_out)
     opt.Table_out = opt.Table_in(opt.RefInput,:);
     opt.Table_out.IsRaw = categorical(0);   
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
     if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];

@@ -34,7 +34,9 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
+    user_parameter(:,1)   = {'Description','Text','','','', '',...
+        {'Description of the module : this module compute a deltaR2* map from two T2* maps acquired before and after a UPSIO injection',...
+        'If you use this function, please refere to this article : Tropes et al. MRM 2015'}};
     user_parameter(:,2)   = {'Select the T2_star_Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the T2_star_Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'   .Output filename','char','DeltaR2Star','output_filename_ext','','',...

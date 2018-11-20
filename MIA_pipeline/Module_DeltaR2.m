@@ -41,13 +41,15 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
-    user_parameter(:,2)   = {'Select the Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,1)   = {'Description','Text','','','', '',...
+        {'Description of the module : this module compute a deltaR2 map from 2 MGEFIDSE scans acquired before and after a UPSIO injection',...
+        'If you use this function, please refere to this article : Tropes et al. MRM 2015'}}  ;
+    user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'   .Output filename','char','DeltaR2','output_filename_ext','','',...
         {'Specify the name of the output scan.'
         'Default filename extension is ''DeltaR2''.'}'};
-    user_parameter(:,5)   = {'   .Number of echo used','cell',{'1', '3'},'NbEchoUsed','', '',''};
+    user_parameter(:,5)   = {'   .Number of echo used','cell',{'1', '3'},'NbEchoUsed','', '','Please select the number of echo used to compute the deltaR2 map. Is 3 is selected, a mean value bewteen the 3 echoes around the SpinEcho will be computed'};
     user_parameter(:,6)   = {'   .Output orientation','cell',{'First input', 'Second input'},'Output_orientation','','',...
         {'Specify the output orientation'
         '--> Output orienation = First input'

@@ -9,11 +9,11 @@ if isempty(opt)
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'OutputSequenceName','Extension'};
-    module_option(:,4)   = {'output_filename_ext_AUC','AUC'};
-    module_option(:,5)   = {'output_filename_ext_Max','Max'};
-    module_option(:,6)   = {'output_filename_ext_pc_rehau','pc_rehau'};
-    module_option(:,7)   = {'output_filename_ext_TTP','TTP'};
-    module_option(:,8)   = {'Las_dyn_before_bolus', 'Auto'};
+    module_option(:,4)   = {'output_filename_AUC','AUC'};
+    module_option(:,5)   = {'output_filename_Max','Max'};
+    module_option(:,6)   = {'output_filename_pc_enhanc','pc_enhanc'};
+    module_option(:,7)   = {'output_filename_TTP','TTP'};
+    module_option(:,8)   = {'Last_dyn_before_bolus', 'Auto'};
     module_option(:,9)   = {'End_analysis',180};
     module_option(:,10)   = {'RefInput', 1};
     module_option(:,11)   = {'InputToReshape',1};
@@ -21,7 +21,7 @@ if isempty(opt)
     module_option(:,13)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
-    opt.NameOutFiles = {opt.Module_settings.output_filename_ext_AUC, opt.Module_settings.output_filename_ext_Max, opt.Module_settings.output_filename_ext_pc_rehau, opt.Module_settings.output_filename_ext_TTP};
+    opt.NameOutFiles = {opt.Module_settings.output_filename_AUC, opt.Module_settings.output_filename_Max, opt.Module_settings.output_filename_pc_enhanc, opt.Module_settings.output_filename_TTP};
  
         %% list of everything displayed to the user associated to their 'type'
          % --> user_parameter(1,:) = user_parameter_list
@@ -32,14 +32,24 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',{'SequenceName'},'Mandatory',''};
-    user_parameter(:,2)   = {'Parameters','','','','','',''};
-    user_parameter(:,3)   = {'   .Output filename extension AUC','char','AUC','output_filename_ext_AUC','','',''};
-    user_parameter(:,4)   = {'   .Output filename extension Max','char', 'Max','output_filename_ext_Max','','',''};
-    user_parameter(:,5)   = {'   .Output filename extension pc_rehau','char','pc_rehau','output_filename_ext_pc_rehau','','',''};
-    user_parameter(:,6)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
-    user_parameter(:,7)   = {'   .Last dyn before bolus','char','Auto','Las_dyn_before_bolus','','',''};
-    user_parameter(:,8)   = {'   .End of the analysis (in sec)','numeric','','End_analysis','','',''};
+   user_parameter(:,1)   = {'Description','Text','','','','',...
+        {'The goal of this module is to quantify the Dynamic Contrast Enhancement scan (DCE) during a gadolinium injection.',...
+        'This module compute serveal map from the signal obtained by a DCE sequence :',...
+        '     the Area Under the Curve (AUC)',...
+        '     the signal max (Max)',...
+        '     the percentage of enhancement (pc_enhanc)',...
+        '     the time-to-peak (TTP)',...
+        'The analysis is done on a specific windows post contrast agent arrival (180 seconds by default)',...
+        'If you use such analysis, please refere to this article Lemasson et al. Radiology 2010'}};
+    user_parameter(:,2)   = {'Select one Dynamic Contrast Enhancement scan as input','1Scan','','',{'SequenceName'},'Mandatory','Please select a Dynamic Contrast Enhancement scan (DCE)'};
+    user_parameter(:,3)   = {'Parameters','','','','','',''};
+    user_parameter(:,4)   = {'   .Output filename AUC','char','AUC','output_filename_AUC','','',''};
+    user_parameter(:,5)   = {'   .Output filename Max','char', 'Max','output_filename_Max','','',''};
+    user_parameter(:,6)   = {'   .Output filename pc_enhanc','char','pc_enhanc','output_filename_pc_enhanc','','',''};
+    user_parameter(:,7)   = {'   .Output filename TTP','char','TTP','output_filename_TTP','','',''};
+    user_parameter(:,8)   = {'   .Last dyn before bolus','char','Auto','Last_dyn_before_bolus','','',{'If auto is selected, the algorithm will automatically detect the contrast agent arrival.',...
+        'Otherwise, the user can specify manually the dynamic the number of the contrast agent arrival (for example, if the baseline is constituted of 4 images and then the contrast agent is injected you can enter 4'}};
+    user_parameter(:,9)   = {'   .End of the analysis (in sec)','numeric','','End_analysis','','','User can specify the windows of signal analyzed'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %     
@@ -54,7 +64,7 @@ if isempty(opt)
 end
 %%%%%%%%
 
-opt.NameOutFiles = {opt.output_filename_ext_AUC, opt.output_filename_ext_Max, opt.output_filename_ext_pc_rehau, opt.output_filename_ext_TTP};
+opt.NameOutFiles = {opt.output_filename_AUC, opt.output_filename_Max, opt.output_filename_pc_enhanc, opt.output_filename_TTP};
 
 
 
@@ -126,13 +136,8 @@ N = double(N);
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
-fid = fopen(jsonfile, 'r');
-raw = fread(fid, inf, 'uint8=>char');
-fclose(fid);
-%raw = reshape(raw, 1,length(raw));
-J = jsondecode(raw);
+J = ReadJson(jsonfile);
 
-%Informations = whos('N');
 
 
 
@@ -180,8 +185,8 @@ TR = duree_tot / size(N, 4);
 
 
 repetition_nbr = size(DCE,4);
-if ~strcmp(opt.Las_dyn_before_bolus, 'Auto')
-    debut = str2double(opt.Las_dyn_before_bolus);
+if ~strcmp(opt.Last_dyn_before_bolus, 'Auto')
+    debut = str2double(opt.Last_dyn_before_bolus);
     fin = opt.End_analysis;
 else
     mean_signal =max(reshape(DCE, [size(DCE,1)*size(DCE,2)*size(DCE,3) size(DCE,4)]),[], 1);
@@ -242,10 +247,10 @@ TTP(TTP < 0) = -1;
 TTP(TTP > 5000) = -1;
 TTP(isnan(TTP)) = -1;
 % rehaus = (intensite-MoySansGd)/MoySansGd
-pc_rehau = reshape(rehaus,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-pc_rehau(pc_rehau < 0) = -1;
-pc_rehau(pc_rehau > 5000) = -1;
-pc_rehau(isnan(pc_rehau)) = -1;
+pc_enhanc = reshape(rehaus,[size(DCE,1),size(DCE,2),size(DCE,3)]);
+pc_enhanc(pc_enhanc < 0) = -1;
+pc_enhanc(pc_enhanc > 5000) = -1;
+pc_enhanc(isnan(pc_enhanc)) = -1;
 % Area under the curve (AUC)
 AUC = reshape(AUC,[size(DCE,1),size(DCE,2),size(DCE,3)]);
 AUC(AUC < 0) = -1;
@@ -253,7 +258,7 @@ AUC(AUC > 5000) = -1;
 AUC(isnan(AUC)) = -1;
 
 %%
-mapsVar = {AUC, Max, pc_rehau, TTP};
+mapsVar = {AUC, Max, pc_enhanc, TTP};
 for i=1:length(mapsVar)
     info2 = info;
     info2.Filename = files_out.In1{i};

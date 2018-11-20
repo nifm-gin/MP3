@@ -13,8 +13,8 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'output_filename_ext','_Reshape'};
     module_option(:,4)   = {'OutputSequenceName','Extension'};
-    module_option(:,5)   = {'Axes','4'};
-    module_option(:,6)   = {'IndexVector', '3 4'};
+    module_option(:,5)   = {'Dimenssion_to_reduce','4'};
+    module_option(:,6)   = {'Index_to_keep', '3 4'};
     module_option(:,7)   = {'RefInput',1};
     module_option(:,8)   = {'InputToReshape',1};
     module_option(:,9)   = {'Table_in', table()};
@@ -31,12 +31,12 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','','', '', {''}};
+    user_parameter(:,1)   = {'Description','Text','','','', '', {'This module is used to extract a sub-stack from a nD scan'}};
     user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .Output filename extension','char','_Reshape','output_filename_ext','', '',''};
-    user_parameter(:,5)   = {'   .Axes','cell',{'3','4','5'},'Axes','', '',''};
-    user_parameter(:,6)   = {'   .IndexVector','char','3 4','IndexVector','', '',''};
+    user_parameter(:,5)   = {'   .Dimenssion to reduce','cell',{'3','4','5'},'Dimenssion_to_reduce','', '','Plese select the dimenssion you would like to work on. For instance, select 4 (the forth dimenssion) if you want to reshape a MultiGradientEcho scan'};
+    user_parameter(:,6)   = {'   .Index to keep','char','3 4','Index_to_keep','', '','Plese select the index you would like to keep. For instance, select 3 if you want to extract the third echo of a MultiGradientEcho scan'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
@@ -113,8 +113,8 @@ jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
 
 Informations = whos('N');
-axes = str2double(opt.Axes);
-index = str2double(opt.IndexVector);
+axes = str2double(opt.Dimenssion_to_reduce);
+index = str2double(opt.Index_to_keep);
 
 if axes < 3
     error('Input axes must > 2');
