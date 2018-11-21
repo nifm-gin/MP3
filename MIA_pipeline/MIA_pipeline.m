@@ -736,7 +736,8 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
 end
 
 %handles.tmp_database = table();
-handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+%handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
@@ -2546,6 +2547,7 @@ function MIA_pipeline_Save_Module_Callback(hObject, eventdata, handles)
 %end
 
 
+
 SaveModule = struct();
 SaveModule.Filters = handles.FilterParameters;
 SaveModule.ModuleParams = handles.new_module;
@@ -2935,9 +2937,38 @@ function [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject
 
 pipeline = handles.MIA_pipeline_ParamsModules;
 Modules = fieldnames(pipeline);
+%% Attention Code etrange qui distingue le cas d'un load du cas d'un save module.
+% * TmpDatabase contient toute la database de MIA plus les fichiers
+%temporaires des précédents modules.
+% * Filtered data contient la Tmp database filtrée par les filtres adéquats.
+% * La fonction clear_pipeline met à jour la TmpDatabase ET la Filtered_Table
+% * Pour le load, je dois avoir une database vierge de tous fichiers
+%temporaires.
+%  * En réalité, on ne doit pas spécialement distinguer le load du save mais
+% surtout le cas "Whole database" et "Filtered database" du load. Et pour le
+% gérer, on doit récuperer la database en question (whole ou filtered) dans
+% la variable handles.MIA_pipeline_TmpDatabase. Puisque Clear modifie cette
+% valeur, il faut la stocker avant. Pour le save, il faut au contraire
+% d'abord clear le pipeline précedent, afin de se débarasser des fichiers
+% temporaires et ensuite appliquer le pipeline modifié à la table filtrée.
+%  * Remarque : la valeur stockée dans handles.MIA_pipeline_TmpDatabase est
+% déjà débarassée de tout fichier temporaire dans la fonction load.
+if strcmp(eventdata.Source.Tag, 'MIA_pipeline_Save_Module')
+    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+    Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+else
+    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+end
+%% 
+% [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+% Tmpdatab = handles.MIA_pipeline_Filtered_Table;
 
-[hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
-Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+
+%Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+%Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
