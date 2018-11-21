@@ -3788,7 +3788,7 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{1} =  'ascend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3807,7 +3807,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{1} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3840,11 +3841,24 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{2} =  'ascend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
+function database = sortcategorical_rows(database, rows_names,Order_data_display)
+
+% first convert categorical to char 
+for i=1:length(rows_names)
+    database.(rows_names{i}) = char(database.(rows_names{i}));
+end
+% then sort the rows
+database = sortrows(database,{'Patient', 'Tp', 'SequenceName'}, Order_data_display);
+% finally convert char to categorical
+for i=1:length(rows_names)
+    database.(rows_names{i}) = categorical(cellstr(database.(rows_names{i})));
+end
 
 
 % --------------------------------------------------------------------
@@ -3860,7 +3874,7 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{2} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3879,20 +3893,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{3} =  'ascend';
 %update the database
-%% New Code
-fields = fieldnames(handles.database);
-% [~, indPat] = max(strcmp(fields, {'Patient'}));
-% [~, indTp] = max(strcmp(fields, {'Tp'}));
-% [~, indSeq] = max(strcmp(fields, {'SequenceName'}));
-% Indexs = [indPat, indTp, indSeq];
-[~, indSeq] = max(strcmp(fields, {'SequenceName'}));
-Indexs = indSeq;
-[~, index] = sortrows(cellstr(handles.database{:,:}), Indexs, handles.database.Properties.UserData.Order_data_display{3});
-handles.database = handles.database(index,:);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 
-%% Old Code
-%handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
-%%
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3915,7 +3917,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{3} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
