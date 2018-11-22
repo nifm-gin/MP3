@@ -112,13 +112,13 @@ cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.
 % execute the command
 system(cmd{:});
 
-%unzip the mask
+unzip the mask
 gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
-% 
+
 % % test docker
 % cmd_4_docker = [{'bids/mrtrix3_connectome'},strcat('bet %i1 %i2 -f',{' '},  num2str(opt.Fractional_intensity_threshold),{' '}, '-g 0 -n -m -t'),files_in.In1, files_out.In1];
 % system_docker(cmd_4_docker{:})
-% 
+% gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
 
 
 if strcmp(opt.Fill_Holes, 'Yes')

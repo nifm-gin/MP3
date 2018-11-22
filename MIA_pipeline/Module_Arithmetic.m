@@ -135,7 +135,7 @@ switch opt.Operation
             OutputImages = input1 .* input2;
         end
     case'Division'
-        OutputImages = input2 ./ input1;
+        OutputImages = input1 ./ input2;
         OutputImages(isinf(OutputImages)) = nan;
     case 'Percentage'
         OutputImages = ((input2 - input1) ./ input1 .* 100);

@@ -227,7 +227,7 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path, 1);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
     return
@@ -286,7 +286,9 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 
 %module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 %set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
-set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 
 guidata(hObject, handles);
@@ -387,25 +389,35 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             end
             
             Def = handles.new_module.opt.table.Default{parameter_selected};
-            Def2 = Def(:,4);
-            Def = Def(~cellfun('isempty', Def2'),3:4);
-            table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
-            table.data(1:numel(TP_listing),4) = {false};
-            TPSelected = {Def{cell2mat(Def(:,2)),1}};
-            IndSelected = find(ismember(TP_listing, TPSelected)) ;
-            for i=1:length(IndSelected)
-               table.data(IndSelected(i),4) = {true};
+            if size(Def,2)<4
+                table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
+                table.data(1:numel(TP_listing),4) = {false};
+            else
+                Def2 = Def(:,4);
+                Def = Def(~cellfun('isempty', Def2'),3:4);
+                table.data(1:numel(TP_listing),3) = cellstr(TP_listing);
+                table.data(1:numel(TP_listing),4) = {false};
+                TPSelected = {Def{cell2mat(Def(:,2)),1}};
+                IndSelected = find(ismember(TP_listing, TPSelected)) ;
+                for i=1:length(IndSelected)
+                   table.data(IndSelected(i),4) = {true};
+                end
             end
             
             Def = handles.new_module.opt.table.Default{parameter_selected};
-            Def2 = Def(:,6);
-            Def = Def(~cellfun('isempty', Def2'),5:6);
-            table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
-            table.data(1:numel(Patients_listing),6) = {false};
-            PatientSelected = {Def{cell2mat(Def(:,2)),1}};
-            IndSelected = find(ismember(Patients_listing, PatientSelected)) ;
-            for i=1:length(IndSelected)
-               table.data(IndSelected(i),6) = {true};
+            if size(Def,2)<6
+                table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
+                table.data(1:numel(Patients_listing),6) = {false};
+            else
+                Def2 = Def(:,6);
+                Def = Def(~cellfun('isempty', Def2'),5:6);
+                table.data(1:numel(Patients_listing),5) = cellstr(Patients_listing);
+                table.data(1:numel(Patients_listing),6) = {false};
+                PatientSelected = {Def{cell2mat(Def(:,2)),1}};
+                IndSelected = find(ismember(Patients_listing, PatientSelected)) ;
+                for i=1:length(IndSelected)
+                   table.data(IndSelected(i),6) = {true};
+                end
             end
             
             %table.data = handles.new_module.opt.table.Default{parameter_selected};
@@ -702,16 +714,18 @@ end
 
 
 % --- Executes on button press in MIA_pipeline_clear_pipeline_button.
-function MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+function [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_clear_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
 if isfield(handles, 'MIA_pipeline_ParamsModules')
-    answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
-    if strcmp(answer, 'No')
-        return
+    if ~strcmp(eventdata.Source.Tag, {'MIA_pipeline_Save_Module', 'MIA_pipeline_load_pipeline'})
+        answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
+        if strcmp(answer, 'No')
+            return
+        end
     end
     set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
     if ~isempty(findobj('Tag', 'BioGraphTool'))
@@ -722,7 +736,8 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
 end
 
 %handles.tmp_database = table();
-handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+%handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
@@ -840,7 +855,16 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
         %    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         %end
         if (sum(cell2mat(A)) == 1 || sum(cell2mat(A)) == 0) && (sum(cell2mat(B)) == 1 || sum(cell2mat(B)) == 0)
-            handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+            C = handles.MIA_pipeline_parameter_setup_table.Data(:,6);
+            C = C(~cellfun('isempty',C));
+            if any(cell2mat(C))
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data;
+            elseif any(cell2mat(B))
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:4);
+            else
+                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:2);
+            end
+            handles.new_module.opt.table.Default{parameter_selected} = DataToStore;
         end
     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
@@ -1344,7 +1368,7 @@ end
 
 
 
-function [pipeline, output_database] = MIA_pipeline_generate_psom_modules(New_module, FilterParameters, TmpDatabase, MIA_path)
+function [pipeline, output_database] = MIA_pipeline_generate_psom_modules(New_module, FilterParameters, TmpDatabase, MIA_path, warning)
 % hObject    handle to MIA_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1434,6 +1458,9 @@ for i=1:NbScanInput
         A = Input(:,2*j);
         A = A(~cellfun('isempty',A));
         ParamsSelected = Input(cell2mat(A),2*j-1);
+        if isempty(ParamsSelected) || NbParameters ~= length(New_module.opt.table.Scans_Input_DOF{ScanInputs(i)})
+            EmptyParams{i} = 1;
+        end
         if ~isempty(ParamsSelected)
             Databtmp = table();
             for k = 1:length(ParamsSelected)
@@ -1446,7 +1473,7 @@ for i=1:NbScanInput
             end
             Datab = Databtmp;
         else
-            EmptyParams{i} = EmptyParams{i} +1;
+            %EmptyParams{i} = EmptyParams{i} +1;
             Datab = table();
         end
     end
@@ -1502,7 +1529,9 @@ end
 
 for i=1:length(ScanInputs)
     if strcmp(New_module.opt.table.IsInputMandatoryOrOptional{ScanInputs(i)}, 'Mandatory') && isempty(MatricesInputs{i})
-        warndlg('You forgot to select a mandatory scan.', 'Missing Scan');
+        if warning
+            warndlg('A mandatory scan is missing.', 'Missing Scan');
+        end
         pipeline = struct();
         output_database = table();
         return
@@ -1560,13 +1589,14 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
         InToReshape = FinalMat{InputToReshape};
         %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
         InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
-        % Ligne commentee pour debeuger le pipeline de Ludovic . .. . .  YO
+        
+        % Ligne suivante commentee pour debeuger le pipeline de Ludovic . .. . .  YO
         % NO SE :/
-        % Cette ligne permet l'execution du pipeline de Ludovic mais
+        % Cette ligne commentee permet l'execution du pipeline de Ludovic mais
         % empeche du coup celle d'un module Coreg dont l'entrée 1 est
         % un fichier unique (1 Scan + 1 TP + 1 Patient selectionné)... A
-        % investiguer
-        %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+        % investiguer. 
+        InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
         
         %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
         if EmptyParams{InputToReshape} == 0
@@ -2189,7 +2219,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
 end
 
 
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
@@ -2338,7 +2368,8 @@ SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 if ~isfield(handles, 'MIA_pipeline_ParamsModules')
     JobNames = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     if isfield(Module, 'Jobs')
         JobNames = fieldnames(Module.Jobs);
@@ -2386,11 +2417,15 @@ function MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
     set(handles.MIA_pipeline_JobsList, 'Value', 1);
@@ -2418,7 +2453,8 @@ function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 handles.MIA_pipeline.EditedModuleName = SelectedModule;
 handles.BeforeEditedModuleFilters = handles.FilterParameters;
@@ -2504,20 +2540,25 @@ function MIA_pipeline_Save_Module_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+%[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
 
-if isempty(fieldnames(new_pipeline)) && isempty(output_database)
-    return
-end
+%if isempty(fieldnames(new_pipeline)) && isempty(output_database)
+%    return
+%end
+
 
 
 SaveModule = struct();
 SaveModule.Filters = handles.FilterParameters;
 SaveModule.ModuleParams = handles.new_module;
-SaveModule.OutputDatabase = output_database;
-SaveModule.Jobs = new_pipeline;
+%SaveModule.OutputDatabase = output_database;
+%SaveModule.Jobs = new_pipeline;
 handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
-handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
+%handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
+handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox_Raw);
+
+[hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+
 
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
@@ -2607,10 +2648,11 @@ function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     String = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     String = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
     SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -2672,10 +2714,11 @@ function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, hand
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     Entrie = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     Entrie = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
     SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -2818,6 +2861,8 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
         answer = questdlg(quest);
         if strcmp(answer, 'No')
             return
+        else
+            [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
         end
     end
 end
@@ -2834,6 +2879,13 @@ end
 PipelineName = list.mat{indx};
 pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
 Modules = fieldnames(pipeline);
+for i=1:length(Modules)
+    %% Delete all modules filters for now, as we don't really use them efficiently.
+    % This allow us to apply on a filtered database an already filtered designed pipeline. 
+    pipeline.(Modules{i}).Filters = {};
+end
+
+handles.MIA_pipeline_ParamsModules = pipeline;
 if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Table)
     quest = 'Would you like to apply the loaded pipeline on the whole database or on the filtered one you defined ?';
     answer = questdlg(quest, 'On which data apply the pipeline ?', 'Whole database', 'Filtered database', 'Whole database');
@@ -2849,36 +2901,103 @@ if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Tabl
 else
     Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 end
+
+StoredDatab = handles.MIA_pipeline_TmpDatabase;
+handles.MIA_pipeline_TmpDatabase = Tmpdatab;
+[hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+handles.MIA_pipeline_TmpDatabase = StoredDatab;
+
+% %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+% for i=1:length(Modules)
+%     Module = pipeline.(Modules{i});
+%     %% Delete all modules filters for now, as we don't really use them efficiently.
+%     % This allow us to apply on a filtered database an already filtered designed pipeline. 
+%     Module.Filters = {};
+%     %%
+%     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+% %     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
+% %         continue
+% %     end
+%     pipeline.(Modules{i}).Filters = Module.Filters;
+%     pipeline.(Modules{i}).Jobs = pipeline_module;
+%     pipeline.(Modules{i}).OutputDatabase = output_database_module;
+%     Tmpdatab = [Tmpdatab; output_database_module];
+% end
+% handles.MIA_pipeline_ParamsModules = pipeline;
+% 
+% 
+% set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+% set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
+% MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
+guidata(hObject, handles);
+
+function [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles)
+
+
+
+pipeline = handles.MIA_pipeline_ParamsModules;
+Modules = fieldnames(pipeline);
+%% Attention Code etrange qui distingue le cas d'un load du cas d'un save module.
+% * TmpDatabase contient toute la database de MIA plus les fichiers
+%temporaires des précédents modules.
+% * Filtered data contient la Tmp database filtrée par les filtres adéquats.
+% * La fonction clear_pipeline met à jour la TmpDatabase ET la Filtered_Table
+% * Pour le load, je dois avoir une database vierge de tous fichiers
+%temporaires.
+%  * En réalité, on ne doit pas spécialement distinguer le load du save mais
+% surtout le cas "Whole database" et "Filtered database" du load. Et pour le
+% gérer, on doit récuperer la database en question (whole ou filtered) dans
+% la variable handles.MIA_pipeline_TmpDatabase. Puisque Clear modifie cette
+% valeur, il faut la stocker avant. Pour le save, il faut au contraire
+% d'abord clear le pipeline précedent, afin de se débarasser des fichiers
+% temporaires et ensuite appliquer le pipeline modifié à la table filtrée.
+%  * Remarque : la valeur stockée dans handles.MIA_pipeline_TmpDatabase est
+% déjà débarassée de tout fichier temporaire dans la fonction load.
+if strcmp(eventdata.Source.Tag, 'MIA_pipeline_Save_Module')
+    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+    Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+else
+    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+end
+%% 
+% [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+% Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+
+
+%Tmpdatab = handles.MIA_pipeline_Filtered_Table;
 %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
-    %% Delete all modules filters for now, as we don't really use them efficiently.
-    % This allow us to apply on a filtered database an already filtered designed pipeline. 
-    Module.Filters = {};
-    %%
-    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
-%     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
-%         continue
-%     end
+%     %% Delete all modules filters for now, as we don't really use them efficiently.
+%     % This allow us to apply on a filtered database an already filtered designed pipeline. 
+%     Module.Filters = {};
+%     %%
+    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path, 0);
     pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];
 end
+
 handles.MIA_pipeline_ParamsModules = pipeline;
-
-
-set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
+handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
 MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
+
 guidata(hObject, handles);
-
-
-
-
 
 % --- Executes on button press in MIA_pipeline_Delete_Job.
 function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
@@ -2887,7 +3006,8 @@ function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
 SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -2915,3 +3035,24 @@ else
     MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 end
 guidata(hObject, handles);
+
+function Coloredlistbox = DisplayColoredListbox(Names, handles)
+    
+%colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
+color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
+Coloredlistbox = cell(size(Names));
+
+for i=1:length(Names)
+    if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
+        Coloredlistbox{i} = color2('red', Names{i});
+    else
+        Coloredlistbox{i} = color2('green', Names{i});
+    end
+end
+
+
+% handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+% Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+% set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+
+
