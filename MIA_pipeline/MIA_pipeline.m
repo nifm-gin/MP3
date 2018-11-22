@@ -2904,6 +2904,9 @@ handles.MIA_pipeline_TmpDatabase = Tmpdatab;
 [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
 handles.MIA_pipeline_TmpDatabase = StoredDatab;
 
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
 % %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
 % for i=1:length(Modules)
 %     Module = pipeline.(Modules{i});
