@@ -35,7 +35,11 @@ PVM_ppgFlag1=char2logical(PVM_ppgFlag1);
 EchoTime = Json.EchoTime.value;
 PVM_InterGradientWaitTime=0.01;
 %RefPulse_Length= scan_acqp('##$RefPulse=(',Map.texte,1);
-RefPulse_Length = Json.RefPulse.value;
+RefPulse_Length = Json.RefPulse.value{1};
+if ~isempty(RefPulse_Length)
+    RefPulse_Length = strsplit(RefPulse_Length, ', ');
+    RefPulse_Length = str2double(RefPulse_Length{1});
+end
 %SignalType=scan_acqp('##$SignalType=',Map.texte,0);
 SignalType = Json.SignalType.value{1};
 %PVM_MinEchoTime=scan_acqp('##$PVM_MinEchoTime=',Map.texte,1);
