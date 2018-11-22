@@ -11,7 +11,7 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'output_filename_ext','Brain'};
+    module_option(:,3)   = {'output_filename','Brain'};
     module_option(:,4)   = {'OutputSequenceName','AllName'};
     module_option(:,5)   = {'Min_BrainSize', 1200};
     module_option(:,6)   = {'Max_BrainSize', 4400};
@@ -46,12 +46,12 @@ if isempty(opt)
          '     2. Effect of "Radius of the structural element" can be seen below. Note: larger radius, slower the processing.'     
         ''
         'Ref:'
-        'N Chou, J Wu, J Bai, A Qiu, KH Chuang. ?Robust automatic rodent brain extraction using 3D Pulse-coupled NeuralNetworks (PCNN).? IEEE Trans Imag Proc 20(9):2554-64, 2011.'
+        'N Chou, J Wu, J Bai, A Qiu, KH Chuang. Robust automatic rodent brain extraction using 3D Pulse-coupled NeuralNetworks (PCNN). IEEE Trans Imag Proc 20(9):2554-64, 2011.'
         }'};
     
-    user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory','Please select an anatomical image'};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
-    user_parameter(:,4)   = {'   .Output filename','char','Brain','output_filename_ext','', '',''};
+    user_parameter(:,4)   = {'   .Output filename','char','Brain','output_filename','', '',''};
     user_parameter(:,5)   = {'   .Min Brain size','numeric', 1200,'Min_BrainSize','', '',...
         'Min BrainSize: [min max] brain volume sizes (in mm3) for estimating optimal iteration; default values [100 550] is for mouse brain. For adult rat brain, one may try [1200 4400]'};
     user_parameter(:,6)   = {'   .Max Brain size','numeric', 4400,'Max_BrainSize','', '',...
@@ -79,9 +79,9 @@ if isempty(files_out)
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
     opt.Table_out.Type = categorical(cellstr('ROI'));
     if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
@@ -120,16 +120,19 @@ voxel_volume = prod(nifti_info.raw.pixdim(2:4));
 voxel_surface = prod(nifti_info.raw.pixdim(2:3));
 
 
-BrSize = [1200 4400];
 maxiter = 200;
 OptMask = 0;
 [I_border, Plot, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
 %[I_border] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
-
+Plot(Plot < opt.Min_BrainSize) = NaN;
+[~,New_optG] = min(gradient(Plot));
+% dispo for info
+diff_optG = New_optG -  optG;
+disp(strcat('Automatic Optimum versus calculated one:', num2str(optG), 'vs ' ,num2str(New_optG), '=', num2str(diff_optG)))
 mtx=size(I);
 Mask=zeros(mtx);
 for n=1:mtx(3)
-    Mask(:,:,n)=I_border{optG-10}{n}; % the "optimal" segmentation is always to high
+    Mask(:,:,n)=I_border{New_optG}{n}; % the "optimal" segmentation is always to high
 end
 Mask = single(Mask);
 
