@@ -2808,6 +2808,9 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
     definput = {'MyPipeline'};
     answer1 = inputdlg(prompt,title,dims,definput);
     listing = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+    if isempty(answer1)
+        return
+    end
     FinalAnswer = answer1{1};
     Flag = true;
     while any(contains([FinalAnswer, '.mat'], listing.mat)) && Flag

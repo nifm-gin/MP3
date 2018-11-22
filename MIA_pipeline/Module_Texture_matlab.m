@@ -226,10 +226,12 @@ for i=1:numel(maps_to_generate)
            % Local_Entropy
             case 4
                     New_texture_map = entropyfilt(origCData, patch_2D);
-   
-            % Local_Range
+                    
+           % Local_Range
             case 5
-                    New_texture_map =rangefilt(origCData, patch_2D);
+                parfor j= 1:size(origCData,3)
+                    New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@range);
+                end
 
             % Local_SD
             case 6

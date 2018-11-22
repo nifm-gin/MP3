@@ -37,7 +37,11 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
+    user_parameter(:,1)   = {'Description','Text','','','', '',...
+        {'Description of the module :',...
+        'this module compute a Vessel Sice Index map (VSI) from a deltaR2* (see module deltaR2*), a deltaR2 (see module deltaR2) and de diffusion map (ADC)',...
+        'If you use this function, please refere to this article : Tropes et al. MRM 2015'}};
+    
     user_parameter(:,2)   = {'Select the DeltaR2 scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the DeltaR2* scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'Select the ADC scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -51,7 +55,7 @@ if isempty(opt)
         '--> Output orientation = Third input'
         }'};
     user_parameter(:,7)   = {'   .B0','numeric', '','B0','','',...
-    {''}'};
+    {'Please entre the magnetic field used'}'};
     user_parameter(:,8)   = {'   .Gamma (10^8)','numeric','','Gamma','','',...
     {''}'};
     user_parameter(:,9)   = {'   .deltaxi HBC (10^-6)','numeric', '','deltaxi_CA','','',...

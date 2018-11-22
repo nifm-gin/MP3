@@ -554,15 +554,18 @@ function MIA_remove_name_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'database')
     return
 end
-data_selected = finddata_selected(handles);
-patient_name = unique(handles.database.Patient(data_selected));
-user_response = questdlg(['Do you want to delete every data of ' char(patient_name) '??'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+%data_selected = finddata_selected(handles);
+patient_seleted = get(handles.MIA_name_list, 'String');
+patient_name = patient_seleted(get(handles.MIA_name_list, 'Value'),:);
+%patient_name = unique(handles.database.Patient(data_selected));
+user_response = questdlg(['Do you want to delete every data of ' string(patient_name)'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
 end
-
-nii_index = find(handles.database.Patient == patient_name);
-
+nii_index = [];
+for i=1:size(patient_name,1)
+    nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))))']';
+end
 MIA_remove_scan(hObject, eventdata, handles, nii_index)
 
 
@@ -3788,7 +3791,7 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{1} =  'ascend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3807,7 +3810,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{1} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3840,11 +3844,24 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{2} =  'ascend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
 MIA_update_database_display(hObject, eventdata, handles);
+
+function database = sortcategorical_rows(database, rows_names,Order_data_display)
+
+% first convert categorical to char 
+for i=1:length(rows_names)
+    database.(rows_names{i}) = char(database.(rows_names{i}));
+end
+% then sort the rows
+database = sortrows(database,{'Patient', 'Tp', 'SequenceName'}, Order_data_display);
+% finally convert char to categorical
+for i=1:length(rows_names)
+    database.(rows_names{i}) = categorical(cellstr(database.(rows_names{i})));
+end
 
 
 % --------------------------------------------------------------------
@@ -3860,7 +3877,7 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{2} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3879,20 +3896,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{3} =  'ascend';
 %update the database
-%% New Code
-fields = fieldnames(handles.database);
-% [~, indPat] = max(strcmp(fields, {'Patient'}));
-% [~, indTp] = max(strcmp(fields, {'Tp'}));
-% [~, indSeq] = max(strcmp(fields, {'SequenceName'}));
-% Indexs = [indPat, indTp, indSeq];
-[~, indSeq] = max(strcmp(fields, {'SequenceName'}));
-Indexs = indSeq;
-[~, index] = sortrows(cellstr(handles.database{:,:}), Indexs, handles.database.Properties.UserData.Order_data_display{3});
-handles.database = handles.database(index,:);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
 
-%% Old Code
-%handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
-%%
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay
@@ -3915,7 +3920,8 @@ end
 % store the information of the new order
 handles.database.Properties.UserData.Order_data_display{3} =  'descend';
 %update the database
-handles.database = sortrows(handles.database,{'Patient', 'Tp', 'SequenceName'},handles.database.Properties.UserData.Order_data_display);
+handles.database = sortcategorical_rows(handles.database, {'Patient', 'Tp', 'SequenceName'}, handles.database.Properties.UserData.Order_data_display);
+
 % store the newdatabase
 guidata(hObject, handles);
 %update the dispay

@@ -14,18 +14,15 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'trash_below',0};
     module_option(:,4)   = {'trash_after',Inf};
-    module_option(:,5)   = {'output_filename_ext','BVf'};
+    module_option(:,5)   = {'output_name','BVf'};
     module_option(:,6)   = {'B0',4.7};
     module_option(:,7)   = {'Gamma',2.67502};
     module_option(:,8)   = {'deltaxi_CA',0.1867};
-    module_option(:,9)   = {'HCT',0.375};
-    module_option(:,10)  = {'UseT1Map','No'};
-    module_option(:,11)  = {'HTC_map','None'};
-    module_option(:,12)  = {'OutputSequenceName','AllName'};
-    module_option(:,13)  = {'RefInput',1};
-    module_option(:,14)  = {'InputToReshape',1};
-    module_option(:,15)  = {'Table_in', table()};
-    module_option(:,16)  = {'Table_out', table()};
+    module_option(:,9)  = {'OutputSequenceName','AllName'};
+    module_option(:,10)  = {'RefInput',1};
+    module_option(:,11)  = {'InputToReshape',1};
+    module_option(:,12)  = {'Table_in', table()};
+    module_option(:,13)  = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
         %% list of everything displayed to the user associated to their 'type'
@@ -37,22 +34,22 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-     user_parameter(:,1)   = {'Description','Text','','','','',...
-        {'BVf Module'}'};
+      user_parameter(:,1)   = {'Description','Text','','','', '',...
+        {'Description of the module :',...
+        'this module compute a BVf map from a deltaR2* (see module deltaR2*)',...
+        'If you use this function, please refere to this article : Tropes et al. MRM 2015'}};
 user_parameter(:,2)   = {'Select a DeltaR2* scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
 user_parameter(:,3)   = {'Parameters','','','','', '',''};
-user_parameter(:,4)   = {'   .Output filename extension','char','BVf','output_filename_ext','','',...
+user_parameter(:,4)   = {'   .Output filename','char','BVf','output_name','','',...
     {'Specify the string to be added to the filename input.'
     'Default filename extension is ''BVf''.'}'};
 user_parameter(:,5)   = {'   .B0','numeric', '','B0','','',...
-    {''}'};
+    {'Please entre the magnetic field used'}'};
 user_parameter(:,6)   = {'   .Gamma (10^8)','numeric','','Gamma','','',...
     {''}'};
 user_parameter(:,7)   = {'   .deltaxi HBC (10^-6)','numeric', '','deltaxi_CA','','',...
     {''}'};
-user_parameter(:,8)   = {'   .HCT','numeric','','HCT','', '',''};
-user_parameter(:,9)   = {'   .Using T1map ?','cell',{'No', 'Yes'},'UseT1Map','', '',''};
-user_parameter(:,10)   = {'   .HCT_map','char','','HTC_map','', '',''};
+
 
 VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
 opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)',user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -69,7 +66,7 @@ opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:
   
 end
 %%%%%%%%
-opt.NameOutFiles = {opt.output_filename_ext};
+opt.NameOutFiles = {opt.output_name};
 
 
 if isempty(files_out)
@@ -77,9 +74,9 @@ if isempty(files_out)
     opt.Table_out.IsRaw = categorical(0);   
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
     if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_name));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_name]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
