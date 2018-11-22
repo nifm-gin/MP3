@@ -19,7 +19,11 @@ PVM_RiseTime = 0.114;
 PVM_GradDelayTime=0.001; % 1us
 CFG_AmplifierEnable = 0.05; % 50us
 %ExcPulse_Length= scan_acqp('##$ExcPulse=(',Map.texte,1);
-ExcPulse_Length = Json.ExcPulse.value;
+ExcPulse_Length = Json.ExcPulse.value{1};
+if ~isempty(ExcPulse_Length)
+    ExcPulse_Length = strsplit(ExcPulse_Length, ', ');
+    ExcPulse_Length = str2double(ExcPulse_Length{1});
+end
 %PVM_ExSliceRephaseTime=scan_acqp('##$PVM_ExSliceRephaseTime=',Map.texte,1);
 if isfield(Json, 'ExSliceRephaseTime_PVM')
     PVM_ExSliceRephaseTime = Json.ExSliceRephaseTime_PVM.value;
