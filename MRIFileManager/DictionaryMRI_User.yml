@@ -391,9 +391,16 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: FairMode, type: string, format: ~, units: ~}
 
-  FairTIRArr:
+  FairTIRArrPVM:
                   description: {info: ""}
                   whereBruker:  {file: method, keyName: $PVM_FairTIR_Arr=, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: FairTIRArrPVM, type: float, format: ~, units: ~}
+
+  FairTIRArr:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $FairTIR_Arr=, type: float, format: ~, units: ~}
                    
                   viewer: {category: MRI parameters}
                   json:   {tagJson: FairTIRArr, type: float, format: ~, units: ~}
