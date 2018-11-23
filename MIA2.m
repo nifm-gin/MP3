@@ -558,7 +558,7 @@ end
 patient_seleted = get(handles.MIA_name_list, 'String');
 patient_name = patient_seleted(get(handles.MIA_name_list, 'Value'),:);
 %patient_name = unique(handles.database.Patient(data_selected));
-user_response = questdlg(['Do you want to delete every data of ' string(patient_name)'], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+user_response = questdlg(['Do you want to delete every data of ' patient_name], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
 end
