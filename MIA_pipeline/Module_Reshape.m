@@ -114,7 +114,7 @@ J = ReadJson(jsonfile);
 
 Informations = whos('N');
 axes = str2double(opt.Dimenssion_to_reduce);
-index = str2double(opt.Index_to_keep);
+index = str2num(opt.Index_to_keep);
 
 if axes < 3
     error('Input axes must > 2');
@@ -129,7 +129,7 @@ if axes == 3
     
     OutputMat = info.Transform.T';
     Movement = [0;0;index(1)-1;1];
-    OutputMat(:,4) = InputMat * Movement;
+    OutputMat(:,4) = info.Transform.T * Movement;
     info.Transform.T =  OutputMat';
     
     
