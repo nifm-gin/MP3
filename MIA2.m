@@ -23,7 +23,7 @@ function varargout = MIA2(varargin)
 % Edit the above text to modify the response to help MIA2
 
 
-% Last Modified by GUIDE v2.5 18-Oct-2018 15:52:27
+% Last Modified by GUIDE v2.5 27-Nov-2018 15:58:47
 
 
 % Begin initialization code - DO NOT EDIT
@@ -5522,5 +5522,33 @@ end
 FileHistory(hObject, eventdata, handles)
 
 
+% --------------------------------------------------------------------
+function MIA_menu_Help_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_menu_Help (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
 
+% --------------------------------------------------------------------
+function MIA_Help_Load_Developer_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_Help_Load_Developer (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+Path = mfilename('fullpath');
+Path = strsplit(Path, filesep);
+Path{end} = ['tools', filesep, 'ClusterGMM_(StageClement)', filesep];
+Path = strjoin(Path, filesep);
+
+NewEntry = handles.database(end,:);
+NewEntry.Group = categorical(cellstr('Developer'));
+NewEntry.Patient = categorical(cellstr('Developer_Clement'));
+NewEntry.Tp = categorical(cellstr('27_11_2018'));
+NewEntry.Path = categorical(cellstr(Path));
+NewEntry.Filename = categorical(cellstr('el_luchador'));
+NewEntry.Type = categorical(cellstr('Scan'));
+NewEntry.IsRaw = categorical(1);
+NewEntry.SequenceName = categorical(cellstr('Portrait'));
+handles.database = unique([handles.database; NewEntry]);
+MIA_update_database_display(hObject, eventdata, handles)
+guidata(hObject, handles)
