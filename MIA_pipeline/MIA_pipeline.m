@@ -3201,13 +3201,14 @@ end
 guidata(hObject, handles);
 
 function Coloredlistbox = DisplayColoredListbox(Names, handles)
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    Coloredlistbox = {''};
+    return
+end
 Names = fieldnames(handles.MIA_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
 Coloredlistbox = cell(size(Names));
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
-    return
-end
 for i=1:length(Names)
     ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
 %     if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
