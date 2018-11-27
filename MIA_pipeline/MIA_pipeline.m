@@ -217,6 +217,9 @@ handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
 
 %% Update of modules parameters
 MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
+%Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -277,7 +280,7 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
 
 
-
+handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
@@ -286,10 +289,12 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 
 %module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
 %set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
-handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+
 Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+
 
 guidata(hObject, handles);
 
@@ -737,12 +742,13 @@ end
 
 %handles.tmp_database = table();
 %handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
+handles.MIA_pipeline_pipeline_listbox_Raw = {''};
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
 set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -1504,11 +1510,17 @@ for i=1:NbScanInput
                     FNames = fieldnames(Datab3);
                     RestrictedDatab = Datab3(:,~strcmp(FNames(1:end-3), 'Path'));
                     if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
-                        output_database = table();
-                        pipeline = struct();
-                        text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
-                        warndlg(text)
-                        return
+                        %UPDATE : We select the virtual one.
+%                         output_database = table();
+%                         pipeline = struct();
+%                         text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
+%                         warndlg(text)
+%                         return
+                        Path = Datab3.Path(1);
+                        Path = strsplit(char(Path), filesep);
+                        Path{end-1} = 'Tmp';
+                        Path = strjoin(Path, filesep);
+                        Datab3 = Datab3(Datab3.Path == Path,:);
                     end
                 end
                 for o=1:size(Datab3,1)
@@ -1561,6 +1573,23 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                     if ~isempty(Databtmp)
                         Databtmp2 = Databtmp(getfield(Databtmp, Tag2) == UTag2(j), :);
                         Databtmp3 = Databtmp2(getfield(Databtmp2, Tag1) == UTag1(k), :);
+                    if size(Databtmp3, 1) > 1
+                        FNames = fieldnames(Databtmp3);
+                        RestrictedDatab = Databtmp3(:,~strcmp(FNames(1:end-3), 'Path'));
+                        if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
+                            %UPDATE : We select the virtual one.
+        %                         output_database = table();
+        %                         pipeline = struct();
+        %                         text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
+        %                         warndlg(text)
+        %                         return
+                            Path = Databtmp3.Path(1);
+                            Path = strsplit(char(Path), filesep);
+                            Path{end-1} = 'Tmp';
+                            Path = strjoin(Path, filesep);
+                            Databtmp3 = Databtmp3(Databtmp3.Path == Path,:);
+                        end
+                    end
                         for l=1:size(Databtmp3,1)
                             Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
                         end
@@ -1765,15 +1794,38 @@ end
 
 
 %% Create the pipeline from the modules.
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     warndlg('No pipeline to execute ...')
     return
 end
+
 Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
 %Pipeline = handles.psom.Modules.(Names_Mod{1});
 Pipeline = struct();
 for i=1:length(Names_Mod)
     Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+    
+    ReWritting = CheckReWriting(Mod, handles.MIA_pipeline_TmpDatabase);
+    if any(ReWritting) && ~exist('DeleteRewrite','var')
+        text = 'WARNING : Some jobs will overwrite existing files. Do you want to delete these jobs ?';
+        answer = questdlg(text, 'Overwritting', 'Overwrite', 'Delete','Cancel', 'Cancel');
+        if isempty(answer) || strcmp(answer, 'Cancel')
+            return
+        elseif strcmp(answer, 'Overwrite')
+            DeleteRewrite = 0;
+        elseif strcmp(answer, 'Delete')
+            DeleteRewrite = 1;
+        end
+    end
+    if exist('DeleteRewrite','var') && DeleteRewrite
+        JobNames = fieldnames(Mod.Jobs);
+        for j=1:length(ReWritting)
+            if ReWritting(j)
+                JobToDelete = JobNames{j};
+                Mod.Jobs = rmfield(Mod.Jobs, JobToDelete);
+            end
+        end
+    end
     %[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(Mod.Module, Mod.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
     Pipeline = smart_pipeline_merge(Pipeline, Mod.Jobs);
     %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase; Mod.OutputDatabase]);
@@ -1960,7 +2012,8 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
         Datab = [Datab ; Mod.OutputDatabase];
     end
 end
-handles.MIA_pipeline_TmpDatabase = unique(Datab);
+%handles.MIA_pipeline_TmpDatabase = unique(Datab);
+handles.MIA_pipeline_TmpDatabase = Datab;
 
 
 
@@ -2124,7 +2177,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
 end
 
 
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI'}))
             handles.new_module.opt.table.Default{i} = [];
@@ -2357,7 +2410,7 @@ end
 
 
 % --- Executes on selection change in MIA_pipeline_pipeline_listbox.
-function MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+function [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -2367,20 +2420,40 @@ SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
     
 if ~isfield(handles, 'MIA_pipeline_ParamsModules')
     JobNames = {''};
+    ColoredJobNames = {''};
 else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
     %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     if isfield(Module, 'Jobs')
         JobNames = fieldnames(Module.Jobs);
+        ColoredJobNames = ColorJobs(Module, handles.MIA_pipeline_TmpDatabase);
     else
+        ColoredJobNames = {''};
         JobNames = {''};
     end
 end
-set(handles.MIA_pipeline_JobsList, 'String',JobNames);
+handles.MIA_pipeline_JobsNames = JobNames;
+set(handles.MIA_pipeline_JobsList, 'String',ColoredJobNames);
 set(handles.MIA_pipeline_JobsList, 'Value', 1);
 MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+guidata(hObject, handles)
 
+
+function ColoredJobs = ColorJobs(Module, Tmpdatab)
+JobsNames = fieldnames(Module.Jobs);
+ColoredJobs = cell(size(JobsNames));
+
+ReWritting = CheckReWriting(Module, Tmpdatab);
+
+color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
+for i=1:length(JobsNames)
+    if ReWritting(i)
+        ColoredJobs{i} = color2('orange', JobsNames{i});
+    else
+        ColoredJobs{i} = color2('green', JobsNames{i});
+    end
+end
 
 
 % Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_pipeline_listbox contents as cell array
@@ -2416,22 +2489,25 @@ function MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_DeleteModule (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    return
+end
+
+
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
 %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
-set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+
 %set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
     set(handles.MIA_pipeline_JobsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
-    MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+    [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+    handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 else 
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
     set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
@@ -2442,8 +2518,18 @@ else
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
+    handles.MIA_pipeline_pipeline_listbox_Raw = {''};
     
 end
+
+
+%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+
+
 guidata(hObject, handles);
 
 
@@ -2452,6 +2538,13 @@ function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_Edit_Module (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    return
+end
+
+
+
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
 %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
@@ -2461,8 +2554,10 @@ handles.BeforeEditedModuleFilters = handles.FilterParameters;
 
 %% Remove the module we want to edit, and adapt the database
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+Stored = handles.MIA_pipeline_pipeline_listbox_Raw;
+handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
 if isfield(handles, 'new_module')
     handles.BeforeEditedModule = handles.new_module;
@@ -2483,6 +2578,7 @@ handles.module_parameters_fields = module_parameters_fields;
 handles.FilterParameters = [handles.FilterParameters, Module.Filters];
 [hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
+handles.MIA_pipeline_pipeline_listbox_Raw = Stored;
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
 
@@ -2635,7 +2731,8 @@ set(handles.MIA_pipeline_load_pipeline, 'Enable', 'on');
 
 set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
 set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+guidata(hObject, handles)
 
 % MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 
@@ -2655,7 +2752,8 @@ else
     %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-    SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
     Job = Module.Jobs.(SelectedJob);
     %Names = fieldnames(Job);
     String = {};
@@ -2721,7 +2819,8 @@ else
     %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-    SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+    SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
     Job = Module.Jobs.(SelectedJob);
     SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
     SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
@@ -2789,8 +2888,9 @@ function MIA_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
 % hObject    handle to MIA_pipeline_save_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     msgbox('There is no pipeline to save ...', 'No Pipeline');
+    return
 end
 
 if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines'],'dir') ~= 7
@@ -2859,7 +2959,7 @@ if isfield(handles, 'MIA_pipeline_ParamsModules')
     if ~isempty(handles.MIA_pipeline_ParamsModules)
         quest = 'By loading a new pipeline, your current pipeline will be deleted. Continue ?';
         answer = questdlg(quest);
-        if strcmp(answer, 'No')
+        if strcmp(answer, 'No') || isempty(answer)
             return
         else
             [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
@@ -2985,22 +3085,67 @@ for i=1:length(Modules)
     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path, 0);
     pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
+    %pipeline.(Modules{i}).JobsReWrite = CheckReWriting(pipeline_module, Tmpdatab);
     pipeline.(Modules{i}).OutputDatabase = output_database_module;
     Tmpdatab = [Tmpdatab; output_database_module];
 end
 
 handles.MIA_pipeline_ParamsModules = pipeline;
 handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+
+%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+
 Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 %set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
-MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-
-
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
+
+
+function Status = CheckReWriting(Module, Tmpdatab)
+
+JobNames = fieldnames(Module.Jobs);
+Status = false(size(JobNames));
+
+for i=1:length(JobNames)
+    files_out = Module.Jobs.(JobNames{i}).files_out;
+    inputNames = fieldnames(files_out);
+    for j=1:length(inputNames)
+        file = files_out.(inputNames{j});
+        [path, filename, ~] = fileparts(file{1});
+        Datab = Module.Jobs.(JobNames{i}).opt.Table_out(Module.Jobs.(JobNames{i}).opt.Table_out.Filename == categorical(cellstr(filename)),:);
+        assert(height(Datab) == 1);
+        
+        % Dont check on the path cause the Datab one is still set to Tmp.
+        Lia = ismember(Tmpdatab(:,[1:3 5:end]), Datab(:,[1:3 5:end]));
+        
+        if sum(Lia)==1
+        % Le job ecrit un fichier qui n'existe pas, la seule entree
+        % retournee par intersect est l'entree temporaire du job en
+        % question
+            Status(i) = 0;
+        else
+        % Le job ecrit un fichier qui existe deja soit reellement soit
+        % virtuellement.intersect retourne 2 entree : l'entree temporaire
+        % du job en question et une autre, reelle ou virtuelle. Dans les 2
+        % cas cela pose un soucis.
+            %Folders = strsplit(char(Tmpdatab.Path(ib)),filesep);
+            %Fold = Folsers(end-1);
+            %if ~strcmp( Fold == 'Tmp')
+            Status(i) = 1;
+        end        
+    end
+end
+
+    
+    
+
+
+
+
 
 % --- Executes on button press in MIA_pipeline_Delete_Job.
 function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
@@ -3008,12 +3153,23 @@ function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    return
+end
+
+
+
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
 %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+%SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+if isempty(handles.MIA_pipeline_JobsNames)
+    return
+end
+SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
 Job = Module.Jobs.(SelectedJob);
 Module.Jobs = rmfield(Module.Jobs, SelectedJob);
 if isempty(fieldnames(Module.Jobs))
@@ -3035,23 +3191,39 @@ else
     handles.MIA_pipeline_ParamsModules.(SelectedModule) =  Module;
     [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
     [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-    MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+    [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 end
+
+
+
+
+
 guidata(hObject, handles);
 
 function Coloredlistbox = DisplayColoredListbox(Names, handles)
-    
+Names = fieldnames(handles.MIA_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
 Coloredlistbox = cell(size(Names));
-
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+    return
+end
 for i=1:length(Names)
+    ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
+%     if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
+%         Coloredlistbox{i} = color2('red', Names{i});
+%     else
+%         Coloredlistbox{i} = color2('green', Names{i});
+%     end
     if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
         Coloredlistbox{i} = color2('red', Names{i});
+    elseif any(ReWritting)
+        Coloredlistbox{i} = color2('orange', Names{i});
     else
         Coloredlistbox{i} = color2('green', Names{i});
     end
 end
+
 
 
 % handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
