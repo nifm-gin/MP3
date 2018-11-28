@@ -187,9 +187,9 @@ end
 
 % reshape matrix
 OutputImages=reshape(T2map_tmp,[size(N,1) size(N, 2) size(N,3)]);
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 300) = NaN;
+OutputImages(isnan(OutputImages)) = NaN;
 
 % save the new files (.nii & .json)
 % update the header before saving the new .nii

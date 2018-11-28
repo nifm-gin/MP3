@@ -177,8 +177,16 @@ DCE = N;
 % duree_tot=timing(1)*3600+timing(2)*60+timing(3)+timing(4)/1000; %en seconde
 % TR = duree_tot / data.uvascim.image.reco.no_expts;
 
+% convert times to fractional days using datenum
+timeFractionalDays = datenum(J.AcquisitionTime.value{:});
+% leave only the part with the most recent day fraction
+timeDayFraction = mod(timeFractionalDays,1);
+% initialize variables
+NUM_SECONDS_PER_DAY = 86400.0;
+% multiply by number of seconds in a day
+duree_tot = timeDayFraction .* NUM_SECONDS_PER_DAY;
 
-duree_tot = J.ScanTime.value/1000; %% Conversion from ms to s
+%duree_tot = J.ScanTime.value/1000; %% Conversion from ms to s
 TR = duree_tot / size(N, 4);
 
 
@@ -238,24 +246,24 @@ end
 
 % maxi
 Max = reshape(maxi,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-Max(Max < 0) = -1;
-Max(Max > 5000) = -1;
-Max(isnan(Max)) = -1;
+% Max(Max < 0) = -1;
+% Max(Max > 5000) = -1;
+% Max(isnan(Max)) = -1;
 % ttp (time-to-peak(
 TTP =  reshape(ttp,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-TTP(TTP < 0) = -1;
-TTP(TTP > 5000) = -1;
-TTP(isnan(TTP)) = -1;
+% TTP(TTP < 0) = -1;
+% TTP(TTP > 5000) = -1;
+% TTP(isnan(TTP)) = -1;
 % rehaus = (intensite-MoySansGd)/MoySansGd
 pc_enhanc = reshape(rehaus,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-pc_enhanc(pc_enhanc < 0) = -1;
-pc_enhanc(pc_enhanc > 5000) = -1;
-pc_enhanc(isnan(pc_enhanc)) = -1;
+% pc_enhanc(pc_enhanc < 0) = -1;
+% pc_enhanc(pc_enhanc > 5000) = -1;
+% pc_enhanc(isnan(pc_enhanc)) = -1;
 % Area under the curve (AUC)
 AUC = reshape(AUC,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-AUC(AUC < 0) = -1;
-AUC(AUC > 5000) = -1;
-AUC(isnan(AUC)) = -1;
+% AUC(AUC < 0) = -1;
+% AUC(AUC > 5000) = -1;
+% AUC(isnan(AUC)) = -1;
 
 %%
 mapsVar = {AUC, Max, pc_enhanc, TTP};
