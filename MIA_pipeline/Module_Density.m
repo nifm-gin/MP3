@@ -156,10 +156,9 @@ Density_map = data;
 % first input (rotation/translation)
 
 OutputImages = Density_map;
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 1000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
-OutputImages(isinf(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 10000) =NaN;
+OutputImages(isinf(OutputImages)) = NaN;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 else 

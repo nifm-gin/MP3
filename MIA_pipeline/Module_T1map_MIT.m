@@ -573,6 +573,11 @@ info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages)));
 info2.ImageSize = size(OutputImages);
 info2.Description = [info.Description, 'Modified by ASL_InvEff Module'];
 
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 3500) = NaN;
+% AUC(AUC > 5000) = -1;
+% AUC(isnan(AUC)) = -1;
+
 % save the new .nii file
 niftiwrite(OutputImages, files_out.In1{1}, info2);
 

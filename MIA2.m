@@ -1130,7 +1130,8 @@ guidata(hObject, handles);
 
 
 
-if ~isempty(findobj('type', 'figure', 'name', 'FileHistory'))
+if ~isempty(findobj('type', 'figure', 'name', 'FileHistory')) && length(handles.data_loaded.Scan) == 1
+   
     % Get the hObject of MIA_pipeline
     h = findobj('type', 'figure', 'name', 'FileHistory');
     % Get the handles of MIA_pipeline
@@ -1145,6 +1146,9 @@ if ~isempty(findobj('type', 'figure', 'name', 'FileHistory'))
     [h,data] = FileHistory('UpdateJobsList', h, data);
     %[~, ~, data] = MIA_pipeline('MIA_pipeline_UpdateTables', h, eventdata2, data);
     guidata(h, data)
+elseif ~isempty(findobj('type', 'figure', 'name', 'FileHistory')) 
+     close(findobj('type', 'figure', 'name', 'FileHistory'))
+
 end
 
 
@@ -4023,11 +4027,11 @@ for i = 1:numel(idx_to_update)
     
     % rename the scan file .nii.gz
     if  exist(fullfilename(handles, idx_to_update(i), '.nii.gz'), 'file') == 0
-        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-            fullfilename(handles, idx_to_update(i), '.nii.gz'));
-        msgbox(warning_text, 'rename file warning') ;
+%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+%             fullfilename(handles, idx_to_update(i), '.nii.gz'));
+%         msgbox(warning_text, 'rename file warning') ;
     elseif exist(string(strcat(cellstr(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii.gz')), 'file') == 2
-        msgbox('The new .nii.gz file exist already!!') ;
+%         msgbox('The new .nii.gz file exist already!!') ;
         
     else
         movefile(fullfilename(handles, idx_to_update(i), '.nii.gz'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii.gz'), 'f')
@@ -4038,11 +4042,11 @@ for i = 1:numel(idx_to_update)
     
     % rename the scan file .nii
     if  exist(fullfilename(handles, idx_to_update(i), '.nii'), 'file') == 0
-        warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-            fullfilename(handles, idx_to_update(i), '.nii'));
-        msgbox(warning_text, 'rename file warning') ;
+%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+%             fullfilename(handles, idx_to_update(i), '.nii'));
+%         msgbox(warning_text, 'rename file warning') ;
     elseif exist(string(strcat(cellstr(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii')), 'file') == 2
-        msgbox('The new .nii file exist already!!') ;
+      %  msgbox('The new .nii file exist already!!') ;
         
     else
         movefile(fullfilename(handles, idx_to_update(i), '.nii'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii'), 'f')
