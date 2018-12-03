@@ -230,6 +230,9 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+if ~isfield(handles.new_module, 'opt')
+    return
+end
 [new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path, 1);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
@@ -1807,13 +1810,15 @@ for i=1:length(Names_Mod)
     
     ReWritting = CheckReWriting(Mod, handles.MIA_pipeline_TmpDatabase);
     if any(ReWritting) && ~exist('DeleteRewrite','var')
-        text = 'WARNING : Some jobs will overwrite existing files. Do you want to delete these jobs ?';
-        answer = questdlg(text, 'Overwritting', 'Overwrite', 'Delete','Cancel', 'Cancel');
+        text = {'WARNING : Some jobs will overwrite existing files. Do you want to :'...
+            '     - Remove these jobs or,'...
+            '     - Overwrite the existing files ?'};
+        answer = questdlg(text, 'Overwritting', 'Remove jobs', 'Overwrite files', 'Cancel', 'Cancel');
         if isempty(answer) || strcmp(answer, 'Cancel')
             return
-        elseif strcmp(answer, 'Overwrite')
+        elseif strcmp(answer, 'Overwrite files')
             DeleteRewrite = 0;
-        elseif strcmp(answer, 'Delete')
+        elseif strcmp(answer, 'Remove jobs')
             DeleteRewrite = 1;
         end
     end
