@@ -5540,7 +5540,8 @@ Path = strsplit(Path, filesep);
 Path{end} = ['tools', filesep, 'ClusterGMM_(StageClement)', filesep];
 Path = strjoin(Path, filesep);
 
-NewEntry = handles.database(end,:);
+NewEntry = table();
+%NewEntry = handles.database(end,:);
 NewEntry.Group = categorical(cellstr('Developer'));
 NewEntry.Patient = categorical(cellstr('Developer_Clement'));
 NewEntry.Tp = categorical(cellstr('27_11_2018'));
@@ -5549,6 +5550,10 @@ NewEntry.Filename = categorical(cellstr('el_luchador'));
 NewEntry.Type = categorical(cellstr('Scan'));
 NewEntry.IsRaw = categorical(1);
 NewEntry.SequenceName = categorical(cellstr('Portrait'));
-handles.database = unique([handles.database; NewEntry]);
+if isfield(handles, 'database')
+    handles.database = unique([handles.database; NewEntry]);
+else
+    handles.database = NewEntry;
+end
 MIA_update_database_display(hObject, eventdata, handles)
 guidata(hObject, handles)
