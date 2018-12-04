@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
+     'Spatial', '   .Smoothing', '   .Shift images', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
      '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
      };
@@ -1094,6 +1094,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
+    case '   .Shift images'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Shift_image('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Shift_image(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Shift_image';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;  
+        ismodule = 1;
     case '   .Dynamic Susceptibility Contrast'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
         handles.new_module.command = '[files_in,files_out,opt] = Module_Susceptibility(char(files_in),files_out,opt)';
@@ -1915,7 +1922,7 @@ else
         files_in = Module.files_in;
         files_out = Module.files_out;
         opt = Module.opt;
-        eval(Module.command)
+        eval(Module.command);
         Result = setfield(Result, Modules{i}, 'finished');
         
     end
@@ -1999,7 +2006,7 @@ if update
     %close('MIA pipeline Manager')
     handles.database = handles.MIA_data.database;
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
-    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
