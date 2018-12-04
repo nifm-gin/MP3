@@ -70,7 +70,7 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'MRFingerprint', '   .Vascular MRFingerprint'...
      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
      'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
+     'Spatial', '   .Smoothing', '   .Shift images', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
      '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
      'Export', '   .Export data for deeplearing', ...
@@ -220,7 +220,7 @@ handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
 MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
 %Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
 %set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -231,6 +231,9 @@ function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+if ~isfield(handles.new_module, 'opt')
+    return
+end
 [new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path, 1);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
@@ -281,17 +284,17 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
 
 
-handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 %MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
 
 
-%module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
-%set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
+module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
+set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
@@ -743,7 +746,7 @@ end
 
 %handles.tmp_database = table();
 %handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
-handles.MIA_pipeline_pipeline_listbox_Raw = {''};
+%handles.MIA_pipeline_pipeline_listbox_Raw = {''};
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %set(handles.MIA_pipeline_JobsList, 'String', {''});
@@ -1091,6 +1094,13 @@ switch char(handles.Modules_listing(module_selected))
         handles.new_module.module_name = 'Module_Smoothing';
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
+    case '   .Shift images'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Shift_image('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Shift_image(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Shift_image';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;  
         ismodule = 1;
     case '   .Dynamic Susceptibility Contrast'
         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
@@ -1814,13 +1824,15 @@ for i=1:length(Names_Mod)
     
     ReWritting = CheckReWriting(Mod, handles.MIA_pipeline_TmpDatabase);
     if any(ReWritting) && ~exist('DeleteRewrite','var')
-        text = 'WARNING : Some jobs will overwrite existing files. Do you want to delete these jobs ?';
-        answer = questdlg(text, 'Overwritting', 'Overwrite', 'Delete','Cancel', 'Cancel');
+        text = {'WARNING : Some jobs will overwrite existing files. Do you want to :'...
+            '     - Remove these jobs or,'...
+            '     - Overwrite the existing files ?'};
+        answer = questdlg(text, 'Overwritting', 'Remove jobs', 'Overwrite files', 'Cancel', 'Cancel');
         if isempty(answer) || strcmp(answer, 'Cancel')
             return
-        elseif strcmp(answer, 'Overwrite')
+        elseif strcmp(answer, 'Overwrite files')
             DeleteRewrite = 0;
-        elseif strcmp(answer, 'Delete')
+        elseif strcmp(answer, 'Remove jobs')
             DeleteRewrite = 1;
         end
     end
@@ -1917,7 +1929,7 @@ else
         files_in = Module.files_in;
         files_out = Module.files_out;
         opt = Module.opt;
-        eval(Module.command)
+        eval(Module.command);
         Result = setfield(Result, Modules{i}, 'finished');
         
     end
@@ -2001,7 +2013,7 @@ if update
     %close('MIA pipeline Manager')
     handles.database = handles.MIA_data.database;
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
-    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
 end
 %handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
@@ -2429,8 +2441,10 @@ if ~isfield(handles, 'MIA_pipeline_ParamsModules')
     JobNames = {''};
     ColoredJobNames = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+    revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+    SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     if isfield(Module, 'Jobs')
         JobNames = fieldnames(Module.Jobs);
@@ -2502,8 +2516,10 @@ end
 
 
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = revertcolor2(SelectedModule);
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 
@@ -2514,7 +2530,7 @@ if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
     [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-    handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+    %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 else 
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
     set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
@@ -2525,7 +2541,7 @@ else
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
-    handles.MIA_pipeline_pipeline_listbox_Raw = {''};
+    %handles.MIA_pipeline_pipeline_listbox_Raw = {''};
     
 end
 
@@ -2553,16 +2569,18 @@ end
 
 
 SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = revertcolor2(SelectedModule);
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 handles.MIA_pipeline.EditedModuleName = SelectedModule;
 handles.BeforeEditedModuleFilters = handles.FilterParameters;
 
 %% Remove the module we want to edit, and adapt the database
 handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
-Stored = handles.MIA_pipeline_pipeline_listbox_Raw;
-handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%Stored = handles.MIA_pipeline_pipeline_listbox_Raw;
+%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 %[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
@@ -2583,9 +2601,10 @@ handles.module_parameters_string = module_parameters_string;
 handles.module_parameters_fields = module_parameters_fields;
     
 handles.FilterParameters = [handles.FilterParameters, Module.Filters];
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
-handles.MIA_pipeline_pipeline_listbox_Raw = Stored;
+
+%handles.MIA_pipeline_pipeline_listbox_Raw = Stored;
+[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
 
@@ -2658,7 +2677,9 @@ SaveModule.ModuleParams = handles.new_module;
 %SaveModule.Jobs = new_pipeline;
 handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
 %handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
-handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox_Raw);
+revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+fields = revertcolor2(handles.MIA_pipeline_pipeline_listbox.String);
+handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, fields);
 
 [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
 
@@ -2752,11 +2773,13 @@ function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     String = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')% || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     String = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
     %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -2819,11 +2842,13 @@ function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, hand
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     Entrie = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MIA_pipeline_ParamsModules')% || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     Entrie = {''};
 else
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+    SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
     SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
     %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -3098,13 +3123,13 @@ for i=1:length(Modules)
 end
 
 handles.MIA_pipeline_ParamsModules = pipeline;
-handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 
 %[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 %set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
 set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
@@ -3168,8 +3193,10 @@ end
 
 
 SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+SelectedModule = revertcolor2(SelectedModule);
 Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
 SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
 %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
@@ -3215,6 +3242,7 @@ end
 Names = fieldnames(handles.MIA_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
+revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
 Coloredlistbox = cell(size(Names));
 for i=1:length(Names)
     ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
@@ -3237,5 +3265,4 @@ end
 % handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 % Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
 % set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-
 

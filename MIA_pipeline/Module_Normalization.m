@@ -101,6 +101,7 @@ input(2).nifti_header = spm_vol(files_in.In2{1});
 
 scan = read_volume(input(1).nifti_header, input(1).nifti_header, 0, 'Axial');
 ROI = read_volume(input(2).nifti_header, input(1).nifti_header, 0, 'Axial');
+
 %% code to perform the normalization of the scan by the ROI and using the value gave by the user
 ROI(ROI == 0) = NaN;
 tmp = scan.*ROI;
