@@ -213,21 +213,9 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
 if SaveDbFlag
     save([PathProject, 'MIA_database.mat'], 'database')
 end
-
-
 
 
 
