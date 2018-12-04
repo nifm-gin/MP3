@@ -73,8 +73,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Spatial', '   .Smoothing', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
      '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
+     'Export', '   .Export data for deeplearing', ...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering', 'Export' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -1276,7 +1277,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-        
+    case '   .Export data for deeplearing'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Export_data4DL('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Export_data4DL(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Export_data4DL';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
