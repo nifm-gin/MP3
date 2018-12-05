@@ -206,6 +206,36 @@ end
 handles.MIA_pipeline_Filtered_Table = NewTable;
 CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
 handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+    % set ColumnWidth to auto
+    column_name = handles.MIA_pipeline_TagsToPrint;
+    column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+    merge_Data = [column_name;column_data];
+    dataSize = size(merge_Data);
+    % Create an array to store the max length of data for each column
+    maxLen = zeros(1,dataSize(2));
+    % Find out the max length of data for each column
+    % Iterate over each column
+    for i=1:dataSize(2)
+        
+        % 2 cases: the ColumnName is longer than any of the text contained
+        % in this column or otherwise
+        if max(cellfun('length',merge_Data(2:end,i))) >= length(merge_Data{1,i})
+            maxLen(1,i) = max(cellfun('length',merge_Data(2:end,i)))*8;
+        else
+            maxLen(1,i) = length(merge_Data{1,i})*4;
+        end
+    end
+    % Some calibration needed as ColumnWidth is in pixels
+    cellMaxLen = num2cell(maxLen);
+    % Set ColumnWidth of UITABLE
+    set(handles.MIA_pipeline_Filtering_Table, 'ColumnWidth', cellMaxLen);
+    
+end
+
+
+
+
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 %% Update of Unique Values
 if strcmp(handles.Source_selected , 'NoMoreTags')
@@ -1005,6 +1035,35 @@ else
 
     handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
     handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
+    % automatic column width
+    if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+        % set ColumnWidth to auto
+        column_name = get(handles.MIA_pipeline_Unique_Values_Tag,'columnName')';
+        column_data = get(handles.MIA_pipeline_Unique_Values_Tag,'Data');
+        %column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+        merge_Data = [column_name;column_data];
+        dataSize = size(merge_Data);
+        % Create an array to store the max length of data for each column
+        maxLen = zeros(1,dataSize(2));
+        % Find out the max length of data for each column
+        % Iterate over each column
+        for i=1:dataSize(2)
+            
+            % 2 cases: the ColumnName is longer than any of the text contained
+            % in this column or otherwise
+            if max(cellfun('length',merge_Data(2:end,i))) >= length(merge_Data{1,i})
+                maxLen(1,i) = max(cellfun('length',merge_Data(2:end,i)))*5 + 35;
+            else
+                maxLen(1,i) = length(merge_Data{1,i})*7;
+            end
+        end
+        % Some calibration needed as ColumnWidth is in pixels
+        cellMaxLen = num2cell(maxLen);
+        % Set ColumnWidth of UITABLE
+        set(handles.MIA_pipeline_Unique_Values_Tag, 'ColumnWidth', cellMaxLen);
+        
+    end
+    
 end
 
 
