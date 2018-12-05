@@ -558,7 +558,7 @@ end
 patient_seleted = get(handles.MIA_name_list, 'String');
 patient_name = patient_seleted(get(handles.MIA_name_list, 'Value'),:);
 %patient_name = unique(handles.database.Patient(data_selected));
-user_response = questdlg(['Do you want to delete every data of ' patient_name], 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+user_response = questdlg(['Do you want to delete every data of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
 if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
     return
 end
@@ -4018,8 +4018,8 @@ for i = 1:numel(idx_to_update)
     if find(handles.database.Patient == handles.database.Patient(idx_to_update(i)) &...
             handles.database.Tp == handles.database.Tp(idx_to_update(i)) & ...
             handles.database.SequenceName == newparameter_name) > 0
-        msgbox('A Scan with the same name already exist for this patient at this time point') ;
-        return
+        msgbox(strcat('A Scan with the same name already exist for ', {' '}, cellstr(handles.database.Patient(idx_to_update(i))), cellstr(handles.database.Tp(idx_to_update(i))) ))
+        continue
     end
     
     
@@ -4042,26 +4042,26 @@ for i = 1:numel(idx_to_update)
     
     % rename the scan file .nii
     if  exist(fullfilename(handles, idx_to_update(i), '.nii'), 'file') == 0
-%         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
-%             fullfilename(handles, idx_to_update(i), '.nii'));
-%         msgbox(warning_text, 'rename file warning') ;
+        %         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
+        %             fullfilename(handles, idx_to_update(i), '.nii'));
+        %         msgbox(warning_text, 'rename file warning') ;
     elseif exist(string(strcat(cellstr(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii')), 'file') == 2
-      %  msgbox('The new .nii file exist already!!') ;
+        %  msgbox('The new .nii file exist already!!') ;
         
     else
+        
         movefile(fullfilename(handles, idx_to_update(i), '.nii'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii'), 'f')
         if exist(fullfilename(handles, idx_to_update(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
-        end
+        end 
     end
-    
-    
+   
     % update the Filename field in the table
     handles.database.SequenceName(idx_to_update(i)) = newparameter_name;
     handles.database.Filename(idx_to_update(i)) = new_nii_filename;
     
     % save the structure
-    guidata(hObject, handles);
+   guidata(hObject, handles);
 end
 
 %% update graph and display
