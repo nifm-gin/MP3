@@ -73,8 +73,9 @@ handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', ' 
      'Spatial', '   .Smoothing', '   .Shift images', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
      '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
      'Clustering', '   .Clustering GMM', ...
+     'Export', '   .Export data for deeplearing', ...
      };
-handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering' };
+handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering', 'Export' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
 handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
@@ -206,6 +207,36 @@ end
 handles.MIA_pipeline_Filtered_Table = NewTable;
 CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
 handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+    % set ColumnWidth to auto
+    column_name = handles.MIA_pipeline_TagsToPrint;
+    column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+    merge_Data = [column_name;column_data];
+    dataSize = size(merge_Data);
+    % Create an array to store the max length of data for each column
+    maxLen = zeros(1,dataSize(2));
+    % Find out the max length of data for each column
+    % Iterate over each column
+    for i=1:dataSize(2)
+        
+        % 2 cases: the ColumnName is longer than any of the text contained
+        % in this column or otherwise
+        if max(cellfun('length',merge_Data(2:end,i))) >= length(merge_Data{1,i})
+            maxLen(1,i) = max(cellfun('length',merge_Data(2:end,i)))*8;
+        else
+            maxLen(1,i) = length(merge_Data{1,i})*4;
+        end
+    end
+    % Some calibration needed as ColumnWidth is in pixels
+    cellMaxLen = num2cell(maxLen);
+    % Set ColumnWidth of UITABLE
+    set(handles.MIA_pipeline_Filtering_Table, 'ColumnWidth', cellMaxLen);
+    
+end
+
+
+
+
 handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
 %% Update of Unique Values
 if strcmp(handles.Source_selected , 'NoMoreTags')
@@ -1005,6 +1036,35 @@ else
 
     handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
     handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
+    % automatic column width
+    if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+        % set ColumnWidth to auto
+        column_name = get(handles.MIA_pipeline_Unique_Values_Tag,'columnName')';
+        column_data = get(handles.MIA_pipeline_Unique_Values_Tag,'Data');
+        %column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+        merge_Data = [column_name;column_data];
+        dataSize = size(merge_Data);
+        % Create an array to store the max length of data for each column
+        maxLen = zeros(1,dataSize(2));
+        % Find out the max length of data for each column
+        % Iterate over each column
+        for i=1:dataSize(2)
+            
+            % 2 cases: the ColumnName is longer than any of the text contained
+            % in this column or otherwise
+            if max(cellfun('length',merge_Data(2:end,i))) >= length(merge_Data{1,i})
+                maxLen(1,i) = max(cellfun('length',merge_Data(2:end,i)))*5 + 35;
+            else
+                maxLen(1,i) = length(merge_Data{1,i})*7;
+            end
+        end
+        % Some calibration needed as ColumnWidth is in pixels
+        cellMaxLen = num2cell(maxLen);
+        % Set ColumnWidth of UITABLE
+        set(handles.MIA_pipeline_Unique_Values_Tag, 'ColumnWidth', cellMaxLen);
+        
+    end
+    
 end
 
 
@@ -1286,7 +1346,13 @@ switch char(handles.Modules_listing(module_selected))
         module_parameters_string = handles.new_module.opt.table.Names_Display;
         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
         ismodule = 1;
-        
+    case '   .Export data for deeplearing'
+        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Export_data4DL('',  '', '');
+        handles.new_module.command = '[files_in,files_out,opt] = Module_Export_data4DL(char(files_in),files_out,opt)';
+        handles.new_module.module_name = 'Module_Export_data4DL';
+        module_parameters_string = handles.new_module.opt.table.Names_Display;
+        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+        ismodule = 1;
     otherwise
         module_parameters_string = 'Not Implemented yet!!';    
         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
