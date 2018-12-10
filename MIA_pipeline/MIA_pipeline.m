@@ -284,7 +284,7 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 
 
 %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-%[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 %MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
@@ -3235,7 +3235,7 @@ end
 Names = fieldnames(handles.MIA_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
-revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+%revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
 Coloredlistbox = cell(size(Names));
 for i=1:length(Names)
     ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
