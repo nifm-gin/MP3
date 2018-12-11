@@ -59,22 +59,46 @@ function MIA_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 handles.MIA_data = varargin{3};
-handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .Fit_T2_T2star',...
-                '   .deltaR2', '   .deltaR2*', '   .MGE2Dfrom3D',...
-    'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
-                '   .Vessel Density (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
-                '   .Inversion Efficiency (ASL_InvEff)',...
-     'Diffusion', '   .ADCmap',...
-     'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
-     'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
-     'MRFingerprint', '   .Vascular MRFingerprint'...
-     'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
-     'Texture Analyses', '   .Texture Matlab',...
-     'Spatial', '   .Smoothing', '   .Shift images', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
-     '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
-     'Clustering', '   .Clustering GMM', ...
-     'Export', '   .Export data for deeplearing', ...
-     };
+Spl = strsplit(mfilename('fullpath'), filesep);
+%Spl{end} = ['Modules_Repository', filesep, '**', filesep, 'Module_*.m'];
+Spl{end} = 'Modules_Repository';
+list_mod = dir(strjoin(Spl, filesep));
+Mod_listing = {};
+for i=3:length(list_mod)
+    %name = '';
+    [~, nam, ext] = fileparts(list_mod(i).name);
+    if (~list_mod(i).isdir && ~strcmp(ext, '.m')) || (~list_mod(i).isdir && ~startsWith(nam, 'Module_'))% exist([list_mod(i).folder, filesep, list_mod(i).name])==
+        continue
+    end
+    Mod_listing = [Mod_listing, list_mod(i).name];
+    if list_mod(i).isdir
+        %Mod_listing = [Mod_listing, list_mod(i).name];
+        SubMod = dir([list_mod(i).folder, filesep, list_mod(i).name]);
+        for j=3:length(SubMod)
+            Mod_listing = [Mod_listing, ['   .', SubMod(j).name]];
+        end
+    end
+end
+
+handles.Modules_listing = Mod_listing;
+
+
+% handles.Modules_listing = {'Relaxometry', '   .T1map (Multi Inversion Time)', '   .T1map (Multi Angles)', '   .T2map', '   .Fit_T2_T2star',...
+%                 '   .deltaR2', '   .deltaR2*', '   .MGE2Dfrom3D',...
+%     'Perfusion', '   .Blood volume fraction (steady-state)', '   .Dynamic Susceptibility Contrast', '   .Vessel Size Imaging (steady-state)', ...
+%                 '   .Vessel Density (steady-state)', '   .Cerebral blood flow (ASL)',  '   .Cerebral blood flow (ASL-Dynamic)',...
+%                 '   .Inversion Efficiency (ASL_InvEff)',...
+%      'Diffusion', '   .ADCmap',...
+%      'Permeability', '   .Dynamic Contrast Enhancement (Phenomenology)', '   .Dynamic Contrast Enhancement (Quantitative)',...          
+%      'Oxygenation', '   .R2prim', '   .SO2map', '   .CMRO2',...
+%      'MRFingerprint', '   .Vascular MRFingerprint'...
+%      'SPM', '   .SPM: Coreg (Est)', '   .SPM: Coreg (Est & Res)', '   .SPM: Reslice','   .SPM: Realign', ...
+%      'Texture Analyses', '   .Texture Matlab',...
+%      'Spatial', '   .Smoothing', '   .Shift images', '   .Arithmetic', '   .Normalization','   .Clip Image', '   .Brain Extraction (BET Function from FSL)',...
+%      '   .Brain Mask (using PCNN3D function)', '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)', '   .Bias Estimation (MICO algorithm)', '   .Reshape (Extraction)',...
+%      'Clustering', '   .Clustering GMM', ...
+%      'Export', '   .Export data for deeplearing', ...
+%      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering', 'Export' };
  
 set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
@@ -315,7 +339,7 @@ handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 
 
 %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-%[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
 %MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
 %MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
@@ -1109,255 +1133,284 @@ if isfield(handles, 'new_module')
 end
 
 ismodule = 0;
-switch char(handles.Modules_listing(module_selected))
-    case handles.Module_groups	
-        module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
-    case '   .SPM: Coreg (Est & Res)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est_Res('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est_Res(files_in,files_out,opt)';
-        handles.new_module.module_name = 'Module_Coreg_Est_Res';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-     case '   .SPM: Coreg (Est)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)';
-        handles.new_module.module_name = 'Module_Coreg_Est';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;   
-    case '   .T2map'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_T2map';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;   
-%     case '   .ADCmap'
-%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ADCmap('',  '', '');
-%         handles.new_module.command = '[files_in,files_out,opt] = Module_ADCmap(char(files_in),files_out,opt)';
-%         handles.new_module.module_name = 'Module_ADCmap';
+% switch char(handles.Modules_listing(module_selected))
+%     case handles.Module_groups	
+%         module_parameters_string = [char(handles.Modules_listing(module_selected)) ' modules'];
+%     case '   .SPM: Coreg (Est & Res)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est_Res('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est_Res(files_in,files_out,opt)';
+%         handles.new_module.module_name = 'Module_Coreg_Est_Res';
 %         module_parameters_string = handles.new_module.opt.table.Names_Display;
 %         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
 %         ismodule = 1;
-    case '   .Fit_T2_T2star'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Fit_T2_T2star('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Fit_T2_T2star(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Fit_T2_T2star';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Smoothing'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Smoothing(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Smoothing';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Shift images'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Shift_image('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Shift_image(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Shift_image';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;  
-        ismodule = 1;
-    case '   .Dynamic Susceptibility Contrast'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Susceptibility(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Susceptibility';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .T1map (Multi Angles)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MultiAngles('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MultiAngles(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_T1map_MultiAngles';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Arithmetic'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Arithmetic('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Arithmetic(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Arithmetic';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Normalization'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Normalization('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Normalization(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Normalization';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-     case '   .Clip Image'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Clipping('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Clipping(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Clipping';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;    
-    case '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_FLIRT('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_FLIRT(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_FSL_FLIRT';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-        
-    case '   .Brain Extraction (BET Function from FSL)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_BET('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_BET(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_FSL_BET';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-     case '   .Brain Mask (using PCNN3D function)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Brain_Mask_PCNN3D('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Brain_Mask_PCNN3D(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Brain_Mask_PCNN3D';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;   
-        
-           
-    case '   .Inversion Efficiency (ASL_InvEff)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_ASL_InvEff';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .MGE2Dfrom3D'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MGE2Dfrom3D('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_MGE2Dfrom3D(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_MGE2Dfrom3D';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .deltaR2'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_DeltaR2';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .deltaR2*'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2Star('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2Star(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_DeltaR2Star';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Dynamic Contrast Enhancement (Phenomenology)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DCE_phenomeno('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_DCE_phenomeno(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_DCE_phenomeno';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .R2prim'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_R2Prim('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_R2Prim(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_R2Prim';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Blood volume fraction (steady-state)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_BVf('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_BVf(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_BVf';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Vessel Size Imaging (steady-state)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_VSI('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_VSI(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_VSI';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Vessel Density (steady-state)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Density('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Density(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Density';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .SO2map'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_SO2('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_SO2(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_SO2';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .CMRO2'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CMRO2('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_CMRO2(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_CMRO2';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .T1map (Multi Inversion Time)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_T1map_MIT';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Cerebral blood flow (ASL)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CBF('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_CBF(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_CBF';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-     case '   .Texture Matlab'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Texture_matlab('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Texture_matlab(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Texture_matlab';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;     
-    case '   .Clustering GMM'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ClusteringGMM('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_ClusteringGMM(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_ClusteringGMM';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Bias Estimation (MICO algorithm)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MICO('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_MICO(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_MICO';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Reshape (Extraction)'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Reshape('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Reshape(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Reshape';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .SPM: Realign'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Realign_Est('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Realign_Est(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Realign_Est';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    case '   .Export data for deeplearing'
-        [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Export_data4DL('',  '', '');
-        handles.new_module.command = '[files_in,files_out,opt] = Module_Export_data4DL(char(files_in),files_out,opt)';
-        handles.new_module.module_name = 'Module_Export_data4DL';
-        module_parameters_string = handles.new_module.opt.table.Names_Display;
-        module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
-        ismodule = 1;
-    otherwise
-        module_parameters_string = 'Not Implemented yet!!';    
-        set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+%      case '   .SPM: Coreg (Est)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Coreg_Est('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Coreg_Est(files_in,files_out,opt)';
+%         handles.new_module.module_name = 'Module_Coreg_Est';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;   
+%     case '   .T2map'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T2map('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_T2map(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_T2map';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;   
+% %     case '   .ADCmap'
+% %         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ADCmap('',  '', '');
+% %         handles.new_module.command = '[files_in,files_out,opt] = Module_ADCmap(char(files_in),files_out,opt)';
+% %         handles.new_module.module_name = 'Module_ADCmap';
+% %         module_parameters_string = handles.new_module.opt.table.Names_Display;
+% %         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+% %         ismodule = 1;
+%     case '   .Fit_T2_T2star'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Fit_T2_T2star('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Fit_T2_T2star(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Fit_T2_T2star';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Smoothing'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Smoothing('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Smoothing(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Smoothing';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Shift images'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Shift_image('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Shift_image(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Shift_image';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;  
+%         ismodule = 1;
+%     case '   .Dynamic Susceptibility Contrast'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Susceptibility('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Susceptibility(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Susceptibility';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .T1map (Multi Angles)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MultiAngles('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MultiAngles(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_T1map_MultiAngles';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Arithmetic'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Arithmetic('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Arithmetic(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Arithmetic';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Normalization'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Normalization('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Normalization(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Normalization';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%      case '   .Clip Image'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Clipping('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Clipping(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Clipping';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;    
+%     case '   .FLIRT-FMRIB Linear Image Registration Tool (from FSL)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_FLIRT('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_FLIRT(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_FSL_FLIRT';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%         
+%     case '   .Brain Extraction (BET Function from FSL)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_FSL_BET('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_FSL_BET(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_FSL_BET';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%      case '   .Brain Mask (using PCNN3D function)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Brain_Mask_PCNN3D('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Brain_Mask_PCNN3D(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Brain_Mask_PCNN3D';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;   
+%         
+%            
+%     case '   .Inversion Efficiency (ASL_InvEff)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ASL_InvEff('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_ASL_InvEff(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_ASL_InvEff';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .MGE2Dfrom3D'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MGE2Dfrom3D('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_MGE2Dfrom3D(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_MGE2Dfrom3D';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .deltaR2'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_DeltaR2';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .deltaR2*'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DeltaR2Star('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_DeltaR2Star(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_DeltaR2Star';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Dynamic Contrast Enhancement (Phenomenology)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_DCE_phenomeno('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_DCE_phenomeno(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_DCE_phenomeno';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .R2prim'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_R2Prim('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_R2Prim(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_R2Prim';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Blood volume fraction (steady-state)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_BVf('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_BVf(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_BVf';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Vessel Size Imaging (steady-state)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_VSI('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_VSI(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_VSI';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Vessel Density (steady-state)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Density('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Density(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Density';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .SO2map'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_SO2('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_SO2(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_SO2';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .CMRO2'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CMRO2('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_CMRO2(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_CMRO2';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .T1map (Multi Inversion Time)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_T1map_MIT('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_T1map_MIT(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_T1map_MIT';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Cerebral blood flow (ASL)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_CBF('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_CBF(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_CBF';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%      case '   .Texture Matlab'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Texture_matlab('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Texture_matlab(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Texture_matlab';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;     
+%     case '   .Clustering GMM'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_ClusteringGMM('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_ClusteringGMM(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_ClusteringGMM';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Bias Estimation (MICO algorithm)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_MICO('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_MICO(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_MICO';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Reshape (Extraction)'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Reshape('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Reshape(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Reshape';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .SPM: Realign'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Realign_Est('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Realign_Est(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Realign_Est';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case '   .Export data for deeplearing'
+%         [handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = Module_Export_data4DL('',  '', '');
+%         handles.new_module.command = '[files_in,files_out,opt] = Module_Export_data4DL(char(files_in),files_out,opt)';
+%         handles.new_module.module_name = 'Module_Export_data4DL';
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     case 'Test'
+%         Mod = 'Module_Test.m';
+%         eval(['[handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = ', Mod, '('',  '', '')']);
+%         handles.new_module.command = ['[files_in,files_out,opt] = ', Mod, '(char(files_in),files_out,opt)'];
+%         handles.new_module.module_name = Mod;
+%         module_parameters_string = handles.new_module.opt.table.Names_Display;
+%         module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+%         ismodule = 1;
+%     otherwise
+%         module_parameters_string = 'Not Implemented yet!!';    
+%         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+% 
+% end
 
+Mod = char(handles.Modules_listing(module_selected));
+if ~endsWith(Mod, '.m')
+    module_parameters_string = '';
+    set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+else
+    if startsWith(Mod, '   .')
+        %Remove '   .'
+        Mod = Mod(5:end);
+    end
+    %Remove '.m'
+    Mod = Mod(1:end-2);
+    
+    eval(['[handles.new_module.files_in ,handles.new_module.files_out ,handles.new_module.opt] = ', Mod, '('''',  '''', '''');']);
+    handles.new_module.command = ['[files_in,files_out,opt] = ', Mod, '(char(files_in),files_out,opt)'];
+    handles.new_module.module_name = Mod;
+    module_parameters_string = handles.new_module.opt.table.Names_Display;
+    module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
+    ismodule = 1;
 end
+
 
 set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
 if ismodule
@@ -3301,7 +3354,7 @@ end
 Names = fieldnames(handles.MIA_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
-revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
+%revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
 Coloredlistbox = cell(size(Names));
 for i=1:length(Names)
     ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
