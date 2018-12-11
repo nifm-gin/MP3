@@ -331,6 +331,7 @@ dictionaryMRI:
                   description: {info: "Birth date of the patient"}
   
                   whereBruker:  {file: subject, keyName: $SUBJECT_dbirth=, type: string, format: ~, units: ~}
+                  wherePhilips: {file: PAR ; Xml, keyName: ~ ; ~ , type: ~ ; ~, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Birth Date, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientBirthDate, type: string, format: ~, units: ~}
 
@@ -372,6 +373,7 @@ dictionaryMRI:
                   description: {info: "Sex of the named patient"}
   
                   whereBruker:  {file: subject, keyName: $SUBJECT_sex=, type: string, format: ~, units: ~}
+                  wherePhilips: {file: PAR ; Xml, keyName: ~ ; ~ , type: ~ ; ~, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Patient's Sex, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientSex, type: string, format: ~, units: ~}
 
@@ -381,12 +383,13 @@ dictionaryMRI:
   Patient Weight:
                   description: {info: ""}
   
-                  whereBruker:  {file: subject, keyName: $SUBJECT_weight=, type: float, format: ~, units: ~}
-                  whereDicom:   {file: ~, keyName: Patient's Weight, type: float, format: ~, units: ~}
-                  whereNifti:   {file: json, keyName: PatientWeight, type: float, format: ~, units: ~}
+                  whereBruker:  {file: subject, keyName: $SUBJECT_weight=, type: string, format: ~, units: ~}
+                  wherePhilips: {file: PAR ; Xml, keyName: ~ ; ~ , type: ~ ; ~, format: ~, units: ~}
+                  whereDicom:   {file: ~, keyName: Patient's Weight, type: string, format: ~, units: ~}
+                  whereNifti:   {file: json, keyName: PatientWeight, type: string, format: ~, units: ~}
 
                   viewer: {category: ~}
-                  json:   {tagJson: PatientWeight, type: float, format: ~, units: ~}
+                  json:   {tagJson: PatientWeight, type: string, format: ~, units: ~}
 
   Pixel Bandwidth:
                   description: {info: "Reciprocal of the total sampling period, in hertz per pixel"}
