@@ -73,8 +73,8 @@ for i=3:length(list_mod)
     Mod_listing = [Mod_listing, list_mod(i).name];
     if list_mod(i).isdir
         %Mod_listing = [Mod_listing, list_mod(i).name];
-        SubMod = dir([list_mod(i).folder, filesep, list_mod(i).name]);
-        for j=3:length(SubMod)
+        SubMod = dir([list_mod(i).folder, filesep, list_mod(i).name, filesep, 'Module_*.m']);
+        for j=1:length(SubMod)
             Mod_listing = [Mod_listing, ['   .', SubMod(j).name]];
         end
     end
@@ -2641,7 +2641,6 @@ if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
     set(handles.MIA_pipeline_JobsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
-    [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
     %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 else 
     handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
@@ -2660,9 +2659,10 @@ end
 
 %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
-MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
 set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 
 
 guidata(hObject, handles);
@@ -2893,27 +2893,31 @@ else
     SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-    SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-    %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-    SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
-    Job = Module.Jobs.(SelectedJob);
-    %Names = fieldnames(Job);
-    String = {};
-
-    Inputs = fieldnames(Job.files_in);
-    for i=1:length(Inputs)
-        String = [String; {['files_in', ' ', Inputs{i}]}];
-    end
-
-    Outputs = fieldnames(Job.files_out);
-    for i=1:length(Outputs)
-        String = [String; {['files_out', ' ', Outputs{i}]}];
-    end
-
-    UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
-    UserFields = UserFields(~cellfun(@isempty,UserFields));
-    for i=1:length(UserFields)
-        String = [String; {['opt', ' ', UserFields{i}]}];
+    if ~isfield(Module, 'Jobs') || isempty(fieldnames(Module.Jobs))
+        String = {''};
+    else
+        SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+        %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+        SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
+        Job = Module.Jobs.(SelectedJob);
+        %Names = fieldnames(Job);
+        String = {};
+        
+        Inputs = fieldnames(Job.files_in);
+        for i=1:length(Inputs)
+            String = [String; {['files_in', ' ', Inputs{i}]}];
+        end
+        
+        Outputs = fieldnames(Job.files_out);
+        for i=1:length(Outputs)
+            String = [String; {['files_out', ' ', Outputs{i}]}];
+        end
+        
+        UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
+        UserFields = UserFields(~cellfun(@isempty,UserFields));
+        for i=1:length(UserFields)
+            String = [String; {['opt', ' ', UserFields{i}]}];
+        end
     end
 end
 % for i=2:length(Names)
@@ -2962,22 +2966,26 @@ else
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
     SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-    SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-    %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-    SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
-    Job = Module.Jobs.(SelectedJob);
-    SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
-    SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
-    Fields = strsplit(SelectedParameterField);
-    Param = Job.(Fields{1});
-    Entrie = Param.(Fields{2});
-    if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
-        NewEntrie = [];
-        for i=1:length(Entrie)
-            [~,name,~] = fileparts(Entrie{i});
-            NewEntrie = [NewEntrie; {name}];
+    if ~isfield(Module, 'Jobs') || isempty(fieldnames(Module.Jobs))
+        Entrie = {''};
+    else
+        SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
+        %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
+        SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
+        Job = Module.Jobs.(SelectedJob);
+        SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
+        SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
+        Fields = strsplit(SelectedParameterField);
+        Param = Job.(Fields{1});
+        Entrie = Param.(Fields{2});
+        if strcmp(Fields{1}, 'files_in') || strcmp(Fields{1}, 'files_out')
+            NewEntrie = [];
+            for i=1:length(Entrie)
+                [~,name,~] = fileparts(Entrie{i});
+                NewEntrie = [NewEntrie; {name}];
+            end
+            Entrie = NewEntrie;
         end
-        Entrie = NewEntrie;
     end
 end
 if ~islogical(Entrie) && ~istable(Entrie)
