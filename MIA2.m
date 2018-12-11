@@ -65,9 +65,9 @@ handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
     'u5',	'orange',	'u6',	'u7',	'u8',	'gray'};
-handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
-%load('rgb_color_table.mat', 'num');
-%handles.colors_rgb = num;
+%handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
+load(which('rgb_color_table.mat'), 'num');
+handles.colors_rgb = num;
 handles.colormap = get(handles.MIA_colormap_popupmenu,'String');
 handles.markers ={'o','s', 'd', 'p', 'h', '+', '*', 'x'};
 table_data(1,1) = {'Voxel values'};
