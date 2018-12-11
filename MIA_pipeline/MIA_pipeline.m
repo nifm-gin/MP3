@@ -784,7 +784,7 @@ function [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Call
 
 
 if isfield(handles, 'MIA_pipeline_ParamsModules')
-    if ~strcmp(eventdata.Source.Tag, {'MIA_pipeline_Save_Module', 'MIA_pipeline_load_pipeline'})
+    if ~strcmp(eventdata.Source.Tag, {'MIA_pipeline_Save_Module', 'MIA_pipeline_load_pipeline', 'MIA_pipeline_DeleteModule'})
         answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
         if strcmp(answer, 'No')
             return
@@ -2653,17 +2653,23 @@ else
     set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
     set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
     %handles.MIA_pipeline_pipeline_listbox_Raw = {''};
-    
 end
 
 
 %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+if isfield(handles, 'MIA_pipeline_ParamsModules')
+    [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+end
 [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
-set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
 [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-
+%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MIA_pipeline_pipeline_listbox.String), handles);
+%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MIA_pipeline_pipeline_listbox.String), handles);
+%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 
 guidata(hObject, handles);
 
@@ -3211,7 +3217,7 @@ Modules = fieldnames(pipeline);
 % temporaires et ensuite appliquer le pipeline modifié à la table filtrée.
 %  * Remarque : la valeur stockée dans handles.MIA_pipeline_TmpDatabase est
 % déjà débarassée de tout fichier temporaire dans la fonction load.
-if strcmp(eventdata.Source.Tag, 'MIA_pipeline_Save_Module')
+if strcmp(eventdata.Source.Tag, 'MIA_pipeline_Save_Module') || strcmp(eventdata.Source.Tag, 'MIA_pipeline_DeleteModule')
     [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     Tmpdatab = handles.MIA_pipeline_Filtered_Table;
 else
