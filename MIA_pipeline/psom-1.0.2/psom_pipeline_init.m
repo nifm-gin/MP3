@@ -746,6 +746,45 @@ if flag_verbose
 end        
 for num_j = 1:length(list_jobs)        
     job_name = list_jobs{num_j};        
+    % Modification : In the opt field of each job, Clean each table
+    % variable. Indeed, the categorical variables are useful to represent
+    % repetitive data. Is store only one instance of each different value.
+    % But the dictionnary of these values is not cleaned, and it can takes
+    % a lot of space when you only store a few data. The following lines
+    % clean this dictionnary.
+    
+%    %% Conversion in cell array and then table
+    Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
+    Table_in_Values = cellstr(table2array(pipeline.(job_name).opt.Table_in));
+    pipeline.(job_name).opt.Table_in = cell2table(Table_in_Values, 'VariableNames', Table_in_Names);
+    Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
+    Table_out_Values = cellstr(table2array(pipeline.(job_name).opt.Table_out));
+    pipeline.(job_name).opt.Table_out = cell2table(Table_out_Values, 'VariableNames', Table_out_Names);
+
+% %% Conversion in structure and then table
+%     Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
+%     Table_in_Values = categorical(cellstr(pipeline.(job_name).opt.Table_in{:,:}));
+%     T = struct();
+%     Table_in_Values = Table_in_Values.';
+%     for i=1:size(Table_in_Names,2)
+%         T.(Table_in_Names{i}) = Table_in_Values(i,:);
+%     end
+%     pipeline.(job_name).opt.Table_in = struct2table(T);
+%     Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
+%     Table_out_Values = categorical(cellstr(table2array(pipeline.(job_name).opt.Table_out)));
+%     pipeline.(job_name).opt.Table_out = array2table(Table_out_Values, 'VariableNames', Table_out_Names);    
+
+% %% Conversion in cell
+%     pipeline.(job_name).opt.Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
+%     pipeline.(job_name).opt.Table_in_Values = cellstr(table2array(pipeline.(job_name).opt.Table_in));
+%     pipeline.(job_name).opt = rmfield(pipeline.(job_name).opt, 'Table_in');
+%     pipeline.(job_name).opt.Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
+%     pipeline.(job_name).opt.Table_out_Values = cellstr(table2array(pipeline.(job_name).opt.Table_out));
+%     pipeline.(job_name).opt = rmfield(pipeline.(job_name).opt, 'Table_out');
+
+
+
+
     list_files = unique(files_out.(job_name));        
     if ~flag_finished(num_j)        
         for num_f = 1:length(list_files)        
