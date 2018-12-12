@@ -22,7 +22,7 @@ function varargout = MIA_pipeline(varargin)
 
 % Edit the above text to modify the response to help MIA_pipeline
 
-% Last Modified by GUIDE v2.5 15-May-2018 17:44:09
+% Last Modified by GUIDE v2.5 12-Dec-2018 11:22:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2004,28 +2004,28 @@ for i=1:length(Name_Jobs)
 end
 
 
-Overwrite_Files = {};
-for i=1:length(Files_out)
-    if exist(Files_out{i},'file') || exist(strrep(Files_out{i},'.nii', '.nii.gz'),'file')
-        Overwrite_Files = [Overwrite_Files; Files_out{i}];
-    end
-end
-
-if ~isempty(Overwrite_Files)
-    text = 'WARNING : The execution of this pipeline will overwrite one or several existing files ! Continue ?';
-    answer = questdlg(text, 'Overwritting', 'Yes', 'See those files','No', 'No');
-    if strcmp(answer,'See those files')
-        f = figure;
-        t = uitable(f, 'Position', [30,100,500,300],'Data',Overwrite_Files);
-        %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
-        %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
-        uiwait(f)
-        answer = questdlg('So, execute the pipeline ?', 'It''s time to choose', 'Yes', 'No', 'No');
-    end
-    if strcmp(answer, 'No')
-        return
-    end
-end
+% Overwrite_Files = {};
+% for i=1:length(Files_out)
+%     if exist(Files_out{i},'file') || exist(strrep(Files_out{i},'.nii', '.nii.gz'),'file')
+%         Overwrite_Files = [Overwrite_Files; Files_out{i}];
+%     end
+% end
+% 
+% if ~isempty(Overwrite_Files)
+%     text = 'WARNING : The execution of this pipeline will overwrite one or several existing files ! Continue ?';
+%     answer = questdlg(text, 'Overwritting', 'Yes', 'See those files','No', 'No');
+%     if strcmp(answer,'See those files')
+%         f = figure;
+%         t = uitable(f, 'Position', [30,100,500,300],'Data',Overwrite_Files);
+%         %btnDelete = uicontrol('Parent', f, 'Position', [100,50,100,50], 'String', 'Delete All', 'Callback', 'rep = ''Yes''; delete(gcf)');
+%         %btnCancel = uicontrol('Parent', f, 'Position', [300,50,100,50], 'String', 'Cancel', 'Callback', 'rep = ''No''; delete(gcf)');
+%         uiwait(f)
+%         answer = questdlg('So, execute the pipeline ?', 'It''s time to choose', 'Yes', 'No', 'No');
+%     end
+%     if strcmp(answer, 'No')
+%         return
+%     end
+% end
 
 
 %% exectute the pipeline
@@ -3392,3 +3392,13 @@ end
 % Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
 % set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
 
+
+% --- Executes on button press in MIA_pipeline_Clear_PSOM_history_button.
+function MIA_pipeline_Clear_PSOM_history_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MIA_pipeline_Clear_PSOM_history_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 'dir') == 7
+    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's')
+    msgbox('Done', 'Information') ;
+end
