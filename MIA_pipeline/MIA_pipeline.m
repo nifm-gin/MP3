@@ -415,6 +415,9 @@ function MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 % display the help associated to the parameter selected
+if isempty(parameter_selected)
+    return
+end
 set(handles.MIA_pipeline_parameter_setup_text, 'String', handles.new_module.opt.table.Help{parameter_selected});
 
 switch handles.new_module.opt.table.Type{parameter_selected}
@@ -1392,9 +1395,14 @@ ismodule = 0;
 % end
 
 Mod = char(handles.Modules_listing(module_selected));
+    
+
 if ~endsWith(Mod, '.m')
     module_parameters_string = '';
-    set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+    set(handles.MIA_pipeline_parameter_setup_text, 'String', 'Not a .m file !');
+elseif contains(Mod, '(') || contains(Mod, ')')
+    module_parameters_string = '';
+    set(handles.MIA_pipeline_parameter_setup_text, 'String', 'Please don''t use {''('', '')''} characters in the module file name.');
 else
     if startsWith(Mod, '   .')
         %Remove '   .'
