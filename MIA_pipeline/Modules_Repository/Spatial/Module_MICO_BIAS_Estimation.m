@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_MICO(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_MICO_BIAS_Estimation(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
