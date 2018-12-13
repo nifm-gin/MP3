@@ -123,7 +123,9 @@ voxel_surface = prod(nifti_info.raw.pixdim(2:3));
 maxiter = 200;
 OptMask = 0;
 [I_border, Plot, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
-%[I_border] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
+% Automatically close the figure which contains the plot
+close(gcf)
+% Compute new optimal 
 Plot(Plot < opt.Min_BrainSize) = NaN;
 [~,New_optG] = min(gradient(Plot));
 % dispo for info
