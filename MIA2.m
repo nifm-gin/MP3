@@ -335,7 +335,15 @@ else %display VOIs list
     file_text= cell(1, numel(sequence_listing(scan)));
     for i=1:numel(sequence_listing(scan))
         sequence_filter =  handles.database.SequenceName== sequence_listing(scan(i));
+        if sum(Patient_filter & tp_filter & sequence_filter & is_ROI) == 1
         file_text(i) = cellstr(handles.database.Filename(Patient_filter & tp_filter & sequence_filter & is_ROI));
+        else
+            % in case there are more than two entries in the database --> delete the extra one(s) 
+            indexes = find(Patient_filter & tp_filter & sequence_filter & is_ROI);
+            handles.database(indexes(2:end),:)=[];
+            guidata(hObject, handles)
+            return
+        end
     end
     set(handles.MIA_file_list, 'String', file_text);
     
