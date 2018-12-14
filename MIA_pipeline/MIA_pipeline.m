@@ -2110,6 +2110,7 @@ for i=1:length(Jobs)
                    end
                    if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
+                       handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
@@ -2118,7 +2119,7 @@ for i=1:length(Jobs)
                    elseif ~statusMat
                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
                    end
-                   handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
+                   
                end
            end
    end
