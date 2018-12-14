@@ -1964,7 +1964,8 @@ for i=1:length(Names_Mod)
             % Store the Table_out of all jobs we choosed to delete
             Table_JobDeleted = [Table_JobDeleted; Mod.Jobs.(JobN).opt.Table_out];
             Mod.Jobs = rmfield(Mod.Jobs, JobN);
-% =======
+% =======  % Code de Benjamin pour copier les fichiers du dossier Tmp vers
+% % celui des données
 %     if exist('DeleteRewrite','var') && DeleteRewrite
 %         JobNames = fieldnames(Mod.Jobs);
 %         for j=1:length(ReWritting)
@@ -2000,13 +2001,19 @@ for i=1:length(Names_Mod)
     %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase; Mod.OutputDatabase]);
 end
 
-
 %The files_out of the deleted jobs can be files_in for other jobs. So, if
 %the files_out of the deleted jobs exist in the database, we will change
 %the path of the relevant files_in from the Tmp folder to the Derived_data,
 %Raw_data or ROI_data.
 
 PipelineJobNames = fieldnames(Pipeline);
+
+if isempty(PipelineJobNames)
+    warndlg('No pipeline to execute ...')
+    return
+end
+
+
 if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
     for i=1:length(PipelineJobNames)
         Mod = Pipeline.(PipelineJobNames{i});
