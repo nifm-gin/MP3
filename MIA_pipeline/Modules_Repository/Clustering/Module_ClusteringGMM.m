@@ -394,12 +394,12 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %fois le nombre de classes optimal trouve.
     modeles = cell(1,ptsheurist);
     
-    parfor kk=1:ptsheurist
+    for kk=1:ptsheurist
         
         %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
         %modele en modifiant l'initialisation. Le modele renvoye est celui
         %de plus grande vraisemblance.
-        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 10);
+        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 3);
         
         loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
         
