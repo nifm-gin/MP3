@@ -1953,6 +1953,25 @@ for i=1:length(Names_Mod)
         for j=1:length(ReWritting)
             if ReWritting(j)
                 JobToDelete = JobNames{j};
+                % copy files to the tmp folder in case another job needs it
+                % as input
+                for x = 1: numel( Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName)
+                    indexes_of_scan_to_copy = find((handles.MIA_data.database.SequenceName == Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName(x)) & ...
+                        (handles.MIA_data.database.Patient == Mod.Jobs.(JobNames{j}).opt.Table_out.Patient(x)) & ...
+                        (handles.MIA_data.database.Tp == Mod.Jobs.(JobNames{j}).opt.Table_out.Tp(x)))    ;
+                    for y=1:numel(indexes_of_scan_to_copy)
+                        filename_input = strcat(char(handles.MIA_data.database.Path(indexes_of_scan_to_copy(y))),char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
+                        filename_ouput = strcat(char(handles.MIA_data.database.Properties.UserData.MIA_data_path), 'Tmp', filesep, char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
+                        copyfile(filename_input, filename_ouput, 'f');
+                        if exist(strrep(filename_input, '.nii', '.json'), 'file') == 2
+                            copyfile(strrep(filename_input, '.nii', '.json'), strrep(filename_ouput, '.nii', '.json'), 'f');
+                        end
+                    end
+                end
+                
+               
+
+                % then delete the job
                 Mod.Jobs = rmfield(Mod.Jobs, JobToDelete);
             end
         end
