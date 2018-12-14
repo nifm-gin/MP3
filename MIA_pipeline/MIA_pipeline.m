@@ -1935,13 +1935,11 @@ if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles
     warndlg('No pipeline to execute ...')
     return
 end
-
+Table_JobDeleted = table();
 Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
-%Pipeline = handles.psom.Modules.(Names_Mod{1});
 Pipeline = struct();
 for i=1:length(Names_Mod)
     Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
-    
     ReWritting = CheckReWriting(Mod, handles.MIA_pipeline_TmpDatabase);
     if any(ReWritting) && ~exist('DeleteRewrite','var')
         text = {'WARNING : Some jobs will overwrite existing files. Do you want to :'...
@@ -1956,19 +1954,62 @@ for i=1:length(Names_Mod)
             DeleteRewrite = 1;
         end
     end
-    if exist('DeleteRewrite','var') && DeleteRewrite
-        JobNames = fieldnames(Mod.Jobs);
-        for j=1:length(ReWritting)
-            if ReWritting(j)
-                JobToDelete = JobNames{j};
-                Mod.Jobs = rmfield(Mod.Jobs, JobToDelete);
-            end
+    
+    JobNames = fieldnames(Mod.Jobs);
+    
+    for j=1:length(JobNames) % JobNames has the same size as ReWritting
+        JobN = JobNames{j};
+        if ReWritting(j) && exist('DeleteRewrite','var') && DeleteRewrite
+            % Store the Table_out of all jobs we choosed to delete
+            Table_JobDeleted = [Table_JobDeleted; Mod.Jobs.(JobN).opt.Table_out];
+            Mod.Jobs = rmfield(Mod.Jobs, JobN);
         end
     end
+    
     %[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(Mod.Module, Mod.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
     Pipeline = smart_pipeline_merge(Pipeline, Mod.Jobs);
     %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase; Mod.OutputDatabase]);
 end
+
+
+%The files_out of the deleted jobs can be files_in for other jobs. So, if
+%the files_out of the deleted jobs exist in the database, we will change
+%the path of the relevant files_in from the Tmp folder to the Derived_data,
+%Raw_data or ROI_data.
+
+PipelineJobNames = fieldnames(Pipeline);
+if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
+    for i=1:length(PipelineJobNames)
+        Mod = Pipeline.(PipelineJobNames{i});
+        [Dep, Ia, ~] = intersect(Mod.opt.Table_in, Table_JobDeleted);
+        if ~isempty(Dep)
+            for l = 1:size(Dep,1)
+                Spl = strsplit(char(Mod.opt.Table_in.Path(Ia(l))), filesep);
+                if Mod.opt.Table_in.Type(Ia(l)) == 'ROI' || Mod.opt.Table_in.Type(Ia(l)) == 'Cluster'
+                    Spl{end-1} = 'ROI_Data';
+                elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '0'
+                    Spl{end-1} = 'Derived_Data';
+                elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '1'
+                    Spl{end-1} = 'Raw_Data';
+                end
+                Mod.opt.Table_in.Path(Ia(l)) = categorical(cellstr(strjoin(Spl, filesep)));
+                InpN = fieldnames(Mod.files_in);
+                for k=1:length(InpN)
+                    files = Mod.files_in.(InpN{k});
+                    for m = 1:length(files)
+                        if strcmp(files{m}, [char(Dep.Path(l)), char(Dep.Filename(l)), '.nii'])
+                            files{m} = [char(Mod.opt.Table_in.Path(Ia(l))), char(Mod.opt.Table_in.Filename(Ia(l))), '.nii'];
+                        end
+                    end
+                    Mod.files_in.(InpN{k}) = files;
+                end
+            end
+        end
+        Pipeline.(PipelineJobNames{i}) = Mod;
+    end
+end
+
+
 
 handles.psom.pipeline = Pipeline;
 
