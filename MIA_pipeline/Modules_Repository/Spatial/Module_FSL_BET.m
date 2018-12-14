@@ -112,7 +112,7 @@ cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.
 % execute the command
 system(cmd{:});
 
-unzip the mask
+%unzip the mask
 gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
 
 % % test docker

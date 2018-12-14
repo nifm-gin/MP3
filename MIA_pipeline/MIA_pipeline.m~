@@ -1937,6 +1937,7 @@ if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles
 end
 Table_JobDeleted = table();
 Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+%Pipeline = handles.psom.Modules.(Names_Mod{1});
 Pipeline = struct();
 for i=1:length(Names_Mod)
     Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
@@ -1954,44 +1955,17 @@ for i=1:length(Names_Mod)
             DeleteRewrite = 1;
         end
     end
-%<<<<<<< HEAD
     
     JobNames = fieldnames(Mod.Jobs);
     
     for j=1:length(JobNames) % JobNames has the same size as ReWritting
         JobN = JobNames{j};
+        % Store the Table_in of all jobs
+        %Table_in_All_Jobs = [Table_in_All_Jobs; JobN.opt.Table_in];
         if ReWritting(j) && exist('DeleteRewrite','var') && DeleteRewrite
             % Store the Table_out of all jobs we choosed to delete
             Table_JobDeleted = [Table_JobDeleted; Mod.Jobs.(JobN).opt.Table_out];
             Mod.Jobs = rmfield(Mod.Jobs, JobN);
-% =======
-%     if exist('DeleteRewrite','var') && DeleteRewrite
-%         JobNames = fieldnames(Mod.Jobs);
-%         for j=1:length(ReWritting)
-%             if ReWritting(j)
-%                 JobToDelete = JobNames{j};
-%                 % copy files to the tmp folder in case another job needs it
-%                 % as input
-%                 for x = 1: numel( Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName)
-%                     indexes_of_scan_to_copy = find((handles.MIA_data.database.SequenceName == Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName(x)) & ...
-%                         (handles.MIA_data.database.Patient == Mod.Jobs.(JobNames{j}).opt.Table_out.Patient(x)) & ...
-%                         (handles.MIA_data.database.Tp == Mod.Jobs.(JobNames{j}).opt.Table_out.Tp(x)))    ;
-%                     for y=1:numel(indexes_of_scan_to_copy)
-%                         filename_input = strcat(char(handles.MIA_data.database.Path(indexes_of_scan_to_copy(y))),char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
-%                         filename_ouput = strcat(char(handles.MIA_data.database.Properties.UserData.MIA_data_path), 'Tmp', filesep, char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
-%                         copyfile(filename_input, filename_ouput, 'f');
-%                         if exist(strrep(filename_input, '.nii', '.json'), 'file') == 2
-%                             copyfile(strrep(filename_input, '.nii', '.json'), strrep(filename_ouput, '.nii', '.json'), 'f');
-%                         end
-%                     end
-%                 end
-%                 
-%                
-% 
-%                 % then delete the job
-%                 Mod.Jobs = rmfield(Mod.Jobs, JobToDelete);
-%             end
-% >>>>>>> f597f19ac59ff3855e3365cfad49ea101c992f56
         end
     end
     
@@ -2007,13 +1981,44 @@ end
 %Raw_data or ROI_data.
 
 PipelineJobNames = fieldnames(Pipeline);
-if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
+
+% if ~isempty(Table_JobsDeleted)
+%     for i=1:length(PipelineJobNames)
+%         InputNames = fieldnames(Pipeline.(PipelineJobNames{i}).files_in);
+%         for j=1:length(InputNames)
+%             files = Pipeline.(PipelineJobNames{i}).files_in.(InputNames{j});
+%             for k=1:length(files)
+%                 file = files{k};
+%                 %if 
+%             end
+%         end
+%         
+%         
+%         
+%     end
+% end
+
+
+
+
+
+
+
+
+
+
+
+
+
+if ~isempty(Table_JobDeleted) % cad if some jobs are deleted
     for i=1:length(PipelineJobNames)
         Mod = Pipeline.(PipelineJobNames{i});
-        [Dep, Ia, ~] = intersect(Mod.opt.Table_in, Table_JobDeleted);
+        [Dep, Ia, Ib] = intersect(Mod.opt.Table_in, Table_JobDeleted);
         if ~isempty(Dep)
             for l = 1:size(Dep,1)
                 Spl = strsplit(char(Mod.opt.Table_in.Path(Ia(l))), filesep);
+                %%%%%%%%% ERREUR A RESOUDRE ICI : Mod.opt.Table_in.Type(l)
+                %%%%%%%%% ne donne pas toujours la bonne entree 
                 if Mod.opt.Table_in.Type(Ia(l)) == 'ROI' || Mod.opt.Table_in.Type(Ia(l)) == 'Cluster'
                     Spl{end-1} = 'ROI_Data';
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '0'
@@ -2021,22 +2026,32 @@ if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '1'
                     Spl{end-1} = 'Raw_Data';
                 end
-                Mod.opt.Table_in.Path(Ia(l)) = categorical(cellstr(strjoin(Spl, filesep)));
+                Mod.opt.Table_in(Ia(l),:).Path(l) = categorical(cellstr(strjoin(Spl, filesep)));
                 InpN = fieldnames(Mod.files_in);
                 for k=1:length(InpN)
                     files = Mod.files_in.(InpN{k});
                     for m = 1:length(files)
                         if strcmp(files{m}, [char(Dep.Path(l)), char(Dep.Filename(l)), '.nii'])
-                            files{m} = [char(Mod.opt.Table_in.Path(Ia(l))), char(Mod.opt.Table_in.Filename(Ia(l))), '.nii'];
+                            files{m} = [char(Mod.Table_in.Path(l)), char(Mod.opt.Table_in.Filename(l)), '.nii'];
+                            Mod.files_in.(InpN{k}) = files;
                         end
                     end
-                    Mod.files_in.(InpN{k}) = files;
                 end
             end
         end
-        Pipeline.(PipelineJobNames{i}) = Mod;
     end
 end
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -36,7 +36,8 @@ if isempty(opt)
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .Output filename extension','char','_Reshape','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Dimenssion to reduce','cell',{'3','4','5'},'Dimenssion_to_reduce','', '','Plese select the dimenssion you would like to work on. For instance, select 4 (the forth dimenssion) if you want to reshape a MultiGradientEcho scan'};
-    user_parameter(:,6)   = {'   .Index to keep','char','3 4','Index_to_keep','', '','Plese select the index you would like to keep. For instance, select 3 if you want to extract the third echo of a MultiGradientEcho scan'};
+    user_parameter(:,6)   = {'   .Index to keep','char','3 4','Index_to_keep','', '',{'Plese select the index you would like to keep. For instance, select 3 if you want to extract the third echo of a MultiGradientEcho scan'
+        'For third axes give index as [min,max]'}};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
