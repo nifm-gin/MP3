@@ -18,7 +18,7 @@ if isempty(opt)
     module_option(:,6)   = {'B0',4.7};
     module_option(:,7)   = {'Gamma',2.67502};
     module_option(:,8)   = {'deltaxi_CA',0.1867};
-    module_option(:,9)  = {'OutputSequenceName','AllName'};
+    module_option(:,9)   = {'OutputSequenceName','AllName'};
     module_option(:,10)  = {'RefInput',1};
     module_option(:,11)  = {'InputToReshape',1};
     module_option(:,12)  = {'Table_in', table()};
