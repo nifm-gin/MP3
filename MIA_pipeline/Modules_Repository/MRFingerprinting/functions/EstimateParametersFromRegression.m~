@@ -1,0 +1,44 @@
+function [Yestim, Parameters, Cov] = EstimateParametersFromRegression(Xtest, Xtrain, Ytrain, Ytest, Parameters)
+
+if ~exist('Parameters','var')
+    Parameters.maxiter     = 200;
+    Parameters.Lw          = 0;
+
+    Parameters.cstr.Sigma  = 'i'; %'d' can be used
+    Parameters.cstr.Gammat = ''; 
+    Parameters.cstr.Gammaw = '';
+else
+    if ~any(contains(fields(Parameters), 'maxiter')),   Parameters.maxiter = 200; end
+    if ~any(contains(fields(Parameters), 'Lw')),        Parameters.Lw = 0; end
+    if ~any(contains(fields(Parameters), 'cstr')),      Parameters.cstr.Sigma = 'i';
+                                                        Parameters.cstr.Gammat = '';
+                                                        Parameters.cstr.Gammaw = ''; end
+end
+if ~exist('Ytest','var'), Ytest = []; end
+
+% TODO: is it usefull (normalization) ?
+% Xtrain      = (1 ./ sum(Xtrain.^2, 2) .^0.5) * ones(1, size(Xtrain, 2))  .* Xtrain;
+% Xtest       = (1 ./ sum(Xtest.^2, 2).^0.5)   * ones(1, size(Xtest, 2))   .* Xtest;
+
+
+if ~any(contains(fields(Parameters), 'K'))
+    if ~isempty(Ytest)
+        % TODO: Implement automatic search of K (and maybe Lw ?)
+        K       = 2:40;
+        Parameters.K = FindOptimalK(Xtrain, Ytrain, Xtest, Ytest, K, Parameters.Lw, Parameters.maxiter, Parameters.cstr, 0);
+    else
+        Parameters.K = 20;
+    end
+end
+
+if ~exist('Parameters.theta','var')
+    % Estimations
+    Parameters.theta = EstimateInverseFunction(Ytrain, Xtrain, Parameters.K, Parameters.Lw, Parameters.maxiter, Parameters.cstr, 0);
+end
+
+if isempty(Xtest)
+    Yestim = [];
+else
+    [Yestim, Cov] = EstimateParametersFromModel(Xtest, Parameters.theta, 0);
+end
+
