@@ -45,6 +45,9 @@ if isempty(opt)
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     folder_files	= dir('data/dictionaries/*.json');
+    if isempty(folder_files)
+        folder_files(1).name = ' ';
+    end
     user_parameter(:,4)   = {'   .Dictionary Pre filename','cell', {folder_files.name}, 'dictionary_pre_filename','','Mandatory',...
         {'Select your MGEFIDSE Pre scan dictionary file'}};
     folder_files	= dir('data/dictionaries/*.json');

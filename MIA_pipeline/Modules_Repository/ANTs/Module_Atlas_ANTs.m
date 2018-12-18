@@ -53,6 +53,9 @@ if isempty(opt)
     user_parameter(:,4)   = {'   .ANTs script location','char','','script_location','', '',...
         {'The ''bin'' ANTs path (.../antsbin/bin)'}};
     folder_files    = dir('data/atlas/*.nii*');
+    if isempty(folder_files)
+        folder_files(1).name = ' ';
+    end
     user_parameter(:,5)   = {'   .Atlas filename','cell', {folder_files.name}, 'atlas_filename','','',...
         {'Select your atlas file'}};
     user_parameter(:,6)   = {'   .Label filename','cell', {folder_files.name}, 'label_filename','','',...
