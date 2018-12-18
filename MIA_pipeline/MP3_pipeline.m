@@ -1,35 +1,35 @@
-function varargout = MIA_pipeline(varargin)
-% MIA_PIPELINE MATLAB code for MIA_pipeline.fig
-%      MIA_PIPELINE, by itself, creates a new MIA_PIPELINE or raises the existing
+function varargout = MP3_pipeline(varargin)
+% MP3_PIPELINE MATLAB code for MP3_pipeline.fig
+%      MP3_PIPELINE, by itself, creates a new MP3_PIPELINE or raises the existing
 %      singleton*.
 %
-%      H = MIA_PIPELINE returns the handle to a new MIA_PIPELINE or the handle to
+%      H = MP3_PIPELINE returns the handle to a new MP3_PIPELINE or the handle to
 %      the existing singleton*.
 %
-%      MIA_PIPELINE('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MIA_PIPELINE.M with the given input arguments.
+%      MP3_PIPELINE('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in MP3_PIPELINE.M with the given input arguments.
 %
-%      MIA_PIPELINE('Property','Value',...) creates a new MIA_PIPELINE or raises the
+%      MP3_PIPELINE('Property','Value',...) creates a new MP3_PIPELINE or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before MIA_pipeline_OpeningFcn gets called.  An
+%      applied to the GUI before MP3_pipeline_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to MIA_pipeline_OpeningFcn via varargin.
+%      stop.  All inputs are passed to MP3_pipeline_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help MIA_pipeline
+% Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 12-Dec-2018 11:22:33
+% Last Modified by GUIDE v2.5 18-Dec-2018 15:51:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @MIA_pipeline_OpeningFcn, ...
-                   'gui_OutputFcn',  @MIA_pipeline_OutputFcn, ...
+                   'gui_OpeningFcn', @MP3_pipeline_OpeningFcn, ...
+                   'gui_OutputFcn',  @MP3_pipeline_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -47,18 +47,18 @@ end
 
 
 
-% --- Executes just before MIA_pipeline is made visible.
-function MIA_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before MP3_pipeline is made visible.
+function MP3_pipeline_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to MIA_pipeline (see VARARGIN)
+% varargin   command line arguments to MP3_pipeline (see VARARGIN)
 
-% Choose default command line output for MIA_pipeline
+% Choose default command line output for MP3_pipeline
 handles.output = hObject;
 
-handles.MIA_data = varargin{3};
+handles.MP3_data = varargin{3};
 Spl = strsplit(mfilename('fullpath'), filesep);
 %Spl{end} = ['Modules_Repository', filesep, '**', filesep, 'Module_*.m'];
 Spl{end} = 'Modules_Repository';
@@ -101,49 +101,50 @@ handles.Modules_listing = Mod_listing;
 %      };
 handles.Module_groups = {'Relaxometry','Perfusion', 'Diffusion', 'Permeability', 'Oxygenation', 'MRFingerprint', 'SPM', 'Spatial', 'Texture Analyses', 'Clustering', 'Export' };
  
-set(handles.MIA_pipeline_module_listbox, 'String', handles.Modules_listing);
-handles.Add_Tags_listing = handles.MIA_data.database.Properties.VariableNames;
+set(handles.MP3_pipeline_module_listbox, 'String', handles.Modules_listing);
+handles.Add_Tags_listing = handles.MP3_data.database.Properties.VariableNames;
 handles.Add_list = handles.Add_Tags_listing;
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_Tags_listing);
-set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_Tags_listing);
+set(handles.MP3_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 handles.Source_selected = handles.Add_Tags_listing{1};
-%handles.MIA_pipeline_Unique_Values_Selection = 
-handles.MIA_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
+%handles.MP3_pipeline_Unique_Values_Selection = 
+handles.MP3_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
 handles.Remove_selected = handles.Remove_Tags_listing{1};
-%handles.MIA_data.database.IsRaw = categorical(handles.MIA_data.database.IsRaw);
+%handles.MP3_data.database.IsRaw = categorical(handles.MP3_data.database.IsRaw);
 
-handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
-handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
-CellsColoured = DisplayColoredTable(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_TagsToPrint);
-handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
-% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+handles.MP3_pipeline_TmpDatabase = handles.MP3_data.database;
+handles.MP3_pipeline_Filtered_Table = handles.MP3_pipeline_TmpDatabase;
+CellsColoured = DisplayColoredTable(handles.MP3_pipeline_TmpDatabase, handles.MP3_pipeline_TagsToPrint);
+handles.MP3_pipeline_Filtering_Table.Data = CellsColoured;
+% handles.MP3_pipeline_Filtering_Table.Data = cellstr(handles.MP3_pipeline_Filtered_Table{:,handles.MP3_pipeline_TagsToPrint});
 % colergen = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
-% for i=1:size(handles.MIA_pipeline_Filtering_Table.Data, 1)
-%     handles.MIA_pipeline_Filtering_Table.Data{i,1} = colergen(rgb2hex([1 0 0]), handles.MIA_pipeline_Filtering_Table.Data{i,1});
+% for i=1:size(handles.MP3_pipeline_Filtering_Table.Data, 1)
+%     handles.MP3_pipeline_Filtering_Table.Data{i,1} = colergen(rgb2hex([1 0 0]), handles.MP3_pipeline_Filtering_Table.Data{i,1});
 % end
 
 
 
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+handles.MP3_pipeline_Filtering_Table.ColumnName = handles.MP3_pipeline_TagsToPrint;
 
 % handles.module_parameters_string = {};
 % handles.module_parameters_fields = {};
 
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 handles.FilterParameters = {};
-%MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
+%MP3_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
 % Update handles structure
-handles.MIA_pipeline_Unique_Values_Selection = {};
+handles.MP3_pipeline_Unique_Values_Selection = {};
 
-% update the 'String' of MIA_pipeline_pushMIASelection and MIA_pipeline_pushMIATPSelection push button
-data_selected =  MIA2('finddata_selected',handles.MIA_data);
+% update the 'String' of MP3_pipeline_pushMP3Selection and MP3_pipeline_pushMP3TPSelection push button
+%data_selected =  MP3('finddata_selected',handles.MP3_data);
+data_selected = finddata_selected(handles.MP3_data);
 %if data_selected == 0
-set(handles.MIA_pipeline_pushMIASelection, 'String', [char(handles.MIA_data.database.Patient(data_selected(1))) '-' char(handles.MIA_data.database.Tp(data_selected(1))) ' only'])
-set(handles.MIA_pipeline_pushMIATPSelection, 'String', ['All time point of :' char(handles.MIA_data.database.Patient(data_selected(1)))])
+set(handles.MP3_pipeline_pushMP3Selection, 'String', [char(handles.MP3_data.database.Patient(data_selected(1))) '-' char(handles.MP3_data.database.Tp(data_selected(1))) ' only'])
+set(handles.MP3_pipeline_pushMP3TPSelection, 'String', ['All time point of :' char(handles.MP3_data.database.Patient(data_selected(1)))])
 
 %set(findall(gcf,'-property','FontName'), 'FontName', 'Courier')
-set(findall(handles.MIA_pipeline_manager_GUI.Children, 'Tag', 'MIA_pipeline_module_parameters'), 'FontName', 'Courier')
+set(findall(handles.MP3_pipeline_manager_GUI.Children, 'Tag', 'MP3_pipeline_module_parameters'), 'FontName', 'Courier')
 %set(findall(gcf,'-property','FontSize'), 'FontSize', 30)
 guidata(hObject, handles);
 
@@ -177,12 +178,12 @@ for i=1:size(CellsColoured, 1)
 end
 
 
-% UIWAIT makes MIA_pipeline wait for user response (see UIRESUME)
-% uiwait(handles.MIA_pipeline_manager_GUI);
+% UIWAIT makes MP3_pipeline wait for user response (see UIRESUME)
+% uiwait(handles.MP3_pipeline_manager_GUI);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = MIA_pipeline_OutputFcn(hObject, eventdata, handles)
+function varargout = MP3_pipeline_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -213,10 +214,10 @@ assert(isempty(ModToRename));
 
 merged_struct = psom_merge_pipeline(old_pipeline, new_pipeline);
 
-function [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles)
+function [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles)
 %% Update of Filtering/Filtered Tables
 %[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-NewTable = handles.MIA_pipeline_TmpDatabase;
+NewTable = handles.MP3_pipeline_TmpDatabase;
 for i=1:length(handles.FilterParameters)
     Tag = handles.FilterParameters{1,i}{1};
     TagTable = table();
@@ -228,13 +229,13 @@ for i=1:length(handles.FilterParameters)
     NewTable = TagTable;
 end
 
-handles.MIA_pipeline_Filtered_Table = NewTable;
-CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
-handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
-if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+handles.MP3_pipeline_Filtered_Table = NewTable;
+CellsColoured = DisplayColoredTable(NewTable, handles.MP3_pipeline_TagsToPrint);
+handles.MP3_pipeline_Filtering_Table.Data = CellsColoured;
+if ~isempty(handles.MP3_pipeline_Filtering_Table.Data)
     % set ColumnWidth to auto
-    column_name = handles.MIA_pipeline_TagsToPrint;
-    column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+    column_name = handles.MP3_pipeline_TagsToPrint;
+    column_data = cellstr(NewTable{:,handles.MP3_pipeline_TagsToPrint});
     merge_Data = [column_name;column_data];
     dataSize = size(merge_Data);
     % Create an array to store the max length of data for each column
@@ -254,41 +255,41 @@ if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
     % Some calibration needed as ColumnWidth is in pixels
     cellMaxLen = num2cell(maxLen);
     % Set ColumnWidth of UITABLE
-    set(handles.MIA_pipeline_Filtering_Table, 'ColumnWidth', cellMaxLen);
+    set(handles.MP3_pipeline_Filtering_Table, 'ColumnWidth', cellMaxLen);
     
 end
 
 
 
 
-handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+handles.MP3_pipeline_Filtering_Table.ColumnName = handles.MP3_pipeline_TagsToPrint;
 %% Update of Unique Values
 if strcmp(handles.Source_selected , 'NoMoreTags')
     TagValues = {};
 else
-    TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
+    TagValues = unique(handles.MP3_pipeline_Filtered_Table{:,handles.Source_selected});
 end
-handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
+handles.MP3_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
 
 %% Update of modules parameters
-MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
-%Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
-%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles)
+%Coloredlistbox = DisplayColoredListbox(handles.MP3_pipeline_pipeline_listbox_Raw, handles);
+%set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
 
-% --- Executes on button press in MIA_pipeline_add_module_button.
-function MIA_pipeline_add_module_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_add_module_button (see GCBO)
+% --- Executes on button press in MP3_pipeline_add_module_button.
+function MP3_pipeline_add_module_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_add_module_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 if ~isfield(handles.new_module, 'opt')
     return
 end
-[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path, 1);
+[new_pipeline, output_database] = MP3_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MP3_pipeline_TmpDatabase, handles.MP3_data.database.Properties.UserData.MP3_data_path, 1);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
     return
@@ -301,8 +302,8 @@ end
 %     handles.tmp_database = output_database;
 % end
     
-if isfield(handles, 'MIA_pipeline_ParamsModules')
-    old_modules = handles.MIA_pipeline_ParamsModules;
+if isfield(handles, 'MP3_pipeline_ParamsModules')
+    old_modules = handles.MP3_pipeline_ParamsModules;
     %old_pipeline = handles.psom.pipeline;
 else
     old_modules = struct();
@@ -325,38 +326,38 @@ SaveModule.Filters = handles.FilterParameters;
 SaveModule.ModuleParams = handles.new_module;
 SaveModule.OutputDatabase = output_database;
 SaveModule.Jobs = new_pipeline;
-handles.MIA_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
+handles.MP3_pipeline_ParamsModules.(Name_New_Mod) = SaveModule;
 
 %handles.psom.Output_databases = setfield(old_databases, Name_New_Mod, output_database);
 %handles.psom.Modules = setfield(old_modules, Name_New_Mod, new_pipeline);
 
 
-%handles.MIA_pipeline_Filtered_Table = [handles.MIA_pipeline_Filtered_Table ; output_database];
-%handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
+%handles.MP3_pipeline_Filtered_Table = [handles.MP3_pipeline_Filtered_Table ; output_database];
+%handles.MP3_pipeline_Filtering_Table.Data = cellstr(handles.MP3_pipeline_Filtered_Table{:,handles.MP3_pipeline_TagsToPrint});
 %handles.psom.pipeline = merged_pipe;
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-%handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase ; output_database]);
+%handles.MP3_pipeline_TmpDatabase = unique([handles.MP3_pipeline_TmpDatabase ; output_database]);
 
 
-%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 %guidata(hObject, handles);
-%MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
-%MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
+%MP3_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+%MP3_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
 
 
-module_listing = get(handles.MIA_pipeline_pipeline_listbox,'String');
-set(handles.MIA_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
+module_listing = get(handles.MP3_pipeline_pipeline_listbox,'String');
+set(handles.MP3_pipeline_pipeline_listbox,'String', [module_listing' {handles.new_module.module_name}]');
 
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
-set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+Coloredlistbox = DisplayColoredListbox(handles.MP3_pipeline_pipeline_listbox.String, handles);
+set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
+[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
 
 
 guidata(hObject, handles);
 
-%MIA_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
+%MP3_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
 
 
 
@@ -385,54 +386,54 @@ function PrintMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to PrintMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-printdlg(handles.MIA_pipeline_manager_GUI)
+printdlg(handles.MP3_pipeline_manager_GUI)
 
 % --------------------------------------------------------------------
 function CloseMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to CloseMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-selection = questdlg(['Close ' get(handles.MIA_pipeline_manager_GUI,'Name') '?'],...
-                     ['Close ' get(handles.MIA_pipeline_manager_GUI,'Name') '...'],...
+selection = questdlg(['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '?'],...
+                     ['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '...'],...
                      'Yes','No','Yes');
 if strcmp(selection,'No')
     return;
 end
 
-delete(handles.MIA_pipeline_manager_GUI)
+delete(handles.MP3_pipeline_manager_GUI)
 
 
 
-% --- Executes on selection change in MIA_pipeline_module_parameters.
-function MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_parameters (see GCBO)
+% --- Executes on selection change in MP3_pipeline_module_parameters.
+function MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_module_parameters (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_module_parameters contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_module_parameters
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_module_parameters contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_module_parameters
 
 
-parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
+parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 % display the help associated to the parameter selected
 if isempty(parameter_selected)
     return
 end
-set(handles.MIA_pipeline_parameter_setup_text, 'String', handles.new_module.opt.table.Help{parameter_selected});
+set(handles.MP3_pipeline_parameter_setup_text, 'String', handles.new_module.opt.table.Help{parameter_selected});
 
 switch handles.new_module.opt.table.Type{parameter_selected}
     case 'Text'
         %Text = handles.new_module.opt.table.Default{1}';
-        %disp('l MIA_pipeline ligne 225')
+        %disp('l MP3_pipeline ligne 225')
 
         table.ColumnFormat = {'char'};
         table.data = '';
         table.columnName = '';
         table.editable = false;
     case '1Scan1TPXP'
-        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
-        TP_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Tp(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
-        Patients_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Patient(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
+        TP_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Tp(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
+        Patients_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Patient(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -495,7 +496,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.ColumnFormat = {'char'}; 
         
 %     case '1Scan'
-%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+%         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan'));
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -512,14 +513,14 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 %         end
 %         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
 %         %% New Test
-% %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+% %         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan'));
 % %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
 % %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 % %             table.data(1:numel(SequenceType_listing),2) = {false};
 % %         else
 % %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 % %             table.data(1:numel(SequenceType_listing),2) = {false};
-% %             NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+% %             NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
 % %             for i=1:length(NamesSelected)
 % %                 IndSelected = find(strcmp(cellstr(SequenceType_listing), NamesSelected(i))) ;
 % %                 table.data(IndSelected,2) = {true};
@@ -527,7 +528,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 % %             %table.data = handles.new_module.opt.table.Default{parameter_selected};
 % %         end
 %         %% Test
-% %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan'));
+% %         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan'));
 % %         table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 % %         table.data(1:numel(SequenceType_listing),2) = {false};
 % %         if ~isempty(handles.new_module.opt.table.Default{parameter_selected}) && sum(strcmp(handles.new_module.opt.table.Default{parameter_selected}(2), cellstr(SequenceType_listing)))==1
@@ -538,7 +539,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 %         table.editable = [false true];
 %         table.ColumnFormat = {'char'};
     case {'XScan', '1Scan'}
-        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Scan')));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -550,7 +551,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             if isempty(NamesSelected)
                 NamesSelected = '';
             end
-            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
             IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
             for i=1:length(IndSelected)
                table.data(IndSelected(i),2) = {true};
@@ -565,22 +566,22 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.ColumnFormat = {'char'};
         
     case {'1ScanOr1ROI', 'XScanOrXROI'}
-        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
             for i=1:numel(SequenceType_listing)
-                table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+                table.data(i,3) = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Type(handles.MP3_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
             end
         else
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
             for i=1:numel(SequenceType_listing)
-                table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+                table.data(i,3) = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Type(handles.MP3_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
             end
             Def = handles.new_module.opt.table.Default{parameter_selected};
             NamesSelected = {Def{cell2mat(Def(:,2)),1}};
-            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
             if isempty(NamesSelected)
                 NamesSelected = '';
             end
@@ -600,7 +601,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
 %             for i=1:numel(SequenceType_listing)
-%                 table.data(i,3) = cellstr(unique(handles.MIA_pipeline_Filtered_Table.Type(handles.MIA_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
+%                 table.data(i,3) = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Type(handles.MP3_pipeline_Filtered_Table.SequenceName == SequenceType_listing(i))));
 %             end
 %         else
 %             table.data = handles.new_module.opt.table.Default{parameter_selected};
@@ -610,7 +611,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 %         table.editable = [false true false];
 %         table.ColumnFormat = {'char'};  
 %     case '1ROI'
-%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI'));
+%         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'ROI'));
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -622,7 +623,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
 %         table.editable = [false true];
 %         table.ColumnFormat = {'char'};
     case {'XROI', '1ROI'}
-        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'ROI')));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'ROI')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -634,7 +635,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             if isempty(NamesSelected)
                 NamesSelected = '';
             end
-            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
             IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
             for i=1:length(IndSelected)
                table.data(IndSelected(i),2) = {true};
@@ -649,7 +650,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.ColumnFormat = {'char'};
         
     case {'XCluster', '1Cluster'}
-        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Cluster')));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Cluster')));
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -661,7 +662,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             if isempty(NamesSelected)
                 NamesSelected = '';
             end
-            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
             IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
             for i=1:length(IndSelected)
                table.data(IndSelected(i),2) = {true};
@@ -675,7 +676,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.editable = [false true];
         table.ColumnFormat = {'char'};
 %      case 'XScanOrXROI'
-%         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
+%         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName);
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
 %             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
 %             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -727,13 +728,13 @@ end
 
 
 %% update the setup table
-set(handles.MIA_pipeline_parameter_setup_table, 'ColumnFormat', table.ColumnFormat);
+set(handles.MP3_pipeline_parameter_setup_table, 'ColumnFormat', table.ColumnFormat);
 % set names of the columns
-set(handles.MIA_pipeline_parameter_setup_table, 'ColumnName', table.columnName);
+set(handles.MP3_pipeline_parameter_setup_table, 'ColumnName', table.columnName);
 % set data (default's parameters)
-set(handles.MIA_pipeline_parameter_setup_table, 'Data', table.data);
+set(handles.MP3_pipeline_parameter_setup_table, 'Data', table.data);
 % set each colomn editable
-set(handles.MIA_pipeline_parameter_setup_table, 'columnEditable',  table.editable );
+set(handles.MP3_pipeline_parameter_setup_table, 'columnEditable',  table.editable );
 if ~isempty(table.data)
     % set ColumnWidth to auto
 
@@ -756,7 +757,7 @@ if ~isempty(table.data)
     % Some calibration needed as ColumnWidth is in pixels
     cellMaxLen = num2cell(maxLen);
     % Set ColumnWidth of UITABLE
-    set(handles.MIA_pipeline_parameter_setup_table, 'ColumnWidth', cellMaxLen);
+    set(handles.MP3_pipeline_parameter_setup_table, 'ColumnWidth', cellMaxLen);
     
 end
 
@@ -766,8 +767,8 @@ guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_module_parameters_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_parameters (see GCBO)
+function MP3_pipeline_module_parameters_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_module_parameters (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -782,20 +783,20 @@ function update_setting_windows(hObject, eventdata, handles)
 
 
 
-% --- Executes on selection change in MIA_pipeline_parameter_setup.
-function MIA_pipeline_parameter_setup_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_parameter_setup (see GCBO)
+% --- Executes on selection change in MP3_pipeline_parameter_setup.
+function MP3_pipeline_parameter_setup_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_parameter_setup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_parameter_setup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_parameter_setup
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_parameter_setup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_parameter_setup
 
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_parameter_setup_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_parameter_setup (see GCBO)
+function MP3_pipeline_parameter_setup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_parameter_setup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -806,45 +807,45 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in MIA_pipeline_clear_pipeline_button.
-function [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_clear_pipeline_button (see GCBO)
+% --- Executes on button press in MP3_pipeline_clear_pipeline_button.
+function [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_clear_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
-if isfield(handles, 'MIA_pipeline_ParamsModules')
-    if ~strcmp(eventdata.Source.Tag, {'MIA_pipeline_Save_Module', 'MIA_pipeline_load_pipeline', 'MIA_pipeline_DeleteModule'})
+if isfield(handles, 'MP3_pipeline_ParamsModules')
+    if ~strcmp(eventdata.Source.Tag, {'MP3_pipeline_Save_Module', 'MP3_pipeline_load_pipeline', 'MP3_pipeline_DeleteModule'})
         answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
         if strcmp(answer, 'No')
             return
         end
     end
-    set(handles.MIA_pipeline_pipeline_listbox, 'String', '');
+    set(handles.MP3_pipeline_pipeline_listbox, 'String', '');
     if ~isempty(findobj('Tag', 'BioGraphTool'))
         close(findobj('Tag', 'BioGraphTool'));
     end
-        handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
+        handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
 
 end
 
 %handles.tmp_database = table();
-%handles.MIA_pipeline_TmpDatabase = handles.MIA_data.database;
-%handles.MIA_pipeline_pipeline_listbox_Raw = {''};
+%handles.MP3_pipeline_TmpDatabase = handles.MP3_data.database;
+%handles.MP3_pipeline_pipeline_listbox_Raw = {''};
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%set(handles.MIA_pipeline_JobsList, 'String', {''});
-set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
-set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%set(handles.MP3_pipeline_JobsList, 'String', {''});
+set(handles.MP3_pipeline_pipeline_listbox, 'String', {''});
+set(handles.MP3_pipeline_pipeline_listbox, 'Value', 1);
+[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
 
 function edge_callbacks(hObject, eventdata, handles)
 eventdata = [];
-handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
-module_list = get(handles.MIA_pipeline_module_popupmenu, 'String');
+handles = guidata(findobj('Tag', 'MP3_pipeline_manager_GUI'));
+module_list = get(handles.MP3_pipeline_module_popupmenu, 'String');
 get(hObject, 'ID')
 % sub_module = strfind(hObject.ID, '_');
 % if ~isempty(sub_module)
@@ -853,18 +854,18 @@ get(hObject, 'ID')
 %     module_name =hObject.ID;
 % end
 % idx = find(ismember(module_list, module_name));
-% set(handles.MIA_pipeline_module_popupmenu, 'Value', idx)
+% set(handles.MP3_pipeline_module_popupmenu, 'Value', idx)
 
 
 function node_callbacks(hObject, ~, handles)
 eventdata = [];
-handles = guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'));
+handles = guidata(findobj('Tag', 'MP3_pipeline_manager_GUI'));
 
 pipeline_module_names = fieldnames(handles.psom.pipeline);
 idx = strcmp(pipeline_module_names,hObject.ID);
 module_selected = handles.psom.pipeline.(pipeline_module_names{idx});
 module_selected.files_in
-%% update handles.MIA_pipeline_module_parameters using the information the module_selected
+%% update handles.MP3_pipeline_module_parameters using the information the module_selected
 
 
 
@@ -880,8 +881,8 @@ module_selected.files_in
 % handles.biograph_obj = psom_visu_dependencies(handles.pipeline);
 % set(0, 'ShowHiddenHandles', 'on')
 % handles.biograph_fig = gcf;
-% set(handles.biograph_fig, 'Name', 'MIA pipeline manager');
-% guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
+% set(handles.biograph_fig, 'Name', 'MP3 pipeline manager');
+% guidata(findobj('Tag', 'MP3_pipeline_manager_GUI'), handles);
 
 %%%%
 %handles.new_module = handles.pipeline.(char(hObject.ID));
@@ -902,9 +903,9 @@ module_selected.files_in
 % end
 
 
-% --- Executes when entered data in editable cell(s) in MIA_pipeline_parameter_setup_table.
-function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_parameter_setup_table (see GCBO)
+% --- Executes when entered data in editable cell(s) in MP3_pipeline_parameter_setup_table.
+function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_parameter_setup_table (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) edited
 %	PreviousData: previous data for the cell(s) edited
@@ -912,59 +913,59 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 %	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
 %	Error: error string when failed to convert EditData to appropriate value for Data
 % handles    structure with handles and user data (see GUIDATA)
-parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
+parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
-%table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
+%table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
 if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster')
-    %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
-    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+    %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
+    handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
-    if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 0
-        handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
-        %handles.new_module.opt.table.Default{parameter_selected} = [handles.MIA_pipeline_parameter_setup_table.ColumnName(1); {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}}];
+    if sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 0
+        handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
+        %handles.new_module.opt.table.Default{parameter_selected} = [handles.MP3_pipeline_parameter_setup_table.ColumnName(1); {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}}];
         
     end
 % elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI')
-%     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,3))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,3))) == 0
-%         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+%     if sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,3))) == 1 || sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,3))) == 0
+%         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 %         
 %     end
     
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
     if isempty(handles.new_module.opt.table.Default{parameter_selected})
-        handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+        handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
     else
-        A = handles.MIA_pipeline_parameter_setup_table.Data(:,2);
+        A = handles.MP3_pipeline_parameter_setup_table.Data(:,2);
         A = A(~cellfun('isempty',A));
         %C = handles.new_module.opt.table.Default{parameter_selected};
         %D = C(:,2);
         %D = D(~cellfun('isempty',D));
-        B = handles.MIA_pipeline_parameter_setup_table.Data(:,4);
+        B = handles.MP3_pipeline_parameter_setup_table.Data(:,4);
         B = B(~cellfun('isempty',B));
         %E = C(:,4);
         %E = E(~cellfun('isempty',E));
         %if sum(cell2mat(A)) + sum(cell2mat(D)) == 1 && sum(cell2mat(B)) + sum(cell2mat(E)) == 0
-        %    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+        %    handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
         %elseif sum(cell2mat(A)) + sum(cell2mat(D)) == 0 && sum(cell2mat(B)) + sum(cell2mat(E)) == 1
-        %    handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+        %    handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
         %end
         if (sum(cell2mat(A)) == 1 || sum(cell2mat(A)) == 0) && (sum(cell2mat(B)) == 1 || sum(cell2mat(B)) == 0)
-            C = handles.MIA_pipeline_parameter_setup_table.Data(:,6);
+            C = handles.MP3_pipeline_parameter_setup_table.Data(:,6);
             C = C(~cellfun('isempty',C));
             if any(cell2mat(C))
-                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data;
+                DataToStore= handles.MP3_pipeline_parameter_setup_table.Data;
             elseif any(cell2mat(B))
-                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:4);
+                DataToStore= handles.MP3_pipeline_parameter_setup_table.Data(:,1:4);
             else
-                DataToStore= handles.MIA_pipeline_parameter_setup_table.Data(:,1:2);
+                DataToStore= handles.MP3_pipeline_parameter_setup_table.Data(:,1:2);
             end
             handles.new_module.opt.table.Default{parameter_selected} = DataToStore;
         end
     end
-    %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
+    %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 else
-    handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MIA_pipeline_parameter_setup_table.Data{1,1}); 
-    %handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{1,1};
+    handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data{1,1}); 
+    %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{1,1};
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
@@ -973,23 +974,23 @@ end
 
 % % case go back to all patient
 % if table_data{1,2} == 1 && handles.new_module.files_in_filter_data{1,2} == 0
-%     idex_patient = true(numel(handles.MIA_data.database.Patient),1);
+%     idex_patient = true(numel(handles.MP3_data.database.Patient),1);
 %     table_data(1,2) = {true};
-%     table_data(2:numel(unique(handles.MIA_data.database.Patient))+1,2) = {false};
+%     table_data(2:numel(unique(handles.MP3_data.database.Patient))+1,2) = {false};
 %     % from all patient to a specific patient
 % elseif sum(find([table_data{:,2}]' == true)) >1 && table_data{1,2} == 1
 %     table_data{1,2} = false;
 %     patient_selected = patient_listing(find([table_data{:,2}]' == true));
-%     idex_patient = handles.MIA_data.database.Patient == patient_selected;
+%     idex_patient = handles.MP3_data.database.Patient == patient_selected;
 %     
 %     % if all patient is selected
 % elseif sum(find([table_data{:,2}]' == true))  == 1 && table_data{1,2} == 1
-%     idex_patient = true(numel(handles.MIA_data.database.Patient),1);
+%     idex_patient = true(numel(handles.MP3_data.database.Patient),1);
 %     % 1 or more patient (but not all)
 % else
-%     idex_patient = false(numel(handles.MIA_data.database.Patient),1);
+%     idex_patient = false(numel(handles.MP3_data.database.Patient),1);
 %     for i=1:numel(patient_selected)
-%         idex_patient = idex_patient | handles.MIA_data.database.Patient == patient_selected(i);
+%         idex_patient = idex_patient | handles.MP3_data.database.Patient == patient_selected(i);
 %     end
 % end
 % 
@@ -998,47 +999,47 @@ end
 % 
 % % case go back to all time point
 % if table_data{1,4} == 1 && handles.new_module.files_in_filter_data{1,4} == 0
-%     idex_tp = true(numel(handles.MIA_data.database.Tp),1);
+%     idex_tp = true(numel(handles.MP3_data.database.Tp),1);
 %     table_data(1,4) = {true};
-%     table_data(2:numel(unique(handles.MIA_data.database.Tp))+1,4) = {false};
+%     table_data(2:numel(unique(handles.MP3_data.database.Tp))+1,4) = {false};
 %     % from all time point to a specific time point
 % elseif sum(find([table_data{:,4}]' == true)) >1 && table_data{1,4} == 1
 %     table_data{1,4} = false;
 %     tp_selected = tp_listing(find([table_data{:,4}]' == true));
-%     idex_tp = handles.MIA_data.database.Tp == tp_selected;
+%     idex_tp = handles.MP3_data.database.Tp == tp_selected;
 %     
 %     % if all time point is selected
 % elseif sum(find([table_data{:,4}]' == true))  == 1 && table_data{1,4} == 1
-%     idex_tp = true(numel(handles.MIA_data.database.Tp),1);
+%     idex_tp = true(numel(handles.MP3_data.database.Tp),1);
 %     % if 1 or more time point (but not all)
 % else
-%     idex_tp = false(numel(handles.MIA_data.database.Tp),1);
+%     idex_tp = false(numel(handles.MP3_data.database.Tp),1);
 %     for i=1:numel(tp_selected)
-%         idex_tp = idex_tp | handles.MIA_data.database.Tp == tp_selected(i);
+%         idex_tp = idex_tp | handles.MP3_data.database.Tp == tp_selected(i);
 %     end
 % end
 % 
 % SequenceName_listing =table_data(:,5);
 % SequenceName_selected = SequenceName_listing(find([table_data{:,6}]' == true));
 % if isempty(SequenceName_selected)
-%     index_SequenceName =true(numel(handles.MIA_data.database.Tp,1));
+%     index_SequenceName =true(numel(handles.MP3_data.database.Tp,1));
 % else
-%      index_SequenceName = false(numel(handles.MIA_data.database.Tp),1);
+%      index_SequenceName = false(numel(handles.MP3_data.database.Tp),1);
 %     for i=1:numel(SequenceName_selected)
-%         index_SequenceName = index_SequenceName | handles.MIA_data.database.SequenceName == SequenceName_selected(i);
+%         index_SequenceName = index_SequenceName | handles.MP3_data.database.SequenceName == SequenceName_selected(i);
 %     end
 % end
-% handles.new_module.files_in = char(handles.MIA_data.database.Filename(idex_patient & idex_tp & index_SequenceName));
+% handles.new_module.files_in = char(handles.MP3_data.database.Filename(idex_patient & idex_tp & index_SequenceName));
 % handles.new_module.files_in_index = find(idex_patient & idex_tp & index_SequenceName);
 % handles.new_module.files_in_filter_data = table_data;
 %guidata(hObject, handles);
-MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
-%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+%MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 guidata(hObject, handles);
   %             handles.new_module.files_in_filter_name = {'Patient Name', '', 'Time Point','', 'Sequence Name',''};
-        %             Patient_listing = unique(handles.MIA_data.database.Patient);
-        %             Tp_listing = unique(handles.MIA_data.database.Tp);
-        %             SequenceName_listing = unique(handles.MIA_data.database.SequenceName);
+        %             Patient_listing = unique(handles.MP3_data.database.Patient);
+        %             Tp_listing = unique(handles.MP3_data.database.Tp);
+        %             SequenceName_listing = unique(handles.MP3_data.database.SequenceName);
         %             handles.new_module.files_in_filter_data = {'all', false, 'all', false, char(SequenceName_listing(1)),false};
         %             handles.new_module.files_in_filter_data(1:numel(Patient_listing)+1,1) = ['all' cellstr(Patient_listing)'];
         %             handles.new_module.files_in_filter_data(1,2) = {true};
@@ -1054,14 +1055,14 @@ guidata(hObject, handles);
         %             handles.new_module.files_in_filter_format = {'char', 'logical','char', 'logical','char', 'logical' };
         %             handles.new_module.files_in_filter_editable = [0 1 0 1 0 1];
         %
-        %             set(handles.MIA_pipeline_parameter_setup,  'String', cellstr(handles.MIA_data.database.nii));
+        %             set(handles.MP3_pipeline_parameter_setup,  'String', cellstr(handles.MP3_data.database.nii));
 
-function output_file_names = MIA_pipeline_generate_file_name(handles, database_indexes, output_extention)
+function output_file_names = MP3_pipeline_generate_file_name(handles, database_indexes, output_extention)
 
 output_file_names = [...
-    char(handles.MIA_data.database.Patient(database_indexes)) ...
+    char(handles.MP3_data.database.Patient(database_indexes)) ...
     repmat('-', [numel(database_indexes),1])...
-    char(handles.MIA_data.database.Tp(database_indexes))...
+    char(handles.MP3_data.database.Tp(database_indexes))...
     repmat('-', [numel(database_indexes),1])...
     repmat(output_extention, [numel(database_indexes),1])...
     repmat('_', [numel(database_indexes),1])...
@@ -1071,31 +1072,31 @@ output_file_names = [...
 output_file_names  = strrep(cellstr(output_file_names), ' ', '');
 
 
-% --- Executes on selection change in MIA_pipeline_add_tag_popupmenu.
-function MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+% --- Executes on selection change in MP3_pipeline_add_tag_popupmenu.
+function MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 
-% hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
+% hObject    handle to MP3_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.Source_selected = handles.MIA_pipeline_add_tag_popupmenu.String{handles.MIA_pipeline_add_tag_popupmenu.Value};
-%[val, ind] = max(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.Source_selected));
+handles.Source_selected = handles.MP3_pipeline_add_tag_popupmenu.String{handles.MP3_pipeline_add_tag_popupmenu.Value};
+%[val, ind] = max(contains(handles.MP3_pipeline_Filtered_Table.Properties.VariableNames, handles.Source_selected));
 if strcmp(handles.Source_selected, 'NoMoreTags')
-    handles.MIA_pipeline_Unique_Values_Tag.Data = {};
-    handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {};
+    handles.MP3_pipeline_Unique_Values_Tag.Data = {};
+    handles.MP3_pipeline_Unique_Values_Tag.ColumnName = {};
 else
 
-    TagValues = unique(handles.MIA_pipeline_Filtered_Table{:,handles.Source_selected});
-%TagValues = [{'all'} ; unique(handles.MIA_pipeline_Filtering_Table.Data(:,ind))];
-%TagValues = [{'all'} ; cellstr(char(unique(handles.MIA_data.database{:,handles.Source_selected})))];
+    TagValues = unique(handles.MP3_pipeline_Filtered_Table{:,handles.Source_selected});
+%TagValues = [{'all'} ; unique(handles.MP3_pipeline_Filtering_Table.Data(:,ind))];
+%TagValues = [{'all'} ; cellstr(char(unique(handles.MP3_data.database{:,handles.Source_selected})))];
 
-    handles.MIA_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
-    handles.MIA_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
+    handles.MP3_pipeline_Unique_Values_Tag.Data = cellstr(TagValues);
+    handles.MP3_pipeline_Unique_Values_Tag.ColumnName = {handles.Source_selected};
     % automatic column width
-    if ~isempty(handles.MIA_pipeline_Filtering_Table.Data)
+    if ~isempty(handles.MP3_pipeline_Filtering_Table.Data)
         % set ColumnWidth to auto
-        column_name = get(handles.MIA_pipeline_Unique_Values_Tag,'columnName')';
-        column_data = get(handles.MIA_pipeline_Unique_Values_Tag,'Data');
-        %column_data = cellstr(NewTable{:,handles.MIA_pipeline_TagsToPrint});
+        column_name = get(handles.MP3_pipeline_Unique_Values_Tag,'columnName')';
+        column_data = get(handles.MP3_pipeline_Unique_Values_Tag,'Data');
+        %column_data = cellstr(NewTable{:,handles.MP3_pipeline_TagsToPrint});
         merge_Data = [column_name;column_data];
         dataSize = size(merge_Data);
         % Create an array to store the max length of data for each column
@@ -1115,7 +1116,7 @@ else
         % Some calibration needed as ColumnWidth is in pixels
         cellMaxLen = num2cell(maxLen);
         % Set ColumnWidth of UITABLE
-        set(handles.MIA_pipeline_Unique_Values_Tag, 'ColumnWidth', cellMaxLen);
+        set(handles.MP3_pipeline_Unique_Values_Tag, 'ColumnWidth', cellMaxLen);
         
     end
     
@@ -1123,13 +1124,13 @@ end
 
 
 guidata(hObject, handles);
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_add_tag_popupmenu contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_add_tag_popupmenu
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_add_tag_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_add_tag_popupmenu
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_add_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_add_tag_popupmenu (see GCBO)
+function MP3_pipeline_add_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_add_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1142,22 +1143,22 @@ end
 
 function nii_json_fullfilename = fullfilename(handles, nii_index, ext)
 
-nii_json_fullfilename = [char(handles.MIA_data.database.Path(nii_index)) char(handles.MIA_data.database.Filename(nii_index)) ext];
+nii_json_fullfilename = [char(handles.MP3_data.database.Path(nii_index)) char(handles.MP3_data.database.Filename(nii_index)) ext];
 
 
-% --- Executes on selection change in MIA_pipeline_module_listbox.
-function MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+% --- Executes on selection change in MP3_pipeline_module_listbox.
+function MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_module_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_module_listbox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_module_listbox
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_module_listbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_module_listbox
 
 
-% set(handles.MIA_pipeline_parameter_setup, 'Value', 1);
-set(handles.MIA_pipeline_module_parameters, 'Value', 1);
-module_selected = get(handles.MIA_pipeline_module_listbox, 'Value');
+% set(handles.MP3_pipeline_parameter_setup, 'Value', 1);
+set(handles.MP3_pipeline_module_parameters, 'Value', 1);
+module_selected = get(handles.MP3_pipeline_module_listbox, 'Value');
 if isfield(handles, 'new_module')
     handles = rmfield(handles, 'new_module');
 end
@@ -1417,7 +1418,7 @@ ismodule = 0;
 %         ismodule = 1;
 %     otherwise
 %         module_parameters_string = 'Not Implemented yet!!';    
-%         set(handles.MIA_pipeline_parameter_setup_text, 'String', '');
+%         set(handles.MP3_pipeline_parameter_setup_text, 'String', '');
 % 
 % end
 
@@ -1426,10 +1427,10 @@ Mod = char(handles.Modules_listing(module_selected));
 
 if ~endsWith(Mod, '.m')
     module_parameters_string = '';
-    set(handles.MIA_pipeline_parameter_setup_text, 'String', 'Not a .m file !');
+    set(handles.MP3_pipeline_parameter_setup_text, 'String', 'Not a .m file !');
 elseif contains(Mod, '(') || contains(Mod, ')')
     module_parameters_string = '';
-    set(handles.MIA_pipeline_parameter_setup_text, 'String', 'Please don''t use {''('', '')''} characters in the module file name.');
+    set(handles.MP3_pipeline_parameter_setup_text, 'String', 'Please don''t use {''('', '')''} characters in the module file name.');
 else
     if startsWith(Mod, '   .')
         %Remove '   .'
@@ -1447,14 +1448,14 @@ else
 end
 
 
-set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
+set(handles.MP3_pipeline_module_parameters, 'String', char(module_parameters_string));
 if ismodule
-    MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
-    %TableSize = handles.MIA_pipeline_module_parameters.Position(3);
-    %FigureSizeInPix = handles.MIA_pipeline_manager_GUI.Position(3);
+    MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+    %TableSize = handles.MP3_pipeline_module_parameters.Position(3);
+    %FigureSizeInPix = handles.MP3_pipeline_manager_GUI.Position(3);
     %TableSizeInPix = TableSize*FigureSizeInPix;
     %DotsPerInch = get(0,'ScreenPixelsPerInch');
-    %DotsPerChar = handles.MIA_pipeline_module_parameters.FontSize;
+    %DotsPerChar = handles.MP3_pipeline_module_parameters.FontSize;
     %TableSizeInChar = TableSizeInPix/DotsPerChar;
     handles.module_parameters_string = module_parameters_string;
     handles.module_parameters_fields = module_parameters_fields;
@@ -1467,17 +1468,17 @@ else
     
     %% update the setup table
     % set names of the columns
-    set(handles.MIA_pipeline_parameter_setup_table, 'ColumnName', table.columnName);
+    set(handles.MP3_pipeline_parameter_setup_table, 'ColumnName', table.columnName);
     % set data (default's parameters)
-    set(handles.MIA_pipeline_parameter_setup_table, 'Data', table.data);
+    set(handles.MP3_pipeline_parameter_setup_table, 'Data', table.data);
     % set each colomn editable
-    set(handles.MIA_pipeline_parameter_setup_table, 'columnEditable',  table.editable );
+    set(handles.MP3_pipeline_parameter_setup_table, 'columnEditable',  table.editable );
 end
    
 
 %% save the data
 %guidata(hObject, handles);
-guidata(findobj('Tag', 'MIA_pipeline_manager_GUI'), handles);
+guidata(findobj('Tag', 'MP3_pipeline_manager_GUI'), handles);
 
 
 function [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles)
@@ -1519,14 +1520,14 @@ for i=1:length(handles.module_parameters_fields)
 end
 
 
-%set(handles.MIA_pipeline_module_parameters, 'String', char(module_parameters_string));
-set(handles.MIA_pipeline_module_parameters, 'String', char(StrToDisplay));
+%set(handles.MP3_pipeline_module_parameters, 'String', char(module_parameters_string));
+set(handles.MP3_pipeline_module_parameters, 'String', char(StrToDisplay));
 
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_module_listbox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+function MP3_pipeline_module_listbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_module_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1538,8 +1539,8 @@ end
 
 
 
-function [pipeline, output_database] = MIA_pipeline_generate_psom_modules(New_module, FilterParameters, TmpDatabase, MIA_path, warning)
-% hObject    handle to MIA_pipeline_execute_button (see GCBO)
+function [pipeline, output_database] = MP3_pipeline_generate_psom_modules(New_module, FilterParameters, TmpDatabase, MP3_path, warning)
+% hObject    handle to MP3_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 pipeline = struct();
@@ -1885,7 +1886,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                     end
                 end
             end
-            New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
+            New_module.opt.Module_settings.folder_out = [MP3_path, 'Tmp'];
             New_module.opt.Module_settings.Table_in = unique(table_in, 'stable');
             pipeline = psom_add_job(pipeline, [New_module.module_name, num2str(i)], New_module.module_name, Files_in, '', New_module.opt.Module_settings);
             Mod_Struct = getfield(pipeline, [New_module.module_name, num2str(i)]);
@@ -1904,7 +1905,7 @@ else
         end
         eval(['Files_in.In' num2str(i) ' = Files;']);
     end
-    New_module.opt.Module_settings.folder_out = [MIA_path, 'Tmp'];
+    New_module.opt.Module_settings.folder_out = [MP3_path, 'Tmp'];
 	New_module.opt.Module_settings.Table_in = unique(table_in);
     NameMod = [New_module.module_name, num2str(1)];
 	pipeline = psom_add_job(pipeline, NameMod, New_module.module_name, Files_in, '', New_module.opt.Module_settings);
@@ -1916,41 +1917,41 @@ output_database = unique(output_database);
 
   
 
-function MIA_pipeline_execute_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_execute_button (see GCBO)
+function MP3_pipeline_execute_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM']);
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
 % else
 %     %  Here we clean all PSOM files because the code do not handle these
 %     %  files for now
-%     rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's');
+%     rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's');
 end
-opt_pipe.path_logs = [handles.MIA_data.database.Properties.UserData.MIA_data_path,  'PSOM'];
+opt_pipe.path_logs = [handles.MP3_data.database.Properties.UserData.MP3_data_path,  'PSOM'];
 opt_pipe.max_queued = 3;
 %opt_pipe.mode = 'session';
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Derived_data']);
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data']);
     if status == false
         error('Cannot create the Derived_Data folder to save the results of the computed maps.')
     end
 end
 
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp']);
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp']);
     if status == false
         error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
     end
 else
     %  Here we clean all tmp files
-    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp'], 's');
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Tmp']);
+    rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp'], 's');
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp']);
     if status == false
         error('Cannot create the Tmp folder to temporarily save the results of the computed maps.')
     end
@@ -1958,16 +1959,16 @@ end
 
 
 %% Create the pipeline from the modules.
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
+if ~isfield(handles, 'MP3_pipeline_ParamsModules') || isempty(fieldnames(handles.MP3_pipeline_ParamsModules))
     warndlg('No pipeline to execute ...')
     return
 end
 Table_JobDeleted = table();
-Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+Names_Mod = fieldnames(handles.MP3_pipeline_ParamsModules);
 Pipeline = struct();
 for i=1:length(Names_Mod)
-    Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
-    ReWritting = CheckReWriting(Mod, handles.MIA_pipeline_TmpDatabase);
+    Mod = handles.MP3_pipeline_ParamsModules.(Names_Mod{i});
+    ReWritting = CheckReWriting(Mod, handles.MP3_pipeline_TmpDatabase);
     if any(ReWritting) && ~exist('DeleteRewrite','var')
         text = {'WARNING : Some jobs will overwrite existing files. Do you want to :'...
             '     - Remove these jobs or,'...
@@ -2001,12 +2002,12 @@ for i=1:length(Names_Mod)
 %                 % copy files to the tmp folder in case another job needs it
 %                 % as input
 %                 for x = 1: numel( Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName)
-%                     indexes_of_scan_to_copy = find((handles.MIA_data.database.SequenceName == Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName(x)) & ...
-%                         (handles.MIA_data.database.Patient == Mod.Jobs.(JobNames{j}).opt.Table_out.Patient(x)) & ...
-%                         (handles.MIA_data.database.Tp == Mod.Jobs.(JobNames{j}).opt.Table_out.Tp(x)))    ;
+%                     indexes_of_scan_to_copy = find((handles.MP3_data.database.SequenceName == Mod.Jobs.(JobNames{j}).opt.Table_out.SequenceName(x)) & ...
+%                         (handles.MP3_data.database.Patient == Mod.Jobs.(JobNames{j}).opt.Table_out.Patient(x)) & ...
+%                         (handles.MP3_data.database.Tp == Mod.Jobs.(JobNames{j}).opt.Table_out.Tp(x)))    ;
 %                     for y=1:numel(indexes_of_scan_to_copy)
-%                         filename_input = strcat(char(handles.MIA_data.database.Path(indexes_of_scan_to_copy(y))),char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
-%                         filename_ouput = strcat(char(handles.MIA_data.database.Properties.UserData.MIA_data_path), 'Tmp', filesep, char(handles.MIA_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
+%                         filename_input = strcat(char(handles.MP3_data.database.Path(indexes_of_scan_to_copy(y))),char(handles.MP3_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
+%                         filename_ouput = strcat(char(handles.MP3_data.database.Properties.UserData.MP3_data_path), 'Tmp', filesep, char(handles.MP3_data.database.Filename(indexes_of_scan_to_copy(y))), '.nii');
 %                         copyfile(filename_input, filename_ouput, 'f');
 %                         if exist(strrep(filename_input, '.nii', '.json'), 'file') == 2
 %                             copyfile(strrep(filename_input, '.nii', '.json'), strrep(filename_ouput, '.nii', '.json'), 'f');
@@ -2023,9 +2024,9 @@ for i=1:length(Names_Mod)
         end
     end
     
-    %[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(Mod.Module, Mod.Filters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+    %[new_pipeline, output_database] = MP3_pipeline_generate_psom_modules(Mod.Module, Mod.Filters, handles.MP3_pipeline_TmpDatabase, handles.MP3_data.database.Properties.UserData.MP3_data_path);
     Pipeline = smart_pipeline_merge(Pipeline, Mod.Jobs);
-    %handles.MIA_pipeline_TmpDatabase = unique([handles.MIA_pipeline_TmpDatabase; Mod.OutputDatabase]);
+    %handles.MP3_pipeline_TmpDatabase = unique([handles.MP3_pipeline_TmpDatabase; Mod.OutputDatabase]);
 end
 
 %The files_out of the deleted jobs can be files_in for other jobs. So, if
@@ -2085,13 +2086,13 @@ if exist('biograph') == 2
     
     % dolayout(bg);
     %% add editable functions to interact with the biograph
-    set(bg, 'NodeCallbacks', @(hObject,eventdata)MIA_pipeline('node_callbacks',hObject));
-    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MIA_pipeline('edge_callbacks',hObject));
+    set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
+    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
     view(bg) %, which will bring up the display in a different window.
     set(0, 'ShowHiddenHandles', 'on')
     
     handles.psom.biograph_fig = gcf;
-    %set(handles.psom.biograph_ob, 'Name', 'MIA pipeline manager');
+    %set(handles.psom.biograph_ob, 'Name', 'MP3 pipeline manager');
     guidata(hObject, handles);
     %return
     
@@ -2142,7 +2143,7 @@ end
 
 %% exectute the pipeline
 
-if handles.MIA_pipeline_radiobuttonPSOM.Value
+if handles.MP3_pipeline_radiobuttonPSOM.Value
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
     Result = load([opt_pipe.path_logs, '/PIPE_status.mat']);
 else
@@ -2178,7 +2179,7 @@ for i=1:length(Jobs)
                for k=1:length(B)
                    [path_out, name_out, ~] = fileparts(B{k});
                    path_out = [path_out, filesep];
-                   outdb = handles.MIA_pipeline_TmpDatabase(handles.MIA_pipeline_TmpDatabase.Path == path_out, :);
+                   outdb = handles.MP3_pipeline_TmpDatabase(handles.MP3_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
                    assert(height(outdb) == 1)
                    Folders = strsplit(path_out, filesep);
@@ -2205,7 +2206,7 @@ for i=1:length(Jobs)
                    end
                    if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
-                       handles.MIA_data.database = unique([handles.MIA_data.database ; outdb]);
+                       handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
@@ -2221,51 +2222,51 @@ for i=1:length(Jobs)
 end
 
 
-% update MIA database if needed
+% update MP3 database if needed
 if update
-    handles2 = guidata(handles.MIA_data.MIA_GUI);
-    handles2.database = handles.MIA_data.database;
-    guidata(handles.MIA_data.MIA_GUI, handles2);
+    handles2 = guidata(handles.MP3_data.MP3_GUI);
+    handles2.database = handles.MP3_data.database;
+    guidata(handles.MP3_data.MP3_GUI, handles2);
 
-%handles2.MIA_GUI, handles
-%guidata(handles.MIA_data, handles2);
-%handles2 = guidata(handles.MIA_data.MIA_GUI);
-%MIA_update_database_display(hObject, eventdata, handles)
-%MIA('MIA_update_database_display'
-%handles2.database = handles.MIA_data.database;
+%handles2.MP3_GUI, handles
+%guidata(handles.MP3_data, handles2);
+%handles2 = guidata(handles.MP3_data.MP3_GUI);
+%MP3_update_database_display(hObject, eventdata, handles)
+%MP3('MP3_update_database_display'
+%handles2.database = handles.MP3_data.database;
 
-    MIA2('MIA_update_database_display', hObject, eventdata,handles.MIA_data)
+    MP3('MP3_update_database_display', hObject, eventdata,handles.MP3_data)
     msgbox('Done', 'Information') ;
 
-    %close('MIA pipeline Manager')
-    handles.database = handles.MIA_data.database;
-    handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
-    MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+    %close('MP3 pipeline Manager')
+    handles.database = handles.MP3_data.database;
+    handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
+    MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
 end
-%handles.MIA_pipeline_Filtered_Table = handles.MIA_data.database;
-%MIA_pipeline_OpeningFcn(hObject, eventdata, handles)
-%set(handles.MIA_pipeline.Filtering_Table, 'Data', 
+%handles.MP3_pipeline_Filtered_Table = handles.MP3_data.database;
+%MP3_pipeline_OpeningFcn(hObject, eventdata, handles)
+%set(handles.MP3_pipeline.Filtering_Table, 'Data', 
 %a=0;
 function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
 
 
-Datab = handles.MIA_data.database;
-if isfield(handles, 'MIA_pipeline_ParamsModules')
-    Names_Mod = fieldnames(handles.MIA_pipeline_ParamsModules);
+Datab = handles.MP3_data.database;
+if isfield(handles, 'MP3_pipeline_ParamsModules')
+    Names_Mod = fieldnames(handles.MP3_pipeline_ParamsModules);
     for i=1:length(Names_Mod)
-        Mod = handles.MIA_pipeline_ParamsModules.(Names_Mod{i});
+        Mod = handles.MP3_pipeline_ParamsModules.(Names_Mod{i});
         Datab = [Datab ; Mod.OutputDatabase];
     end
 end
-%handles.MIA_pipeline_TmpDatabase = unique(Datab);
-handles.MIA_pipeline_TmpDatabase = Datab;
+%handles.MP3_pipeline_TmpDatabase = unique(Datab);
+handles.MP3_pipeline_TmpDatabase = Datab;
 
 
 
-% --- Executes on button press in MIA_pipeline_close_modules_button.
-function MIA_pipeline_close_modules_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_close_modules_button (see GCBO)
+% --- Executes on button press in MP3_pipeline_close_modules_button.
+function MP3_pipeline_close_modules_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_close_modules_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -2286,26 +2287,26 @@ end
 
 
 
-% --- Executes on button press in MIA_pipeline_Add_Tag_Button.
-function MIA_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Add_Tag_Button (see GCBO)
+% --- Executes on button press in MP3_pipeline_Add_Tag_Button.
+function MP3_pipeline_Add_Tag_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Add_Tag_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % if strcmp(handles.Source_selected, 'NoMoreTags')
 %    return 
 % end
 %% Update of the Filtering Table
-%if isempty(handles.MIA_pipeline_Filtering_Table.Data)
-%    handles.MIA_pipeline_Filtering_Table.Data = table2cell(handles.MIA_data.database);
+%if isempty(handles.MP3_pipeline_Filtering_Table.Data)
+%    handles.MP3_pipeline_Filtering_Table.Data = table2cell(handles.MP3_data.database);
 %end
-if length(handles.MIA_pipeline_Unique_Values_Selection) <= 1
+if length(handles.MP3_pipeline_Unique_Values_Selection) <= 1
     return
 end
 
-handles.FilterParameters = [handles.FilterParameters, {handles.MIA_pipeline_Unique_Values_Selection}];
+handles.FilterParameters = [handles.FilterParameters, {handles.MP3_pipeline_Unique_Values_Selection}];
 
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
@@ -2326,19 +2327,19 @@ Index = find(contains(handles.Add_list, Tag_To_Add));
 NewTagListing = {handles.Add_list{1:Index-1},handles.Add_list{Index+1:end}};
 [handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
 
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
 guidata(hObject, handles);
 
-% --- Executes on button press in MIA_pipeline_Remove_Tag_Button.
-function MIA_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Remove_Tag_Button (see GCBO)
+% --- Executes on button press in MP3_pipeline_Remove_Tag_Button.
+function MP3_pipeline_Remove_Tag_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Remove_Tag_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 if strcmp(handles.Remove_selected, 'NoMoreTags')
@@ -2353,8 +2354,8 @@ end
 handles.FilterParameters = {handles.FilterParameters{1:index-1}, handles.FilterParameters{index+1:end}};
 % 
 
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
@@ -2376,48 +2377,48 @@ NewTagListing = {handles.Remove_list{1:Index-1},handles.Remove_list{Index+1:end}
 %% Interchange Remove and Add list to apply the process.
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
 
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 %handles.Source_selected = Tag_To_Remove;
 handles.Remove_selected = handles.Remove_list{1};
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
 guidata(hObject, handles);
 
 
-% --- Executes when selected cell(s) is changed in MIA_pipeline_Filtering_Table.
-function MIA_pipeline_Filtering_Table_CellSelectionCallback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Filtering_Table (see GCBO)
+% --- Executes when selected cell(s) is changed in MP3_pipeline_Filtering_Table.
+function MP3_pipeline_Filtering_Table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Filtering_Table (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) currently selecteds
 % handles    structure with handles and user data (see GUIDATA)
 % NbSelected = length(eventdata.Indices);
 % for i = 1:NbSelected
 %     NameSelected = eventdata.Source.Data{eventdata.Indices(i,1), eventdata.Indices(i,2)};
-%     Tag = handles.MIA_pipeline_Filtering_Table.ColumnName{enventdata.Indices(i,2)};
+%     Tag = handles.MP3_pipeline_Filtering_Table.ColumnName{enventdata.Indices(i,2)};
 % end
 
 guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_pushMIASelection.
-function MIA_pipeline_pushMIASelection_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_pushMIASelection (see GCBO)
+% --- Executes on button press in MP3_pipeline_pushMP3Selection.
+function MP3_pipeline_pushMP3Selection_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_pushMP3Selection (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % define which patient is selected
-%data_selected =  MIA2('get_data_selected',handles.MIA_data);
-data_selected =  MIA2('finddata_selected',handles.MIA_data);
+%data_selected =  MP3('get_data_selected',handles.MP3_data);
+data_selected =  MP3('finddata_selected',handles.MP3_data);
 % add the patient filter
 handles.FilterParameters = {};
-handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
-handles.FilterParameters{2} = {'Tp', char(handles.MIA_pipeline_TmpDatabase.Tp(data_selected(1)))};
+handles.FilterParameters{1} = {'Patient', char(handles.MP3_pipeline_TmpDatabase.Patient(data_selected(1)))};
+handles.FilterParameters{2} = {'Tp', char(handles.MP3_pipeline_TmpDatabase.Tp(data_selected(1)))};
 
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
@@ -2433,13 +2434,13 @@ end
 
 NewTagListing = {'Patient', 'Tp'};
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 guidata(hObject, handles);
 
 
@@ -2450,34 +2451,34 @@ guidata(hObject, handles);
 
 
 
-% --- Executes on selection change in MIA_pipeline_remove_tag_popupmenu.
-function MIA_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_remove_tag_popupmenu (see GCBO)
+% --- Executes on selection change in MP3_pipeline_remove_tag_popupmenu.
+function MP3_pipeline_remove_tag_popupmenu_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_remove_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-handles.Remove_selected = handles.MIA_pipeline_remove_tag_popupmenu.String{handles.MIA_pipeline_remove_tag_popupmenu.Value};
+handles.Remove_selected = handles.MP3_pipeline_remove_tag_popupmenu.String{handles.MP3_pipeline_remove_tag_popupmenu.Value};
 guidata(hObject, handles);
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_remove_tag_popupmenu contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_remove_tag_popupmenu
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_remove_tag_popupmenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_remove_tag_popupmenu
 
 
 
-% --- Executes on button press in MIA_pipeline_pushMIATPSelection.
-function MIA_pipeline_pushMIATPSelection_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_pushMIATPSelection (see GCBO)
+% --- Executes on button press in MP3_pipeline_pushMP3TPSelection.
+function MP3_pipeline_pushMP3TPSelection_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_pushMP3TPSelection (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % define which patient is selected
-%data_selected =  MIA2('get_data_selected',handles.MIA_data);
-data_selected =  MIA2('finddata_selected',handles.MIA_data);
+%data_selected =  MP3('get_data_selected',handles.MP3_data);
+data_selected =  MP3('finddata_selected',handles.MP3_data);
 
 % add the patient filter
 handles.FilterParameters = {};
-handles.FilterParameters{1} = {'Patient', char(handles.MIA_pipeline_TmpDatabase.Patient(data_selected(1)))};
+handles.FilterParameters{1} = {'Patient', char(handles.MP3_pipeline_TmpDatabase.Patient(data_selected(1)))};
 
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
@@ -2493,26 +2494,26 @@ end
 
 NewTagListing = {'Patient'};
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_push_Database.
-function MIA_pipeline_push_Database_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_push_Database (see GCBO)
+% --- Executes on button press in MP3_pipeline_push_Database.
+function MP3_pipeline_push_Database_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_push_Database (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 handles.FilterParameters = {};
 
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-%MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+%MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_parameters_string')
     [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 end
@@ -2528,13 +2529,13 @@ end
 
 NewTagListing = handles.Add_Tags_listing;
 [handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
 % 
 % %% Update of the add tag popupmenu after an add
@@ -2543,44 +2544,44 @@ set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 % NewTagListing = {handles.Add_list{1:Index-1},handles.Add_list{Index+1:end}};
 % [handles.Add_list, handles.Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, handles.Add_Tags_listing);
 % 
-% set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-% set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+% set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+% set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 % handles.Source_selected = handles.Add_list{1};
 % handles.Remove_selected = handles.Remove_list{1};
 % %handles.Remove_selected = Tag_To_Add;
-% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-% set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+% MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+% set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
 
-% handles.Tags_listing = handles.MIA_pipeline_TmpDatabase.Properties.VariableNames;
-% set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
-% set(handles.MIA_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
+% handles.Tags_listing = handles.MP3_pipeline_TmpDatabase.Properties.VariableNames;
+% set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Tags_listing);
+% set(handles.MP3_pipeline_remove_tag_popupmenu, 'String', {'NoMoreTags'})
 % 
 % handles.Source_selected = handles.Tags_listing{1};
 % 
 % 
 % handles.Remove_Tags_listing = {'NoMoreTags'};
 % handles.Remove_selected = handles.Remove_Tags_listing{1};
-% handles.MIA_pipeline_TmpDatabase.IsRaw = categorical(handles.MIA_pipeline_TmpDatabase.IsRaw);
+% handles.MP3_pipeline_TmpDatabase.IsRaw = categorical(handles.MP3_pipeline_TmpDatabase.IsRaw);
 % 
-% handles.MIA_pipeline_Filtered_Table = handles.MIA_pipeline_TmpDatabase;
-% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
-% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+% handles.MP3_pipeline_Filtered_Table = handles.MP3_pipeline_TmpDatabase;
+% handles.MP3_pipeline_Filtering_Table.Data = cellstr(handles.MP3_pipeline_Filtered_Table{:,handles.MP3_pipeline_TagsToPrint});
+% handles.MP3_pipeline_Filtering_Table.ColumnName = handles.MP3_pipeline_TagsToPrint;
 % 
 % 
 % 
 % handles.FilterParameters = {};
 % 
-% handles.MIA_pipeline_Unique_Values_Selection = {};
-% MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+% handles.MP3_pipeline_Unique_Values_Selection = {};
+% MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 
 guidata(hObject, handles);
 
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_remove_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_remove_tag_popupmenu (see GCBO)
+function MP3_pipeline_remove_tag_popupmenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_remove_tag_popupmenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2591,9 +2592,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes when selected cell(s) is changed in MIA_pipeline_Unique_Values_Tag.
-function MIA_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Unique_Values_Tag (see GCBO)
+% --- Executes when selected cell(s) is changed in MP3_pipeline_Unique_Values_Tag.
+function MP3_pipeline_Unique_Values_Tag_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Unique_Values_Tag (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) currently selecteds
 NbSelect = size(eventdata.Indices,1);
@@ -2602,49 +2603,49 @@ Names{1,1}=handles.Source_selected;
 for i=1:NbSelect
     Names{i+1,1} = eventdata.Source.Data{eventdata.Indices(i,1), eventdata.Indices(i,2)};
 end
-handles.MIA_pipeline_Unique_Values_Selection = Names;
+handles.MP3_pipeline_Unique_Values_Selection = Names;
 % handles    structure with handles and user data (see GUIDATA)
 guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_Tags_To_Display_Button.
-function MIA_pipeline_Tags_To_Display_Button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Tags_To_Display_Button (see GCBO)
+% --- Executes on button press in MP3_pipeline_Tags_To_Display_Button.
+function MP3_pipeline_Tags_To_Display_Button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Tags_To_Display_Button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-PreviousTagsIndex = find(contains(handles.MIA_pipeline_Filtered_Table.Properties.VariableNames, handles.MIA_pipeline_TagsToPrint));
-[selection, ok] = listdlg('PromptString', 'Select the Tags to print among : ', 'InitialValue', PreviousTagsIndex(:), 'ListString', handles.MIA_pipeline_Filtered_Table.Properties.VariableNames);
+PreviousTagsIndex = find(contains(handles.MP3_pipeline_Filtered_Table.Properties.VariableNames, handles.MP3_pipeline_TagsToPrint));
+[selection, ok] = listdlg('PromptString', 'Select the Tags to print among : ', 'InitialValue', PreviousTagsIndex(:), 'ListString', handles.MP3_pipeline_Filtered_Table.Properties.VariableNames);
 if ok == 0;
    return 
 end
-handles.MIA_pipeline_TagsToPrint = handles.MIA_pipeline_Filtered_Table.Properties.VariableNames(selection);
+handles.MP3_pipeline_TagsToPrint = handles.MP3_pipeline_Filtered_Table.Properties.VariableNames(selection);
 
 
-% handles.MIA_pipeline_Filtering_Table.Data = cellstr(handles.MIA_pipeline_Filtered_Table{:,handles.MIA_pipeline_TagsToPrint});
-% handles.MIA_pipeline_Filtering_Table.ColumnName = handles.MIA_pipeline_TagsToPrint;
+% handles.MP3_pipeline_Filtering_Table.Data = cellstr(handles.MP3_pipeline_Filtered_Table{:,handles.MP3_pipeline_TagsToPrint});
+% handles.MP3_pipeline_Filtering_Table.ColumnName = handles.MP3_pipeline_TagsToPrint;
 
-% handles.MIA_pipeline_Filtered_Table = NewTable;
-% CellsColoured = DisplayColoredTable(NewTable, handles.MIA_pipeline_TagsToPrint);
-% handles.MIA_pipeline_Filtering_Table.Data = CellsColoured;
+% handles.MP3_pipeline_Filtered_Table = NewTable;
+% CellsColoured = DisplayColoredTable(NewTable, handles.MP3_pipeline_TagsToPrint);
+% handles.MP3_pipeline_Filtering_Table.Data = CellsColoured;
 
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
 guidata(hObject, handles);
 
 
-% --- Executes on selection change in MIA_pipeline_module_listbox.
+% --- Executes on selection change in MP3_pipeline_module_listbox.
 function popupmenu5_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+% hObject    handle to MP3_pipeline_module_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_module_listbox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_module_listbox
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_module_listbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_module_listbox
 
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_module_listbox (see GCBO)
+% hObject    handle to MP3_pipeline_module_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2655,36 +2656,36 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in MIA_pipeline_pipeline_listbox.
-function [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
+% --- Executes on selection change in MP3_pipeline_pipeline_listbox.
+function [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_pipeline_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedIndex = handles.MP3_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedIndex, 0) || isempty(SelectedIndex)
 %     JobNames = {''};
     
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     JobNames = {''};
     ColoredJobNames = {''};
 else
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+    %SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedIndex};
+    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex};
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
     SelectedModule = revertcolor2(SelectedModule);
-    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
     if isfield(Module, 'Jobs')
         JobNames = fieldnames(Module.Jobs);
-        ColoredJobNames = ColorJobs(Module, handles.MIA_pipeline_TmpDatabase);
+        ColoredJobNames = ColorJobs(Module, handles.MP3_pipeline_TmpDatabase);
     else
         ColoredJobNames = {''};
         JobNames = {''};
     end
 end
-handles.MIA_pipeline_JobsNames = JobNames;
-set(handles.MIA_pipeline_JobsList, 'String',ColoredJobNames);
-set(handles.MIA_pipeline_JobsList, 'Value', 1);
-MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
+handles.MP3_pipeline_JobsNames = JobNames;
+set(handles.MP3_pipeline_JobsList, 'String',ColoredJobNames);
+set(handles.MP3_pipeline_JobsList, 'Value', 1);
+MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
 guidata(hObject, handles)
 
 
@@ -2704,13 +2705,13 @@ for i=1:length(JobsNames)
 end
 
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_pipeline_listbox contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_pipeline_listbox
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_pipeline_listbox contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_pipeline_listbox
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_pipeline_listbox_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_pipeline_listbox (see GCBO)
+function MP3_pipeline_pipeline_listbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_pipeline_listbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -2725,97 +2726,97 @@ end
 
 
 
-% --- Executes on button press in MIA_pipeline_exectute_pipeline_button.
-function MIA_pipeline_exectute_pipeline_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_exectute_pipeline_button (see GCBO)
+% --- Executes on button press in MP3_pipeline_exectute_pipeline_button.
+function MP3_pipeline_exectute_pipeline_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_exectute_pipeline_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on button press in MIA_pipeline_DeleteModule.
-function MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_DeleteModule (see GCBO)
+% --- Executes on button press in MP3_pipeline_DeleteModule.
+function MP3_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_DeleteModule (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     return
 end
 
 
-SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+SelectedIndex = handles.MP3_pipeline_pipeline_listbox.Value;
+%SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedIndex};
 revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex};
 SelectedModule = revertcolor2(SelectedModule);
-handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+handles.MP3_pipeline_ParamsModules = rmfield(handles.MP3_pipeline_ParamsModules, SelectedModule);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 
-%set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
-if ~isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
-    set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-    set(handles.MIA_pipeline_JobsList, 'Value', 1);
-    set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
-    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
-    %handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%set(handles.MP3_pipeline_pipeline_listbox,'String', fieldnames(handles.MP3_pipeline_ParamsModules));
+if ~isempty(fieldnames(handles.MP3_pipeline_ParamsModules))
+    set(handles.MP3_pipeline_pipeline_listbox, 'Value', 1);
+    set(handles.MP3_pipeline_JobsList, 'Value', 1);
+    set(handles.MP3_pipeline_JobsParametersFieldsList, 'Value', 1);
+    set(handles.MP3_pipeline_JobsParametersValues, 'Value', 1);
+    %handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
 else 
-    handles = rmfield(handles, 'MIA_pipeline_ParamsModules');
-    set(handles.MIA_pipeline_pipeline_listbox, 'String', {''});
-    set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-    set(handles.MIA_pipeline_JobsList, 'String', {''});
-    set(handles.MIA_pipeline_JobsList, 'Value', 1);
-    set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', {''});
-    set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1);
-    set(handles.MIA_pipeline_JobsParametersValues, 'String', {''});
-    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1);
-    %handles.MIA_pipeline_pipeline_listbox_Raw = {''};
+    handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
+    set(handles.MP3_pipeline_pipeline_listbox, 'String', {''});
+    set(handles.MP3_pipeline_pipeline_listbox, 'Value', 1);
+    set(handles.MP3_pipeline_JobsList, 'String', {''});
+    set(handles.MP3_pipeline_JobsList, 'Value', 1);
+    set(handles.MP3_pipeline_JobsParametersFieldsList, 'String', {''});
+    set(handles.MP3_pipeline_JobsParametersFieldsList, 'Value', 1);
+    set(handles.MP3_pipeline_JobsParametersValues, 'String', {''});
+    set(handles.MP3_pipeline_JobsParametersValues, 'Value', 1);
+    %handles.MP3_pipeline_pipeline_listbox_Raw = {''};
 end
 
 
-%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+%handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
 %[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-if isfield(handles, 'MIA_pipeline_ParamsModules')
-    [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+if isfield(handles, 'MP3_pipeline_ParamsModules')
+    [hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
 end
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MIA_pipeline_pipeline_listbox.String), handles);
-%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
-%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
-%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MIA_pipeline_pipeline_listbox.String), handles);
-%set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MP3_pipeline_pipeline_listbox.String), handles);
+%set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
+%[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+%Coloredlistbox = DisplayColoredListbox(revertcolor2(handles.MP3_pipeline_pipeline_listbox.String), handles);
+%set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
 
 guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_Edit_Module.
-function MIA_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Edit_Module (see GCBO)
+% --- Executes on button press in MP3_pipeline_Edit_Module.
+function MP3_pipeline_Edit_Module_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Edit_Module (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     return
 end
 
 
 
-SelectedIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedIndex};
+SelectedIndex = handles.MP3_pipeline_pipeline_listbox.Value;
+%SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedIndex};
 revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedIndex};
+SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex};
 SelectedModule = revertcolor2(SelectedModule);
-Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-handles.MIA_pipeline.EditedModuleName = SelectedModule;
+Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
+handles.MP3_pipeline.EditedModuleName = SelectedModule;
 handles.BeforeEditedModuleFilters = handles.FilterParameters;
 
 %% Remove the module we want to edit, and adapt the database
-handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
-%Stored = handles.MIA_pipeline_pipeline_listbox_Raw;
-%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+handles.MP3_pipeline_ParamsModules = rmfield(handles.MP3_pipeline_ParamsModules, SelectedModule);
+%Stored = handles.MP3_pipeline_pipeline_listbox_Raw;
+%handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-%[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
 if isfield(handles, 'new_module')
     handles.BeforeEditedModule = handles.new_module;
@@ -2828,7 +2829,7 @@ handles.new_module = Module.ModuleParams;
 module_parameters_string = handles.new_module.opt.table.Names_Display;
 module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
 
-%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+%MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 handles.module_parameters_string = module_parameters_string;
 handles.module_parameters_fields = module_parameters_fields;
@@ -2836,8 +2837,8 @@ handles.module_parameters_fields = module_parameters_fields;
 handles.FilterParameters = [handles.FilterParameters, Module.Filters];
 
 
-%handles.MIA_pipeline_pipeline_listbox_Raw = Stored;
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+%handles.MP3_pipeline_pipeline_listbox_Raw = Stored;
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
 
@@ -2848,54 +2849,54 @@ for i=1:length(Module.Filters)
 end
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(TagsUsed, handles.Add_Tags_listing);
 
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 
-handles.MIA_pipeline_module_parameters.Value = 1;
-MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+handles.MP3_pipeline_module_parameters.Value = 1;
+MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 
 
 
 %% Update figure
-set(handles.MIA_pipeline_module_parameters, 'BackgroundColor', [0.5 0.5 0.5]);
-set(handles.MIA_pipeline_parameter_setup_table, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
-set(handles.MIA_pipeline_Unique_Values_Tag, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
-set(handles.MIA_pipeline_Filtering_Table, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
+set(handles.MP3_pipeline_module_parameters, 'BackgroundColor', [0.5 0.5 0.5]);
+set(handles.MP3_pipeline_parameter_setup_table, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
+set(handles.MP3_pipeline_Unique_Values_Tag, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
+set(handles.MP3_pipeline_Filtering_Table, 'BackgroundColor', [0.6 0.6 0.6;0.4 0.4 0.4]);
 
-set(handles.MIA_pipeline_clear_pipeline_button, 'Enable', 'off');
-set(handles.MIA_pipeline_DeleteModule, 'Enable', 'off');
-set(handles.MIA_pipeline_add_module_button, 'Enable', 'off');
-set(handles.MIA_pipeline_execute_button, 'Enable', 'off');
-set(handles.MIA_pipeline_module_listbox, 'Enable', 'off');
-set(handles.MIA_pipeline_Edit_Module, 'Enable', 'off');
-set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'off');
-set(handles.MIA_pipeline_JobsList, 'Enable', 'off');
-set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'off');
-set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'off');
-set(handles.MIA_pipeline_Delete_Job, 'Enable', 'off');
-set(handles.MIA_pipeline_save_pipeline, 'Enable', 'off');
-set(handles.MIA_pipeline_load_pipeline, 'Enable', 'off');
+set(handles.MP3_pipeline_clear_pipeline_button, 'Enable', 'off');
+set(handles.MP3_pipeline_DeleteModule, 'Enable', 'off');
+set(handles.MP3_pipeline_add_module_button, 'Enable', 'off');
+set(handles.MP3_pipeline_execute_button, 'Enable', 'off');
+set(handles.MP3_pipeline_module_listbox, 'Enable', 'off');
+set(handles.MP3_pipeline_Edit_Module, 'Enable', 'off');
+set(handles.MP3_pipeline_pipeline_listbox, 'Enable', 'off');
+set(handles.MP3_pipeline_JobsList, 'Enable', 'off');
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'Enable', 'off');
+set(handles.MP3_pipeline_JobsParametersValues, 'Enable', 'off');
+set(handles.MP3_pipeline_Delete_Job, 'Enable', 'off');
+set(handles.MP3_pipeline_save_pipeline, 'Enable', 'off');
+set(handles.MP3_pipeline_load_pipeline, 'Enable', 'off');
 
-set(handles.MIA_pipeline_Save_Module, 'Enable', 'on');
+set(handles.MP3_pipeline_Save_Module, 'Enable', 'on');
 
 guidata(hObject, handles);
 %guidata(hObject, handles);
 
 
-% --- Executes on button press in MIA_pipeline_Save_Module.
-function MIA_pipeline_Save_Module_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Save_Module (see GCBO)
+% --- Executes on button press in MP3_pipeline_Save_Module.
+function MP3_pipeline_Save_Module_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Save_Module (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
-%[new_pipeline, output_database] = MIA_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MIA_pipeline_TmpDatabase, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+%[new_pipeline, output_database] = MP3_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MP3_pipeline_TmpDatabase, handles.MP3_data.database.Properties.UserData.MP3_data_path);
 
 %if isempty(fieldnames(new_pipeline)) && isempty(output_database)
 %    return
@@ -2908,13 +2909,13 @@ SaveModule.Filters = handles.FilterParameters;
 SaveModule.ModuleParams = handles.new_module;
 %SaveModule.OutputDatabase = output_database;
 %SaveModule.Jobs = new_pipeline;
-handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline.EditedModuleName) = SaveModule;
-%handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, handles.MIA_pipeline_pipeline_listbox.String);
+handles.MP3_pipeline_ParamsModules.(handles.MP3_pipeline.EditedModuleName) = SaveModule;
+%handles.MP3_pipeline_ParamsModules = orderfields(handles.MP3_pipeline_ParamsModules, handles.MP3_pipeline_pipeline_listbox.String);
 revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
-fields = revertcolor2(handles.MIA_pipeline_pipeline_listbox.String);
-handles.MIA_pipeline_ParamsModules = orderfields(handles.MIA_pipeline_ParamsModules, fields);
+fields = revertcolor2(handles.MP3_pipeline_pipeline_listbox.String);
+handles.MP3_pipeline_ParamsModules = orderfields(handles.MP3_pipeline_ParamsModules, fields);
 
-[hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
 
 
 if isfield(handles, 'new_module')
@@ -2925,7 +2926,7 @@ end
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
 
 handles.FilterParameters = {};
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 %[hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
 handles.new_module = handles.BeforeEditedModule;
@@ -2942,12 +2943,12 @@ else
     module_parameters_string = handles.new_module.opt.table.Names_Display;
     module_parameters_fields = handles.new_module.opt.table.PSOM_Fields;
 end
-%MIA_pipeline_module_parameters_Callback(hObject, eventdata, handles)
+%MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 handles.module_parameters_string = module_parameters_string;
 handles.module_parameters_fields = module_parameters_fields;
     
-[hObject, eventdata, handles]=MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles]=MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
 [hObject, eventdata, handles] = UpdateParameters_listbox(hObject, eventdata, handles);
 
@@ -2959,67 +2960,67 @@ for i=1:length(handles.FilterParameters)
 end
 [handles.Remove_list, handles.Add_list]=UpdateAdd_Remove_Popup(TagsUsed, handles.Add_Tags_listing);
 
-set(handles.MIA_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
-set(handles.MIA_pipeline_add_tag_popupmenu, 'Value', 1);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'String', handles.Add_list);
+set(handles.MP3_pipeline_add_tag_popupmenu, 'Value', 1);
 handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 %handles.Remove_selected = Tag_To_Add;
-MIA_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
-set(handles.MIA_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
 %% Display the module we were creating before the Edit (End)
 
 
 
 
 %% Update figure
-set(handles.MIA_pipeline_module_parameters, 'BackgroundColor', [0.94 0.94 0.94])
-set(handles.MIA_pipeline_parameter_setup_table, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
-set(handles.MIA_pipeline_Unique_Values_Tag, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
-set(handles.MIA_pipeline_Filtering_Table, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
-set(handles.MIA_pipeline_clear_pipeline_button, 'Enable', 'on');
-set(handles.MIA_pipeline_DeleteModule, 'Enable', 'on');
-set(handles.MIA_pipeline_add_module_button, 'Enable', 'on');
-set(handles.MIA_pipeline_execute_button, 'Enable', 'on');
-set(handles.MIA_pipeline_module_listbox, 'Enable', 'on');
-set(handles.MIA_pipeline_Edit_Module, 'Enable', 'on');
-set(handles.MIA_pipeline_pipeline_listbox, 'Enable', 'on');
-set(handles.MIA_pipeline_JobsList, 'Enable', 'on');
-set(handles.MIA_pipeline_JobsParametersFieldsList, 'Enable', 'on');
-set(handles.MIA_pipeline_JobsParametersValues, 'Enable', 'on');
-set(handles.MIA_pipeline_Delete_Job, 'Enable', 'on');
-set(handles.MIA_pipeline_save_pipeline, 'Enable', 'on');
-set(handles.MIA_pipeline_load_pipeline, 'Enable', 'on');
+set(handles.MP3_pipeline_module_parameters, 'BackgroundColor', [0.94 0.94 0.94])
+set(handles.MP3_pipeline_parameter_setup_table, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
+set(handles.MP3_pipeline_Unique_Values_Tag, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
+set(handles.MP3_pipeline_Filtering_Table, 'BackgroundColor', [1 1 1;0.9412 0.9412 0.9412]);
+set(handles.MP3_pipeline_clear_pipeline_button, 'Enable', 'on');
+set(handles.MP3_pipeline_DeleteModule, 'Enable', 'on');
+set(handles.MP3_pipeline_add_module_button, 'Enable', 'on');
+set(handles.MP3_pipeline_execute_button, 'Enable', 'on');
+set(handles.MP3_pipeline_module_listbox, 'Enable', 'on');
+set(handles.MP3_pipeline_Edit_Module, 'Enable', 'on');
+set(handles.MP3_pipeline_pipeline_listbox, 'Enable', 'on');
+set(handles.MP3_pipeline_JobsList, 'Enable', 'on');
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'Enable', 'on');
+set(handles.MP3_pipeline_JobsParametersValues, 'Enable', 'on');
+set(handles.MP3_pipeline_Delete_Job, 'Enable', 'on');
+set(handles.MP3_pipeline_save_pipeline, 'Enable', 'on');
+set(handles.MP3_pipeline_load_pipeline, 'Enable', 'on');
 
-set(handles.MIA_pipeline_Save_Module, 'Enable', 'off');
-set(handles.MIA_pipeline_pipeline_listbox, 'Value', 1);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+set(handles.MP3_pipeline_Save_Module, 'Enable', 'off');
+set(handles.MP3_pipeline_pipeline_listbox, 'Value', 1);
+[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles)
 
-% MIA_pipeline_module_listbox_Callback(hObject, eventdata, handles);
+% MP3_pipeline_module_listbox_Callback(hObject, eventdata, handles);
 
 
-% --- Executes on selection change in MIA_pipeline_JobsList.
-function MIA_pipeline_JobsList_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsList (see GCBO)
+% --- Executes on selection change in MP3_pipeline_JobsList.
+function MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModuleIndex = handles.MP3_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     String = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')% || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')% || ~isfield(handles.MP3_pipeline_ParamsModules.(handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MP3_pipeline_ParamsModules.(handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     String = {''};
 else
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    %SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     SelectedModule = revertcolor2(SelectedModule);
-    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
     if ~isfield(Module, 'Jobs') || isempty(fieldnames(Module.Jobs))
         String = {''};
     else
-        SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-        %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-        SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
+        SelectedJobIndex = handles.MP3_pipeline_JobsList.Value;
+        %SelectedJob = handles.MP3_pipeline_JobsList.String{SelectedJobIndex};
+        SelectedJob = handles.MP3_pipeline_JobsNames{SelectedJobIndex};
         Job = Module.Jobs.(SelectedJob);
         %Names = fieldnames(Job);
         String = {};
@@ -3048,19 +3049,19 @@ end
 %         String = [String; {[Names{i}, ' ', NamesEntries{j}]}];
 %     end
 % end
-set(handles.MIA_pipeline_JobsParametersFieldsList, 'String', String)
-set(handles.MIA_pipeline_JobsParametersFieldsList, 'Value', 1)
-MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'String', String)
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'Value', 1)
+MP3_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
 
 
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsList contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsList
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_JobsList contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_JobsList
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_JobsList_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsList (see GCBO)
+function MP3_pipeline_JobsList_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -3071,31 +3072,31 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in MIA_pipeline_JobsParametersFieldsList.
-function MIA_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsParametersFieldsList (see GCBO)
+% --- Executes on selection change in MP3_pipeline_JobsParametersFieldsList.
+function MP3_pipeline_JobsParametersFieldsList_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsParametersFieldsList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
+SelectedModuleIndex = handles.MP3_pipeline_pipeline_listbox.Value;
 % if isequal(SelectedModuleIndex, 0) || isempty(SelectedModuleIndex)
 %     Entrie = {};
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')% || ~isfield(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')% || ~isfield(handles.MP3_pipeline_ParamsModules.(handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}), 'Jobs') || isempty(fieldnames(handles.MP3_pipeline_ParamsModules.(handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex}).Jobs))
     Entrie = {''};
 else
-    %SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
-    SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+    %SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedModuleIndex};
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
     SelectedModule = revertcolor2(SelectedModule);
-    Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
+    Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
     if ~isfield(Module, 'Jobs') || isempty(fieldnames(Module.Jobs))
         Entrie = {''};
     else
-        SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-        %SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-        SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
+        SelectedJobIndex = handles.MP3_pipeline_JobsList.Value;
+        %SelectedJob = handles.MP3_pipeline_JobsList.String{SelectedJobIndex};
+        SelectedJob = handles.MP3_pipeline_JobsNames{SelectedJobIndex};
         Job = Module.Jobs.(SelectedJob);
-        SelectedParameterFieldIndex = handles.MIA_pipeline_JobsParametersFieldsList.Value;
-        SelectedParameterField = handles.MIA_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
+        SelectedParameterFieldIndex = handles.MP3_pipeline_JobsParametersFieldsList.Value;
+        SelectedParameterField = handles.MP3_pipeline_JobsParametersFieldsList.String{SelectedParameterFieldIndex};
         Fields = strsplit(SelectedParameterField);
         Param = Job.(Fields{1});
         Entrie = Param.(Fields{2});
@@ -3110,19 +3111,19 @@ else
     end
 end
 if ~islogical(Entrie) && ~istable(Entrie)
-    set(handles.MIA_pipeline_JobsParametersValues, 'Value', 1)
-    set(handles.MIA_pipeline_JobsParametersValues, 'String', Entrie)
+    set(handles.MP3_pipeline_JobsParametersValues, 'Value', 1)
+    set(handles.MP3_pipeline_JobsParametersValues, 'String', Entrie)
 else
-    set(handles.MIA_pipeline_JobsParametersValues, 'String', {'Cannot display this type.'})
+    set(handles.MP3_pipeline_JobsParametersValues, 'String', {'Cannot display this type.'})
 end
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsParametersFieldsList contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsParametersFieldsList
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_JobsParametersFieldsList contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_JobsParametersFieldsList
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_JobsParametersFieldsList_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsParametersFieldsList (see GCBO)
+function MP3_pipeline_JobsParametersFieldsList_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsParametersFieldsList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -3133,19 +3134,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in MIA_pipeline_JobsParametersValues.
-function MIA_pipeline_JobsParametersValues_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsParametersValues (see GCBO)
+% --- Executes on selection change in MP3_pipeline_JobsParametersValues.
+function MP3_pipeline_JobsParametersValues_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsParametersValues (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MIA_pipeline_JobsParametersValues contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from MIA_pipeline_JobsParametersValues
+% Hints: contents = cellstr(get(hObject,'String')) returns MP3_pipeline_JobsParametersValues contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from MP3_pipeline_JobsParametersValues
 
 
 % --- Executes during object creation, after setting all properties.
-function MIA_pipeline_JobsParametersValues_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_JobsParametersValues (see GCBO)
+function MP3_pipeline_JobsParametersValues_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_JobsParametersValues (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -3156,31 +3157,31 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in MIA_pipeline_save_pipeline.
-function MIA_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_save_pipeline (see GCBO)
+% --- Executes on button press in MP3_pipeline_save_pipeline.
+function MP3_pipeline_save_pipeline_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_save_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'MIA_pipeline_ParamsModules') || isempty(fieldnames(handles.MIA_pipeline_ParamsModules))
+if ~isfield(handles, 'MP3_pipeline_ParamsModules') || isempty(fieldnames(handles.MP3_pipeline_ParamsModules))
     msgbox('There is no pipeline to save ...', 'No Pipeline');
     return
 end
 
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines'],'dir') ~= 7
-    [status, ~, ~] = mkdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines']);
     if status == false
         error('Cannot create the Saved_Pipelines folder to save the pipelines.')
     end
 end
 
 
-if ~isempty(handles.MIA_pipeline_ParamsModules)
+if ~isempty(handles.MP3_pipeline_ParamsModules)
     prompt = 'Name of the pipeline ?';
     title = 'Saving';
     dims = [1 35];
     definput = {'MyPipeline'};
     answer1 = inputdlg(prompt,title,dims,definput);
-    listing = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+    listing = what([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines']);
     if isempty(answer1)
         return
     end
@@ -3205,8 +3206,8 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
     end
   
     %[file, path] = uiputfile('MyPipeline.mat');
-    Pipeline = handles.MIA_pipeline_ParamsModules;
-    %selpath = uigetdir(handles.MIA_data.database.Properties.UserData.MIA_data_path,'Please select a file to save your pipeline in.');
+    Pipeline = handles.MP3_pipeline_ParamsModules;
+    %selpath = uigetdir(handles.MP3_data.database.Properties.UserData.MP3_data_path,'Please select a file to save your pipeline in.');
     Modules = fieldnames(Pipeline);
     for i=1:length(Modules)
         Module = Pipeline.(Modules{i});
@@ -3214,7 +3215,7 @@ if ~isempty(handles.MIA_pipeline_ParamsModules)
         Module = rmfield(Module, 'OutputDatabase');
         Pipeline.(Modules{i}) = Module;
     end
-    save([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, FinalAnswer],'-struct', 'Pipeline');
+    save([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines', filesep, FinalAnswer],'-struct', 'Pipeline');
     msgbox('Pipeline saved!','Done!');
 else
     msgbox('There is no pipeline to save ...', 'No Pipeline');
@@ -3222,25 +3223,25 @@ end
 
 
 
-% --- Executes on button press in MIA_pipeline_load_pipeline.
-function MIA_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_load_pipeline (see GCBO)
+% --- Executes on button press in MP3_pipeline_load_pipeline.
+function MP3_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_load_pipeline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if isfield(handles, 'MIA_pipeline_ParamsModules')
-    if ~isempty(handles.MIA_pipeline_ParamsModules)
+if isfield(handles, 'MP3_pipeline_ParamsModules')
+    if ~isempty(handles.MP3_pipeline_ParamsModules)
         quest = 'By loading a new pipeline, your current pipeline will be deleted. Continue ?';
         answer = questdlg(quest);
         if strcmp(answer, 'No') || isempty(answer)
             return
         else
-            [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+            [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
         end
     end
 end
 
-list = what([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines']);
+list = what([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines']);
 if isempty(list)
     msgbox('There is no saved pipelines');
     return
@@ -3250,7 +3251,7 @@ if tf == 0
     return
 end
 PipelineName = list.mat{indx};
-pipeline = load([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'Saved_Pipelines', filesep, PipelineName]);
+pipeline = load([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines', filesep, PipelineName]);
 Modules = fieldnames(pipeline);
 for i=1:length(Modules)
     %% Delete all modules filters for now, as we don't really use them efficiently.
@@ -3258,8 +3259,8 @@ for i=1:length(Modules)
     pipeline.(Modules{i}).Filters = {};
 end
 
-handles.MIA_pipeline_ParamsModules = pipeline;
-if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Table)
+handles.MP3_pipeline_ParamsModules = pipeline;
+if ~isequal(handles.MP3_pipeline_TmpDatabase, handles.MP3_pipeline_Filtered_Table)
     quest = 'Would you like to apply the loaded pipeline on the whole database or on the filtered one you defined ?';
     answer = questdlg(quest, 'On which data apply the pipeline ?', 'Whole database', 'Filtered database', 'Whole database');
     if isempty(answer)
@@ -3267,30 +3268,30 @@ if ~isequal(handles.MIA_pipeline_TmpDatabase, handles.MIA_pipeline_Filtered_Tabl
     end
     switch answer
         case 'Whole database'
-            Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+            Tmpdatab = handles.MP3_pipeline_TmpDatabase;
         case 'Filtered database'
-            Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+            Tmpdatab = handles.MP3_pipeline_Filtered_Table;
     end
 else
-    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+    Tmpdatab = handles.MP3_pipeline_TmpDatabase;
 end
 
-StoredDatab = handles.MIA_pipeline_TmpDatabase;
-handles.MIA_pipeline_TmpDatabase = Tmpdatab;
-[hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
-handles.MIA_pipeline_TmpDatabase = StoredDatab;
+StoredDatab = handles.MP3_pipeline_TmpDatabase;
+handles.MP3_pipeline_TmpDatabase = Tmpdatab;
+[hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+handles.MP3_pipeline_TmpDatabase = StoredDatab;
 
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
-% %Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+% %Tmpdatab = handles.MP3_pipeline_TmpDatabase;
 % for i=1:length(Modules)
 %     Module = pipeline.(Modules{i});
 %     %% Delete all modules filters for now, as we don't really use them efficiently.
 %     % This allow us to apply on a filtered database an already filtered designed pipeline. 
 %     Module.Filters = {};
 %     %%
-%     [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path);
+%     [pipeline_module, output_database_module] = MP3_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MP3_data.database.Properties.UserData.MP3_data_path);
 % %     if isempty(fieldnames(pipeline_module)) && isempty(output_database_module)
 % %         continue
 % %     end
@@ -3299,25 +3300,25 @@ handles.MIA_pipeline_TmpDatabase = StoredDatab;
 %     pipeline.(Modules{i}).OutputDatabase = output_database_module;
 %     Tmpdatab = [Tmpdatab; output_database_module];
 % end
-% handles.MIA_pipeline_ParamsModules = pipeline;
+% handles.MP3_pipeline_ParamsModules = pipeline;
 % 
 % 
-% set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
-% set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
-% MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+% set(handles.MP3_pipeline_pipeline_listbox,'String', fieldnames(handles.MP3_pipeline_ParamsModules));
+% set(handles.MP3_pipeline_pipeline_listbox,'Value', 1);
+% MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 % [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-% [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
 guidata(hObject, handles);
 
-function [hObject, eventdata, handles] = MIA_pipeline_UpdatePipelineJobs(hObject, eventdata, handles)
+function [hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles)
 
 
 
-pipeline = handles.MIA_pipeline_ParamsModules;
+pipeline = handles.MP3_pipeline_ParamsModules;
 Modules = fieldnames(pipeline);
 %% Attention Code etrange qui distingue le cas d'un load du cas d'un save module.
-% * TmpDatabase contient toute la database de MIA plus les fichiers
+% * TmpDatabase contient toute la database de MP3 plus les fichiers
 %temporaires des précédents modules.
 % * Filtered data contient la Tmp database filtrée par les filtres adéquats.
 % * La fonction clear_pipeline met à jour la TmpDatabase ET la Filtered_Table
@@ -3326,28 +3327,28 @@ Modules = fieldnames(pipeline);
 %  * En réalité, on ne doit pas spécialement distinguer le load du save mais
 % surtout le cas "Whole database" et "Filtered database" du load. Et pour le
 % gérer, on doit récuperer la database en question (whole ou filtered) dans
-% la variable handles.MIA_pipeline_TmpDatabase. Puisque Clear modifie cette
+% la variable handles.MP3_pipeline_TmpDatabase. Puisque Clear modifie cette
 % valeur, il faut la stocker avant. Pour le save, il faut au contraire
 % d'abord clear le pipeline précedent, afin de se débarasser des fichiers
 % temporaires et ensuite appliquer le pipeline modifié à la table filtrée.
-%  * Remarque : la valeur stockée dans handles.MIA_pipeline_TmpDatabase est
+%  * Remarque : la valeur stockée dans handles.MP3_pipeline_TmpDatabase est
 % déjà débarassée de tout fichier temporaire dans la fonction load.
-if strcmp(eventdata.Source.Tag, 'MIA_pipeline_Save_Module') || strcmp(eventdata.Source.Tag, 'MIA_pipeline_DeleteModule')
-    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
-    Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+if strcmp(eventdata.Source.Tag, 'MP3_pipeline_Save_Module') || strcmp(eventdata.Source.Tag, 'MP3_pipeline_DeleteModule')
+    [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+    Tmpdatab = handles.MP3_pipeline_Filtered_Table;
 else
-    Tmpdatab = handles.MIA_pipeline_TmpDatabase;
-    [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+    Tmpdatab = handles.MP3_pipeline_TmpDatabase;
+    [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
 end
 %% 
-% [hObject, eventdata, handles] = MIA_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+% [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
 % [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-% [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-% Tmpdatab = handles.MIA_pipeline_Filtered_Table;
+% [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+% Tmpdatab = handles.MP3_pipeline_Filtered_Table;
 
 
-%Tmpdatab = handles.MIA_pipeline_Filtered_Table;
-%Tmpdatab = handles.MIA_pipeline_TmpDatabase;
+%Tmpdatab = handles.MP3_pipeline_Filtered_Table;
+%Tmpdatab = handles.MP3_pipeline_TmpDatabase;
 
 for i=1:length(Modules)
     Module = pipeline.(Modules{i});
@@ -3355,7 +3356,7 @@ for i=1:length(Modules)
 %     % This allow us to apply on a filtered database an already filtered designed pipeline. 
 %     Module.Filters = {};
 %     %%
-    [pipeline_module, output_database_module] = MIA_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MIA_data.database.Properties.UserData.MIA_data_path, 0);
+    [pipeline_module, output_database_module] = MP3_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MP3_data.database.Properties.UserData.MP3_data_path, 0);
     pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
     %pipeline.(Modules{i}).JobsReWrite = CheckReWriting(pipeline_module, Tmpdatab);
@@ -3363,18 +3364,18 @@ for i=1:length(Modules)
     Tmpdatab = [Tmpdatab; output_database_module];
 end
 
-handles.MIA_pipeline_ParamsModules = pipeline;
-%handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
+handles.MP3_pipeline_ParamsModules = pipeline;
+%handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
 
-%[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+%[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-[hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
 
-Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox.String, handles);
-set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
-%set(handles.MIA_pipeline_pipeline_listbox,'String', fieldnames(handles.MIA_pipeline_ParamsModules));
-set(handles.MIA_pipeline_pipeline_listbox,'Value', 1);
-[hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+Coloredlistbox = DisplayColoredListbox(handles.MP3_pipeline_pipeline_listbox.String, handles);
+set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
+%set(handles.MP3_pipeline_pipeline_listbox,'String', fieldnames(handles.MP3_pipeline_ParamsModules));
+set(handles.MP3_pipeline_pipeline_listbox,'Value', 1);
+[hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
 
@@ -3420,36 +3421,36 @@ end
 
 
 
-% --- Executes on button press in MIA_pipeline_Delete_Job.
-function MIA_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Delete_Job (see GCBO)
+% --- Executes on button press in MP3_pipeline_Delete_Job.
+function MP3_pipeline_Delete_Job_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Delete_Job (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     return
 end
 
 
 
-SelectedModuleIndex = handles.MIA_pipeline_pipeline_listbox.Value;
-%SelectedModule = handles.MIA_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
-SelectedModule = handles.MIA_pipeline_pipeline_listbox.String{SelectedModuleIndex};
+SelectedModuleIndex = handles.MP3_pipeline_pipeline_listbox.Value;
+%SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedModuleIndex};
+SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedModuleIndex};
 revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
 SelectedModule = revertcolor2(SelectedModule);
-Module = handles.MIA_pipeline_ParamsModules.(SelectedModule);
-SelectedJobIndex = handles.MIA_pipeline_JobsList.Value;
-%SelectedJob = handles.MIA_pipeline_JobsList.String{SelectedJobIndex};
-if isempty(handles.MIA_pipeline_JobsNames)
+Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
+SelectedJobIndex = handles.MP3_pipeline_JobsList.Value;
+%SelectedJob = handles.MP3_pipeline_JobsList.String{SelectedJobIndex};
+if isempty(handles.MP3_pipeline_JobsNames)
     return
 end
-SelectedJob = handles.MIA_pipeline_JobsNames{SelectedJobIndex};
+SelectedJob = handles.MP3_pipeline_JobsNames{SelectedJobIndex};
 Job = Module.Jobs.(SelectedJob);
 Module.Jobs = rmfield(Module.Jobs, SelectedJob);
 if isempty(fieldnames(Module.Jobs))
-    MIA_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
-    handles.MIA_pipeline_ParamsModules = rmfield(handles.MIA_pipeline_ParamsModules, SelectedModule);
+    MP3_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
+    handles.MP3_pipeline_ParamsModules = rmfield(handles.MP3_pipeline_ParamsModules, SelectedModule);
 else
     
     %% update Output databse of the  selected module.
@@ -3463,10 +3464,10 @@ else
             Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
         end
     end
-    handles.MIA_pipeline_ParamsModules.(SelectedModule) =  Module;
+    handles.MP3_pipeline_ParamsModules.(SelectedModule) =  Module;
     [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
-    [hObject, eventdata, handles] = MIA_pipeline_UpdateTables(hObject, eventdata, handles);
-    [hObject, eventdata, handles] = MIA_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+    [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+    [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 end
 
 
@@ -3476,23 +3477,23 @@ end
 guidata(hObject, handles);
 
 function Coloredlistbox = DisplayColoredListbox(Names, handles)
-if ~isfield(handles, 'MIA_pipeline_ParamsModules')
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     Coloredlistbox = {''};
     return
 end
-Names = fieldnames(handles.MIA_pipeline_ParamsModules);
+Names = fieldnames(handles.MP3_pipeline_ParamsModules);
 %colergenlistbox = @(color,text) ['<html><table border=0 width=400 bgcolor=',color,'><TR><TD>',text,'</TD></TR> </table></html>'];
 color2 = @(color,text) ['<HTML><FONT color="',color,'">',text,'</Font></html>'];
 %revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
 Coloredlistbox = cell(size(Names));
 for i=1:length(Names)
-    ReWritting = CheckReWriting(handles.MIA_pipeline_ParamsModules.(Names{i}), handles.MIA_pipeline_TmpDatabase);
-%     if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
+    ReWritting = CheckReWriting(handles.MP3_pipeline_ParamsModules.(Names{i}), handles.MP3_pipeline_TmpDatabase);
+%     if isempty(fieldnames(handles.MP3_pipeline_ParamsModules.(Names{i}).Jobs))
 %         Coloredlistbox{i} = color2('red', Names{i});
 %     else
 %         Coloredlistbox{i} = color2('green', Names{i});
 %     end
-    if isempty(fieldnames(handles.MIA_pipeline_ParamsModules.(Names{i}).Jobs))
+    if isempty(fieldnames(handles.MP3_pipeline_ParamsModules.(Names{i}).Jobs))
         Coloredlistbox{i} = color2('red', Names{i});
     elseif any(ReWritting)
         Coloredlistbox{i} = color2('orange', Names{i});
@@ -3503,17 +3504,17 @@ end
 
 
 
-% handles.MIA_pipeline_pipeline_listbox_Raw = fieldnames(handles.MIA_pipeline_ParamsModules);
-% Coloredlistbox = DisplayColoredListbox(handles.MIA_pipeline_pipeline_listbox_Raw, handles);
-% set(handles.MIA_pipeline_pipeline_listbox,'String', Coloredlistbox);
+% handles.MP3_pipeline_pipeline_listbox_Raw = fieldnames(handles.MP3_pipeline_ParamsModules);
+% Coloredlistbox = DisplayColoredListbox(handles.MP3_pipeline_pipeline_listbox_Raw, handles);
+% set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
 
 
-% --- Executes on button press in MIA_pipeline_Clear_PSOM_history_button.
-function MIA_pipeline_Clear_PSOM_history_button_Callback(hObject, eventdata, handles)
-% hObject    handle to MIA_pipeline_Clear_PSOM_history_button (see GCBO)
+% --- Executes on button press in MP3_pipeline_Clear_PSOM_history_button.
+function MP3_pipeline_Clear_PSOM_history_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Clear_PSOM_history_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if exist([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 'dir') == 7
-    rmdir([handles.MIA_data.database.Properties.UserData.MIA_data_path, 'PSOM'], 's')
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 'dir') == 7
+    rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's')
     msgbox('Done', 'Information') ;
 end
