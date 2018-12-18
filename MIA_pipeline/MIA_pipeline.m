@@ -647,6 +647,33 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
+        
+    case {'XCluster', '1Cluster'}
+        SequenceType_listing = cellstr(unique(handles.MIA_pipeline_Filtered_Table.SequenceName(handles.MIA_pipeline_Filtered_Table.Type == 'Cluster')));
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        
+        
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
 %      case 'XScanOrXROI'
 %         SequenceType_listing = unique(handles.MIA_pipeline_Filtered_Table.SequenceName);
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
@@ -888,10 +915,10 @@ function MIA_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MIA_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MIA_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
     if sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MIA_pipeline_parameter_setup_table.Data;
         %handles.new_module.opt.table.Default{parameter_selected} = [handles.MIA_pipeline_parameter_setup_table.ColumnName(1); {handles.MIA_pipeline_parameter_setup_table.Data{cell2mat(handles.MIA_pipeline_parameter_setup_table.Data(:,2)),1}}];
@@ -2121,11 +2148,13 @@ if handles.MIA_pipeline_radiobuttonPSOM.Value
 else
     Modules = fieldnames(handles.psom.pipeline);
     Result = struct();
+    disp(['Your pipeline (',num2str(length(Modules)), ' jobs) will be executed in Basic Loop :']);
     for i=1:length(Modules)
         Module = getfield(handles.psom.pipeline, Modules{i});
         files_in = Module.files_in;
         files_out = Module.files_out;
         opt = Module.opt;
+        disp(['Execution Job ', num2str(i)])
         eval(Module.command);
         Result = setfield(Result, Modules{i}, 'finished');
         
