@@ -142,6 +142,8 @@ info = niftiinfo(files_in.In1{1});
 info2 = nifti_info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
+info2.Datatype = class(Mask);
+
 niftiwrite(Mask, files_out.In1{1}, info2)
 
 
