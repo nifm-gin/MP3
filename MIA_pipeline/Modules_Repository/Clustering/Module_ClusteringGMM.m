@@ -227,14 +227,24 @@ in_files = {};
 roi_files = {};
 for i=1:length(UTag1)
     for j=1:length(UTag2)
-        DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
-        DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
+        %The following commented lines are not handled by the PSOM system ...
+        %DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
+        DbRois = databROIs(strcmp(cellstr(databROIs.(Tag1)), cellstr(UTag1(i))),:);
+        
+        %DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
+        DbRois = DbRois(strcmp(cellstr(DbRois.(Tag2)),cellstr(UTag2(j))),:);
+        
         if size(DbRois, 1) == 0
             continue
         end
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
-        datab = databScans(databScans.(Tag1) == UTag1(i),:);
-        datab = datab(datab.(Tag2) == UTag2(j),:);
+        
+        %datab = databScans(databScans.(Tag1) == UTag1(i),:);
+        datab = databScans(strcmp(cellstr(databScans.(Tag1)),cellstr(UTag1(i))),:);
+        
+        %datab = datab(datab.(Tag2) == UTag2(j),:);
+        datab = datab(strcmp(cellstr(datab.(Tag2)), cellstr(UTag2(j))),:);
+        
         fi = cell(size(datab,1),1);
         for k=1:size(datab,1)
             fi{k} = [char(datab.Path(k)), char(datab.Filename(k)), '.nii'];
@@ -463,7 +473,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     end
     gmfit = modeles{k};
 else
-    gmfit = fitgmdist( VoxValues, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',1);
+    gmfit = fitgmdist( VoxValues, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',3);
     k = str2double(opt.NbClusters);    
 end
 
@@ -514,6 +524,7 @@ end
 ind = 1;
 for i=1:length(All_Data_Clean)
     Cluster = ROI_Clean{i};
+    Cluster(logical(Cluster)) = NaN;
     %ROI_Clust = logical(ROI{i});
     Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
     ind = ind+size(All_Data_Clean{i},1);

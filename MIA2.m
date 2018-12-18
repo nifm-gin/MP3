@@ -1839,6 +1839,7 @@ if isfield(handles.data_loaded, 'Cluster')
         for slice_nbr=1:get(handles.MIA_slider_slice, 'Max')
             
             roi_a_appliquer=handles.data_loaded.Cluster(i).nii(:,:,slice_nbr);
+            roi_a_appliquer(isnan(roi_a_appliquer)) = 0;
             roi_contour = roi_a_appliquer;
             handles.data_displayed.Cluster.data(i,slice_nbr) = {roi_contour};
             trans = round(handles.MIA_PRM_slider_trans.Value)/100;
@@ -1846,7 +1847,7 @@ if isfield(handles.data_loaded, 'Cluster')
                 trans = 0.01;
             end
             handles.data_displayed.Cluster.trans = trans;
-            if sum(sum(handles.data_loaded.Cluster(i).nii(:,:,slice_nbr))) > 1
+            if nansum(nansum(handles.data_loaded.Cluster(i).nii(:,:,slice_nbr))) > 1
                 handles.data_displayed.Cluster.on_slice(i,slice_nbr) = 1;
             else
                 handles.data_displayed.Cluster.on_slice(i,slice_nbr) = 0;
