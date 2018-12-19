@@ -2411,7 +2411,7 @@ function MP3_pipeline_pushMP3Selection_Callback(hObject, eventdata, handles)
 
 % define which patient is selected
 %data_selected =  MP3('get_data_selected',handles.MP3_data);
-data_selected =  MP3('finddata_selected',handles.MP3_data);
+data_selected =  finddata_selected(handles.MP3_data);
 % add the patient filter
 handles.FilterParameters = {};
 handles.FilterParameters{1} = {'Patient', char(handles.MP3_pipeline_TmpDatabase.Patient(data_selected(1)))};
@@ -2471,7 +2471,7 @@ function MP3_pipeline_pushMP3TPSelection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % define which patient is selected
 %data_selected =  MP3('get_data_selected',handles.MP3_data);
-data_selected =  MP3('finddata_selected',handles.MP3_data);
+data_selected =  finddata_selected(handles.MP3_data);
 
 % add the patient filter
 handles.FilterParameters = {};
@@ -3231,12 +3231,19 @@ function MP3_pipeline_load_pipeline_Callback(hObject, eventdata, handles)
 
 if isfield(handles, 'MP3_pipeline_ParamsModules')
     if ~isempty(handles.MP3_pipeline_ParamsModules)
-        quest = 'By loading a new pipeline, your current pipeline will be deleted. Continue ?';
-        answer = questdlg(quest);
-        if strcmp(answer, 'No') || isempty(answer)
+        quest = 'Would you like to replace your current pipeline by the one to load or to merge them ?';
+        answer = questdlg(quest, 'What to do with the current pipeline ?' , 'Replace', 'Merge', 'Cancel', 'Cancel');
+        if strcmp(answer, 'Cancel') || isempty(answer)
             return
-        else
+        elseif strcmp(answer, 'Replace')
             [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+        elseif strcmp(answer, 'Merge')
+            msgbox('Currently not implemented... Sorry !')
+            return
+%             while ~isempty(intersect(fieldnames(old_modules), Name_New_Mod))
+%                 Name_New_Mod = [handles.new_module.module_name, '_', num2str(j)];
+%                 j=j+1;
+%             end
         end
     end
 end
