@@ -1,4 +1,4 @@
-function [Estimation] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers)
+function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers)
 
 if nargin < 3, error('Not enought input arguments'); end
 if ~exist('Method','var'),      Method = 'RegressionMRF'; end
@@ -41,6 +41,7 @@ switch Method
                 [~,Estimation.GridSearch.Errors(s,:)] = EvaluateEstimation(reshape(References(:,:,:,s),s1*s2,size(References,3)), reshape(Estimation.GridSearch.Y(:,:,:,s),s1*s2,size(References,3)));
             end
         end
+        Parameters = [];
         
     case 'RegressionMRF'
         Xtrain = abs(Dico{f}.MRSignals);
