@@ -824,7 +824,8 @@ if numel(data_selected) >1
 end
 
 if get(handles.MIA_scan_VOIs_button, 'Value')
-    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
+   name_option = [cellstr([unique(handles.database.SequenceName(handles.database.Type == 'ROI'))' ...
+        unique(handles.database.SequenceName(handles.database.Type == 'Cluster'))']')' 'Other']';
 else
     name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
 end
@@ -871,6 +872,9 @@ else
     movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
+    end
+    if exist(fullfilename(handles, data_selected, '.mat'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.mat'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.mat'), 'f');
     end
 end
 
@@ -3641,6 +3645,9 @@ if fid_nii>0
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         copyfile(fullfilename(handles, data_selected, '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
     end
+    if exist(fullfilename(handles, data_selected, '.mat'), 'file') == 2
+        copyfile(fullfilename(handles, data_selected, '.mat'), fullfilename(handles, size(handles.database,1), '.mat'), 'f');
+    end
 else
     warndlg('something is wrong this the data',  'Warning');
 end
@@ -3748,7 +3755,7 @@ end
 
 selection = questdlg('What do you want to delete?',...
     'Warning',...
-    'Parameters','VOIs', 'Cancel', 'Cancel');
+    'Parameters','VOIs/Clusters', 'Cancel', 'Cancel');
 
 switch selection
     case 'Parameters'
@@ -3757,8 +3764,10 @@ switch selection
             warndlg('There are no Scan in the database', 'Warning');
             return
         end
-    case 'VOIs'
-        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
+    case 'VOIs/Clusters'
+        name_option = cellstr([unique(handles.database.SequenceName(handles.database.Type == 'ROI'))' ...
+            unique(handles.database.SequenceName(handles.database.Type == 'Cluster'))']');
+        
         if isempty(name_option)
             warndlg('There are no ROI in the database', 'Warning');
             return
@@ -3991,15 +4000,16 @@ if ~isfield(handles, 'database')
 end
 selection = questdlg('What do you want to rename?',...
     'Warning',...
-    'Parameters','VOIs', 'Cancel', 'Cancel');
+    'Parameters','VOIs/Clusters', 'Cancel', 'Cancel');
 
 switch selection
     case 'Parameters'
         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
-    case 'VOIs'
-        old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
-        new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
+    case 'VOIs/Clusters'
+        old_name_listing = cellstr([unique(handles.database.SequenceName(handles.database.Type == 'ROI'))' ...
+            unique(handles.database.SequenceName(handles.database.Type == 'Cluster'))']');
+        new_name_listing = [old_name_listing' 'Other']';
     case 'Cancel'
         return
 end
@@ -4056,6 +4066,9 @@ for i = 1:numel(idx_to_update)
         if exist(fullfilename(handles, idx_to_update(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
         end
+        if exist(fullfilename(handles, idx_to_update(i), '.mat'), 'file') == 2
+            movefile(fullfilename(handles, idx_to_update(i), '.mat'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.mat'), 'f');
+        end
     end
     
     % rename the scan file .nii
@@ -4071,6 +4084,9 @@ for i = 1:numel(idx_to_update)
         movefile(fullfilename(handles, idx_to_update(i), '.nii'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.nii'), 'f')
         if exist(fullfilename(handles, idx_to_update(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_to_update(i), '.json'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.json'), 'f');
+        end 
+        if exist(fullfilename(handles, idx_to_update(i), '.mat'), 'file') == 2
+            movefile(fullfilename(handles, idx_to_update(i), '.mat'), strcat(char(handles.database.Path(idx_to_update(i))),new_nii_filename{:},'.mat'), 'f');
         end 
     end
    
@@ -5152,6 +5168,10 @@ for i=1:numel(nii_index)
     % delete the json file if it exist
     if exist(fullfilename(handles, nii_index(i), '.json'), 'file') == 2
         delete(fullfilename(handles, nii_index(i), '.json'))
+    end
+     % delete the mat file if it exist
+    if exist(fullfilename(handles, nii_index(i), '.mat'), 'file') == 2
+        delete(fullfilename(handles, nii_index(i), '.mat'))
     end
 end
 
