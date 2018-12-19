@@ -101,7 +101,7 @@ if isempty(opt)
     module_option(:,3)   = {'first_scan',1};
     module_option(:,4)   = {'M0_map','No'};
     module_option(:,5)   = {'IE_map','No'};
-    module_option(:,6)   = {'output_filename_ext','T1Map'};
+    module_option(:,6)   = {'output_filename','T1Map'};
     module_option(:,7)   = {'OutputSequenceName','AllName'};
     module_option(:,8)   = {'RefInput',1};
     module_option(:,9)   = {'InputToReshape',1};
@@ -118,13 +118,13 @@ if isempty(opt)
      % --> user_parameter(6,:) = Help : text data which describe the parameter (it
      % will be display to help the user)
      user_parameter(:,1)   = {'Description','Text','','','','',...
-        {'ASL_InvEff Description'}'};
+        {'Generate a T1map from a Multi-Inversion Time scan'}'};
 user_parameter(:,2)   = {'Select a MTI_T1 scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
 user_parameter(:,3)   = {'Parameters','','','','', '',''};
-user_parameter(:,4)   = {'   .Output filename extension','char','ASL_InvEff','output_filename_ext','','',...
-    {'Specify the string to be added to the filename input.'
-    'Default filename extension is ''ASL_InvEff''.'}'};
-user_parameter(:,5)   = {'   .First Scan','numeric','','first_scan','', '',''};
+user_parameter(:,4)   = {'   .Output filename','char','T1Map','output_filename','','',...
+    {'Specify the name of the T1map generated'
+    'Default filename is ''T1map''.'}'};
+user_parameter(:,5)   = {'   .First Scan','numeric','1','first_scan','', '','Please, select the first dynamic to use; by default the all dynamic is used'};
 user_parameter(:,6)   = {'   .M0 map ?','cell',{'Yes', 'No'},'M0_map','', '',''};
 user_parameter(:,7)   = {'   .IE map ?','cell',{'Yes', 'No'},'IE_map','', '',''};
 
@@ -144,19 +144,16 @@ opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:
   
 end
 %%%%%%%%
-opt.NameOutFiles = {opt.output_filename_ext};
-
-
-
+opt.NameOutFiles = {opt.output_filename};
 
 if isempty(files_out)
     opt.Table_out = opt.Table_in;
     opt.Table_out.IsRaw = categorical(0);   
     opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
     if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
+        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename));
     elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
+        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename]));
     end
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
@@ -165,7 +162,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('ASL_InvEff:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('T1map_MIT:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% Inputs
@@ -194,7 +191,7 @@ if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same 
 end
 
 if isempty(files_out)
-   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename_ext,ext_nii)};
+   files_out.In1 = {cat(2,opt.folder_out,filesep,name_nii,'_',opt.output_filename,ext_nii)};
 end
 
 %% If the test flag is true, stop here !
