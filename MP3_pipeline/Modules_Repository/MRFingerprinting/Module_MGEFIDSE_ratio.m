@@ -45,9 +45,6 @@ if isempty(opt)
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     folder_files	= dir('data/dictionaries/*.json');
-    if isempty(folder_files)
-        folder_files(1).name = ' ';
-    end
     user_parameter(:,4)   = {'   .Dictionary Pre filename','cell', {folder_files.name}, 'dictionary_pre_filename','','Mandatory',...
         {'Select your MGEFIDSE Pre scan dictionary file'}};
     folder_files	= dir('data/dictionaries/*.json');
@@ -194,8 +191,17 @@ switch opt.method
         end
         Tmp{1}.Parameters = params;
         Xobs        = permute(Xobs, [1 2 4 3]);
-        Parameters.K = 20;
-        Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,Parameters);
+        
+        %Compute the learing only one time per dictionary
+        model_filename = ['./data/dictionaries' filesep opt.dictionary_post_filename '___' opt.dictionary_pre_filename '___MODEL.mat'];
+        if exist(model_filename,'file')
+            load(model_filename,'Parameters');
+            Estimation = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
+        else
+            [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, []);
+            save(model_filename,'Parameters')
+        end
+        
         Map.Y = permute(Estimation.Regression.Y, [1 2 4 3]);
 end
     
