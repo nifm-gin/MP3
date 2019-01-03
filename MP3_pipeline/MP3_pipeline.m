@@ -286,6 +286,9 @@ function MP3_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+set(handles.MP3_pipeline_manager_GUI, 'pointer', 'watch');
+drawnow;
+
 if ~isfield(handles.new_module, 'opt')
     return
 end
@@ -355,6 +358,7 @@ set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
 MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
 
 
+set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
 guidata(hObject, handles);
 
 %MP3_pipeline_exectute_module_button_Callback(hObject, eventdata, handles)
