@@ -3238,8 +3238,8 @@ if isfield(handles, 'MP3_pipeline_ParamsModules')
         elseif strcmp(answer, 'Replace')
             [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
         elseif strcmp(answer, 'Merge')
-            msgbox('Currently not implemented... Sorry !')
-            return
+            %msgbox('Currently not implemented... Sorry !')
+            %return
 %             while ~isempty(intersect(fieldnames(old_modules), Name_New_Mod))
 %                 Name_New_Mod = [handles.new_module.module_name, '_', num2str(j)];
 %                 j=j+1;
@@ -3258,7 +3258,28 @@ if tf == 0
     return
 end
 PipelineName = list.mat{indx};
-pipeline = load([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines', filesep, PipelineName]);
+pipeline_loaded = load([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines', filesep, PipelineName]);
+
+if exist('answer', 'var') && strcmp(answer, 'Merge')
+    Names_old = fieldnames(handles.MP3_pipeline_ParamsModules); % Existing Pipeline
+    Names_loaded = fieldnames(pipeline_loaded); % Loaded Pipeline
+    New_pipeline = handles.MP3_pipeline_ParamsModules;
+    j=1;
+    for i=1:length(Names_loaded)
+        Names_loaded_new = Names_loaded{i};
+        while ~isempty(intersect(Names_old, Names_loaded_new))
+            Names_loaded_new = [Names_loaded{i}, '_', num2str(j)];
+            j=j+1;
+        end
+        New_pipeline.(Names_loaded_new) = pipeline_loaded.(Names_loaded{i});
+    end
+    pipeline = New_pipeline;
+else
+    pipeline = pipeline_loaded;
+end
+    
+
+
 Modules = fieldnames(pipeline);
 for i=1:length(Modules)
     %% Delete all modules filters for now, as we don't really use them efficiently.
