@@ -3341,7 +3341,8 @@ guidata(hObject, handles);
 
 function [hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles)
 
-
+set(handles.MP3_pipeline_manager_GUI, 'pointer', 'watch');
+drawnow;
 
 pipeline = handles.MP3_pipeline_ParamsModules;
 Modules = fieldnames(pipeline);
@@ -3404,6 +3405,8 @@ set(handles.MP3_pipeline_pipeline_listbox,'String', Coloredlistbox);
 %set(handles.MP3_pipeline_pipeline_listbox,'String', fieldnames(handles.MP3_pipeline_ParamsModules));
 set(handles.MP3_pipeline_pipeline_listbox,'Value', 1);
 [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+
+set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
 guidata(hObject, handles);
 
 
