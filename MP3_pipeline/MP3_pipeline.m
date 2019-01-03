@@ -295,6 +295,7 @@ end
 [new_pipeline, output_database] = MP3_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MP3_pipeline_TmpDatabase, handles.MP3_data.database.Properties.UserData.MP3_data_path, 1);
 
 if isempty(fieldnames(new_pipeline)) && isempty(output_database)
+    set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
     return
 end
 
@@ -1658,6 +1659,7 @@ for i=1:NbScanInput
         pipeline = struct();
         text = ['Please select at least one parameter (Input ',num2str(i),').'];
         warndlg(text)
+        set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
         return
     end
     DatabaseInput{i} = Databtmp;
@@ -1715,6 +1717,7 @@ for i=1:length(ScanInputs)
         end
         pipeline = struct();
         output_database = table();
+        set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
         return
     end
 end
@@ -1816,6 +1819,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                 case 'Return'
                     output_database = table();
                     pipeline = struct();
+                    set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
                     return
             end
         elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
