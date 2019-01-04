@@ -4284,7 +4284,12 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMP3]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
-MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem'}) %add lookAndFeel option
+MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 100'}) %add lookAndFeel option and ExportOption
+%MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 000'})
+% [ExportOption] 000 : When Brucker merge calculated scans in an only one
+% file, leave the scans merged
+% [ExportOption] 100 : When Brucker merge calculated scans in an only one
+% file, split the merged file into several files.
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MP3_tmp_folder_for_java, {' '}, namExport)));
