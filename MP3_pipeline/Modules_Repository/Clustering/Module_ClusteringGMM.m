@@ -469,7 +469,8 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     
     if k == 0
         warndlg('Cannot find an optimal number of cluster, try again and test higher numbers of clusters','Cannot find a number of clusters');
-        return
+        error('Cannot find an optimal number of cluster, try again and test higher numbers of clusters');
+        %return
     end
     gmfit = modeles{k};
 else
