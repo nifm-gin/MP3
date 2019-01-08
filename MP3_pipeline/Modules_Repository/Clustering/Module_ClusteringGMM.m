@@ -47,7 +47,7 @@ if isempty(opt)
         'This option allows to determine the optimal number of clusters of your data. Several models are tested, from 1 to a certain number of clusters (The following parameter) and the best one is chosen.'};
     user_parameter(:,6)   = {'   .Number of clusters','char','','NbClusters','','',...
         'Number of clusters in which will be sorted the data. If the slope heuristic parameter is set to ''yes'', this number will represent the maximum number of clusters that will be tested by the algorithm.'};
-    user_parameter(:,7)   = {'   .Normalization Mode','cell',{'None', 'Patient by Patient', 'All Database'},'Normalization_mode','','',...
+    user_parameter(:,7)   = {'   .Normalization Mode','cell',{'None', 'All Database'},'Normalization_mode','','',...
         'This module will create one cluster type of file for each input scan. '};
     user_parameter(:,8)   = {'   .Clip','cell',{'No', 'Yes'},'Clip','','',...
         'This module will create one cluster type of file for each input scan. '};
@@ -325,9 +325,9 @@ for i=1:length(roi_files)
     Names_Groups = repmat({char(Name_Group)},size(Data,1),1);
     NameScans = [{'Group', 'Patient', 'Tp'}, NameScans];
     %Data(:,1) = [];
-    if size(Data, 2) ~= length(Files)
-        continue
-    end
+%     if size(Data, 2) ~= length(Files)
+%         continue
+%     end
     Data = [Names_Groups, Names_Patients, Names_TPs, num2cell(Data)];
     
     
