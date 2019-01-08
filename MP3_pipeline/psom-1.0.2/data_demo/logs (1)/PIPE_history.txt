@@ -1,0 +1,66 @@
+
+***********************************************************
+The pipeline PIPE is now being processed.
+Started on 25-Oct-2017 10:08:57
+user: GIN-Eq5, host: eduroam-064154.grenet.fr, system: unix
+***********************************************************
+25-Oct-2017 10:08:57 sample    submitted (1 run / 0 fail / 0 done / 3 left)
+25-Oct-2017 10:09:07 sample    completed (0 run / 0 fail / 1 done / 3 left)
+25-Oct-2017 10:09:07 quadratic submitted (1 run / 0 fail / 1 done / 2 left)
+25-Oct-2017 10:09:07 cubic     submitted (2 run / 0 fail / 1 done / 1 left)
+25-Oct-2017 10:09:17 quadratic completed (1 run / 0 fail / 2 done / 1 left)
+25-Oct-2017 10:09:17 cubic     completed (0 run / 0 fail / 3 done / 1 left)
+25-Oct-2017 10:09:17 sum       submitted (1 run / 0 fail / 3 done / 0 left)
+25-Oct-2017 10:09:28 sum       completed (0 run / 0 fail / 4 done / 0 left)
+
+*********************************************
+The processing of the pipeline is terminated.
+See report below for job completion status.
+25-Oct-2017 10:09:28
+*********************************************
+All jobs have been successfully completed.
+
+***********************************************************
+The pipeline PIPE is now being processed.
+Started on 25-Oct-2017 10:09:45
+user: GIN-Eq5, host: eduroam-064154.grenet.fr, system: unix
+***********************************************************
+25-Oct-2017 10:09:45 quadratic submitted (1 run / 0 fail / 2 done / 1 left)
+25-Oct-2017 10:09:45 quadratic failed    (0 run / 1 fail / 2 done / 1 left)
+
+*********************************************
+The processing of the pipeline is terminated.
+See report below for job completion status.
+25-Oct-2017 10:09:45
+*********************************************
+The execution of the following job has failed :
+
+    quadratic ; 
+
+More infos can be found in the individual log files. Use the following command to display these logs :
+
+    psom_pipeline_visu('/Users/Lemasson/GoogleDrive/matlab/MIA2/MIA_pipeline/psom-1.0.2/data_demo/logs/','log',JOB_NAME)
+
+The following job has not been processed due to a dependence on a failed job or the interruption of the pipeline manager :
+
+    sum ; 
+
+All jobs have been processed, but some jobs have failed.
+You may want to restart the pipeline latter if you managed to fix the problems.
+
+***********************************************************
+The pipeline PIPE is now being processed.
+Started on 25-Oct-2017 10:09:58
+user: GIN-Eq5, host: eduroam-064154.grenet.fr, system: unix
+***********************************************************
+25-Oct-2017 10:09:58 quadratic submitted (1 run / 0 fail / 2 done / 1 left)
+25-Oct-2017 10:09:58 quadratic completed (0 run / 0 fail / 3 done / 1 left)
+25-Oct-2017 10:09:58 sum       submitted (1 run / 0 fail / 3 done / 0 left)
+25-Oct-2017 10:09:58 sum       completed (0 run / 0 fail / 4 done / 0 left)
+
+*********************************************
+The processing of the pipeline is terminated.
+See report below for job completion status.
+25-Oct-2017 10:09:58
+*********************************************
+All jobs have been successfully completed.

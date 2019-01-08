@@ -5,15 +5,15 @@ function data_selected = finddata_selected(handles)
 % scan of the same patient and the same TP.
 
 
-patient_seleted = get(handles.MIA_name_list, 'String');
-patient_seleted = patient_seleted(get(handles.MIA_name_list, 'Value'),:);
-time_point_seleted = get(handles.MIA_time_points_list, 'String');
-time_point_seleted = time_point_seleted(get(handles.MIA_time_points_list, 'Value'),:);
-scan_seleted = get(handles.MIA_scans_list, 'String');
+patient_seleted = get(handles.MP3_name_list, 'String');
+patient_seleted = patient_seleted(get(handles.MP3_name_list, 'Value'),:);
+time_point_seleted = get(handles.MP3_time_points_list, 'String');
+time_point_seleted = time_point_seleted(get(handles.MP3_time_points_list, 'Value'),:);
+scan_seleted = get(handles.MP3_scans_list, 'String');
 if isempty(scan_seleted) && ~isempty(time_point_seleted)
     scan_seleted = 1;
 else
-    scan_seleted= scan_seleted(get(handles.MIA_scans_list, 'Value'),:);
+    scan_seleted= scan_seleted(get(handles.MP3_scans_list, 'Value'),:);
 end
 
 data_selected = nan(size(patient_seleted,1) + size(time_point_seleted,1) +size(scan_seleted,1) - 2,1);
