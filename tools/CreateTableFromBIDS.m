@@ -160,11 +160,11 @@ for i=1:length(listPatients)
 end
 
 
-database.Properties.UserData.MIA_data_path = PathProject;
-database.Properties.UserData.MIA_Raw_data_path = [PathProject, 'Raw_data/'];
-database.Properties.UserData.MIA_Derived_data_path = [PathProject, 'Derived_data/'];
-database.Properties.UserData.MIA_ROI_path = [PathProject, 'ROI_data/'];
-database.Properties.UserData.db_filename = 'MIA_database.mat';
+database.Properties.UserData.MP3_data_path = PathProject;
+database.Properties.UserData.MP3_Raw_data_path = [PathProject, 'Raw_data/'];
+database.Properties.UserData.MP3_Derived_data_path = [PathProject, 'Derived_data/'];
+database.Properties.UserData.MP3_ROI_path = [PathProject, 'ROI_data/'];
+database.Properties.UserData.db_filename = 'MP3_database.mat';
 
 
 REF_BIDS_Folder = folderBIDS;
@@ -214,7 +214,7 @@ end
 
 
 if SaveDbFlag
-    save([PathProject, 'MIA_database.mat'], 'database')
+    save([PathProject, 'MP3_database.mat'], 'database')
 end
 
 

@@ -54,7 +54,7 @@ function FileHistory_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for FileHistory
 handles.output = hObject;
-handles.MIA_data = varargin{3};
+handles.MP3_data = varargin{3};
 
 [hObject, handles] = UpdateJobsList(hObject, handles);
 
@@ -156,7 +156,7 @@ end
 
 function [hObject, handles] = UpdateJobsList(hObject, handles)
     
-    handles.JSON = handles.MIA_data.data_loaded.Scan.json;
+    handles.JSON = handles.MP3_data.data_loaded.Scan.json;
     if ~isfield(handles.JSON, 'Bricks')
         set(handles.Filename, 'String', {'No History available for this file. Might be raw data or the processing has not be made in the Pipeline Manager.'});
         set(handles.FileHistory_JobsListbox, 'String', {''});
@@ -167,7 +167,7 @@ function [hObject, handles] = UpdateJobsList(hObject, handles)
         set(handles.FileHistory_JobsValuesListbox, 'Value', 1);
         return
     end
-    Filename = handles.MIA_data.data_loaded.Scan.V.fname;
+    Filename = handles.MP3_data.data_loaded.Scan.V.fname;
     Parts = strsplit(Filename, filesep);
     ShortFilename = strjoin(Parts(end-1:end), filesep);
     set(handles.Filename, 'String', {ShortFilename});

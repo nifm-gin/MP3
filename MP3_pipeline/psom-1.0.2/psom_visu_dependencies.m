@@ -74,8 +74,8 @@ if exist('biograph')
     bg = biograph(graph_deps,list_jobs);
     dolayout(bg);
     %% add by BL
-    set(bg, 'NodeCallbacks', @(hObject,eventdata)MIA_pipeline('node_callbacks',hObject));
-    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MIA_pipeline('edge_callbacks',hObject));
+    set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
+    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
     %% 
     view(bg);
     file_tmp = '';

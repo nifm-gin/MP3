@@ -680,7 +680,7 @@ if pathname == 0
 else
     if exist(fullfile(pathname, filename)) ~= 2
         % The former name of MP3 is MIA. The following lines allow to open
-        % old projects withe the new software.
+        % old projects with the new software.
         if exist(fullfile(pathname, 'MIA_database.mat')) ~= 2
             errordlg('The folder you selected might be corrupt. Please select a folder containing a MP3_database.mat file.', 'Cannot open project');
             return
@@ -944,7 +944,7 @@ for i=1:numel(patient_listing)
     num_timepoint = num_timepoint+ numel(unique(handles.database.Tp(handles.database.Patient == patient_listing(i))));
 end
 Name_soft = 'Medical software for Processing multi-Parametric image Pipelines (Grenoble Institute of neurosciences - France)';
-Spl = strsplit(handles.database.Properties.UserData.MIA_data_path, filesep);
+Spl = strsplit(handles.database.Properties.UserData.MP3_data_path, filesep);
 Name_Projet = Spl{end-1};
 %old_title = get(handles.MP3_GUI, 'Name');
 title = [Name_soft, ' ; Projet : ', Name_Projet, ' ; ', num2str(numel(patient_listing)),...
