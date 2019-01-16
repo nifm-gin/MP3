@@ -13,14 +13,15 @@ if isempty(opt)
     module_option(:,2)   = {'flag_test',true};
     module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
     module_option(:,4)   = {'OutputSequenceName','Prefix'};
-    module_option(:,5)   = {'Interpolation','4th Degree B-Spline'};
-    module_option(:,6)   = {'Wrapping','No wrap'};
-    module_option(:,7)   = {'Masking','Dont mask images'};
-    module_option(:,8)   = {'output_filename_ext','r'};
-    module_option(:,9)   = {'RefInput',2};
-    module_option(:,10)   = {'InputToReshape',1};
-    module_option(:,11)   = {'Table_in', table()};
-    module_option(:,12)   = {'Table_out', table()};
+    module_option(:,5)   = {'Smoothing','No'};
+    module_option(:,6)   = {'Interpolation','4th Degree B-Spline'};
+    module_option(:,7)   = {'Wrapping','No wrap'};
+    module_option(:,8)   = {'Masking','Dont mask images'};
+    module_option(:,9)   = {'output_filename_ext','r'};
+    module_option(:,10)   = {'RefInput',2};
+    module_option(:,11)   = {'InputToReshape',1};
+    module_option(:,12)   = {'Table_in', table()};
+    module_option(:,13)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     %
     %% list of everything displayed to the user associated to their 'type'
@@ -47,20 +48,22 @@ if isempty(opt)
     user_parameter(:,3)   = {'Image to reslice','1Scan','','',{'SequenceName'},'Mandatory',...
         'This is the image is reslice to match to the reference.'};
     user_parameter(:,4)   = {'Parameters','','','','','',''};
-    user_parameter(:,5)   = {'    Reslice Options','', '','','','',...
+    user_parameter(:,5)   = {'    Pre-processing: Do you want to smooth your data first?','cell',{'No', 'Yes'},'Smoothing','','',...
+        'If the spatial resolution of the reference image is lower than the image to reslice we recommand to smooth the image to reslice (by selecting yes) before the reslicing'};
+    user_parameter(:,6)   = {'    Reslice Options','', '','','','',...
         {'Various registration options'
         'This branch contains 4 items:'
         '     Interpolation'
         '     Warpping'
         '     Masking'
         '     Filename prefix'}};
-    user_parameter(:,6)  = {'       .Interpolation','cell',{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'},'Interpolation','','',...
+    user_parameter(:,7)  = {'       .Interpolation','cell',{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'},'Interpolation','','',...
         'The method by which the images are sampled when being written in a different space. Nearest Neighbour is fastest, but not normally recommended. It can be useful for re-orienting images while preserving the original intensities (e.g. an image consisting of labels). Trilinear Interpolation is OK for PET, or realigned and re-sliced fMRI. If subject movement (from an fMRI time series) is included in the transformations then it may be better to use a higher degree approach. Note that higher degree B-spline interpolation is slower because it uses more neighbours.'};
-    user_parameter(:,7)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking','','',...
+    user_parameter(:,8)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking','','',...
         'Because of subject motion, different images are likely to have different patterns of zeros from where it was not possible to sample data. With masking enabled, the program searches through the whole time series looking for voxels which need to be sampled from outside the original images. Where this occurs, that voxel is set to zero for the whole set of images (unless the image format can represent NaN, in which case NaNs are used where possible).'};
-    user_parameter(:,8)  = {'       .Masking','cell',{'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'},'Wrapping','','',...
+    user_parameter(:,9)  = {'       .Masking','cell',{'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'},'Wrapping','','',...
         'These are typically: No wrapping - for PET or images that have already been spatially transformed.  Wrap in  Y  - for (un-resliced) MRI where phase encoding is in the Y direction (voxel space).'};
-    user_parameter(:,9)  = {'       .Filename prefix','char','','output_filename_ext','','',...
+    user_parameter(:,10)  = {'       .Filename prefix','char','','output_filename_ext','','',...
         'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''r''.'};
     
     
@@ -122,10 +125,40 @@ matlabbatch{1}.spm.spatial.coreg.write.ref = {[files_in.In1{1}, ',1']};
 % First duplicate the source scan because the output will be automatically
 % gererate in the same directory (/Tmp) and the fill the souce image to SPM
 % stucture
-%[~,name,ext] = fileparts(files_in.In2{1});
 source_filename = fullfile(char(opt.Table_out.Path),[char(opt.Table_in.Patient(2)), '_', char(opt.Table_in.Tp(2)),'_', char(opt.Table_in.SequenceName(2)),'.nii']);
-copyfile(files_in.In2{1},  source_filename)
-copyfile(strrep(files_in.In2{1},'.nii','.json'), strrep(source_filename, '.nii', '.json'))
+if ~strcmp(files_in.In2{1}, source_filename)
+    copyfile(files_in.In2{1},  source_filename)
+    copyfile(strrep(files_in.In2{1},'.nii','.json'), strrep(source_filename, '.nii', '.json'))
+end
+
+data_to_reslice = niftiread(source_filename);
+data_to_reslice_info = niftiinfo(source_filename);
+
+% % first, reshape the data if needed (in order to only have 3D data
+
+if length(data_to_reslice_info.ImageSize) > 4
+    data_to_reslice = reshape(data_to_reslice, [data_to_reslice_info.ImageSize(1:3) prod(data_to_reslice_info.ImageSize(4:end))]);
+    data_to_reslice_info_reshaped = data_to_reslice_info;
+    data_to_reslice_info_reshaped.ImageSize = [data_to_reslice_info.ImageSize(1:3) prod(data_to_reslice_info.ImageSize(4:end))];
+    data_to_reslice_info_reshaped.PixelDimensions = data_to_reslice_info.PixelDimensions(1:4);
+    
+    % overwrite the tmp file by the smoothed one
+    niftiwrite(data_to_reslice,source_filename, data_to_reslice_info_reshaped)
+end
+
+if strcmp(opt.Smoothing, 'Yes')
+    reference_image_info =  niftiinfo(files_in.In1{1});
+    % the sigma depends of both resolution (image to reslice and reference
+    % image) multiply by a factor 0.4
+    Sigma = (reference_image_info.PixelDimensions(1:3)./data_to_reslice_info.PixelDimensions(1:3) ) * 0.4;
+    for j=1:size(data_to_reslice,4)
+        data_to_reslice(:,:,:,j) = imgaussfilt3(data_to_reslice(:,:,:,j), Sigma);
+    end
+    % overwrite the tmp file by the smoothed one
+    niftiwrite(data_to_reslice,source_filename, data_to_reslice_info)
+
+end
+
 
 header = spm_vol(source_filename);
 if numel(header) > 1
@@ -203,6 +236,24 @@ spm_jobman('initcfg');
 spm_jobman('run', jobs, inputs{:});
 
 [path,name,ext] = fileparts(source_filename);
+
+% reshape data if needed (in case the dim > 4)
+
+data_smoothed = niftiread(fullfile(path, [opt.output_filename_ext, name,ext]));
+data_smoothed_info = niftiinfo(fullfile(path, [opt.output_filename_ext, name,ext]));
+%% reshap data if needed (if dim >4)
+if length(data_to_reslice_info.ImageSize) > 4
+    data_smoothed = reshape(data_smoothed, [data_smoothed_info.ImageSize(1:3) data_to_reslice_info.ImageSize(4:end)]);
+    data_smoothed_info.ImageSize = [data_smoothed_info.ImageSize(1:3) data_to_reslice_info.ImageSize(4:end)];
+    tmp = zeros([1 length(data_to_reslice_info.ImageSize)]);
+    tmp(1:length(data_smoothed_info.PixelDimensions))=data_smoothed_info.PixelDimensions ;
+    data_smoothed_info.PixelDimensions = tmp;
+    
+    % overwrite the tmp file by the smoothed one
+    niftiwrite(data_smoothed,fullfile(path, [opt.output_filename_ext, name,ext]), data_smoothed_info)
+end
+
+
 movefile(fullfile(path, [opt.output_filename_ext, name,ext]), files_out.In2{1});
 close(SPMinter)
 close(SPMgraph)
