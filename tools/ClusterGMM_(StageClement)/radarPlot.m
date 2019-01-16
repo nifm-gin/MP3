@@ -79,13 +79,15 @@ Th = (2*pi/M) * ((M:-1:0)'*ones(1,N));
 [X, Y] = pol2cart(Th, R);
 
 %h = plot(X, Y, varargin{:});
+Legend = cell(size(X,2),1);
 for i = 1:size(X,2)%/2
     hold on
     %h = plot(X(:,2*i-1),Y(:,2*i-1),'Color',Informations(1).Couleurs(i,:),'LineWidth',3);
     h = plot(X(:,i),Y(:,i),'Color',Couleurs(i,:),'LineWidth',3);
+    Legend{i} = ['Cluster ', num2str(i)]; 
 end
 warning off
-legend('Cluster1','Cluster2','Cluster3','Cluster4','Cluster5','Cluster6','Cluster7','Cluster8','Cluster9','Cluster10')
+legend(Legend)
 warning on
 axis([-1,1,-1,1])
 axis square

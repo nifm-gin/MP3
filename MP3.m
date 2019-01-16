@@ -1525,6 +1525,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
     end
 end
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
+slice_nbr = round(slice_nbr);
 % is zommed?
 if numel(get(handles.MP3_data1, 'Children')) ~=0 && ~strcmp(get(hObject, 'Tag'), 'MP3_orientation_space_popupmenu')
     origInfo = getappdata(handles.MP3_data1, 'matlab_graphics_resetplotview');
