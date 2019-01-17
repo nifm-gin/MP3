@@ -54,14 +54,14 @@ function Add_Tag_to_new_patient_GUI_OpeningFcn(hObject, eventdata, handles, vara
 
 % Choose default command line output for Add_Tag_to_new_patient_GUI
 handles.output = hObject;
-handles.MIA_data = varargin{1};
+handles.output_filename_data = varargin{1};
 info_patient = varargin{2};
 set(handles.IA_load_brucker_GUI_patient_name, 'String', char(info_patient{3}));
 % set popup menu
 id_list = {''}; tp_list = {''};
-if ~isempty(handles.MIA_data.database)
-    handles.id_list = [id_list cellstr(sort(unique(handles.MIA_data.database.Patient)))'];
-    handles.tp_list = [tp_list cellstr(sort(unique(handles.MIA_data.database.Tp)))'];
+if ~isempty(handles.output_filename_data.database)
+    handles.id_list = [id_list cellstr(sort(unique(handles.output_filename_data.database.Patient)))'];
+    handles.tp_list = [tp_list cellstr(sort(unique(handles.output_filename_data.database.Tp)))'];
 else
     handles.id_list = {''};
     handles.tp_list = {''};
