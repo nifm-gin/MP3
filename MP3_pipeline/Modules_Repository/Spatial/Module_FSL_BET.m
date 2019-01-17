@@ -85,7 +85,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Smoothing:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_FSL_BET','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% If the test flag is true, stop here !
@@ -112,6 +112,9 @@ cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.
 % execute the command
 system(cmd{:});
 
+% if ~exist strrep(files_out.In1{:}, '.nii', '_mask.nii.gz') 'file'
+%     error('Module_FSL_BET:brick','Module failed')
+% end
 %unzip the mask
 gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
 
