@@ -1525,8 +1525,10 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
     end
 end
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
-% update the slice number information on the GUI
+slice_nbr = round(slice_nbr);
+% update slice number displayed
 set(handles.MP3_slice_number, 'String', ['Slice ' num2str(slice_nbr) '/' num2str(get(handles.MP3_slider_slice, 'Max'))]);
+
 % is zommed?
 if numel(get(handles.MP3_data1, 'Children')) ~=0 && ~strcmp(get(hObject, 'Tag'), 'MP3_orientation_space_popupmenu')
     origInfo = getappdata(handles.MP3_data1, 'matlab_graphics_resetplotview');
