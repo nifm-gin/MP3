@@ -167,7 +167,8 @@ info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
-
+NewIm=int16(NewIm);
+info2.Datatype = class(NewIm);
 niftiwrite(NewIm, files_out.In1{1}, info2)
 
 J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
