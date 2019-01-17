@@ -937,9 +937,9 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') ||
 %     end
     
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
-    if isempty(handles.new_module.opt.table.Default{parameter_selected})
-        handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
-    else
+%     if isempty(handles.new_module.opt.table.Default{parameter_selected})
+%         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
+%     else
         A = handles.MP3_pipeline_parameter_setup_table.Data(:,2);
         A = A(~cellfun('isempty',A));
         %C = handles.new_module.opt.table.Default{parameter_selected};
@@ -966,7 +966,7 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
             end
             handles.new_module.opt.table.Default{parameter_selected} = DataToStore;
         end
-    end
+%     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 else
     handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data{1,1}); 
@@ -1500,7 +1500,10 @@ for i=1:length(handles.module_parameters_fields)
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
             else
-                Scan = handles.new_module.opt.table.Default{i}(cell2mat(handles.new_module.opt.table.Default{i}(:,2)),1);
+                Val = handles.new_module.opt.table.Default{i}(:,2);
+                Val = Val(~cellfun('isempty', Val'));
+                Scan = handles.new_module.opt.table.Default{i}(cell2mat(Val),1);
+                %Scan = handles.new_module.opt.table.Default{i}(cell2mat(handles.new_module.opt.table.Default{i}(:,2)),1);
             end
             if isempty(Scan)
                 ActualValues{i} = ' ';
@@ -1659,7 +1662,7 @@ for i=1:NbScanInput
         pipeline = struct();
         text = ['Please select at least one parameter (Input ',num2str(i),').'];
         warndlg(text)
-        set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
+        %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
         return
     end
     DatabaseInput{i} = Databtmp;
@@ -1717,7 +1720,7 @@ for i=1:length(ScanInputs)
         end
         pipeline = struct();
         output_database = table();
-        set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
+        %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
         return
     end
 end
@@ -1819,7 +1822,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                 case 'Return'
                     output_database = table();
                     pipeline = struct();
-                    set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
+                    %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
                     return
             end
         elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
