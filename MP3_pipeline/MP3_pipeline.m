@@ -937,9 +937,9 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') ||
 %     end
     
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
-    if isempty(handles.new_module.opt.table.Default{parameter_selected})
-        handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
-    else
+%     if isempty(handles.new_module.opt.table.Default{parameter_selected})
+%         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
+%     else
         A = handles.MP3_pipeline_parameter_setup_table.Data(:,2);
         A = A(~cellfun('isempty',A));
         %C = handles.new_module.opt.table.Default{parameter_selected};
@@ -966,7 +966,7 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
             end
             handles.new_module.opt.table.Default{parameter_selected} = DataToStore;
         end
-    end
+%     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 else
     handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data{1,1}); 
