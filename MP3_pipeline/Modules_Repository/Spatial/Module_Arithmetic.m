@@ -122,7 +122,7 @@ switch opt.Operation
         OutputImages = input2 - input1;
     case 'Multiplication (Between Scans)'
        
-        if sum(opt.Table_in.Type == 'ROI') > 0
+        if  sum(strcmp(cellstr(opt.Table_in.Type), 'ROI')) > 0 %sum(opt.Table_in.Type == 'ROI') > 0
             if length(size(input1)) > length(size(input2))
                 OutputImages = input1 .* repmat(input2, [1 1 1 size(input1,4) size(input1,5) size(input1,6) size(input1,7)]);    
             else
