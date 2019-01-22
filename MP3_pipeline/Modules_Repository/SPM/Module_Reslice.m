@@ -134,8 +134,7 @@ end
 data_to_reslice = niftiread(source_filename);
 data_to_reslice_info = niftiinfo(source_filename);
 
-% % first, reshape the data if needed (in order to only have 3D data
-
+% % first, reshape the data if needed (in order to only have 4D data)
 if length(data_to_reslice_info.ImageSize) > 4
     data_to_reslice = reshape(data_to_reslice, [data_to_reslice_info.ImageSize(1:3) prod(data_to_reslice_info.ImageSize(4:end))]);
     data_to_reslice_info_reshaped = data_to_reslice_info;
@@ -226,7 +225,7 @@ end
 matlabbatch{1}.spm.spatial.coreg.write.roptions.mask = 0;
 matlabbatch{1}.spm.spatial.coreg.write.roptions.prefix = opt.output_filename_ext;
 
-[SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
+%[SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
 jobs = repmat(matlabbatch, 1, 1);
 inputs = cell(0, 1);
 for crun = 1:1
@@ -255,6 +254,6 @@ end
 
 
 movefile(fullfile(path, [opt.output_filename_ext, name,ext]), files_out.In2{1});
-close(SPMinter)
-close(SPMgraph)
+% close(SPMinter)
+% close(SPMgraph)
 
