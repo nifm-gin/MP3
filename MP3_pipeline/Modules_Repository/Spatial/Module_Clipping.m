@@ -15,10 +15,11 @@ if isempty(opt)
     module_option(:,4)   = {'OutputSequenceName','Extension'};
     module_option(:,5)   = {'Clim_Min',0};
     module_option(:,6)   = {'Clim_Max',100};
-    module_option(:,7)   = {'RefInput',1};
-    module_option(:,8)   = {'InputToReshape',1};
-    module_option(:,9)   = {'Table_in', table()};
-    module_option(:,10)   = {'Table_out', table()};
+    module_option(:,7)   = {'Remplace_by','NaN'};
+    module_option(:,8)   = {'RefInput',1};
+    module_option(:,9)   = {'InputToReshape',1};
+    module_option(:,10)   = {'Table_in', table()};
+    module_option(:,11)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 % 
         %% list of everything displayed to the user associated to their 'type'
@@ -40,6 +41,8 @@ if isempty(opt)
     user_parameter(:,4)   = {'   .Output filename extension','char','_Clipped','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Clip Min','numeric',0,'Clim_Min','', '',''};
     user_parameter(:,6)   = {'   .Clip Max','numeric',100,'Clim_Max','', '',''};
+    user_parameter(:,7)   = {'   .Replace by?','cell',{'NaN', '0'}, 'Remplace_by','','', 'Please select the clipping method: do you want clipped voxels replaced by NaN or 0 value?'};
+
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %%
@@ -114,8 +117,8 @@ J = ReadJson(jsonfile);
 
 
 
-data(data<opt.Clim_Min) = NaN;
-data(data>opt.Clim_Max) = NaN;
+data(data<opt.Clim_Min) = 0;
+data(data>opt.Clim_Max) = 0;
 
 
 info2 = info;
