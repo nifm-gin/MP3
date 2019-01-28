@@ -388,12 +388,12 @@ VoxValues = table2array(Clust_Data_In(:,4:end));
 options = statset ( 'maxiter', 1000);
 if strcmp(opt.SlopeHeuristic, 'Yes')
     
-    % L'heuristique de pente utilise le coefficient directeur de le
-    % regression lin�aire de la vraisemblance en fonction du
+    % L'heuristique de pente utilise le coefficient directeur de la
+    % regression lineaire de la vraisemblance en fonction du
     % nombre de classes du modele. Afin d'avoir une regression
     % significative, on effectue cette regression sur au minimum 5 points.
     % Il faut donc calculer la vraisemblance sur 5 classes de plus que la
-    % derni�re � tester.
+    % derniere a tester.
     ptsheurist = str2double(opt.NbClusters) + 5;
     
     
@@ -409,7 +409,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
         %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
         %modele en modifiant l'initialisation. Le modele renvoye est celui
         %de plus grande vraisemblance.
-        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 3);
+        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 10);
         
         loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
         
@@ -419,7 +419,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     end
     NbCartes = size(VoxValues,2);
     
-    %Le vecteur alpha contient les coefficients directeurs des regresions
+    %Le vecteur alpha contient les coefficients directeurs des regressions
     %lineaires de la logvraisemblance en fonction du nombre de classes du
     %modele. Sa ieme composante contient le coefficient directeur de la
     %regression lineaire de la log vraisemblance en fonction du nombre de
@@ -452,7 +452,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     plot(eqbic.')
     [~,I] = nanmin(eqbic,2);  %Pour chacune des courbes de l'eqbic, l'indice pour lequel le minimum est atteint est considere comme etant le nombre optimal de clusters
     figure
-    plot(0:10,0:10,'r')
+    plot(0:str2double(opt.NbClusters),0:str2double(opt.NbClusters),'r')
     hold on
     plot(I,'b')
     k = 0;
