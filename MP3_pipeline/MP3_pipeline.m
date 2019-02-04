@@ -2067,11 +2067,11 @@ if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
             for l = 1:size(Dep,1)
                 Spl = strsplit(char(Mod.opt.Table_in.Path(Ia(l))), filesep);
                 if Mod.opt.Table_in.Type(Ia(l)) == 'ROI' || Mod.opt.Table_in.Type(Ia(l)) == 'Cluster'
-                    Spl{end-1} = 'ROI_Data';
+                    Spl{end-1} = 'ROI_data';
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '0'
-                    Spl{end-1} = 'Derived_Data';
+                    Spl{end-1} = 'Derived_data';
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '1'
-                    Spl{end-1} = 'Raw_Data';
+                    Spl{end-1} = 'Raw_data';
                 end
                 Mod.opt.Table_in.Path(Ia(l)) = categorical(cellstr(strjoin(Spl, filesep)));
                 InpN = fieldnames(Mod.files_in);
