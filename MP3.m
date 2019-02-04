@@ -4013,6 +4013,10 @@ selection = questdlg('What do you want to rename?',...
     'Warning',...
     'Parameters','VOIs', 'Cancel', 'Cancel');
 
+if isempty(selection)
+    return
+end
+
 switch selection
     case 'Parameters'
         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
