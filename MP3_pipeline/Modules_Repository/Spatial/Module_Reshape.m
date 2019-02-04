@@ -32,7 +32,7 @@ if isempty(opt)
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '', {'This module is used to extract a sub-stack from a nD scan'}};
-    user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select one scan as input','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .Output filename extension','char','_Reshape','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Dimenssion to reduce','cell',{'3','4','5'},'Dimenssion_to_reduce','', '','Plese select the dimenssion you would like to work on. For instance, select 4 (the forth dimenssion) if you want to reshape a MultiGradientEcho scan'};
@@ -111,7 +111,6 @@ info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 
-J = ReadJson(jsonfile);
 
 Informations = whos('N');
 axes = str2double(opt.Dimenssion_to_reduce);
@@ -171,6 +170,7 @@ NewIm=int16(NewIm);
 info2.Datatype = class(NewIm);
 niftiwrite(NewIm, files_out.In1{1}, info2)
 
+J = ReadJson(jsonfile);
 J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
 [path, name, ~] = fileparts(files_out.In1{1});
