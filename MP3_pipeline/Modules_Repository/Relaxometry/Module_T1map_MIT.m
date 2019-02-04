@@ -263,7 +263,11 @@ if ( ~isempty(regexpi(T1map_method,'\w*fair\w*')) &&...
     
     % inversion time
     %FairTIR_Arr=(scan_acqp('FairTIR_Arr=',data.texte,1))';
-    FairTIR_Arr = J.FairTIRArr.value.';
+    if ~isfield(J, 'FairTIRArr')
+        FairTIR_Arr = J.FairTIRArrPVM.value.';
+    else
+        FairTIR_Arr = J.FairTIRArr.value.';
+    end
     InvTimeRaw = FairTIR_Arr(first_scan:end);   % liste  des temps inversion pour la methode fair
     InvTimeRaw = repmat(InvTimeRaw,NumFairMode,1);            % premiere ligne selective deuxieme nonselective si les deux mesures sont faites
 elseif( ~isempty(regexpi(T1map_method,'\w*fair\w*')) &&...

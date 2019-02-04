@@ -3762,7 +3762,7 @@ end
 
 selection = questdlg('What do you want to delete?',...
     'Warning',...
-    'Parameters','VOIs', 'Cancel', 'Cancel');
+    'Parameters','VOIs', 'Cluster', 'Parameters');
 
 switch selection
     case 'Parameters'
@@ -3775,6 +3775,12 @@ switch selection
         name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
         if isempty(name_option)
             warndlg('There are no ROI in the database', 'Warning');
+            return
+        end
+    case 'Cluster'
+        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Cluster')));
+        if isempty(name_option)
+            warndlg('There are no Cluster in the database', 'Warning');
             return
         end
     case 'Cancel'

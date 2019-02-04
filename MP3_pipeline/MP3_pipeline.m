@@ -1953,6 +1953,12 @@ if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_
     end
 end
 
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data']);
+    if status == false
+        error('Cannot create the ROI_Data folder to save the results of the computed maps.')
+    end
+end
 
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp']);
