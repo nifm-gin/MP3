@@ -11,14 +11,13 @@ if isempty(opt)
     %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'Clustering_model_path','Please enter the path of the clustering model to apply'};
-    module_option(:,4)   = {'output_cluster_Name','Name of the cluster generated'};
+    module_option(:,3)   = {'Clustering_model',''};
+    module_option(:,4)   = {'Output_cluster_Name','Name_of_the_cluster_generated'};
     module_option(:,5)   = {'Classification_threshold', 0};
-    module_option(:,6)   = {'AutomaticJobsCreation', 'No'};
-    module_option(:,7)   = {'RefInput',2};
-    module_option(:,8)   = {'InputToReshape',2};
-    module_option(:,9)   = {'Table_in', table()};
-    module_option(:,10)   = {'Table_out', table()};
+    module_option(:,6)   = {'RefInput',2};
+    module_option(:,7)   = {'InputToReshape',2};
+    module_option(:,8)   = {'Table_in', table()};
+    module_option(:,9)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     %
     %% list of everything displayed to the user associated to their 'type'
@@ -40,12 +39,17 @@ if isempty(opt)
     user_parameter(:,3)   = {'ROI','1ROI','','',{'SequenceName'},'Mandatory',...
         'This ROI will select the pixels to apply the module to.'};
     user_parameter(:,4)   = {'Parameters','','','','','',''};
-    user_parameter(:,5)   = {'   .Path of the clustering model','char','Please enter the path of the clustering model to apply','Clustering_model_path','','',...
-        'Please enter the path of the clustering model to apply'};
+    handles_MP3 = guidata(findobj('Tag', 'MP3_GUI'));
+    Cluster_listing    = dir(strcat(handles_MP3.database.Properties.UserData.MP3_ROI_path, '*.mat*'));
+    if isempty(Cluster_listing)
+        Cluster_listing(1).name = ' ';
+    end
+    user_parameter(:,5)   = {'   .Select a clustering model','cell', {Cluster_listing.name}, 'Clustering_model','','',...
+                {'Please a clustering model amoung the ones already generated'}};
     user_parameter(:,6)   = {'   .Threshold to apply to the classification','numeric',0,'Classification_threshold','','',...
         {'Threshold of the classification above witch the classifecation is validated'
-        'For instance only voxel above 90% of correct classification is classify'}};
-    user_parameter(:,7)   = {'   .Name of the resulting cluster','char','','output_cluster_Name','','',...
+        'For instance, O means that every voxel above 0% of correct classification is classify --> meaning no threshold'}};
+    user_parameter(:,7)   = {'   .Name of the resulting cluster','char','','Output_cluster_Name','','',...
         'This module will create one cluster type of file for each input scan. '};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional', 'Help'};
@@ -61,62 +65,73 @@ if isempty(opt)
     
 end
 %%%%%%%%
+% 
+% Tag1 = 'Patient';
+% Tag2 = 'Tp';
+% Table_out = table();
+% if strcmp(files_out, '')
+%     databScans = opt.Table_in(opt.Table_in.Type == categorical(cellstr('Scan')),:);
+%     databROIs = opt.Table_in(opt.Table_in.Type == categorical(cellstr('ROI')),:);
+%     UTag1 = unique(databScans.(Tag1));
+%     UTag2 = unique(databScans.(Tag2));
+%     out_file = {};
+%     in_files = {};
+%     Tailles = [];
+%     for i=1:length(UTag1)
+%         for j=1:length(UTag2)
+%             datab = databScans(databScans.(Tag1) == UTag1(i),:);
+%             datab = datab(datab.(Tag2) == UTag2(j),:);
+%             Tailles = [Tailles size(datab,1)];
+%         end
+%     end
+%     MaxTaille = max(Tailles);
+%     TailleBin = Tailles == MaxTaille;
+%     ind = 0;
+%     
+%     for i=1:length(UTag1)
+%         for j=1:length(UTag2)
+%             ind = ind+1;
+%             if TailleBin(ind)
+%                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
+%                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
+%                 if size(DbRois, 1) == 0
+%                     continue
+%                 end
+%                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
+%                 datab = datab(datab.(Tag2) == UTag2(j),:);
+%                 %                 fi = cell(size(datab,1),1);
+%                 %                 for k=1:size(datab,1)
+%                 %                     fi{k} = [char(datab.Path(k)), char(datab.Patient(k)), '_', char(datab.Tp(k)), '_', char(datab.SequenceName(k)), '.nii'];
+%                 %                 end
+%                 %                 in_files = [in_files ; fi];
+%                 tags = databScans(1,:);
+%                 tags.Patient = UTag1(i);
+%                 tags.Tp = UTag2(j);
+%                 tags.Type = categorical(cellstr('Cluster'));
+%                 tags.IsRaw = categorical(1);
+%                 Cluster_path = opt.folder_out; % strrep(opt.folder_out, 'Derived_data', 'ROI_data');
+%                 tags.Path = categorical(cellstr([Cluster_path, filesep]));
+%                 tags.SequenceName = categorical(cellstr([opt.Output_cluster_Name]));
+%                 tags.Filename = categorical(cellstr([char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName)]));
+%                 f_out = [char(tags.Path), char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName), '.nii'];
+%                 out_file = [out_file ; {f_out}];
+%                 Table_out = [Table_out ; tags];
+%             end
+%         end
+%     end
+%     files_out.In1 = out_file;
+%     opt.Table_out = Table_out;
+% end
 
-Tag1 = 'Patient';
-Tag2 = 'Tp';
-Table_out = table();
-if strcmp(files_out, '')
-    databScans = opt.Table_in(opt.Table_in.Type == categorical(cellstr('Scan')),:);
-    databROIs = opt.Table_in(opt.Table_in.Type == categorical(cellstr('ROI')),:);
-    UTag1 = unique(databScans.(Tag1));
-    UTag2 = unique(databScans.(Tag2));
-    out_file = {};
-    in_files = {};
-    Tailles = [];
-    for i=1:length(UTag1)
-        for j=1:length(UTag2)
-            datab = databScans(databScans.(Tag1) == UTag1(i),:);
-            datab = datab(datab.(Tag2) == UTag2(j),:);
-            Tailles = [Tailles size(datab,1)];
-        end
-    end
-    MaxTaille = max(Tailles);
-    TailleBin = Tailles == MaxTaille;
-    ind = 0;
-    
-    for i=1:length(UTag1)
-        for j=1:length(UTag2)
-            ind = ind+1;
-            if TailleBin(ind)
-                DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
-                DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
-                if size(DbRois, 1) == 0
-                    continue
-                end
-                datab = databScans(databScans.(Tag1) == UTag1(i),:);
-                datab = datab(datab.(Tag2) == UTag2(j),:);
-                %                 fi = cell(size(datab,1),1);
-                %                 for k=1:size(datab,1)
-                %                     fi{k} = [char(datab.Path(k)), char(datab.Patient(k)), '_', char(datab.Tp(k)), '_', char(datab.SequenceName(k)), '.nii'];
-                %                 end
-                %                 in_files = [in_files ; fi];
-                tags = databScans(1,:);
-                tags.Patient = UTag1(i);
-                tags.Tp = UTag2(j);
-                tags.Type = categorical(cellstr('Cluster'));
-                tags.IsRaw = categorical(1);
-                Cluster_path = opt.folder_out; % strrep(opt.folder_out, 'Derived_data', 'ROI_data');
-                tags.Path = categorical(cellstr([Cluster_path, filesep]));
-                tags.SequenceName = categorical(cellstr([opt.output_cluster_Name]));
-                tags.Filename = categorical(cellstr([char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName)]));
-                f_out = [char(tags.Path), char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName), '.nii'];
-                out_file = [out_file ; {f_out}];
-                Table_out = [Table_out ; tags];
-            end
-        end
-    end
-    files_out.In1 = out_file;
-    opt.Table_out = Table_out;
+if isempty(files_out)
+    opt.Table_out = opt.Table_in(1,:);
+    opt.Table_out.IsRaw = categorical(0);   
+    opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
+    opt.Table_out.SequenceName = categorical(cellstr(opt.Output_cluster_Name));
+    opt.Table_out.Type = categorical(cellstr('Cluster'));
+    opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
+    f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
+    files_out.In1{1} = f_out;
 end
 
 
@@ -144,7 +159,8 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+Tag1 = 'Patient';
+Tag2 = 'Tp';
 
 databScans = opt.Table_in(opt.Table_in.Type == categorical(cellstr('Scan')),:);
 databROIs = opt.Table_in(opt.Table_in.Type == categorical(cellstr('ROI')),:);
@@ -282,7 +298,8 @@ end
 
 
 %% apply trained model
-trainedModel_loaded = load(opt.Clustering_model_path);
+trainedModel_loaded = load(strcat(strrep(opt.folder_out, 'Tmp', 'ROI_data'), filesep, opt.Clustering_model));
+
 VariableNames = Clust_Data_In.Properties.VariableNames;
 exit = 0;
 if isfield(trainedModel_loaded, 'Informations')
@@ -298,9 +315,65 @@ if isfield(trainedModel_loaded, 'Informations')
         for i = 1:length(PredictorNames)
             data(:,i) = Clust_Data_In.(PredictorNames{i}); % 1='Group'; 2 = 'Patient' and 3 = 'Tp'
         end
-        [ClusteredVox, ~, score] = cluster(trainedModel, data);
-        ClusteredVox(max(score, [], 2) < (opt.Classification_threshold/100)) = 0;
-        Clust_Data_In.Cluster = ClusteredVox;        
+        % Normalize data if needed. We used the mean +/- SD value used to generate the model 
+        if isfield(trainedModel_loaded.Informations, 'NanMean_VoxValues')
+%             data = (data-trainedModel_loaded.Informations.NanMean_VoxValues)./trainedModel_loaded.Informations.NanStd_VoxValues;
+            data = (data-nanmean(data))./nanstd(data);
+            
+        end
+        
+        %[IDX,NLOGL,POST,LOGPDF,MAHALAD] = CLUSTER(OBJ,X)
+        [ClusteredVox,NLOGL,POST,LOGPDF,MAHALAD]= cluster(trainedModel, data);
+       
+        if opt.Classification_threshold ~= 0
+            opt.NbClusters = 5;
+            opt.Number_of_replicate = 3;
+            options = statset ( 'maxiter', 1000);
+            
+            % split abdnomaly in 2
+             modeles_LOGPDF_k2 = fitgmdist(LOGPDF, 2, 'Options', options, 'Regularize', 1e-5, 'Replicates',  opt.Number_of_replicate);
+             abnormality_separation =  cluster(modeles_LOGPDF_k2, LOGPDF);
+             % find the cluster with the lowest log-score. This cluster
+             % corresponds to the les adequacy wirht the reference model
+             % --> abdormal voxels
+            ClusteredVox(abnormality_separation == find(modeles_LOGPDF_k2.mu == max(modeles_LOGPDF_k2.mu))) = 0;
+            
+            %% code to find tune the number of abnormality classes
+%  
+%             ptsheurist = opt.NbClusters + 5;
+%             
+%             
+%             %Vecteur pour stocker la logvraisemblance
+%             loglike = zeros(1,ptsheurist);
+%             
+%             %On stocke les modeles calcules pour ne pas avoir a les recalculer une
+%             %fois le nombre de classes optimal trouve.
+%             modeles = cell(1,ptsheurist);
+%             Number_of_replicate = opt.Number_of_replicate;
+%             % find the number of abnormality classes
+%             for kk=1:10
+%                 %La ligne suivante permet uniquement de suivre l'avancement du
+%                 %calcul des modeles
+%                 disp(strcat('Modele_', num2str(kk), '_started'))
+%                 %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
+%                 %modele en modifiant l'initialisation. Le modele renvoye est celui
+%                 %de plus grande vraisemblance.
+%                 modeles_LOGPDF_kn{kk} = fitgmdist(LOGPDF, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
+%                 
+%                 loglike(kk) = -modeles_LOGPDF_kn{kk}.NegativeLogLikelihood;
+%                 
+%                 %La ligne suivante permet uniquement de suivre l'avancement du
+%                 %calcul des modeles
+%                 disp(strcat('Modele_', num2str(kk), '_done'))
+%             end
+            
+%             
+%             
+%             gmfit_LOGPDF = fitgmdist(LOGPDF, opt.NbClusters, 'Options', options, 'Regularize', 1e-5, 'Replicates',opt.Number_of_replicate);
+%             Cluster_LOGPDF = cluster(gmfit_LOGPDF, LOGPDF);
+%             
+        end
+        Clust_Data_In.Cluster = ClusteredVox;
     end
     
 else
@@ -318,7 +391,7 @@ else
     end
     
     [ClusteredVox, score] = trainedModel.predictFcn(data);
-    ClusteredVox(max(score, [], 2) < (opt.Classification_threshold/100)) = 0;
+    ClusteredVox(max(score, [], 2) < (opt.Classification_threshold/100)) =  max(ClusteredVox)+1; %0;
     
     Clust_Data_In.Cluster = ClusteredVox;
 end
