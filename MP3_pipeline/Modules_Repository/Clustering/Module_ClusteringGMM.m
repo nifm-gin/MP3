@@ -11,17 +11,17 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    %module_option(:,4)   = {'OutputSequenceName','Prefix'};
     module_option(:,3)   = {'SlopeHeuristic', 'No'};
-    module_option(:,4)   = {'NbClusters','5'};
+    module_option(:,4)   = {'NbClusters',5};
     module_option(:,5)   = {'Normalization_mode', 'None'};
-    module_option(:,6)   = {'Clip', 'No'};
+    module_option(:,6)   = {'Percentage_of_the_data_used', 100};
     module_option(:,7)   = {'output_cluster_Name','Clust_GMM'};
-    module_option(:,8)   = {'AutomaticJobsCreation', 'No'};
-    module_option(:,9)   = {'RefInput',2};
-    module_option(:,10)   = {'InputToReshape',2};
-    module_option(:,11)   = {'Table_in', table()};
-    module_option(:,12)   = {'Table_out', table()};
+    module_option(:,8)   = {'Number_of_replicate',10};
+    module_option(:,9)   = {'AutomaticJobsCreation', 'No'};
+    module_option(:,10)   = {'RefInput',2};
+    module_option(:,11)   = {'InputToReshape',2};
+    module_option(:,12)   = {'Table_in', table()};
+    module_option(:,13)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
         %% list of everything displayed to the user associated to their 'type'
@@ -45,13 +45,16 @@ if isempty(opt)
     user_parameter(:,4)   = {'Parameters','','','','','',''};
     user_parameter(:,5)   = {'   .Slope Heuristic','cell',{'No', 'Yes'},'SlopeHeuristic','','',...
         'This option allows to determine the optimal number of clusters of your data. Several models are tested, from 1 to a certain number of clusters (The following parameter) and the best one is chosen.'};
-    user_parameter(:,6)   = {'   .Number of clusters','char','','NbClusters','','',...
+    user_parameter(:,6)   = {'   .Number of clusters','numeric',5,'NbClusters','','',...
         'Number of clusters in which will be sorted the data. If the slope heuristic parameter is set to ''yes'', this number will represent the maximum number of clusters that will be tested by the algorithm.'};
     user_parameter(:,7)   = {'   .Normalization Mode','cell',{'None', 'All Database'},'Normalization_mode','','',...
         'This module will create one cluster type of file for each input scan. '};
-    user_parameter(:,8)   = {'   .Clip','cell',{'No', 'Yes'},'Clip','','',...
-        'This module will create one cluster type of file for each input scan. '};
-    user_parameter(:,9)   = {'   .Name of the resulting cluster','char','','output_cluster_Name','','',...
+    user_parameter(:,8)   = {'   .Percentage of the data used','numeric',100,'Percentage_of_the_data_used','','',...
+        {'If you would like to learn only on a subpart of the data you can decrease the percentage to the voxels used to learn (for instance 50%)'
+        'The algorithm will collect voxels randomly'}};
+    user_parameter(:,9)   = {'   .Number of replicate per iteration','numeric',10,'Number_of_replicate','','',...
+        'Please select the number of time you would like to replicate the clustering per iteration; For more inforamtion cf. fitgmdist function'};
+    user_parameter(:,10)   = {'   .Name of the resulting cluster','char','','output_cluster_Name','','',...
         'This module will create one cluster type of file for each input scan. '};
 
 
@@ -318,8 +321,17 @@ for i=1:length(roi_files)
             end
         end
     end
-    VecVoxToDelete{i} = sum(isnan(Data),2)~=0;
-    Data(VecVoxToDelete{i},:) = []; % Exclude any voxel that have at least one NaN parameter.
+    %VecVoxToDelete{i} = sum(isnan(Data),2)~=0;
+    VecVoxToDelete{i} = find(sum(isnan(Data),2)~=0);
+    VecVoxToKeep{i} = find(~sum(isnan(Data),2)~=0);
+    %% if Percentage_of_the_data_used is set below 100% select randomly the percentage of voxels asked
+    if opt.Percentage_of_the_data_used ~=100
+        rand_to_delete = randsample([1:size(VecVoxToKeep{i},1)],round(size(VecVoxToKeep{i},1) * ((100-opt.Percentage_of_the_data_used)/100))); %#ok<NBRAK>
+        VecVoxToDelete{i} = [VecVoxToDelete{i}; VecVoxToKeep{i}(rand_to_delete)];
+        VecVoxToKeep{i}(rand_to_delete) = [];
+    end
+    Data(VecVoxToDelete{i},:) = []; % Exclude any voxel that have at least one NaN parameter and randomly selected if needed.
+
     Names_Patients = repmat({char(Name_Patient)},size(Data,1),1);
     Names_TPs = repmat({char(Name_TP)},size(Data,1),1);
     Names_Groups = repmat({char(Name_Group)},size(Data,1),1);
@@ -355,7 +367,11 @@ for i=1:length(All_Data)
     end
     All_Data_Clean = [All_Data_Clean, All_Data(i)];
     ROI_Clean = [ROI_Clean, ROI(i)];
+    %
     VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete{i}];
+    %VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete];
+
+    
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
     ROI_nifti_header_Clean = [ROI_nifti_header_Clean, ROI_nifti_header{i}];
 end
@@ -366,19 +382,19 @@ end
 % Clust_Data_In(:,3:end) = array2table(VoxValues);
 %%
 
-if strcmp(opt.Normalization_mode, 'All database')
+% %% if Percentage_of_the_data_used is set below 100% select randomly the percentage of voxels asked
+% if opt.Percentage_of_the_data_used ~=100
+%     r = randsample([1:size(Clust_Data_In,1)],round(size(Clust_Data_In,1) * ((100-opt.Percentage_of_the_data_used)/100))); %#ok<NBRAK>
+%     Clust_Data_In(r,:) = [];
+% end
+
+if strcmp(opt.Normalization_mode, 'All Database')
+   
     VoxValues = table2array(Clust_Data_In(:,4:end));
-%     Mean = nanmean(Data);
-%     STD = nanstd(Data);
-    VoxValues = (VoxValues-nanmean(VoxValues))./nanstd(VoxValues);
-%     for i=1:numel(All_Pameter_list)
-%         para_name = char(All_Pameter_list(i));
-%         para_name = clean_variable_name(para_name);
-%         eval(['tmp_mean = nanmean(data_in_table.' para_name ');']);
-%         eval(['tmp_std = nanstd(data_in_table.' para_name ');']);
-%         eval(['data_in_table.' para_name '=(data_in_table.' para_name ' - tmp_mean )/ tmp_std;']);
-%     end
-    Clust_Data_In(:,3:end) = array2table(VoxValues);
+    NanMean_VoxValues = nanmean(VoxValues);
+    NanStd_VoxValues = nanstd(VoxValues);
+    VoxValues = (VoxValues-NanMean_VoxValues)./NanStd_VoxValues;
+    Clust_Data_In(:,4:end) = array2table(VoxValues);
 end
 
 VoxValues = table2array(Clust_Data_In(:,4:end));
@@ -394,7 +410,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     % significative, on effectue cette regression sur au minimum 5 points.
     % Il faut donc calculer la vraisemblance sur 5 classes de plus que la
     % derniere a tester.
-    ptsheurist = str2double(opt.NbClusters) + 5;
+    ptsheurist = opt.NbClusters + 5;
     
     
     %Vecteur pour stocker la logvraisemblance
@@ -403,19 +419,21 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %On stocke les modeles calcules pour ne pas avoir a les recalculer une
     %fois le nombre de classes optimal trouve.
     modeles = cell(1,ptsheurist);
-    
-    for kk=1:ptsheurist
-        
+    Number_of_replicate = opt.Number_of_replicate;
+    parfor kk=1:ptsheurist
+        %La ligne suivante permet uniquement de suivre l'avancement du
+        %calcul des modeles
+        disp(strcat('Modele_', num2str(kk), '_started'))
         %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
         %modele en modifiant l'initialisation. Le modele renvoye est celui
         %de plus grande vraisemblance.
-        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', 10);
+        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
         
         loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
         
         %La ligne suivante permet uniquement de suivre l'avancement du
         %calcul des modeles
-        disp(strcat('Modele_', num2str(kk)))
+         disp(strcat('Modele_', num2str(kk), '_done'))
     end
     NbCartes = size(VoxValues,2);
     
@@ -424,7 +442,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %modele. Sa ieme composante contient le coefficient directeur de la
     %regression lineaire de la log vraisemblance en fonction du nombre de
     %classes du modele en ne prenant pas en compte les i-1 premiers points.
-    alpha = zeros(str2double(opt.NbClusters),2);
+    alpha = zeros(opt.NbClusters,2);
     
     %Le vecteur eqbic contient pour chaque valeur alpha l'equivalent BIC
     %applique a chaque valeur de la log vraisemblance. On obtient donc une
@@ -432,13 +450,13 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     %chaque valeur de la log vraisemblance pour une valeur de alpha. On
     %passe ainsi d'une ligne a l'autre en modifiant alpha. Dans l'optique
     %de tracer les courbes uniquement a partir du point i, la matrice est initialisee a la valeur NaN.
-    eqbic = NaN(str2double(opt.NbClusters),length(loglike));
+    eqbic = NaN(opt.NbClusters,length(loglike));
     
     %Le vecteur eqbic2 est similaire au vecteur eqbic mais avec un autre
     %critere.
-    eqbic2 = NaN(str2double(opt.NbClusters),length(loglike));
+    eqbic2 = NaN(opt.NbClusters,length(loglike));
     
-    for j = 1:str2double(opt.NbClusters)
+    for j = 1:opt.NbClusters
         %La regression lineaire
         alpha(j,:) = polyfit(j:ptsheurist,loglike(j:end),1);
         for i=j:length(loglike)
@@ -452,7 +470,7 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     plot(eqbic.')
     [~,I] = nanmin(eqbic,2);  %Pour chacune des courbes de l'eqbic, l'indice pour lequel le minimum est atteint est considere comme etant le nombre optimal de clusters
     figure
-    plot(0:str2double(opt.NbClusters),0:str2double(opt.NbClusters),'r')
+    plot(0:opt.NbClusters,0:opt.NbClusters,'r')
     hold on
     plot(I,'b')
     k = 0;
@@ -468,29 +486,18 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     end
     
     if k == 0
-        warndlg('Cannot find an optimal number of cluster, try again and test higher numbers of clusters','Cannot find a number of clusters');
-        error('Cannot find an optimal number of cluster, try again and test higher numbers of clusters');
+        warndlg('Cannot find an optimal number of cluster, try again and test higher numbers of clusters','Cannot find a number of clusters; k has been set to the default number of clusters asked');
+        %error('Cannot find an optimal number of cluster, try again and test higher numbers of clusters');
+        k = opt.NbClusters;
+        gmfit = modeles{k};
         %return
     end
     gmfit = modeles{k};
 else
-    gmfit = fitgmdist( VoxValues, str2double(opt.NbClusters), 'Options', options, 'Regularize', 1e-5, 'Replicates',3);
-    k = str2double(opt.NbClusters);    
+    gmfit = fitgmdist( VoxValues, opt.NbClusters, 'Options', options, 'Regularize', 1e-5, 'Replicates',opt.Number_of_replicate);
+    k = opt.NbClusters;    
 end
 
-
-
-%% apply trained model
-% load('trainedModel_K10.mat')
-% toto = table;
-% toto.t1 = Clust_Data_In(:,1);
-% toto.t2 = Clust_Data_In(:,2);
-% %toto = array2table(Clust_Data_In);
-% ClusteredVox = trainedModel_K10.predictFcn(toto);
-
-
-% load('/home/cbrossard/Bureau/trainedModel_K6.mat', 'gmfit')
-% VoxValues = table2array(Clust_Data_In(:,4:end));
 
 ClusteredVox = cluster(gmfit, VoxValues);
 Clust_Data_In.Cluster = ClusteredVox;
@@ -502,17 +509,11 @@ Clust_Data_In.Cluster = ClusteredVox;
 %structures contiennent les informations et les statistiques du clustering.
 Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Sign, 'ROI', char(Name_ROI));
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
-% IA_patient_list = {handles.MIA_data.database.name};
-% NomDossier = [];
-% for i = 1:length(Informations.Cartes)
-%     NomDossier = [NomDossier '_' char(Informations.Cartes(i))];
-% end
-% NomDossier2 = [num2str(length(Informations.Cartes)) 'Cartes' filesep NomDossier];
-% logbook = {};
-% answer = inputdlg('Comment voulez vous nommer ce clustering ?', 'Choix du nom du clustering', 1,{strcat(num2str(k),'C_',NomDossier)});
-% if ~exist(strcat(handles.MIA_data.database(1).path,NomDossier2), 'dir')
-%     mkdir(strcat(handles.MIA_data.database(1).path,NomDossier2));
-% end
+
+if strcmp(opt.Normalization_mode, 'All Database')
+    Informations.NanMean_VoxValues = NanMean_VoxValues;
+    Informations.NanStd_VoxValues = NanStd_VoxValues;
+end
 
 for i=1:length(files_out.In1)
     save(strrep(files_out.In1{i}, '.nii', '.mat'),'Informations', 'Statistiques');
@@ -527,7 +528,10 @@ for i=1:length(All_Data_Clean)
     Cluster = ROI_Clean{i};
     Cluster(logical(Cluster)) = NaN;
     %ROI_Clust = logical(ROI{i});
-    Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    %Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    
+    Cluster(VecVoxToKeep{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+
     ind = ind+size(All_Data_Clean{i},1);
     
     ROI_cluster_header = ROI_nifti_header_Clean{i};
