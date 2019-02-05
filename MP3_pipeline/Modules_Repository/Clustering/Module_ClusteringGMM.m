@@ -47,7 +47,7 @@ if isempty(opt)
         'This option allows to determine the optimal number of clusters of your data. Several models are tested, from 1 to a certain number of clusters (The following parameter) and the best one is chosen.'};
     user_parameter(:,6)   = {'   .Number of clusters','numeric',5,'NbClusters','','',...
         'Number of clusters in which will be sorted the data. If the slope heuristic parameter is set to ''yes'', this number will represent the maximum number of clusters that will be tested by the algorithm.'};
-    user_parameter(:,7)   = {'   .Normalization Mode','cell',{'None', 'All Database'},'Normalization_mode','','',...
+    user_parameter(:,7)   = {'   .Normalization Mode','cell',{'None', 'Patient-by-Patient', 'All Database'},'Normalization_mode','','',...
         'This module will create one cluster type of file for each input scan. '};
     user_parameter(:,8)   = {'   .Percentage of the data used','numeric',100,'Percentage_of_the_data_used','','',...
         {'If you would like to learn only on a subpart of the data you can decrease the percentage to the voxels used to learn (for instance 50%)'
@@ -331,6 +331,12 @@ for i=1:length(roi_files)
         VecVoxToKeep{i}(rand_to_delete) = [];
     end
     Data(VecVoxToDelete{i},:) = []; % Exclude any voxel that have at least one NaN parameter and randomly selected if needed.
+    if strcmp(opt.Normalization_mode, 'Patient-by-Patient')
+       % VoxValues = table2array(Clust_Data_In(:,4:end));
+        NanMean_VoxValues = nanmean(Data);
+        NanStd_VoxValues = nanstd(Data);
+        Data = (Data-NanMean_VoxValues)./NanStd_VoxValues;
+    end
 
     Names_Patients = repmat({char(Name_Patient)},size(Data,1),1);
     Names_TPs = repmat({char(Name_TP)},size(Data,1),1);
@@ -389,7 +395,6 @@ end
 % end
 
 if strcmp(opt.Normalization_mode, 'All Database')
-   
     VoxValues = table2array(Clust_Data_In(:,4:end));
     NanMean_VoxValues = nanmean(VoxValues);
     NanStd_VoxValues = nanstd(VoxValues);
@@ -511,8 +516,12 @@ Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Si
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
 
 if strcmp(opt.Normalization_mode, 'All Database')
+    Informations.Normalization_mode = 'Patient-by-Patient';
     Informations.NanMean_VoxValues = NanMean_VoxValues;
     Informations.NanStd_VoxValues = NanStd_VoxValues;
+end
+if strcmp(opt.Normalization_mode, 'Patient-by-Patient')
+    Informations.Normalization_mode = 'Patient-by-Patient';
 end
 
 for i=1:length(files_out.In1)
