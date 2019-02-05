@@ -125,7 +125,6 @@ handles.MP3_pipeline_Filtering_Table.Data = CellsColoured;
 
 
 
-
 handles.MP3_pipeline_Filtering_Table.ColumnName = handles.MP3_pipeline_TagsToPrint;
 
 % handles.module_parameters_string = {};
