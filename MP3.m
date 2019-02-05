@@ -875,8 +875,13 @@ elseif exist(string(strcat(cellstr(handles.database.Path(data_selected)),new_nii
     
 else
     movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    % rename json file if needed
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
+    end
+     % rename mat file if needed
+    if exist(fullfilename(handles, data_selected, '.mat'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.mat'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.mat'), 'f');
     end
 end
 
@@ -3763,6 +3768,10 @@ end
 selection = questdlg('What do you want to delete?',...
     'Warning',...
     'Parameters','VOIs', 'Cluster', 'Parameters');
+if isempty(selection)
+    return
+end
+
 
 switch selection
     case 'Parameters'
@@ -5177,6 +5186,10 @@ for i=1:numel(nii_index)
     % delete the json file if it exist
     if exist(fullfilename(handles, nii_index(i), '.json'), 'file') == 2
         delete(fullfilename(handles, nii_index(i), '.json'))
+    end
+    % delete the mat file if it exist
+    if exist(fullfilename(handles, nii_index(i), '.mat'), 'file') == 2
+        delete(fullfilename(handles, nii_index(i), '.mat'))
     end
 end
 
