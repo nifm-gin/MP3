@@ -51,7 +51,7 @@ if isempty(opt)
         {'Please a clustering model amoung the ones already generated'}};
     user_parameter(:,6)   = {'   .Exclude abnormal voxels?','cell',{'No', 'Yes'},'Anomaly_exclusion','','',...
         ''};
-    user_parameter(:,7)  = {'        .If Yes --> Exclusion method?','cell',{'Normal/Abnormal', 'SlopeHeuristic'},'Classification_threshold_method','','',...
+    user_parameter(:,7)  = {'        .If Yes --> Exclusion method?','cell',{'Normal/Abnormal', 'SlopeHeuristic', '95%'},'Classification_threshold_method','','',...
         ''};
     user_parameter(:,8)  = {'             .if SlopeHeuristic --> Number of replicate per iteration?','numeric',10,'Number_of_replicate','','',...
         'Please select the number of time you would like to replicate the clustering per iteration; For more inforamtion cf. fitgmdist function'};
@@ -336,15 +336,31 @@ if isfield(trainedModel_loaded, 'Informations')
         %[IDX,NLOGL,POST,LOGPDF,MAHALAD] = CLUSTER(OBJ,X)
         [ClusteredVox,~,~,LOGPDF,~]= cluster(trainedModel, data);
         
+        %% test plot LOGPDF       
+%         Img_LOGPDF = ROI_Clean{1};
+%         Img_LOGPDF(~VecVoxToDeleteClean{i}) = LOGPDF(1:1+size(All_Data_Clean{1},1)-1);
+%         figure;imshow3D(Img_LOGPDF);
+        
         if strcmp(opt.Anomaly_exclusion, 'Yes')
             %opt.NbClusters = 5;
             %opt.Number_of_replicate = 3;
             options = statset ( 'maxiter', 1000);
-            if strcmp(opt.Classification_threshold_method, 'Normal/Abnormal')
+            
+            if strcmp(opt.Classification_threshold_method, '95%')
+                LOGPDF_cutoff = prctile(LOGPDF,5);
+                %LOGPDF_cutoff = -4.72;
+                ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
+            elseif strcmp(opt.Classification_threshold_method, 'Normal/Abnormal')
                 %% use the LOGPDF to split the abnormality in 2 clusters
                 % split abdnomaly in 2
                 modele_LOGPDF_k2 = fitgmdist(LOGPDF, 2, 'Options', options, 'Regularize', 1e-5, 'Replicates',  opt.Number_of_replicate);
                 abnormality_separation_k2 =  cluster(modele_LOGPDF_k2, LOGPDF);
+                %% test plot abnormality_separation_k2
+%                         Img_bnormality_separation_k2 = ROI_Clean{1};
+%                         Img_bnormality_separation_k2 = reshape(abnormality_separation_k2,size(ROI_Clean{1}));
+%                         Img_bnormality_separation_k2(~VecVoxToDeleteClean{i}) = abnormality_separation_k2(1:1+size(All_Data_Clean{1},1)-1);
+%                         figure;imshow3D(Img_bnormality_separation_k2);
+%                 
                 % find the cluster with the lowest log-score. This cluster
                 % corresponds to the less adequacy with the reference model
                 % --> abdormal voxels
