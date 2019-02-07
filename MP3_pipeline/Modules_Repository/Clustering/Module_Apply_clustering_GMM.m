@@ -14,13 +14,16 @@ if isempty(opt)
     module_option(:,3)   = {'Clustering_model',''};
     module_option(:,4)   = {'Output_cluster_Name','Name_of_the_cluster_generated'};
     module_option(:,5)   = {'Anomaly_exclusion', 'No'};
-    module_option(:,6)   = {'Classification_threshold_method', 'Normal/Abnormal'};
-    module_option(:,7)   = {'NbClusters',5};
-    module_option(:,8)   = {'Number_of_replicate',10};
-    module_option(:,9)   = {'RefInput',2};
-    module_option(:,10)   = {'InputToReshape',2};
-    module_option(:,11)   = {'Table_in', table()};
-    module_option(:,12)   = {'Table_out', table()};
+    module_option(:,6)   = {'ROI_abnormal_voxels', 'Abnormal_voxels'};
+    module_option(:,7)   = {'Classification_threshold_method', 'Normal/Abnormal'};
+    module_option(:,8)   = {'NbClusters',5};
+    module_option(:,9)   = {'Number_of_replicate',10};
+    module_option(:,10)   = {'ROI_abnormal_voxels_Yes_No','Yes'};
+    module_option(:,11)   = {'Threashold_value',Inf};
+    module_option(:,12)   = {'RefInput',2};
+    module_option(:,13)   = {'InputToReshape',2};
+    module_option(:,14)   = {'Table_in', table()};
+    module_option(:,15)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     %
     %% list of everything displayed to the user associated to their 'type'
@@ -51,13 +54,20 @@ if isempty(opt)
         {'Please a clustering model amoung the ones already generated'}};
     user_parameter(:,6)   = {'   .Exclude abnormal voxels?','cell',{'No', 'Yes'},'Anomaly_exclusion','','',...
         ''};
-    user_parameter(:,7)  = {'        .If Yes --> Exclusion method?','cell',{'Normal/Abnormal', 'SlopeHeuristic', '95%'},'Classification_threshold_method','','',...
+    user_parameter(:,7)  = {'        .if Yes --> Would you like to save abnormal voxel as ROI?','cell',{'Yes', 'No'},'ROI_abnormal_voxels_Yes_No','','',...
         ''};
-    user_parameter(:,8)  = {'             .if SlopeHeuristic --> Number of replicate per iteration?','numeric',10,'Number_of_replicate','','',...
+    user_parameter(:,8)  = {'             .if Yes --> Name of the ROI','char', 'Abnormal_voxels','ROI_abnormal_voxels','','',...
+        ''};   
+    user_parameter(:,9)  = {'             .Exclusion method?','cell',{'Normal/Abnormal', 'SlopeHeuristic', '95%', 'Threashold value'},'Classification_threshold_method','','',...
+        ''};
+    user_parameter(:,10)  = {'                  .if SlopeHeuristic --> Number of replicate per iteration?','numeric',10,'Number_of_replicate','','',...
         'Please select the number of time you would like to replicate the clustering per iteration; For more inforamtion cf. fitgmdist function'};
-    user_parameter(:,9)  = {'             .if SlopeHeuristic --> Number of clusters?','numeric',5,'NbClusters','','',...
+    user_parameter(:,11)  = {'                  .if SlopeHeuristic --> Number of clusters?','numeric',5,'NbClusters','','',...
         'Number of clusters in which will be sorted the data. If the slope heuristic parameter is set to ''yes'', this number will represent the maximum number of clusters that will be tested by the algorithm.'};
-    user_parameter(:,10)   = {'   .Name of the resulting cluster','char','','Output_cluster_Name','','',...
+    user_parameter(:,12)  = {'                  .if Threashold value --> which threashold?','numeric',Inf,'Threashold_value','','',...
+        'Number of clusters in which will be sorted the data. If the slope heuristic parameter is set to ''yes'', this number will represent the maximum number of clusters that will be tested by the algorithm.'};
+    
+    user_parameter(:,13)   = {'   .Name of the resulting cluster','char','','Output_cluster_Name','','',...
         'This module will create one cluster type of file for each input scan. '};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional', 'Help'};
@@ -73,63 +83,6 @@ if isempty(opt)
     
 end
 %%%%%%%%
-%
-% Tag1 = 'Patient';
-% Tag2 = 'Tp';
-% Table_out = table();
-% if strcmp(files_out, '')
-%     databScans = opt.Table_in(opt.Table_in.Type == categorical(cellstr('Scan')),:);
-%     databROIs = opt.Table_in(opt.Table_in.Type == categorical(cellstr('ROI')),:);
-%     UTag1 = unique(databScans.(Tag1));
-%     UTag2 = unique(databScans.(Tag2));
-%     out_file = {};
-%     in_files = {};
-%     Tailles = [];
-%     for i=1:length(UTag1)
-%         for j=1:length(UTag2)
-%             datab = databScans(databScans.(Tag1) == UTag1(i),:);
-%             datab = datab(datab.(Tag2) == UTag2(j),:);
-%             Tailles = [Tailles size(datab,1)];
-%         end
-%     end
-%     MaxTaille = max(Tailles);
-%     TailleBin = Tailles == MaxTaille;
-%     ind = 0;
-%
-%     for i=1:length(UTag1)
-%         for j=1:length(UTag2)
-%             ind = ind+1;
-%             if TailleBin(ind)
-%                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
-%                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
-%                 if size(DbRois, 1) == 0
-%                     continue
-%                 end
-%                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
-%                 datab = datab(datab.(Tag2) == UTag2(j),:);
-%                 %                 fi = cell(size(datab,1),1);
-%                 %                 for k=1:size(datab,1)
-%                 %                     fi{k} = [char(datab.Path(k)), char(datab.Patient(k)), '_', char(datab.Tp(k)), '_', char(datab.SequenceName(k)), '.nii'];
-%                 %                 end
-%                 %                 in_files = [in_files ; fi];
-%                 tags = databScans(1,:);
-%                 tags.Patient = UTag1(i);
-%                 tags.Tp = UTag2(j);
-%                 tags.Type = categorical(cellstr('Cluster'));
-%                 tags.IsRaw = categorical(1);
-%                 Cluster_path = opt.folder_out; % strrep(opt.folder_out, 'Derived_data', 'ROI_data');
-%                 tags.Path = categorical(cellstr([Cluster_path, filesep]));
-%                 tags.SequenceName = categorical(cellstr([opt.Output_cluster_Name]));
-%                 tags.Filename = categorical(cellstr([char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName)]));
-%                 f_out = [char(tags.Path), char(tags.Patient), '_', char(tags.Tp), '_', char(tags.SequenceName), '.nii'];
-%                 out_file = [out_file ; {f_out}];
-%                 Table_out = [Table_out ; tags];
-%             end
-%         end
-%     end
-%     files_out.In1 = out_file;
-%     opt.Table_out = Table_out;
-% end
 
 if isempty(files_out)
     opt.Table_out = opt.Table_in(1,:);
@@ -140,6 +93,16 @@ if isempty(files_out)
     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
     files_out.In1{1} = f_out;
+    if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+        opt.Table_out(2,:) = opt.Table_out(1,:);
+        opt.Table_out.Type(2) = categorical(cellstr('ROI'));
+        opt.Table_out.SequenceName(2) = categorical(cellstr(opt.ROI_abnormal_voxels));
+        opt.Table_out.Filename(2) = categorical(cellstr([char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2))]));
+        f_out = [char(opt.Table_out.Path(2)), char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2)), '.nii'];
+        files_out.In2{1} = f_out;
+        
+    end
+    
 end
 
 
@@ -335,6 +298,9 @@ if isfield(trainedModel_loaded, 'Informations')
         
         %[IDX,NLOGL,POST,LOGPDF,MAHALAD] = CLUSTER(OBJ,X)
         [ClusteredVox,~,~,LOGPDF,~]= cluster(trainedModel, data);
+        if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes') 
+            ClusteredVox_excluded = zeros(size(ClusteredVox));
+        end
         
         %% test plot LOGPDF       
 %         Img_LOGPDF = ROI_Clean{1};
@@ -342,15 +308,21 @@ if isfield(trainedModel_loaded, 'Informations')
 %         figure;imshow3D(Img_LOGPDF);
         
         if strcmp(opt.Anomaly_exclusion, 'Yes')
-            %opt.NbClusters = 5;
-            %opt.Number_of_replicate = 3;
-            options = statset ( 'maxiter', 1000);
-            
-            if strcmp(opt.Classification_threshold_method, '95%')
-                LOGPDF_cutoff = prctile(LOGPDF,5);
-                %LOGPDF_cutoff = -4.72;
+            if strcmp(opt.Classification_threshold_method, 'Threashold value')
+                LOGPDF_cutoff = opt.Threashold_value;
                 ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
+                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                    ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+                end
+            elseif strcmp(opt.Classification_threshold_method, '95%')
+                LOGPDF_cutoff = prctile(LOGPDF,5);
+                ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
+                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                    ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+                end
             elseif strcmp(opt.Classification_threshold_method, 'Normal/Abnormal')
+                options = statset ( 'maxiter', 1000);
+
                 %% use the LOGPDF to split the abnormality in 2 clusters
                 % split abdnomaly in 2
                 modele_LOGPDF_k2 = fitgmdist(LOGPDF, 2, 'Options', options, 'Regularize', 1e-5, 'Replicates',  opt.Number_of_replicate);
@@ -365,8 +337,14 @@ if isfield(trainedModel_loaded, 'Informations')
                 % corresponds to the less adequacy with the reference model
                 % --> abdormal voxels
                 ClusteredVox(abnormality_separation_k2 == find(modele_LOGPDF_k2.mu == min(modele_LOGPDF_k2.mu))) = 0;
+                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                    ClusteredVox_excluded(abnormality_separation_k2 == find(modele_LOGPDF_k2.mu == min(modele_LOGPDF_k2.mu))) = 1;
+                end
+                
                 
             elseif  strcmp(opt.Classification_threshold_method, 'SlopeHeuristic')
+                options = statset ( 'maxiter', 1000);
+                
                 %% use the LOGPDF to split the abnormality in k classes (using the Heuristic slop)
                 % then use the LOGPDF to spit the abnormality in 2 classes
                 % finally the seperatation obained form the 2 clases separations to split the k classes in 2
@@ -473,6 +451,9 @@ if isfield(trainedModel_loaded, 'Informations')
                 abnormal_clusters = find(gmfit_LOGPDF_kn.mu <= mu_LOGPDS_threashold);
                 for z = 1:numel(abnormal_clusters)
                     ClusteredVox(ClusteredVox_LOGPDF_kn == abnormal_clusters(z)) = 0;
+                    if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                        ClusteredVox_excluded(ClusteredVox_LOGPDF_kn == abnormal_clusters(z)) = 1;
+                    end
                 end
             end
         end
@@ -537,49 +518,33 @@ for i=1:length(All_Data_Clean)
     Cluster = ROI_Clean{i};
     %ROI_Clust = logical(ROI{i});
     Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
-    ind = ind+size(All_Data_Clean{i},1);
-    
     ROI_cluster_header = ROI_nifti_header_Clean{i};
     % On a fait le même traitement sur les files_out (tout début du code) que sur l'ouverture des ROI. Il y a donc tout à penser que l'ordre des fichiers correspondra.
     ROI_cluster_header.fname = files_out.In1{i};
     ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
-    
+  
     Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
     spm_write_vol(ROI_cluster_header, Cluster);
+   
+    if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+        ROI_abnormal_voxels = ROI_Clean{i};
+        ROI_abnormal_voxels(~VecVoxToDeleteClean{i}) = ClusteredVox_excluded(ind:ind+size(All_Data_Clean{i},1)-1);
+        % save the mask
+        ROI_abnormal_voxels = single(ROI_abnormal_voxels); 
+        % copy nifti_header from the Cluster 
+        ROI_abnormal_voxels_header = ROI_cluster_header;
+        % update the header with the new info
+        ROI_abnormal_voxels_header.fname = files_out.In2{1};
+        ROI_abnormal_voxels_header.Filemoddate = char(datetime('now'));
+        ROI_abnormal_voxels_header.Datatype = class(ROI_abnormal_voxels);  
+        %reorient the volume
+        ROI_abnormal_voxels = write_volume(ROI_abnormal_voxels,ROI_nifti_header_Clean{i}, 'axial');
+
+        spm_write_vol(ROI_abnormal_voxels_header, ROI_abnormal_voxels);
+    end
+    
+    ind = ind+size(All_Data_Clean{i},1);
+   
 end
-
-
-% data_in_table.cluster(isnan(data_in_table.cluster)) = size(handles.color_RGB,1);
-%
-% Couleurs = handles.color_RGB;
-% Cartes = nominal(data_in_table.Properties.VarNames(8:end-1));
-%
-% % A partir du classement des pixels, on calcule les statistiques du
-% % clustering
-% [MoyCartesTranches, ProbTranches, MoyCartesVolume, ProbVolume, Ecart_Type_Global, Sign, MoyGlobal] = AnalyseClusterGMM(data_in_table);
-%
-% ROI = char(unique(data_in_table.VOI));
-%
-% %On cree 2 strutures que l'on va sauvegarder avec chaque uvascroi. Ces
-% %structures contiennent les informations et les statistiques du clustering.
-% Informations = struct('Couleurs',Couleurs,'Cartes', Cartes , 'Modele', gmfit, 'Sign', Sign,'ROI',ROI);
-% Statistiques = struct('MoyCartesTranches', MoyCartesTranches , 'ProbTranches', ProbTranches , 'MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
-% % IA_patient_list = {handles.MIA_data.database.name};
-% NomDossier = [];
-% for i = 1:length(Informations.Cartes)
-%     NomDossier = [NomDossier '_' char(Informations.Cartes(i))];
-% end
-% NomDossier2 = [num2str(length(Informations.Cartes)) 'Cartes' filesep NomDossier];
-% logbook = {};
-% answer = inputdlg('Comment voulez vous nommer ce clustering ?', 'Choix du nom du clustering', 1,{strcat(num2str(k),'C_',NomDossier)});
-% if ~exist(strcat(handles.MIA_data.database(1).path,NomDossier2), 'dir')
-%     mkdir(strcat(handles.MIA_data.database(1).path,NomDossier2));
-% end
-% save([strcat( handles.MIA_data.database(1).path,NomDossier2), filesep,answer{1} '-clusterGMM.mat'],'Informations', 'Statistiques');
-
-
-
-
-
 
