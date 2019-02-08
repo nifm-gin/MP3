@@ -418,27 +418,76 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
     ptsheurist = opt.NbClusters + 5;
     
     
-    %Vecteur pour stocker la logvraisemblance
-    loglike = zeros(1,ptsheurist);
+  
     
     %On stocke les modeles calcules pour ne pas avoir a les recalculer une
     %fois le nombre de classes optimal trouve.
-    modeles = cell(1,ptsheurist);
-    Number_of_replicate = opt.Number_of_replicate;
-    parfor kk=1:ptsheurist
-        %La ligne suivante permet uniquement de suivre l'avancement du
-        %calcul des modeles
-        disp(strcat('Modele_', num2str(kk), '_started'))
-        %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
-        %modele en modifiant l'initialisation. Le modele renvoye est celui
-        %de plus grande vraisemblance.
-        modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
-        
-        loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
-        
-        %La ligne suivante permet uniquement de suivre l'avancement du
-        %calcul des modeles
-         disp(strcat('Modele_', num2str(kk), '_done'))
+    
+    %% test to improve the parallelisation of the code
+    myCluster = parcluster('local');
+    myCluster.NumWorkers
+    %% if you have a lot of workers, this code should be faster
+    % the condition is : if you have more workers than the number of
+    % cluster to evaluate (-1 because k=1 is very fast anyway) the
+    % fitgmdist loop over the ptsheurist*Number_of_replicate and then we
+    % figure out the best model per cluster.
+    if myCluster.NumWorkers>ptsheurist-1
+        Number_of_replicate = opt.Number_of_replicate;
+        %Vecteur pour stocker la logvraisemblance
+        loglike_1repet = zeros(1,ptsheurist*Number_of_replicate);
+        modeles_1_repet = cell(1,ptsheurist*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,[1, Number_of_replicate]);
+        tic
+        parfor kk=1:ptsheurist*Number_of_replicate
+            %La ligne suivante permet uniquement de suivre l'avancement du
+            %calcul des modeles
+            disp(strcat('Modele_', num2str(loop_inputs(kk)), '_started'))
+            %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
+            %modele en modifiant l'initialisation. Le modele renvoye est celui
+            %de plus grande vraisemblance.
+            modeles_1_repet{kk} = fitgmdist( VoxValues, loop_inputs(kk), 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
+            
+            loglike_1repet(kk) = -modeles_1_repet{kk}.NegativeLogLikelihood;
+            
+            %La ligne suivante permet uniquement de suivre l'avancement du
+            %calcul des modeles
+            disp(strcat('Modele_', num2str(loop_inputs(kk)), '_done'))
+        end
+        % find the largest loglikelihood between repetition in order to find
+        % the best model per class ie the minimum of the abstolute value of the
+        % loglikelihood
+        loglike = zeros(1,ptsheurist);
+        modeles = cell(1,ptsheurist);
+        for z=1:ptsheurist
+            repet_index = 1:ptsheurist:(ptsheurist*Number_of_replicate);
+            [~, largest_loglikelihood_index] = min(abs(loglike_1repet(repet_index)));
+            loglike(z) = loglike_1repet(repet_index(largest_loglikelihood_index));
+            modeles{z} = modeles_1_repet(repet_index(largest_loglikelihood_index));
+        end
+        toc
+    else
+        %% this code works well but is slow
+        % Vecteur pour stocker la logvraisemblance
+        loglike = zeros(1,ptsheurist);
+        modeles = cell(1,ptsheurist);
+        Number_of_replicate = opt.Number_of_replicate;
+        tic
+        parfor kk=1:ptsheurist
+            %La ligne suivante permet uniquement de suivre l'avancement du
+            %calcul des modeles
+            disp(strcat('Modele_', num2str(kk), '_started'))
+            %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
+            %modele en modifiant l'initialisation. Le modele renvoye est celui
+            %de plus grande vraisemblance.
+            modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
+            
+            loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
+            
+            %La ligne suivante permet uniquement de suivre l'avancement du
+            %calcul des modeles
+            disp(strcat('Modele_', num2str(kk), '_done'))
+        end
+        toc
     end
     NbCartes = size(VoxValues,2);
     
