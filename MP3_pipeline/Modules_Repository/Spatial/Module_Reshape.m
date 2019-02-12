@@ -129,7 +129,7 @@ if axes == 3
     
     OutputMat = info.Transform.T';
     Movement = [0;0;index(1)-1;1];
-    OutputMat(:,4) = info.Transform.T * Movement;
+    OutputMat(:,4) = OutputMat * Movement;
     info.Transform.T =  OutputMat';
     
     
