@@ -18,10 +18,11 @@ if isempty(opt)
     module_option(:,6)   = {'InputToReshape',   1};
     module_option(:,7)   = {'Table_in',         table()};
     module_option(:,8)   = {'Table_out',        table()};
-    module_option(:,9)   = {'OutputSequenceName','AllName'};
-    module_option(:,10)  = {'output_name_bvf',  'BVf'};
-    module_option(:,11)  = {'output_name_vsi',  'VSI'};
-    module_option(:,12)  = {'output_name_sto2', 'StO2'};
+    module_option(:,9)   = {'folder',           table()};
+    module_option(:,10)  = {'OutputSequenceName','AllName'};
+    module_option(:,11)  = {'output_name_bvf',  'BVf'};
+    module_option(:,12)  = {'output_name_vsi',  'VSI'};
+    module_option(:,13)  = {'output_name_sto2', 'StO2'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -45,8 +46,10 @@ if isempty(opt)
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     
-    folder_files	= dir('data/dictionaries/*');
+    s               = split(mfilename('fullpath'),'MP3_pipeline',1);
+    folder_files	= dir(fullfile(s{1}, 'data/dictionaries/'));
     folder_files    = folder_files([folder_files.isdir]);
+    opt.Module_settings.folder = fullfile(s{1}, 'data/dictionaries/');
     if isempty(folder_files), folder_files(1).name = ' '; end
     user_parameter(:,4)   = {'   .Dictionary Pre/Post file folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
         {'Select the folder containing Pre/Post dico files'}};
@@ -147,7 +150,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tic
-opt.dictionary_folder_filename = ['./data/dictionaries/' opt.dictionary_folder_filename];
+opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
 
 % Read json files and create ratio dictionary
 d   = dir(opt.dictionary_folder_filename);

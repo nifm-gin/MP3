@@ -169,12 +169,13 @@ parfor voxel_nbr=1:size(data_to_fit,1)
         if t2s<=0 || isnan(t2s)
             t2s=30;
         end
+        t2s=30;
         % apply the fit
         %[aaa, bbb,  ~]=levenbergmarquardt('AB_t2s',echotime_used, tempydata(firstecho:lastecho)',[t2s max(tempydata(firstecho:lastecho))*1.5]);
         [aaa, ~,  ~]=levenbergmarquardt('AB_t2s',echotimes_used, tempydata(firstecho:lastecho)',[t2s max(tempydata(firstecho:lastecho))*1.5]);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%
-        if aaa(1)>0 & aaa(2)>0 & imag(aaa)==0 %#ok<AND2>
+        if aaa(1)>0 & imag(aaa)==0 %#ok<AND2>
             T2map_tmp(voxel_nbr)=aaa(1);
            % fit_err(voxel_nbr)=bbb(1);
         %else

@@ -1,4 +1,4 @@
-function [x_exp,alpha] = gllim_inverse_map(y,theta,verb)
+function [x_exp, cov, alpha] = gllim_inverse_map_and_cov(y,theta,verb)
 %%%%%%%%%%%%%%%%% Inverse Mapping from Gllim Parameters %%%%%%%%%%%%%%%%%%%
 %%%% Author: Antoine Deleforge (July 2012) - antoine.deleforge@inria.fr %%%
 % Description: Map N observations y using the inverse conditional
@@ -41,10 +41,11 @@ for k=1:K
     Gammaks=Sigmak+Ak*Gammak*Ak';
 
     if(verb>=2), fprintf(1,'iSks '); end
-    invSigmaks2=eye(L)+Gammak*Ak'/Sigmak*Ak; %Sigmaks=invSigmaks2\Gammak
+    invSigmaks2=eye(L)+Gammak*Ak'/Sigmak*Ak;
+    Sigmaks=invSigmaks2\Gammak;
 
     if(verb>=2), fprintf(1,'Aks '); end
-    Aks=invSigmaks2\Gammak*Ak'/Sigmak;     
+    Aks=Sigmaks*Ak'/Sigmak;     
 
     if(verb>=2), fprintf(1,'bks '); end
     bks=invSigmaks2\(ck-Gammak*Ak'/Sigmak*bk);   
@@ -58,22 +59,22 @@ for k=1:K
 
     if(verb>=2), fprintf(1,'\n'); end 
     
-    for n =1:N
-        truc(:,:,k,n) = Sigmaks + proj(:,n,k) * proj(:,n,k)';
+    for n = 1:N
+        first_term(:,:,k,n) = Sigmaks + proj(:,n,k) * proj(:,n,k)';
     end
 end
 den=logsumexp(logalpha,2); % Nx1
 logalpha=bsxfun(@minus,logalpha,den); % NxK Normalization
 alpha=exp(logalpha); % NxK
 
-x_exp=reshape(sum(bsxfun(@times,reshape(alpha,[1,N,K]),proj),3),L,N); %LxN
+x_exp = reshape(sum(bsxfun(@times,reshape(alpha,[1,N,K]),proj),3),L,N); %LxN
 
 for n = 1:N
     clear tmp
     for k = 1:K
-        tmp(:,:,k) = alpha(n,k) * truc(:,:,k,n);
+        first_term_weighted(:,:,k) = alpha(n,k) * first_term(:,:,k,n);
     end
-    cov(:,:,n) = sum(tmp,3) - x_exp(:,n) * x_exp(:,n)';
+    cov(:,:,n) = sum(first_term_weighted,3) - x_exp(:,n) * x_exp(:,n)';
 end
 
 end
