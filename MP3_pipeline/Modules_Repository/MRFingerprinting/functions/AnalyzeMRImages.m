@@ -4,6 +4,8 @@ if nargin < 3, error('Not enought input arguments'); end
 if ~exist('Method','var'),      Method = 'RegressionMRF'; end
 if ~exist('References','var'),  References = []; end
 if ~exist('Outliers','var'),    Outliers = []; end
+if ~exist('Parameters','var'),  Parameters = struct();
+elseif isempty(Parameters),     Parameters = struct(); end
 
 
 switch length(size(Sequences))
@@ -44,9 +46,14 @@ switch Method
         Parameters = [];
         
     case 'RegressionMRF'
-        Xtrain = abs(Dico{f}.MRSignals);
-        
-        [~,Parameters] = EstimateParametersFromRegression(Xtrain, Xtrain, Dico{f}.Parameters.Par, Dico{f}.Parameters.Par, Parameters);
+                
+        if ~any(strcmp(fieldnames(Parameters),'theta'))
+            Xtrain = abs(Dico{f}.MRSignals);
+            [~,Parameters] = EstimateParametersFromRegression(Xtrain, Xtrain, Dico{f}.Parameters.Par, Dico{f}.Parameters.Par, Parameters);
+        else
+            Dico{f}.MRSignals = [];
+            Dico{f}.Parameters.Par = [];
+        end
         for s = 1:slices
             %Estimation of parameters
             [Yestim,~,Cov] = ...
@@ -55,7 +62,7 @@ switch Method
             Cov         = reshape(Cov,size(Cov,1),size(Cov,2),s1,s2);
             for ss = 1:s1
                 for sss = 1:s2
-                    Estimation.Regression.Cov(ss,sss,:) = diag(Cov(:,:,ss,sss))';
+                    Estimation.Regression.Cov(ss,sss,:,s) = diag(Cov(:,:,ss,sss))';
                 end
             end
             
