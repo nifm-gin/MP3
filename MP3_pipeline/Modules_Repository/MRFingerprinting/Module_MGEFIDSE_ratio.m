@@ -9,19 +9,20 @@ if isempty(opt)
 	%   % define every option needed to run this module
 	% --> module_option(1,:) = field names
     % --> module_option(2,:) = defaults values
-    module_option(:,1)   = {'dictionary_pre_filename',  'Dictionary Pre'};
-    module_option(:,2)   = {'dictionary_post_filename', 'Dictionary Post'};
-    module_option(:,3)   = {'prefix',           'MRF_'};
-    module_option(:,4)   = {'method',           'ClassicMRF'};
-    module_option(:,5)   = {'filtered',         'Yes'};
+    module_option(:,1)   = {'dictionary_folder_filename',  'Dictionary Folder'};
+    module_option(:,2)   = {'prefix',           'MRF_'};
+    module_option(:,3)   = {'method',           'ClassicMRF'};
+    module_option(:,4)   = {'filtered',         'No'};
     
-    module_option(:,6)   = {'RefInput',         1};
-    module_option(:,7)   = {'InputToReshape',   1};
-    module_option(:,8)   = {'Table_in',         table()};
-    module_option(:,9)   = {'Table_out',        table()};
+    module_option(:,5)   = {'RefInput',         1};
+    module_option(:,6)   = {'InputToReshape',   1};
+    module_option(:,7)   = {'Table_in',         table()};
+    module_option(:,8)   = {'Table_out',        table()};
+    module_option(:,9)   = {'folder',           table()};
     module_option(:,10)  = {'OutputSequenceName','AllName'};
     module_option(:,11)  = {'output_name_bvf',  'BVf'};
     module_option(:,12)  = {'output_name_vsi',  'VSI'};
+    module_option(:,13)  = {'output_name_sto2', 'StO2'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -44,20 +45,20 @@ if isempty(opt)
     
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    folder_files	= dir('data/dictionaries/*.json');
-    if isempty(folder_files)
-        folder_files(1).name = ' ';
-    end
-    user_parameter(:,4)   = {'   .Dictionary Pre filename','cell', {folder_files.name}, 'dictionary_pre_filename','','Mandatory',...
-        {'Select your MGEFIDSE Pre scan dictionary file'}};
-    folder_files	= dir('data/dictionaries/*.json');
-    user_parameter(:,5)   = {'   .Dictionary Post filename','cell', {folder_files.name}, 'dictionary_post_filename','','Mandatory',...
-        {'Select your MGEFIDSE Post scan dictionary file'}};
-    user_parameter(:,6)   = {'   .Prefix','char', '', 'prefix', '', '',...
+    
+    s               = split(mfilename('fullpath'),'MP3_pipeline',1);
+    folder_files	= dir(fullfile(s{1}, 'data/dictionaries/'));
+    folder_files    = folder_files([folder_files.isdir]);
+    opt.Module_settings.folder = fullfile(s{1}, 'data/dictionaries/');
+    if isempty(folder_files), folder_files(1).name = ' '; end
+    user_parameter(:,4)   = {'   .Dictionary Pre/Post file folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
+        {'Select the folder containing Pre/Post dico files'}};
+    
+    user_parameter(:,5)   = {'   .Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix'}};
-    user_parameter(:,7)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+    user_parameter(:,6)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {''}};
-    user_parameter(:,8)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
+    user_parameter(:,7)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
         { 'Choose:'
         '	- ''ClassicMRF'' to use Dan Ma method'
         '	- ''RegressionMRF'' to use proposed approach'
@@ -100,6 +101,33 @@ if isempty(files_out)
     opt.Table_out.Filename(2) = categorical(cellstr([char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2))])); 
     f_out = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(2)) '.nii'];
     files_out.In1{2} = f_out;
+    
+    opt.Table_out(3,:) = opt.Table_out(1,:);
+    if strcmp(opt.OutputSequenceName, 'AllName')
+        opt.Table_out.SequenceName(3) = categorical(cellstr([char(opt.prefix), char(opt.output_name_sto2)]));
+    elseif strcmp(opt.OutputSequenceName, 'Extension')
+        opt.Table_out.SequenceName(3) = categorical(cellstr([char(opt.Table_out.SequenceName(3)), opt.output_name_sto2]));
+    end
+    opt.Table_out.Filename(3) = categorical(cellstr([char(opt.Table_out.Patient(3)), '_', char(opt.Table_out.Tp(3)), '_', char(opt.Table_out.SequenceName(3))])); 
+    f_out = [char(opt.Table_out.Path(3)), char(opt.Table_out.Filename(3)) '.nii'];
+    files_out.In1{3} = f_out;
+    
+    if strcmp(opt.method,'RegressionMRF')
+        opt.Table_out(4,:) = opt.Table_out(1,:);
+        opt.Table_out(5,:) = opt.Table_out(2,:);
+        opt.Table_out(6,:) = opt.Table_out(3,:);
+        
+        opt.Table_out.Filename(4) =  categorical(cellstr([char(opt.Table_out.Patient(1)), '_', char(opt.Table_out.Tp(1)), '_', char(opt.Table_out.SequenceName(1)) '_confidence'])); 
+        opt.Table_out.Filename(5) =  categorical(cellstr([char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2)) '_confidence'])); 
+        opt.Table_out.Filename(6) =  categorical(cellstr([char(opt.Table_out.Patient(3)), '_', char(opt.Table_out.Tp(3)), '_', char(opt.Table_out.SequenceName(3)) '_confidence'])); 
+        opt.Table_out.SequenceName(4) = categorical(cellstr([char(opt.prefix), char(opt.output_name_bvf), '_confidence']));
+        opt.Table_out.SequenceName(5) = categorical(cellstr([char(opt.prefix), char(opt.output_name_vsi), '_confidence']));
+        opt.Table_out.SequenceName(6) = categorical(cellstr([char(opt.prefix), char(opt.output_name_sto2), '_confidence']));
+            
+        files_out.In2{1} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(4)) '.nii'];
+        files_out.In2{2} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(5)) '.nii'];
+        files_out.In2{3} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(6)) '.nii'];
+    end
 end
 
 
@@ -121,23 +149,56 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+tic
+opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
 
 % Read json files and create ratio dictionary
-dico_filename = ['./data/dictionaries' filesep opt.dictionary_post_filename '___' opt.dictionary_pre_filename '.mat'];
-if exist(dico_filename,'file')
-    load(dico_filename)
-else
-    Pre     = loadjson(['./data/dictionaries' filesep opt.dictionary_pre_filename]);
-    Post    = loadjson(['./data/dictionaries' filesep opt.dictionary_post_filename]);
+d   = dir(opt.dictionary_folder_filename);
+opt.dictionary_pre_filename     = d(contains({d.name}, 'PRE_'));
+opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+opt.dictionary_post_filename    = d(contains({d.name}, 'POST_'));
+opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
 
-    Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
-    Dico.Tacq           = Pre.Sequence.Tacq;
-    Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
-    Dico.Parameters.Labels = Pre.Parameters.Labels;
-    clear Pre Post
-    save(dico_filename,'Dico')
+dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
+model_filename  = [opt.dictionary_folder_filename filesep 'MODEL.mat'];
+
+switch opt.method
+    
+    case 'ClassicMRF'
+        
+        if exist(dico_filename,'file')
+            load(dico_filename)
+        else
+            Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+            Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+
+            Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
+            Dico.Tacq           = Pre.Sequence.Tacq;
+            Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
+            Dico.Parameters.Labels = Pre.Parameters.Labels;
+            clear Pre Post
+            save(dico_filename,'Dico')
+        end
+        
+    case 'RegressionMRF'
+        
+        if ~exist(model_filename,'file')
+            if exist(dico_filename,'file')
+                load(dico_filename)
+            else
+                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+
+                Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
+                Dico.Tacq           = Pre.Sequence.Tacq;
+                Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
+                Dico.Parameters.Labels = Pre.Parameters.Labels;
+                clear Pre Post
+                save(dico_filename,'Dico')
+            end
+        end
 end
-
+        
 
 % Generate ratio signals from scans (and ROI if given)
 % TODO: what if In1 is the post and In2 the pre scan
@@ -145,6 +206,7 @@ Xobs            = niftiread(files_in.In2{1}) ./ niftiread(files_in.In1{1});
 json_filename   = split(files_in.In2{1},'.');
 json_filename{2} = '.json';
 Obs             = ReadJson([json_filename{1} json_filename{2}]);
+
 
 % If necessary smooth observations
 if strcmp(opt.filtered, 'Yes') == 1
@@ -155,68 +217,101 @@ if strcmp(opt.filtered, 'Yes') == 1
     	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
     end; end; end
 end
+Xobs        = permute(Xobs, [1 2 4 3]);
 
-% Reformat dico
-tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
-if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals,2)
-    warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
-    for i = 1:size(Dico.MRSignals,1)
-        tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3);
+
+% Reformat dico (not needed if MODEL is already computed)
+if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+    tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
+    if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals,2)
+        warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
+        for i = 1:size(Dico.MRSignals,1)
+            tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3);
+        end
     end
+    Dico.MRSignals = tmp;
+    
+    %remove row containning nan values
+    nn = ~any(isnan(Dico.MRSignals),2);
+    Dico.MRSignals = Dico.MRSignals(nn,:);
+    Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
+    Tmp{1}      = Dico;
 end
-Dico.MRSignals = tmp;
-%remove row containning nan values
-nn = ~any(isnan(Dico.MRSignals),2);
-Dico.MRSignals = Dico.MRSignals(nn,:);
-Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-Tmp{1}      = Dico;
-
+t(1) = toc;
+    
 % Compute MRF
 switch opt.method
     
     case 'ClassicMRF'
         % Find something nicer than this permute trick
-        Xobs        = permute(Xobs, [1 2 4 3]);
         Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,[]);
-        Map.Y = permute(Estimation.GridSearch.Y, [1 2 4 3]);
+        Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
         
     case 'RegressionMRF'
-        for i = 1:length(Dico.Parameters.Labels)
-            tmp = split(Dico.Parameters.Labels{i},'.',2);
-            switch tmp{end}
-                case 'Vf'
-                    params.Par(:,1)     = Tmp{1}.Parameters.Par(:,i);
-                    params.Labels{1}    = Tmp{1}.Parameters.Labels{i};
-                case 'R'
-                    params.Par(:,2)     = Tmp{1}.Parameters.Par(:,i);
-                    params.Labels{2}    = Tmp{1}.Parameters.Labels{i};
-            end
-        end
-        Tmp{1}.Parameters = params;
-        Xobs        = permute(Xobs, [1 2 4 3]);
         
-        %Compute the learing only one time per dictionary
-        model_filename = ['./data/dictionaries' filesep opt.dictionary_post_filename '___' opt.dictionary_pre_filename '___MODEL.mat'];
+        %Compute the learing only one time per dictionar        
         if exist(model_filename,'file')
-            load(model_filename,'Parameters');
-            Estimation = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
+            load(model_filename,'Parameters','labels');
+            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
+            
+            Tmp{1}.Parameters.Labels = labels;
         else
-            [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, []);
-            save(model_filename,'Parameters')
+            
+            for i = 1:length(Dico.Parameters.Labels)
+                tmp = split(Dico.Parameters.Labels{i},'.',2);
+                switch tmp{end}
+                    case 'Vf'
+                        params.Par(:,1)     = Tmp{1}.Parameters.Par(:,i);
+                        params.Labels{1}    = Tmp{1}.Parameters.Labels{i};
+                    case 'VSI'
+                        params.Par(:,2)     = Tmp{1}.Parameters.Par(:,i);
+                        params.Labels{2}    = Tmp{1}.Parameters.Labels{i};
+                    case 'SO2'
+                        params.Par(:,3)     = Tmp{1}.Parameters.Par(:,i);
+                        params.Labels{3}    = Tmp{1}.Parameters.Labels{i};
+    %                 case 'DH2O'
+    %                     params.Par(:,4)     = Tmp{1}.Parameters.Par(:,i);
+    %                     params.Labels{4}    = Tmp{1}.Parameters.Labels{i};
+                end
+            end
+            Tmp{1}.Parameters = params;
+                  
+            Parameters  = []; %Parameters.Lw = 1;
+            
+            [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
+            
+            labels      = Tmp{1}.Parameters.Labels; 
+            save(model_filename,'Parameters', 'labels')
         end
         
-        Map.Y = permute(Estimation.Regression.Y, [1 2 4 3]);
+        Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
+        Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
 end
-    
-    
-% Load mask and extract maps
+t(2) = toc;
+
+% Extract maps
 for i = 1:length(Tmp{1}.Parameters.Labels)
     tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
     switch tmp{end}
         case 'Vf'
-            BVf = 100*Map.Y(:,:,:,i);
-        case 'R'
-            VSI = 1e6*Map.Y(:,:,:,i);
+            BVf     = 100*Map.Y(:,:,:,i);
+        case 'VSI'
+            VSI     = 1e6*Map.Y(:,:,:,i);
+        case 'SO2'
+            StO2    = 100*Map.Y(:,:,:,i);
+    end
+end
+if strcmp(opt.method, 'RegressionMRF')
+    for i = 1:length(Tmp{1}.Parameters.Labels)
+        tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
+        switch tmp{end}
+            case 'Vf'
+                BVf_conf    = 100*Map.Std(:,:,:,i);
+            case 'VSI'
+                VSI_conf    = 1e6*Map.Std(:,:,:,i);
+            case 'SO2'
+                StO2_conf   = 100*Map.Std(:,:,:,i);
+        end
     end
 end
 
@@ -225,7 +320,6 @@ end
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J       = ReadJson(jsonfile);
-
 J       = KeepModuleHistory(J, struct('files_in',files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
 
@@ -247,18 +341,76 @@ for i = 1:length(files_out.In1)
             info.Datatype = class(BVf);
             
             niftiwrite(BVf, files_out.In1{i}, info);
-            
-    elseif contains(files_out.In1{i},'VSI')
+    end
+    if contains(files_out.In1{i},'VSI')
             [path, name, ~] = fileparts(files_out.In1{i});
             jsonfile = [path, '/', name, '.json'];
             WriteJson(J, jsonfile)
             
             %VSI     = write_volume(VSI, nifti_header);
             info.Filename = files_out.In1{i};
-            info.ImageSize  = size(VSI);
+            info.ImageSize = size(VSI);
             info.PixelDimensions = info.PixelDimensions(1:length(size(VSI)));
             info.Datatype = class(VSI);
             
             niftiwrite(VSI, files_out.In1{i}, info);
     end
+    if contains(files_out.In1{i},'StO2')
+            [path, name, ~] = fileparts(files_out.In1{i});
+            jsonfile = [path, '/', name, '.json'];
+            WriteJson(J, jsonfile)
+            
+            %VSI     = write_volume(VSI, nifti_header);
+            info.Filename = files_out.In1{i};
+            info.ImageSize = size(StO2);
+            info.PixelDimensions = info.PixelDimensions(1:length(size(StO2)));
+            info.Datatype = class(StO2);
+            
+            niftiwrite(StO2, files_out.In1{i}, info);
+    end
+end
+
+if strcmp(opt.method, 'RegressionMRF')
+    for i = 1:length(files_out.In2)
+        if contains(files_out.In2{i},'BVf')
+                [path, name, ~] = fileparts(files_out.In2{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
+
+                %BVf     = write_volume(BVf, nifti_header);
+                info.Filename = files_out.In2{i};
+                info.ImageSize = size(BVf_conf);
+                info.PixelDimensions = info.PixelDimensions(1:length(size(BVf_conf)));
+                info.Datatype = class(BVf_conf);
+
+                niftiwrite(BVf_conf, files_out.In2{i}, info);
+        end
+        if contains(files_out.In2{i},'VSI')
+                [path, name, ~] = fileparts(files_out.In2{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
+
+                %VSI     = write_volume(VSI, nifti_header);
+                info.Filename = files_out.In2{i};
+                info.ImageSize  = size(VSI_conf);
+                info.PixelDimensions = info.PixelDimensions(1:length(size(VSI_conf)));
+                info.Datatype = class(VSI_conf);
+
+                niftiwrite(VSI_conf, files_out.In2{i}, info);
+        end
+        if contains(files_out.In2{i},'StO2')
+                [path, name, ~] = fileparts(files_out.In2{i});
+                jsonfile = [path, '/', name, '.json'];
+                WriteJson(J, jsonfile)
+
+                %VSI     = write_volume(VSI, nifti_header);
+                info.Filename = files_out.In2{i};
+                info.ImageSize  = size(StO2_conf);
+                info.PixelDimensions = info.PixelDimensions(1:length(size(StO2_conf)));
+                info.Datatype = class(StO2_conf);
+
+                niftiwrite(StO2_conf, files_out.In2{i}, info);
+        end
+    end
+t(3) = toc;
 end
