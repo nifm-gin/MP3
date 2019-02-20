@@ -57,7 +57,7 @@ if isempty(opt)
     user_parameter(:,7)  = {'        .if Yes --> Would you like to save abnormal voxel as ROI?','cell',{'Yes', 'No'},'ROI_abnormal_voxels_Yes_No','','',...
         ''};
     user_parameter(:,8)  = {'             .if Yes --> Name of the ROI','char', 'Abnormal_voxels','ROI_abnormal_voxels','','',...
-        ''};   
+        ''};
     user_parameter(:,9)  = {'             .Exclusion method?','cell',{'Normal/Abnormal', 'SlopeHeuristic', '95%', 'Threashold value'},'Classification_threshold_method','','',...
         ''};
     user_parameter(:,10)  = {'                  .if SlopeHeuristic --> Number of replicate per iteration?','numeric',10,'Number_of_replicate','','',...
@@ -288,51 +288,75 @@ if isfield(trainedModel_loaded, 'Informations')
         end
         % Normalize data if needed. We used the mean +/- SD value used to generate the model
         if isfield(trainedModel_loaded.Informations, 'Normalization_mode') && ...
-                 strcmp(trainedModel_loaded.Informations.Normalization_mode,'All Database')
-            data = (data-trainedModel_loaded.Informations.NanMean_VoxValues)./trainedModel_loaded.Informations.NanStd_VoxValues;  
+                strcmp(trainedModel_loaded.Informations.Normalization_mode,'All Database')
+            data = (data-trainedModel_loaded.Informations.NanMean_VoxValues)./trainedModel_loaded.Informations.NanStd_VoxValues;
         end
-         if isfield(trainedModel_loaded.Informations, 'Normalization_mode') && ...
-                 strcmp(trainedModel_loaded.Informations.Normalization_mode,'Patient-by-Patient')
-            data = (data-nanmean(data))./nanstd(data);  
+        if isfield(trainedModel_loaded.Informations, 'Normalization_mode') && ...
+                strcmp(trainedModel_loaded.Informations.Normalization_mode,'Patient-by-Patient')
+            data = (data-nanmean(data))./nanstd(data);
         end
         
-        %[IDX,NLOGL,POST,LOGPDF,MAHALAD] = CLUSTER(OBJ,X)
-        [ClusteredVox,~,~,LOGPDF,~]= cluster(trainedModel, data);
-        if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes') 
+        %[IDX,NLOGL,POST,LOGPDF,MAHALAD] = CLUSTER(trainedModel,data)
+        [ClusteredVox,~,~,LOGPDF,dist]= cluster(trainedModel, data);
+        if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
             ClusteredVox_excluded = zeros(size(ClusteredVox));
         end
         
-        %% test plot LOGPDF       
-%         Img_LOGPDF = ROI_Clean{1};
-%         Img_LOGPDF(~VecVoxToDeleteClean{i}) = LOGPDF(1:1+size(All_Data_Clean{1},1)-1);
-%         figure;imshow3D(Img_LOGPDF);
+        %% test plot LOGPDF
+        %         Img_LOGPDF = ROI_Clean{1};
+        %         Img_LOGPDF(~VecVoxToDeleteClean{i}) = LOGPDF(1:1+size(All_Data_Clean{1},1)-1);
+        %         figure;imshow3D(Img_LOGPDF);
         
         if strcmp(opt.Anomaly_exclusion, 'Yes')
             if strcmp(opt.Classification_threshold_method, 'Threashold value')
-                LOGPDF_cutoff = opt.Threashold_value;
-                ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
-                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
-                    ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+%                 LOGPDF_cutoff = opt.Threashold_value;
+%                 ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
+%                 if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+%                     ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+%                 end
+%                 disp(['cutoff_abnormality : ', num2str(LOGPDF_cutoff)])
+                 %% test with the distance
+                for i=1:size(dist,1)
+                    dist_from_best_cluster(i) = dist(i,ClusteredVox(i));
                 end
+                dist_cutoff = opt.Threashold_value;
+                ClusteredVox(dist_from_best_cluster>dist_cutoff) = 0;
+                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                    ClusteredVox_excluded(dist_from_best_cluster>dist_cutoff) = 1;
+                end
+                disp(['cutoff_distance : ', num2str(dist_cutoff)])
             elseif strcmp(opt.Classification_threshold_method, '95%')
-                LOGPDF_cutoff = prctile(LOGPDF,5);
-                ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
-                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
-                    ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+                %                 LOGPDF_cutoff = prctile(LOGPDF,5);
+                %                 ClusteredVox(LOGPDF<LOGPDF_cutoff) = 0;
+                %                 if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                %                     ClusteredVox_excluded(LOGPDF<LOGPDF_cutoff) = 1;
+                %                 end
+                %                 disp(['cutoff_abnormality : ', num2str(LOGPDF_cutoff)])
+                
+                %% test with the distance
+                for i=1:size(dist,1)
+                    dist_from_best_cluster(i) = dist(i,ClusteredVox(i));
                 end
+                dist_cutoff = prctile(dist_from_best_cluster,99);
+                ClusteredVox(dist_from_best_cluster>dist_cutoff) = 0;
+                if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
+                    ClusteredVox_excluded(dist_from_best_cluster>dist_cutoff) = 1;
+                end
+                disp(['cutoff_distance : ', num2str(dist_cutoff)])
+                
             elseif strcmp(opt.Classification_threshold_method, 'Normal/Abnormal')
                 options = statset ( 'maxiter', 1000);
-
+                
                 %% use the LOGPDF to split the abnormality in 2 clusters
                 % split abdnomaly in 2
                 modele_LOGPDF_k2 = fitgmdist(LOGPDF, 2, 'Options', options, 'Regularize', 1e-5, 'Replicates',  opt.Number_of_replicate);
                 abnormality_separation_k2 =  cluster(modele_LOGPDF_k2, LOGPDF);
-                %% test plot abnormality_separation_k2
-%                         Img_bnormality_separation_k2 = ROI_Clean{1};
-%                         Img_bnormality_separation_k2 = reshape(abnormality_separation_k2,size(ROI_Clean{1}));
-%                         Img_bnormality_separation_k2(~VecVoxToDeleteClean{i}) = abnormality_separation_k2(1:1+size(All_Data_Clean{1},1)-1);
-%                         figure;imshow3D(Img_bnormality_separation_k2);
-%                 
+                
+                min_of_max_abnormality = max(LOGPDF(abnormality_separation_k2 == find(modele_LOGPDF_k2.mu == min(modele_LOGPDF_k2.mu))));
+                max_of_min_abnormality = min(LOGPDF(abnormality_separation_k2 == find(modele_LOGPDF_k2.mu == max(modele_LOGPDF_k2.mu))));
+                LOGPDF_cutoff = (max_of_min_abnormality + min_of_max_abnormality) /2;
+                disp(['cutoff_abnormality : ', num2str(LOGPDF_cutoff)])
+                %
                 % find the cluster with the lowest log-score. This cluster
                 % corresponds to the less adequacy with the reference model
                 % --> abdormal voxels
@@ -359,7 +383,7 @@ if isfield(trainedModel_loaded, 'Informations')
                 
                 %On stocke les modeles calcules pour ne pas avoir a les recalculer une
                 %fois le nombre de classes optimal trouve.
-                modeles = cell(1,ptsheurist);
+                %modeles = cell(1,ptsheurist);
                 Number_of_replicate = opt.Number_of_replicate;
                 % find the number of abnormality classes
                 parfor kk=1:ptsheurist
@@ -396,7 +420,7 @@ if isfield(trainedModel_loaded, 'Informations')
                 
                 %Le vecteur eqbic2 est similaire au vecteur eqbic mais avec un autre
                 %critere.
-                eqbic2 = NaN(opt.NbClusters,length(loglike));
+                %eqbic2 = NaN(opt.NbClusters,length(loglike));
                 
                 for j = 1:opt.NbClusters
                     %La regression lineaire
@@ -406,7 +430,7 @@ if isfield(trainedModel_loaded, 'Informations')
                         eqbic(j,i) = 2*alpha(j,1)*i-loglike(i);
                     end
                 end
-              
+                
                 figure
                 plot(eqbic.')
                 [~,I] = nanmin(eqbic,2);  %Pour chacune des courbes de l'eqbic, l'indice pour lequel le minimum est atteint est considere comme etant le nombre optimal de clusters
@@ -433,9 +457,9 @@ if isfield(trainedModel_loaded, 'Informations')
                     gmfit_LOGPDF_kn = modeles_LOGPDF_kn{k};
                     %return
                 else
-                     gmfit_LOGPDF_kn = modeles_LOGPDF_kn{k};
+                    gmfit_LOGPDF_kn = modeles_LOGPDF_kn{k};
                 end
-
+                
                 % define the PDF cutoff using the clustering with 2 classes
                 abnormality_separation_k2 =  cluster(modeles_LOGPDF_kn{2}, LOGPDF);
                 min_of_max_abnormality = max(LOGPDF(abnormality_separation_k2 == find(modeles_LOGPDF_kn{2}.mu == min(modeles_LOGPDF_kn{2}.mu))));
@@ -523,28 +547,44 @@ for i=1:length(All_Data_Clean)
     ROI_cluster_header.fname = files_out.In1{i};
     ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
-  
+    
     Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
     spm_write_vol(ROI_cluster_header, Cluster);
-   
+    
     if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
         ROI_abnormal_voxels = ROI_Clean{i};
         ROI_abnormal_voxels(~VecVoxToDeleteClean{i}) = ClusteredVox_excluded(ind:ind+size(All_Data_Clean{i},1)-1);
         % save the mask
-        ROI_abnormal_voxels = single(ROI_abnormal_voxels); 
-        % copy nifti_header from the Cluster 
+        ROI_abnormal_voxels = single(ROI_abnormal_voxels);
+        % copy nifti_header from the Cluster
         ROI_abnormal_voxels_header = ROI_cluster_header;
         % update the header with the new info
         ROI_abnormal_voxels_header.fname = files_out.In2{1};
         ROI_abnormal_voxels_header.Filemoddate = char(datetime('now'));
-        ROI_abnormal_voxels_header.Datatype = class(ROI_abnormal_voxels);  
+        ROI_abnormal_voxels_header.Datatype = class(ROI_abnormal_voxels);
         %reorient the volume
         ROI_abnormal_voxels = write_volume(ROI_abnormal_voxels,ROI_nifti_header_Clean{i}, 'axial');
-
+        
         spm_write_vol(ROI_abnormal_voxels_header, ROI_abnormal_voxels);
+        
+        %% test saving LOGPDF
+        %         LOGPDF_map = ROI_Clean{i};
+        %         LOGPDF_map(~VecVoxToDeleteClean{i}) = LOGPDF(ind:ind+size(All_Data_Clean{i},1)-1);
+        %         % save the mask
+        %         LOGPDF_map = single(LOGPDF_map);
+        %         % copy nifti_header from the Cluster
+        %         ROI_abnormal_voxels_header = ROI_cluster_header;
+        %         % update the header with the new info
+        %         ROI_abnormal_voxels_header.fname = files_out.In2{1};
+        %         ROI_abnormal_voxels_header.Filemoddate = char(datetime('now'));
+        %         ROI_abnormal_voxels_header.Datatype = class(LOGPDF_map);
+        %         %reorient the volume
+        %         LOGPDF_map = write_volume(LOGPDF_map,ROI_nifti_header_Clean{i}, 'axial');
+        %
+        %         spm_write_vol(ROI_abnormal_voxels_header, LOGPDF_map);
     end
     
     ind = ind+size(All_Data_Clean{i},1);
-   
+    
 end
 
