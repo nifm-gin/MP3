@@ -1995,6 +1995,9 @@ for i=1:length(Names_Mod)
             return
         elseif strcmp(answer, 'Overwrite files')
             DeleteRewrite = 0;
+            if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
+                delete(fullfile(opt_pipe.path_logs, 'PIPE_history.txt')) 
+            end
         elseif strcmp(answer, 'Remove jobs')
             DeleteRewrite = 1;
         end
