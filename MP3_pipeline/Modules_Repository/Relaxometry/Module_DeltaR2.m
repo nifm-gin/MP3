@@ -151,8 +151,8 @@ NbEchoUsed = str2double(opt.NbEchoUsed);
 deltaR2_map=zeros([size(input_pre,1), size(input_pre, 2), size(input_pre, 3)]);     % DeltaR2 map
 for m_slice=1:size(input_pre, 3)
     if NbEchoUsed == 1
-        temp_avant=squeeze(input_pre(:,:,m_slice,se_echo_pos),3);
-        temp_apres=squeeze(input_post(:,:,m_slice,se_echo_pos),3);
+        temp_avant=squeeze(input_pre(:,:,m_slice,se_echo_pos));
+        temp_apres=squeeze(input_post(:,:,m_slice,se_echo_pos));
     else
         temp_avant=mean(squeeze(input_pre(:,:,m_slice,se_echo_pos-1:se_echo_pos+1)),3);
         temp_apres=mean(squeeze(input_post(:,:,m_slice,se_echo_pos-1:se_echo_pos+1)),3);
