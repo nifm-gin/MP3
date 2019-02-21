@@ -375,10 +375,10 @@ function  th = Maximization(t,y,r,muw,Sw,cstr,verb)
         % Compute weighted, mean centered y and x
         weights=sqrt(rk); % 1xN        
         y_stark=bsxfun(@minus,y,yk_bar); % DxN
-        y_stark=bsxfun(@times,weights,y_stark); % DxN         
+        y_stark=bsxfun(@times,weights,y_stark) ./ sqrt(rk_bar(k)); % DxN         
         if(L>0);
             x_stark=bsxfun(@minus,x,xk_bar); % LxN  
-            x_stark=bsxfun(@times,weights,x_stark); % LxN            
+            x_stark=bsxfun(@times,weights,x_stark) ./ sqrt(rk_bar(k)); % LxN            
         else
             x_stark=[];
         end;
