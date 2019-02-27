@@ -567,7 +567,7 @@ patient_seleted = get(handles.MP3_name_list, 'String');
 patient_name = patient_seleted(get(handles.MP3_name_list, 'Value'),:);
 %patient_name = unique(handles.database.Patient(data_selected));
 user_response = questdlg(['Do you want to delete every data of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
-if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
+if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
     return
 end
 nii_index = [];
@@ -909,7 +909,7 @@ end
 
 nii_index = finddata_selected(handles);
 user_response = questdlg('Do you want to delete these data ??', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
-if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No')
+if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
     return
 end
 MP3_remove_scan(hObject, eventdata, handles, nii_index)
