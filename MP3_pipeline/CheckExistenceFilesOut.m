@@ -2,6 +2,10 @@ function [flag_exist] = CheckExistenceFilesOut(Job)
 %UNTITLED Summary of this function goes here
 %   flag_exist = 1 means all the files exist.
 %   flag_exist = 0 means at least one file is missing.
+if isempty(Job.files_out)
+    flag_exist = 0;
+    return
+end
 Files_out = fieldnames(Job.files_out);
 Flags = zeros(1, length(Files_out));
 for i=1:length(Files_out)
