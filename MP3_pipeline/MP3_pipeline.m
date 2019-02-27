@@ -1995,9 +1995,6 @@ for i=1:length(Names_Mod)
             return
         elseif strcmp(answer, 'Overwrite files')
             DeleteRewrite = 0;
-            if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
-                delete(fullfile(opt_pipe.path_logs, 'PIPE_history.txt')) 
-            end
         elseif strcmp(answer, 'Remove jobs')
             DeleteRewrite = 1;
         end
@@ -2164,8 +2161,21 @@ end
 %% exectute the pipeline
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
+    if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
+        delete(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'))
+    end
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
+    % We have to wait until PSOM finish to update every files before
+    % loading PIPE_statu.mat
+    PSOM_finished = 0;
+    while PSOM_finished == 0
+        if exist([opt_pipe.path_logs, '/PIPE.exit'], 'file') == 2
+            PSOM_finished = 1;
+        end
+        pause(0.2);   
+    end
     Result = load([opt_pipe.path_logs, '/PIPE_status.mat']);
+
 else
     Modules = fieldnames(handles.psom.pipeline);
     Result = struct();
@@ -2178,21 +2188,24 @@ else
         disp(['Execution Job ', num2str(i)])
         eval(Module.command);
         Result = setfield(Result, Modules{i}, 'finished');
-        
     end
 end
 
 Jobs = fieldnames(handles.psom.pipeline);
 update = false;
 for i=1:length(Jobs)
-   switch getfield(Result, Jobs{i})
+   switch  Result.(Jobs{i}) %getfield(Result, Jobs{i})
        case 'failed'
            disp('FAILED')
-       case 'finished'
+       case 'finished' 
            update = true;
            J = getfield(handles.psom.pipeline, Jobs{i});
            A = getfield(J, 'files_out');
            C = getfield(J, 'files_in');
+           % If there is no file_out from a module
+           if isempty(A)
+               continue
+           end
            Outputs = fieldnames(A);
            for j=1:length(Outputs)
                B = getfield(A, Outputs{j});
@@ -2248,26 +2261,16 @@ if update
     handles2.database = handles.MP3_data.database;
     guidata(handles.MP3_data.MP3_GUI, handles2);
 
-%handles2.MP3_GUI, handles
-%guidata(handles.MP3_data, handles2);
-%handles2 = guidata(handles.MP3_data.MP3_GUI);
-%MP3_update_database_display(hObject, eventdata, handles)
-%MP3('MP3_update_database_display'
-%handles2.database = handles.MP3_data.database;
-
     MP3('MP3_update_database_display', hObject, eventdata,handles.MP3_data)
     msgbox('Done', 'Information') ;
 
-    %close('MP3 pipeline Manager')
     handles.database = handles.MP3_data.database;
     handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
     MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
 end
-%handles.MP3_pipeline_Filtered_Table = handles.MP3_data.database;
-%MP3_pipeline_OpeningFcn(hObject, eventdata, handles)
-%set(handles.MP3_pipeline.Filtering_Table, 'Data', 
-%a=0;
+
+
 function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
 
 
@@ -3049,12 +3052,13 @@ else
         for i=1:length(Inputs)
             String = [String; {['files_in', ' ', Inputs{i}]}];
         end
-        
-        Outputs = fieldnames(Job.files_out);
-        for i=1:length(Outputs)
-            String = [String; {['files_out', ' ', Outputs{i}]}];
+ 
+        if ~isempty(Job.files_out)
+            Outputs = fieldnames(Job.files_out);
+            for i=1:length(Outputs)
+                String = [String; {['files_out', ' ', Outputs{i}]}];
+            end
         end
-        
         UserFields = Module.ModuleParams.opt.table.PSOM_Fields;
         UserFields = UserFields(~cellfun(@isempty,UserFields));
         for i=1:length(UserFields)
@@ -3437,6 +3441,10 @@ Status = false(size(JobNames));
 
 for i=1:length(JobNames)
     files_out = Module.Jobs.(JobNames{i}).files_out;
+    if isempty(files_out)
+        Status(i) = 0;
+        continue
+    end
     inputNames = fieldnames(files_out);
     for j=1:length(inputNames)
         file = files_out.(inputNames{j});
