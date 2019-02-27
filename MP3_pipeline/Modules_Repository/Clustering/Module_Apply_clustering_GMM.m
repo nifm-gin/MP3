@@ -141,14 +141,16 @@ in_files = {};
 roi_files = {};
 for i=1:length(UTag1)
     for j=1:length(UTag2)
-        DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
-        DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
+        DbRois = databROIs(strcmp(cellstr(databROIs.(Tag1)), cellstr(UTag1(i))),:);
+       % DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
+        DbRois = DbRois(strcmp(cellstr(DbRois.(Tag2)), cellstr(UTag2(j))),:);
+
         if size(DbRois, 1) == 0
             continue
         end
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
-        datab = databScans(databScans.(Tag1) == UTag1(i),:);
-        datab = datab(datab.(Tag2) == UTag2(j),:);
+        datab = databScans(strcmp(cellstr(databScans.(Tag1)), cellstr(UTag1(i))),:);
+        datab = datab(strcmp(cellstr(datab.(Tag2)), cellstr(UTag2(j))),:);
         fi = cell(size(datab,1),1);
         for k=1:size(datab,1)
             fi{k} = [char(datab.Path(k)), char(datab.Filename(k)), '.nii'];
@@ -337,7 +339,7 @@ if isfield(trainedModel_loaded, 'Informations')
                 for i=1:size(dist,1)
                     dist_from_best_cluster(i) = dist(i,ClusteredVox(i));
                 end
-                dist_cutoff = prctile(dist_from_best_cluster,99);
+                dist_cutoff = prctile(dist_from_best_cluster,95);
                 ClusteredVox(dist_from_best_cluster>dist_cutoff) = 0;
                 if strcmp(opt.ROI_abnormal_voxels_Yes_No, 'Yes')
                     ClusteredVox_excluded(dist_from_best_cluster>dist_cutoff) = 1;
