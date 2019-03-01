@@ -37,7 +37,7 @@ if isempty(opt)
          'Please select the scan that will be use as reference. Every other scan selected below will be reoriented to this reference space'};
     user_parameter(:,3)   = {'   .Other scans (if needed)','XScan','','', {'SequenceName'},'Optional',...
          'Please select evey scan (other than the reference scan) that you would like to export using the resolution of the scan of reference'};
-    user_parameter(:,4)   = {'   .ROI','1ROI','','',{'SequenceName'},'Mandatory',...
+    user_parameter(:,4)   = {'   .ROI','XROI','','',{'SequenceName'},'Mandatory',...
          'Please select one ROI. This ROI will be used to extract values of every voxel in this ROI'};
     user_parameter(:,5)   = {'   .Output filename','char','Voxel_values','Output_filename','', '',''};
 
@@ -54,25 +54,6 @@ if isempty(opt)
   
 end
 %%%%%%%%
-
-% if strcmp(files_out, '')
-% %     [Path_In, Name_In, ~] = fileparts(files_in.In1{1});
-% %     tags = opt.Table_in(opt.Table_in.Path == [Path_In, filesep],:);
-% %     tags = tags(tags.Filename == Name_In,:);
-% %     assert(size(tags, 1) == 1);
-% %     tags_out_In = tags;
-% %     tags_out_In.Type = categorical(cellstr('Data_to_export'));
-% %     tags_out_In.IsRaw = categorical(0);
-% %     tags_out_In.Path = categorical(cellstr([opt.folder_out, filesep]));
-% %     tags_out_In.SequenceName = categorical(cellstr(opt.Output_filename));
-% %     tags_out_In.Filename = categorical(cellstr([char(tags_out_In.Patient), '_', char(tags_out_In.Tp), '_', char(tags_out_In.SequenceName)]));
-%     f_out = [char(tags_out_In.Path), char(tags_out_In.Patient), '_', char(tags_out_In.Tp), '_', char(tags_out_In.SequenceName), '.csv'];
-% %     files_out.In1{1} = f_out;
-% %     opt.Table_out = tags_out_In;
-% end
-
-
-
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
@@ -101,19 +82,9 @@ end
 scan_of_reference.header = spm_vol(files_in.In1{1});
 scan_of_reference.data=  read_volume(scan_of_reference.header, scan_of_reference.header, 0, 'Axial'); %si tout marche, on peut virer cette ligne
 
-%% load the ROI if selected
-if isfield(files_in, 'In3')
-    ROI.header = spm_vol(files_in.In3{1});
-    ROI.data=  read_volume(ROI.header, scan_of_reference.header, 0, 'Axial'); %si tout marche, on peut virer cette ligne
-else
-    ROI.data = ones([size(scan_of_reference.data, 1) size(scan_of_reference.data, 2) size(scan_of_reference.data, 3)]);
-end
 
-output_data = scan_of_reference.data .* ROI.data;
+output_data = scan_of_reference.data;% .* ROI.data;
 
-% % read json file
-% scan_of_reference.json = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
-% output_json = scan_of_reference.json;
 voxel_name = {};
 Scan_name = {};
 TimePoint = {};
@@ -157,7 +128,7 @@ for i=1:length(files_in.In2)
             end
         end
     end
-    data_to_add = other_scan(i).data.* ROI.data;
+    data_to_add = other_scan(i).data; %;.* ROI.data;
      output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  reshape(data_to_add, [size(output_data,1), size(output_data,2), size(output_data,3), size(data_to_add,4)*size(data_to_add,5)]); 
    
 end
@@ -166,27 +137,47 @@ end
 % Patient_name / TimePoint / Scan_name / ROI_name /
 % Coordonate_x / Coordonate_y / Coordonate_z / Name_of_the_voxel
 cvs_table_template = table;
-cvs_table_template(1,1:size([{'Ref_Patient_name'}, {'Ref_TimePoint'}, {'Ref_Scan_name'},  {'ROI_name'}, {'Coordonate_x'}, {'Coordonate_y'}, {'Coordonate_z'},  voxel_name(:)'  ],2)) = ...
-    [PatientName(1), TimePoint(1), Scan_name(1),  cellstr(opt.Table_in.SequenceName(end)), NaN, NaN, NaN,  num2cell(NaN(1, size(voxel_name,2)))];
-cvs_table_template.Properties.VariableNames = [{'Ref_Patient_name'}, {'Ref_TimePoint'}, {'Ref_Scan_name'},  {'ROI_name'}, {'Coordonate_x'}, {'Coordonate_y'}, {'Coordonate_z'},  voxel_name(:)'  ];
-% create 3 matrices for the voxel's coordonates
-[coord_x, coord_y, coord_z] = ndgrid(1:size(output_data,1), 1:size(output_data,2), 1:size(output_data,3));
-% reshape the coordonate and the data
-coord_x = reshape(coord_x, [size(output_data,1)*size(output_data,2)*size(output_data,3), 1]);
-coord_y = reshape(coord_y, [size(output_data,1)*size(output_data,2)*size(output_data,3), 1]);
-coord_z = reshape(coord_z, [size(output_data,1)*size(output_data,2)*size(output_data,3), 1]);
-output_data = reshape(output_data, [size(output_data,1)*size(output_data,2)*size(output_data,3), size(output_data,4)]);
-% create a binary variable containing which contains the information of any
-% voxel with non-zeros values
-index_voxel_to_save = any(output_data,2);
-% generate a variable with any voxel to save (coordonates and values of
-% each parameters)
-vox_in_table = [coord_x(index_voxel_to_save), coord_y(index_voxel_to_save), coord_z(index_voxel_to_save), output_data(index_voxel_to_save,:)];
 
-% design the final table (scan info + voxels values)
-cvs_table = repmat(cvs_table_template, [size(vox_in_table,1),1]);
-cvs_table(:,5:end) = num2cell(vox_in_table);
-cvs_filename = fullfile(strrep(opt.folder_out, '/Tmp', 'Data_to_export'), strcat(cellstr(opt.Output_filename), '.csv'));
+
+%% load the ROIs one-by-one and create the corresponding table 
+% generate the ROI_table
+ROI_table = opt.Table_in(strcmp(cellstr(opt.Table_in.Type), 'ROI'),:);
+for i=1:numel(files_in.In3)
+    % first load the ROI
+    ROI.header = spm_vol(files_in.In3{i});
+    ROI.data=  read_volume(ROI.header, scan_of_reference.header, 0, 'Axial');
+    % mask the output_data using the current ROI
+    current_output_data = output_data.* ROI.data;
+    % then create a cvs_table_template
+    cvs_table_template(1,1:size([{'Ref_Patient_name'}, {'Ref_TimePoint'}, {'Ref_Scan_name'},  {'ROI_name'}, {'Coordonate_x'}, {'Coordonate_y'}, {'Coordonate_z'},  voxel_name(:)'  ],2)) = ...
+        [PatientName(1), TimePoint(1), Scan_name(1),  cellstr(ROI_table.SequenceName(i)), NaN, NaN, NaN,  num2cell(NaN(1, size(voxel_name,2)))];
+    cvs_table_template.Properties.VariableNames = [{'Ref_Patient_name'}, {'Ref_TimePoint'}, {'Ref_Scan_name'},  {'ROI_name'}, {'Coordonate_x'}, {'Coordonate_y'}, {'Coordonate_z'},  voxel_name(:)'  ];
+    % create 3 matrices for the voxel's coordonates
+    [coord_x, coord_y, coord_z] = ndgrid(1:size(current_output_data,1), 1:size(current_output_data,2), 1:size(current_output_data,3));
+    % reshape the coordonate and the data
+    coord_x = reshape(coord_x, [size(current_output_data,1)*size(current_output_data,2)*size(current_output_data,3), 1]);
+    coord_y = reshape(coord_y, [size(current_output_data,1)*size(current_output_data,2)*size(current_output_data,3), 1]);
+    coord_z = reshape(coord_z, [size(current_output_data,1)*size(current_output_data,2)*size(current_output_data,3), 1]);
+    current_output_data = reshape(current_output_data, [size(current_output_data,1)*size(current_output_data,2)*size(current_output_data,3), size(current_output_data,4)]);
+    % create a binary variable containing which contains the information of any
+    % voxel with non-zeros values
+    index_voxel_to_save = any(current_output_data,2);
+    % generate a variable with any voxel to save (coordonates and values of
+    % each parameters)
+    vox_in_table = [coord_x(index_voxel_to_save), coord_y(index_voxel_to_save), coord_z(index_voxel_to_save), current_output_data(index_voxel_to_save,:)];
+    
+    % design the final table (scan info + voxels values)
+    current_cvs_table = repmat(cvs_table_template, [size(vox_in_table,1),1]);
+    current_cvs_table(:,5:end) = num2cell(vox_in_table);
+    
+    % concatanate the current_cvs_table into one big table
+    if ~exist('cvs_table', 'var')
+        cvs_table = current_cvs_table;
+    else
+        cvs_table = vertcat(cvs_table,current_cvs_table);
+    end
+    %cvs_filename = fullfile(strrep(opt.folder_out, '/Tmp', 'Data_to_export'), strcat(cellstr(opt.Output_filename), '.csv'));  
+end
 
 % generate the output filename
 [Path_In, Name_In, ~] = fileparts(files_in.In1{1});
