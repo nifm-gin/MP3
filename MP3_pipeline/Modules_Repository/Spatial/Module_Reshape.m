@@ -170,9 +170,11 @@ NewIm=int16(NewIm);
 info2.Datatype = class(NewIm);
 niftiwrite(NewIm, files_out.In1{1}, info2)
 
-J = ReadJson(jsonfile);
-J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+if exist(jsonfile)
+    J = ReadJson(jsonfile);
+    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
-[path, name, ~] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-WriteJson(J, jsonfile)
+    [path, name, ~] = fileparts(files_out.In1{1});
+    jsonfile = [path, '/', name, '.json'];
+    WriteJson(J, jsonfile)
+end
