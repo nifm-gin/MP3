@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 18-Dec-2018 15:27:43
+% Last Modified by GUIDE v2.5 05-Mar-2019 14:09:09
 
 
 % Begin initialization code - DO NOT EDIT
@@ -4572,6 +4572,15 @@ function MP3_menu_Importing_form_another_database_Callback(hObject, eventdata, h
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+
+
+if ~isfield(handles, 'database')
+    msgbox('Before importing data from another project, please create an initial project, by selecting ''import data'' or open a previous project thanks to the folder icon.', 'Message') ;
+    return
+end
+
+
 dir = uigetdir(pwd, 'Select the project to import');
 if dir == 0
     return
@@ -5617,3 +5626,28 @@ else
 end
 MP3_update_database_display(hObject, eventdata, handles)
 guidata(hObject, handles)
+
+
+% --------------------------------------------------------------------
+function Vectorial_Screenshot_Callback(hObject, eventdata, handles)
+% hObject    handle to Vectorial_Screenshot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+fig = handles.MP3_GUI;
+
+[file,path] = uiputfile('.eps', 'Save the MP3 viewer as eps:');
+
+fig.InvertHardcopy = 'off';  %background
+%fig.PaperOrientation = 'landscape';
+set(fig,'PaperPositionMode','auto'); % size position
+
+%print(fig, '-bestfit', [path, file],'-dpdf')
+%print(fig, '-fillpage', [path, file],'-dpdf')
+
+print(fig, [path, file],'-depsc2')
+msgbox('Done', 'Information') ;
+
+
+
+

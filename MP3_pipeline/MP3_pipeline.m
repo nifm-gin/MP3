@@ -22,7 +22,7 @@ function varargout = MP3_pipeline(varargin)
 
 % Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 18-Dec-2018 15:51:49
+% Last Modified by GUIDE v2.5 05-Mar-2019 14:45:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1891,7 +1891,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                         [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
                         databtmp = TmpDatabase(TmpDatabase.Filename == categorical(cellstr(NAME)),:);
                         databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
-                        assert(size(databtmp, 1) == 1);
+                        %assert(size(databtmp, 1) == 1);
                         InTags = databtmp(1,:);
                         table_in = [table_in; InTags];
                     end
@@ -3577,3 +3577,30 @@ if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 
     rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's')
     msgbox('Done', 'Information') ;
 end
+
+
+% --------------------------------------------------------------------
+function File_Callback(hObject, eventdata, handles)
+% hObject    handle to File (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Vectorial_Screenshot_Callback(hObject, eventdata, handles)
+% hObject    handle to Vectorial_Screenshot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+fig = handles.MP3_pipeline_manager_GUI;
+
+[file,path] = uiputfile('.eps', 'Save the MP3 pipeline manager as eps:');
+
+fig.InvertHardcopy = 'off';  %background
+%fig.PaperOrientation = 'landscape';
+set(fig,'PaperPositionMode','auto'); % size position
+
+%print(fig, '-bestfit', [path, file],'-dpdf')
+%print(fig, '-fillpage', [path, file],'-dpdf')
+
+print(fig, [path, file],'-depsc2')
+msgbox('Done', 'Information') ;
