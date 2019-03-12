@@ -2262,7 +2262,8 @@ if update
     guidata(handles.MP3_data.MP3_GUI, handles2);
 
     MP3('MP3_update_database_display', hObject, eventdata,handles.MP3_data)
-    msgbox('Done', 'Information') ;
+    MP3('MP3_menu_save_database_Callback', hObject, eventdata,handles.MP3_data)
+    %msgbox('Done', 'Information') ;
 
     handles.database = handles.MP3_data.database;
     handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
