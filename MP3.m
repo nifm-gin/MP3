@@ -57,6 +57,13 @@ function MP3_OpeningFcn(hObject, ~, handles, varargin)
 % Choose default command line output for MP3
 handles.output = hObject;
 
+% Add path to all the files in the MATLAB search path
+p = mfilename('fullpath');
+warning off
+rmpath(genpath(fileparts(p)))
+warning on 
+addpath(genpath(fileparts(p)),'-begin');
+
 % init stuct/variables
 handles.VOIs = {'Other'};
 handles.histo = {'Other'}; %{'Pimo', 'ColIV', 'Tc+I_cerveau', 'Tc+I_ref'};
@@ -129,16 +136,37 @@ function MP3_GUI_CloseRequestFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+if ~isfield(handles, 'database')
+    delete(hObject);
+    if ~isempty(findobj('type', 'figure', 'name', 'MP3 pipeline Manager'))
+        close((findobj('type', 'figure', 'name', 'MP3 pipeline Manager')));
+    end
+    return
+else
+    DBFilename = [handles.database.Properties.UserData.MP3_data_path, handles.database.Properties.UserData.db_filename];
+    SavedDB = load(DBFilename, 'database');
+    Diff = setdiff(SavedDB.database, handles.database);
+    if isempty(Diff)
+        delete(hObject);
+        if ~isempty(findobj('type', 'figure', 'name', 'MP3 pipeline Manager'))
+            close((findobj('type', 'figure', 'name', 'MP3 pipeline Manager')));
+        end
+        return
+    end
+end
+
+
 % Hint: delete(hObject) closes the figure
-selection = questdlg('Do you want to close (did you save you database)?',...
+selection = questdlg('Before leaving, do you want to save your database?',...
     'Warning',...
     'Yes','No','Yes');
 if isempty(selection)
     return
 end
 switch selection
-    case 'No'
-        return
+    case 'Yes'
+        MP3_menu_save_database_Callback(hObject, eventdata, handles)
 end
 
 if ~isempty(findobj('type', 'figure', 'name', 'MP3 pipeline Manager'))
@@ -554,6 +582,9 @@ set(handles.MP3_name_list, 'Value', 1);
 % update graph and display
 MP3_update_database_display(hObject, eventdata, handles);
 
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
 
 function MP3_remove_name_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_remove_name (see GCBO)
@@ -812,6 +843,9 @@ guidata(hObject, handles);
 %% update graph and display
 MP3_update_database_display(hObject, eventdata, handles);
 
+% save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
 
 
 % --------------------------------------------------------------------
@@ -894,6 +928,9 @@ guidata(hObject, handles);
 
 %% update graph and display
 MP3_update_database_display(hObject, eventdata, handles);
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
@@ -2327,7 +2364,8 @@ end
 dimension_size(:,1:3) =[];
 % find only the 4D data (exclude < and > of 4d data)
 fourD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 1);
-if isempty(fourD_data)
+fiveD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 2);
+if isempty(fourD_data) && isempty(fiveD_data)
     return
 end
 
@@ -2341,7 +2379,7 @@ else
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
-if voxel(1) == 0 || voxel(2)==0
+if voxel(1) == 0 || voxel(2) == 0
     return  %bug somewhere
 end
 % clean old plot (if needed)
@@ -2354,19 +2392,35 @@ end
 set(handles.MP3_GUI, 'pointer', 'watch');
 drawnow;
 
-scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
-legende_txt = cell(numel(fourD_data),1);
-for i = 1:numel(fourD_data)
-    strii = num2str(i);
-    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
-    y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
-    x_data = 1:size(tmp,4);
-    plot(handles.MP3_plot1,x_data,y_data,...
-        'Color',rgb(handles.colors{i}),...
-        'Tag', strcat('MP3_plot1_1d', strii));
-    hold(handles.MP3_plot1, 'on');
-    legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
+if ~isempty(fourD_data) && isempty(fiveD_data)
+    scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
+    legende_txt = cell(numel(fourD_data),1);
+    for i = 1:numel(fourD_data)
+        strii = num2str(i);
+        tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
+        y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
+        x_data = 1:size(tmp,4);
+        plot(handles.MP3_plot1,x_data,y_data,...
+            'Color',rgb(handles.colors{i}),...
+            'Tag', strcat('MP3_plot1_1d', strii));
+        hold(handles.MP3_plot1, 'on');
+        legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
+    end
     
+elseif isempty(fourD_data) && ~isempty(fiveD_data)
+    scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
+    legende_txt = cell(numel(fiveD_data),1);
+    for i = 1:numel(fiveD_data)
+        strii = num2str(i);
+        tmp  = read_volume(handles.data_loaded.Scan(fiveD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
+        y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:,handles.MP3_data1_expt_slider.Value));
+        x_data = 1:size(tmp,4);
+        plot(handles.MP3_plot1,x_data,y_data,...
+            'Color',rgb(handles.colors{i}),...
+            'Tag', strcat('MP3_plot1_1d', strii));
+        hold(handles.MP3_plot1, 'on');
+        legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fiveD_data(i)));
+    end
 end
 % add the legend
 if ~isempty(legende_txt)
@@ -3667,6 +3721,10 @@ end
 guidata(hObject, handles)
 MP3_update_database_display(hObject, eventdata, handles)
 
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+
 % --------------------------------------------------------------------
 function MP3_save_database_ClickedCallback(hObject, eventdata, handles)
 % hObject    handle to MP3_menu_save_database (see GCBO)
@@ -3820,7 +3878,8 @@ end
 
 MP3_remove_scan(hObject, eventdata, handles, nii_index)
 
-msgbox('Done', 'Message') ;
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
@@ -4118,7 +4177,11 @@ end
 %% update graph and display
 MP3_update_database_display(hObject, eventdata, handles);
 
-msgbox('Done', 'Message') ;
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+%msgbox('Done', 'Message') ;
 
 
 
@@ -4214,7 +4277,8 @@ end
 %update handes
 guidata(hObject, handles)
 
-msgbox('Done', 'logbook') ;
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 function MP3_warning_duplicate_scan_fcn(handles, parameters,patient_nbr,time_point)
@@ -5222,6 +5286,7 @@ switch get(hObject, 'Tag')
 end
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles);
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on button press in MP3_Coronal_view_button.
@@ -5411,6 +5476,9 @@ handles.database = [handles.database; New_Entry];
 set(handles.MP3_scans_list, 'Value',1);
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles)
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
