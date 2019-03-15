@@ -685,20 +685,34 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Stage 4: Save the pipeline description in the logs folder %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if flag_pause||~flag_OK
-    fprintf('Any old description of the pipeline is going to be flushed (except for the log files of finished jobs).\n');   
-    f = figure;
-    t = uitable(f, 'Position', [30,50,500,325],'ColumnName', String(1),'Data',String(2:end)');
-    btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'delete(gcf);');
-    uiwait(f)
-    answer = questdlg('GO ?', 'It''s time to choose', 'Yes', 'No', 'No');
-    delete(f)
-    if strcmp(answer, 'No')
+
+Jobs_to_process = list_jobs(flag_restart);
+
+f = figure;
+t = uitable(f, 'Position', [30,50,500,325],'ColumnName', 'The following jobs will be executed' ,'Data',Jobs_to_process);
+btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'delete(gcf);');
+uiwait(f)
+answer = questdlg('GO ?', 'It''s time to choose', 'Yes', 'No', 'No');
+delete(f)
+if strcmp(answer, 'No')
        error('Pipeline execution stopped.')
-    end
-%     fprintf('Press CTRL-C now to cancel or press any key to continue.\n');   
-%     pause
 end
+
+% 
+% if flag_pause||~flag_OK
+%     fprintf('Any old description of the pipeline is going to be flushed (except for the log files of finished jobs).\n');   
+%     f = figure;
+%     t = uitable(f, 'Position', [30,50,500,325],'ColumnName', String(1),'Data',String(2:end)');
+%     btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'delete(gcf);');
+%     uiwait(f)
+%     answer = questdlg('GO ?', 'It''s time to choose', 'Yes', 'No', 'No');
+%     delete(f)
+%     if strcmp(answer, 'No')
+%        error('Pipeline execution stopped.')
+%     end
+% %     fprintf('Press CTRL-C now to cancel or press any key to continue.\n');   
+% %     pause
+% end
 
 if flag_verbose>1
     fprintf('\nSaving the pipeline description in the logs folder ...\n');
