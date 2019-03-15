@@ -1891,6 +1891,11 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                         [PATHSTR,NAME,~] = fileparts(FinalMat{j}{i,k});
                         databtmp = TmpDatabase(TmpDatabase.Filename == categorical(cellstr(NAME)),:);
                         databtmp = databtmp(databtmp.Path == categorical(cellstr([PATHSTR, filesep])),:);
+                        % When dealing with ROIs, databtmp sometimes
+                        % contains 2 times the ROI entry. I haven't fixed
+                        % this issue so far, but it seems to have no
+                        % importance as commenting this line don't reveal
+                        % any unwanted issue.
                         %assert(size(databtmp, 1) == 1);
                         InTags = databtmp(1,:);
                         table_in = [table_in; InTags];
