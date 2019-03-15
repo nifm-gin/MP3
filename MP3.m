@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 05-Mar-2019 14:09:09
+% Last Modified by GUIDE v2.5 13-Mar-2019 18:41:38
 
 
 % Begin initialization code - DO NOT EDIT
@@ -2364,8 +2364,7 @@ end
 dimension_size(:,1:3) =[];
 % find only the 4D data (exclude < and > of 4d data)
 fourD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 1);
-fiveD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 2);
-if isempty(fourD_data) && isempty(fiveD_data)
+if isempty(fourD_data)
     return
 end
 
@@ -2379,7 +2378,7 @@ else
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
-if voxel(1) == 0 || voxel(2) == 0
+if voxel(1) == 0 || voxel(2)==0
     return  %bug somewhere
 end
 % clean old plot (if needed)
@@ -2392,35 +2391,19 @@ end
 set(handles.MP3_GUI, 'pointer', 'watch');
 drawnow;
 
-if ~isempty(fourD_data) && isempty(fiveD_data)
-    scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
-    legende_txt = cell(numel(fourD_data),1);
-    for i = 1:numel(fourD_data)
-        strii = num2str(i);
-        tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
-        y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
-        x_data = 1:size(tmp,4);
-        plot(handles.MP3_plot1,x_data,y_data,...
-            'Color',rgb(handles.colors{i}),...
-            'Tag', strcat('MP3_plot1_1d', strii));
-        hold(handles.MP3_plot1, 'on');
-        legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
-    end
+scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
+legende_txt = cell(numel(fourD_data),1);
+for i = 1:numel(fourD_data)
+    strii = num2str(i);
+    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
+    y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
+    x_data = 1:size(tmp,4);
+    plot(handles.MP3_plot1,x_data,y_data,...
+        'Color',rgb(handles.colors{i}),...
+        'Tag', strcat('MP3_plot1_1d', strii));
+    hold(handles.MP3_plot1, 'on');
+    legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
     
-elseif isempty(fourD_data) && ~isempty(fiveD_data)
-    scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
-    legende_txt = cell(numel(fiveD_data),1);
-    for i = 1:numel(fiveD_data)
-        strii = num2str(i);
-        tmp  = read_volume(handles.data_loaded.Scan(fiveD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
-        y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:,handles.MP3_data1_expt_slider.Value));
-        x_data = 1:size(tmp,4);
-        plot(handles.MP3_plot1,x_data,y_data,...
-            'Color',rgb(handles.colors{i}),...
-            'Tag', strcat('MP3_plot1_1d', strii));
-        hold(handles.MP3_plot1, 'on');
-        legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fiveD_data(i)));
-    end
 end
 % add the legend
 if ~isempty(legende_txt)
@@ -3545,6 +3528,8 @@ end
 
 guidata(hObject, handles)
 MP3_update_axes(hObject, eventdata, handles)
+MP3_update_database_display(hObject, eventdata, handles);
+
 
 
 
@@ -4515,7 +4500,7 @@ for i=1:height(handles.database)
             ValidJsonFiles = [ValidJsonFiles, {Json_file}];
         else
             InvalidEntries = [InvalidEntries, i];
-            if exist(Nifti_file, 'file')~=2
+            if exist(Nifti_file, 'file')~=2 || exist(Nifti_file_compressed, 'file')~=2
                 InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
             elseif exist(Json_file, 'file')~=2
                 InvalidJsonFiles = [InvalidJsonFiles, {Json_file}];
@@ -4542,7 +4527,7 @@ for i=1:height(handles.database)
             ValidMatFiles = [ValidMatFiles, {Mat_file}];
         else
             InvalidEntries = [InvalidEntries, i];
-            if exist(Nifti_file, 'file')~=2
+            if exist(Nifti_file, 'file')~=2 || exist(Nifti_file_compressed, 'file')~=2
                 InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
             elseif exist(Json_file, 'file')~=2
                 InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
@@ -4550,7 +4535,7 @@ for i=1:height(handles.database)
         end
         
     else
-        warning('Types allowed : Scan, ROI, Cluster. We found an unknown type : %s', handles.database(i,:).Type)
+        warning('Types allowed so far : Scan, ROI, Cluster. We found an unknown type : %s', handles.database(i,:).Type)
     end
 end
 
@@ -4582,6 +4567,9 @@ end
 
 % ValidFiles is the list of all files linked to the database. Other files
 % in DirectoriesToProcess are useless.
+% Warning : If an entrie is linked to a .nii.gz instead of a .nii, it is
+% still the .nii file that is written in the ValidFiles variable. So,
+% ValidFiles can contains .nii, .json and .mat files, but no .nii.gz.
 
 
 DirectoriesToProcess = {'Derived_data', 'Raw_data', 'ROI_data'};
@@ -4600,7 +4588,11 @@ for i=1:length(DirectoriesToProcess)
     Files = struct2cell(Files);
     for j=1:size(Files,2)
         file = Files(:,j);
+        % Is the file is not a directory :
         if ~file{5}
+            %If the file is a .nii.gz, replace this extension by .nii in
+            %order to compare it with the files in ValidFiles. If this file
+            %is not written in the ValidFiles variable, move it away.
             if ~contains(strrep([file{2}, filesep, file{1}], '.nii.gz', '.nii'), ValidFiles) 
                 [status, msg] = movefile([file{2}, filesep, file{1}], [Data_path,  'To_Trash']);
                 if status
@@ -4627,6 +4619,9 @@ else
     end
 end
 guidata(hObject, handles)
+MP3_update_database_display(hObject, eventdata, handles);
+
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
@@ -5238,7 +5233,7 @@ function MP3_pipeline_Manager_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of MP3_pipeline_Manager
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') || isempty(handles.database)
     return
 end
 MP3_pipeline(hObject, eventdata, handles)
@@ -5717,5 +5712,111 @@ print(fig, [path, file],'-depsc2')
 msgbox('Done', 'Information') ;
 
 
+% --------------------------------------------------------------------
+function New_Project_Callback(hObject, eventdata, handles)
+% hObject    handle to New_Project (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
 
+if isfield(handles, 'database')
+    selection = questdlg('Would you like to save the existing project ?',...
+    'Warning',...
+    'Yes','No','Yes');
+    if isempty(selection)
+        return
+    end
+    switch selection
+        case 'Yes'
+            MP3_menu_save_database_Callback(hObject, eventdata, handles)
+    end
+    handles.database = table();
+end
+
+MP3_root_path = uigetdir(pwd, 'Select the directory to save the your new projet');
+if sum(MP3_root_path) == 0
+    return
+end
+
+
+
+
+MP3_root_path = [MP3_root_path filesep];
+
+%% create the output folder ('MP3_data')
+MP3_data_path = MP3_root_path;%[MP3_root_path, 'MP3_data', filesep];
+
+
+% Create the output folder if needed
+if exist(MP3_data_path, 'dir') ~= 7
+    status = mkdir(MP3_data_path);
+    if status == 0
+        warndlg('You do not have the right to write in the folder!', 'Warning');
+        return
+    end
+end
+
+if length(dir(MP3_data_path)) > 2
+    selection = questdlg('This folder is not empty. Rewrite it ?',...
+    'Warning',...
+    'Yes','No','Yes');
+    if isempty(selection)
+        return
+    end
+    switch selection
+        case 'No'
+            return
+    end
+    
+end
+
+% Create the RAW data folder if needed
+if exist([MP3_data_path, 'Raw_data', filesep], 'dir') ~= 7
+    status = mkdir([MP3_data_path, 'Raw_data', filesep]);
+    if status == 0
+        warndlg('You do not have the right to write in the folder!', 'Warning');
+        return
+    end
+end
+
+
+%% create the database structure
+handles.database =  table;%
+handles.database = cell2table(cell(0,8));
+handles.database.Properties.VariableNames = {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'};
+handles.database.Properties.UserData.MP3_data_path = MP3_data_path;
+handles.database.Properties.UserData.MP3_Raw_data_path = [MP3_data_path, 'Raw_data', filesep];
+handles.database.Properties.UserData.MP3_Derived_data_path = [MP3_data_path, 'Derived_data', filesep];
+handles.database.Properties.UserData.MP3_ROI_path = [MP3_data_path, 'ROI_data', filesep];
+handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
+handles.database.Properties.UserData.db_filename = 'MP3_database.mat';
+
+%% create the tmp folder
+MP3_tmp_folder = [MP3_data_path, 'tmp'];
+if exist(MP3_tmp_folder, 'dir') ~= 7
+    status = mkdir(MP3_tmp_folder);
+    if status == 0
+        warndlg('You do not have the right to write in the folder!', 'Warning');
+        return
+    end
+end
+
+
+guidata(hObject, handles)
+
+% update database
+MP3_update_database_display(hObject, eventdata, handles)
+
+%update handes
+%guidata(hObject, handles)
+
+%Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function Import_data_Callback(hObject, eventdata, handles)
+% hObject    handle to Import_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
