@@ -2,6 +2,7 @@ function var_name = clean_variable_name(var_name, option)
 
 
 var_name= strrep(var_name,'-','');
+var_name= strrep(var_name,':','');
 var_name= strrep(var_name,'/','_');
 var_name= strrep(var_name,' ','_');
 var_name= strrep(var_name,'.','');
