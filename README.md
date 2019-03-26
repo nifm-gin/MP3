@@ -15,26 +15,26 @@ In order to fully enjoy MP³, you have to meet the following requirements:
 You can download MP³ from our GIT repository. Then just add the downloaded file to your Matlab path and type `MP3` in Matlab command window. The graphical interface of the Viewer will then be displayed.
 
 ### Quickstart guide
-*  [If you cannot wait !](Quickstart_guide)
+*  [If you cannot wait !](https://github.com/nifm-gin/MP3/wiki/Quickstart_guide)
 
 
 ### User Guide: How to...
 
-*  [Import my data?](User_guide_import_data)
+*  [Import my data?](https://github.com/nifm-gin/MP3/wiki/User_guide_import_data)
 
-*  [Manage my database?](User_guide_manage_database)
+*  [Manage my database?](https://github.com/nifm-gin/MP3/wiki/User_guide_manage_database)
 
-*  [Visualize my data?](User_guide_visualize_data)
+*  [Visualize my data?](https://github.com/nifm-gin/MP3/wiki/User_guide_visualize_data)
 
-*  [Create a pipeline and execute it?](User_guide_create_execute_pipeline)
+*  [Create a pipeline and execute it?](https://github.com/nifm-gin/MP3/wiki/User_guide_create_execute_pipeline)
 
-*  [Create a new module?](User_guide_create_module)
+*  [Create a new module?](https://github.com/nifm-gin/MP3/wiki/User_guide_create_module)
 
 
 
 # Other
-[Brouillon Module Coreg](Brouillon_module_coreg)
+[Brouillon Module Coreg](https://github.com/nifm-gin/MP3/wiki/Brouillon_module_coreg)
 
-[Fonctions à développer](futur_features)
+[Fonctions à développer](https://github.com/nifm-gin/MP3/wiki/futur_features)
 
-[Dev: nouveau module](dev_new_module)
+[Dev: nouveau module](https://github.com/nifm-gin/MP3/wiki/dev_new_module)
