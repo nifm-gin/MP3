@@ -459,10 +459,10 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
         loglike = zeros(1,ptsheurist);
         modeles = cell(1,ptsheurist);
         for z=1:ptsheurist
-            repet_index = 1:ptsheurist:(ptsheurist*Number_of_replicate);
+            repet_index = z:ptsheurist:(ptsheurist*Number_of_replicate);
             [~, largest_loglikelihood_index] = min(abs(loglike_1repet(repet_index)));
             loglike(z) = loglike_1repet(repet_index(largest_loglikelihood_index));
-            modeles{z} = modeles_1_repet(repet_index(largest_loglikelihood_index));
+            modeles(z) = modeles_1_repet(repet_index(largest_loglikelihood_index));
         end
         toc
     else
@@ -479,9 +479,9 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
             %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
             %modele en modifiant l'initialisation. Le modele renvoye est celui
             %de plus grande vraisemblance.
-            modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
+            modeles(kk) = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
             
-            loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
+            loglike(kk) = -modeles(kk).NegativeLogLikelihood;
             
             %La ligne suivante permet uniquement de suivre l'avancement du
             %calcul des modeles
