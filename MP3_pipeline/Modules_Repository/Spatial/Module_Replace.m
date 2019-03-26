@@ -98,7 +98,8 @@ end
 
 N = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
-
+N = N*info.MultiplicativeScaling;
+info.MultiplicativeScaling = 1;
 
 NewImages = N;
 
