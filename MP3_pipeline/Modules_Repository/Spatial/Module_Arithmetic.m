@@ -119,7 +119,11 @@ switch opt.Operation
     case 'Addition'
         OutputImages = input1 + input2;
     case 'Subtraction'
-        OutputImages = input2 - input1;
+        OutputImages = input1 - input2;
+        if strcmp(char(unique(opt.Table_in.Type)), 'ROI')
+            OutputImages(OutputImages<0.5) = 0;
+            OutputImages(OutputImages>0.5) = 1;
+        end
     case 'Multiplication (Between Scans)'
        
         if  sum(strcmp(cellstr(opt.Table_in.Type), 'ROI')) > 0 %sum(opt.Table_in.Type == 'ROI') > 0
