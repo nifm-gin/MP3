@@ -1867,7 +1867,8 @@ if isfield(handles.data_loaded, 'ROI')
         switch get(hObject, 'Tag')
             case {'MP3_load_axes', 'MP3_Axial_view_button', 'MP3_Saggital_view_button', 'MP3_Coronal_view_button'}
                 handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
-                handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0) = 1;
+                handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0.5) = 1;
+                handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii<0.5) = 0;
         end
         for slice_nbr=1:get(handles.MP3_slider_slice, 'Max')
             roi_a_appliquer=handles.data_loaded.ROI(i).nii(:,:,slice_nbr);
