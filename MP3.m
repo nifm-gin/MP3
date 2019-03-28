@@ -4167,8 +4167,6 @@ MP3_update_database_display(hObject, eventdata, handles);
 % Save database
 MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
-%msgbox('Done', 'Message') ;
-
 
 
 function MP3_AdjWL(varargin)
