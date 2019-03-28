@@ -1759,7 +1759,7 @@ end
 
 switch get(hObject, 'Tag')
     
-    case {'MP3_new_roi', 'MP3_PRM_slider_trans', 'MP3_PRM_CI',"MP3_new_ROI_dyn"}
+    case {'MP3_new_roi', 'MP3_PRM_slider_trans', 'MP3_PRM_CI','MP3_new_ROI_dyn'}
         return
     case {'MP3_data1_echo_slider', 'MP3_data1_expt_slider'}
         
