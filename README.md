@@ -8,7 +8,8 @@ Medical software for Processing multi-Parametric images Pipelines
 ### Requirements
 In order to fully enjoy MP³, you have to meet the following requirements:
 * Matlab 2017b or higher
-* Toolboxes
+* Toolboxes (Mandatory : Image Processing Toolbox -- Recommended : Statistics and Machine Learning Toolbox ; Parallel Computing Toolbox)
+
 * Data to process in Brucker / DICOM / Philips / Nifti format
 
 
