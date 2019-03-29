@@ -1,0 +1,11 @@
+[Bruker] C:\Users\TONIC\Documents\MP3\MRIFileManager\
+[Dicom] F:\STEMRI 01-03-2018\ANSJE_015_(4)_20-09-2016
+[ParRec] F:\STEMRI_POSTPROCHOPITAL\006 LAFAL 02062014 PreRT
+[NifTI] C:\Users\TONIC\Documents\MP3\MRIFileManager\
+[Export] C:\Users\TONIC\Documents\MP3\MRIFileManager\
+[LookAndFeel] javax.swing.plaf.metal.MetalLookAndFeel
+[NamingRepNifTI] \
+[NamingFileNifTI] PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime
+[NamingOptionsNifTI] 000
+[previewActived] No
+[SeqDetail] 1023

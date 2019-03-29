@@ -75,7 +75,6 @@ handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
 %handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
 load(which('rgb_color_table.mat'), 'num');
 handles.colors_rgb = num;
-handles.colormap = get(handles.MP3_colormap_popupmenu,'String');
 handles.markers ={'o','s', 'd', 'p', 'h', '+', '*', 'x'};
 table_data(1,1) = {'Voxel values'};
 set(handles.MP3_table_pixel_values, 'Data', table_data);
@@ -90,13 +89,6 @@ handles.display_option.view_pixel_on_plot = 0;
 handles.display_option.view_plot = 1;
 handles.display_option.manual_contrast = 0;
 set(handles.MP3_menu_view_plot, 'Check', 'on');
-
-for i=1:4
-    stri = num2str(i);
-    set(eval(['handles.MP3_data', stri, '_echo_slider']), 'Visible', 'off');
-    set(eval(['handles.MP3_data', stri, '_expt_slider']), 'Visible', 'off');
-end
-
 
 % add MRIManager.jar to the classpath (dynamic classpath)
 [filepath,name,ext] = fileparts(which('MRIManager.jar'));
@@ -1069,7 +1061,12 @@ end
 set(handles.MP3_GUI, 'pointer', 'watch');
 drawnow;
 
-MP3_update_axes(hObject, eventdata, handles)
+if isfield(handles,'tool') && isvalid(handles.tool)
+    delete(handles.tool)
+end
+handles.tool = imtool3D_nii(cellfun(@(V) V.fname, {handles.data_loaded.Scan.V},'uni',0),3,[], handles.imtool3DPanel);
+
+%MP3_update_axes(hObject, eventdata, handles)
 
 set(handles.MP3_GUI, 'pointer', 'arrow');
 %toc(tstart)
@@ -1171,15 +1168,6 @@ for i = 1:numel(data_selected)
     clear new
 end
 
-set(handles.MP3_patient_information_title, 'String', [char(unique(handles.database.Patient(data_selected))) '_' char(unique(handles.database.Tp(data_selected)))]);
-set(handles.MP3_orientation_space_popupmenu, 'String',  char(unique(handles.database.SequenceName(data_selected),'stable')), 'Value', 1);
-if numel(data_selected) > 1
-    set(handles.MP3_orientation_space_popupmenu, 'Visible', 'on');
-    set(handles.MP3_orientation_space_text, 'Visible', 'on');
-else
-    set(handles.MP3_orientation_space_popupmenu, 'Visible', 'off');
-    set(handles.MP3_orientation_space_text, 'Visible', 'off');
-end
 handles.data_loaded.number_of_scan = numel(data_selected);
 handles.data_loaded.info_data_loaded = handles.database(data_selected,:);
 
@@ -2248,186 +2236,6 @@ else
     rotate3d(handles.MP3_plot1, 'off');
 end
 
-
-% --- Executes on mouse press over axes background.
-function MP3_plot1_ButtonDownFcn(~, ~, ~)
-% hObject    handle to MP3_plot1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
-% --- Executes on mouse motion over figure - except title and menu.
-function MP3_GUI_WindowButtonMotionFcn(hObject, ~, handles)
-% hObject    handle to MP3_GUI (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'data_loaded') && ~isfield(handles, 'data_selected_for_PRM')
-    return
-end
-slice_nbre = get(handles.MP3_slider_slice, 'Value');
-% Current position of each axes in percentage of the MP3_GUI size
-position_plot1 = get(handles.MP3_plot1, 'Position');
-position_data1 = get(handles.MP3_data1, 'Position');
-position_data2 = get(handles.MP3_data2, 'Position');
-position_data3 = get(handles.MP3_data3, 'Position');
-position_data4 = get(handles.MP3_data4, 'Position');
-
-% currPt in percentage of the MP3_GUI size
-currPt=get(handles.MP3_GUI,'CurrentPoint');
-
-if ~isempty(findobj('Tag', 'Pixel_contour'))
-    delete(findobj('Tag', 'Pixel_contour'))
-end
-if ~isempty(findobj('Tag', 'CurrentDot'))
-    delete(findobj('Tag', 'CurrentDot'))
-end
-if currPt(1) > position_data1(1) && currPt(1) < position_data1(1)+position_data1(3) && ...
-        currPt(2) > position_data1(2) && currPt(2) < position_data1(2)+position_data1(4)
-    
-    currPt_on_axe=get(handles.MP3_data1,'CurrentPoint');
-    currPt_on_axe(:,3)=slice_nbre;
-    if isfield(handles, 'data_ploted') && ~isempty(handles.data_ploted.coordonates)
-        MP3_draw_pixel(hObject,handles,currPt_on_axe);
-    end
-    MP3_table1_add_pixel_value(hObject,handles,currPt_on_axe);
-    
-elseif currPt(1) > position_data2(1) && currPt(1) < position_data2(1)+position_data2(3) && ...
-        currPt(2) > position_data2(2) && currPt(2) < position_data2(2)+position_data2(4)
-    currPt_on_axe=get(handles.MP3_data2,'CurrentPoint');
-    currPt_on_axe(:,3)=slice_nbre;
-    if handles.mode == 2 || handles.data_loaded(1).number_of_scan >=2
-        MP3_table1_add_pixel_value(hObject,handles,currPt_on_axe);
-        if isfield(handles, 'data_ploted') && ~isempty(handles.data_ploted.coordonates)
-            MP3_draw_pixel(hObject,handles,currPt_on_axe);
-        end
-    end
-elseif currPt(1) > position_data3(1) && currPt(1) < position_data3(1)+position_data3(3) && ...
-        currPt(2) > position_data3(2) && currPt(2) < position_data3(2)+position_data3(4)
-    if handles.mode == 1 && handles.data_loaded(1).number_of_scan >=3
-        currPt_on_axe=get(handles.MP3_data3,'CurrentPoint');
-        currPt_on_axe(:,3)=slice_nbre;
-        if isfield(handles, 'data_ploted') && ~isempty(handles.data_ploted.coordonates)
-            MP3_draw_pixel(hObject,handles,currPt_on_axe);
-        end
-        MP3_table1_add_pixel_value(hObject,handles,currPt_on_axe);
-    end
-    
-elseif currPt(1) > position_data4(1) && currPt(1) < position_data4(1)+position_data4(3) && ...
-        currPt(2) > position_data4(2) && currPt(2) < position_data4(2)+position_data4(4)
-    if handles.mode == 1 && handles.data_loaded(1).number_of_scan >=4
-        currPt_on_axe=get(handles.MP3_data4,'CurrentPoint');
-        currPt_on_axe(:,3)=slice_nbre;
-        if isfield(handles, 'data_ploted') && ~isempty(handles.data_ploted.coordonates)
-            MP3_draw_pixel(hObject,handles,currPt_on_axe);
-        end
-        MP3_table1_add_pixel_value(hObject,handles,currPt_on_axe);
-    end
-    
-elseif currPt(1) > position_plot1(1) && currPt(1) < position_plot1(1)+position_plot1(3) && ...
-        currPt(2) > position_plot1(2) && currPt(2) < position_plot1(2)+position_plot1(4)
-    currPt_on_axe=get(handles.MP3_plot1,'CurrentPoint');
-    MP3_plot1_curr_postion(hObject, handles, currPt_on_axe);  %%%  cursor on plot 1
-else
-    % Clear  values in MP3_table1
-    
-    set(handles.MP3_table_pixel_values, 'Data', {'Voxel values', '', '', '',''});
-end
-
-
-% --- Executes on mouse press over axes background.
-function MP3_clic_on_image(hObject, eventdata, handles)
-% hObject    handle to patient_graph1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-handles = guidata(hObject);
-
-if ~strcmp(get(handles.MP3_GUI,'SelectionType'),'normal')
-    G.initpnt=get(gca,'currentpoint');
-    G.initClim = get(gca,'Clim');
-    set(handles.MP3_GUI,'userdata',G);
-    set(handles.MP3_GUI, 'WindowButtonMotionFcn',@MP3_AdjWL);
-    
-    return
-end
-% cannot plot anything in PRM mode (yet)
-if handles.mode == 2
-    return
-end
-% check if a 4d data is loaded
-dimension_size = zeros([size(handles.data_displayed.image,4),7]);
-for i=1:size(handles.data_displayed.image,4)
-    dimension_size(i,1:numel(handles.data_loaded.Scan(i).V(1).private.dat.dim)) = handles.data_loaded.Scan(i).V(1).private.dat.dim;
-end
-%remove x, y and Z dimensions
-dimension_size(:,1:3) =[];
-% find only the 4D data (exclude < and > of 4d data)
-fourD_data = find(sum(dimension_size,2)  > 0 & sum(dimension_size > 0,2) == 1);
-if isempty(fourD_data)
-    return
-end
-
-% get pixel coordonates
-slice_nbre = get(handles.MP3_slider_slice, 'Value');
-tag = get(get(hObject, 'Children'), 'Tag');
-if size(tag,1)>1
-    currPt_on_axe=eval(['get(handles.' tag{end} ',''CurrentPoint'');']);
-else
-    currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']);
-end
-[pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
-voxel = pixel_coordinates_2d(1:2);
-if voxel(1) == 0 || voxel(2)==0
-    return  %bug somewhere
-end
-% clean old plot (if needed)
-if ~isempty(get(handles.MP3_plot1, 'Children'))
-    delete(get(handles.MP3_plot1, 'Children'));
-    legend(handles.MP3_plot1,'off');
-    hold(handles.MP3_plot1, 'off');
-end
-% display a waiting symbol
-set(handles.MP3_GUI, 'pointer', 'watch');
-drawnow;
-
-scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
-legende_txt = cell(numel(fourD_data),1);
-for i = 1:numel(fourD_data)
-    strii = num2str(i);
-    tmp  = read_volume(handles.data_loaded.Scan(fourD_data(i)).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
-    y_data = squeeze(tmp(voxel(2), voxel(1), slice_nbre,:));
-    x_data = 1:size(tmp,4);
-    plot(handles.MP3_plot1,x_data,y_data,...
-        'Color',rgb(handles.colors{i}),...
-        'Tag', strcat('MP3_plot1_1d', strii));
-    hold(handles.MP3_plot1, 'on');
-    legende_txt{i,1} = char(handles.data_loaded.info_data_loaded.SequenceName(fourD_data(i)));
-    
-end
-% add the legend
-if ~isempty(legende_txt)
-    legend(handles.MP3_plot1, legende_txt, 'Location','NorthEast');
-end
-
-%% Code pour extraire les courbes de bolus d'un pixel de perf.
-% CBV_G_Norm  = read_volume(handles.data_loaded.Scan(3).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
-% CBV_Norm  = read_volume(handles.data_loaded.Scan(4).V, handles.data_loaded.Scan(scan_of_reference).V,3, handles.view_mode);
-% 
-% Voxel3D = [voxel, slice_nbre];
-% 
-% A = struct('File', handles.data_loaded.Scan(fourD_data(i)).V(1).fname, 'Curve', y_data, 'Voxel', Voxel3D, 'CBV_G_Norm', CBV_G_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)), 'CBV_Norm', CBV_Norm(Voxel3D(2), Voxel3D(1), Voxel3D(3)))
-% 
-
-%save('/home/cbrossard/Bureau/Comparaison_Courbes_Perf/Type1_2.mat','A')
-
-set(handles.MP3_GUI, 'pointer', 'arrow');
-
-
-
-
-
 function MP3_table1_add_pixel_value(~,handles,pixel_coordinates)
 
 if ~isfield(handles, 'data_displayed')
@@ -2664,33 +2472,12 @@ guidata(hObject, handles)
 
 function handles = MP3_clear_data(hObject, eventdata, handles)
 
-if isfield(handles, 'data_loaded')
-    handles = rmfield(handles, 'data_loaded');
-    delete(get(handles.MP3_data1, 'Children'));
-    delete(get(handles.MP3_data2, 'Children'));
-    delete(get(handles.MP3_data3, 'Children'));
-    delete(get(handles.MP3_data4, 'Children'));
-    set(handles.MP3_data1_echo_slider, 'Visible', 'off');
-    set(handles.MP3_data1_expt_slider, 'Visible', 'off');
-    set(handles.MP3_data2_echo_slider, 'Visible', 'off');
-    set(handles.MP3_data2_expt_slider, 'Visible', 'off');
-    set(handles.MP3_data1_title, 'String', '');
-    set(handles.MP3_data2_title, 'String', '');
-    set(handles.MP3_data3_title, 'String', '');
-    set(handles.MP3_data4_title, 'String', '');
-end
 % reset the pointer
 set(handles.MP3_GUI, 'pointer', 'arrow');
 
 % reset every cluster for now
 handles.table1.cluster = [];
 handles.table1.cluster_row = [];
-
-%uncheck the mask option
-%set(handles.MP3_menu_define_mask, 'Checked', 'off');
-
-% restore the manual contrast to 0;
-handles.display_option.manual_contrast = 0;
 
 if isfield(handles, 'data_selected_resized')
     handles = rmfield(handles, 'data_selected_resized');
@@ -2699,7 +2486,6 @@ if isfield(handles, 'data_displayed')
     handles = rmfield(handles, 'data_displayed');
 end
 
-
 % close clip table if open
 if ~isempty(findobj('Tag', 'MP3_clip_table'))
     delete(findobj('Tag', 'MP3_clip_table'));
@@ -2707,17 +2493,10 @@ end
 
 if isfield(handles, 'data_selected_for_PRM')
     handles = rmfield(handles, 'data_selected_for_PRM');
-    delete(get(handles.MP3_data1, 'Children'));
-    delete(get(handles.MP3_data2, 'Children'));
-    set(handles.MP3_data1_echo_slider, 'Visible', 'off');
-    set(handles.MP3_data1_expt_slider, 'Visible', 'off');
-    set(handles.MP3_data1_title, 'String', '');
-    set(handles.MP3_data2_title, 'String', '');
 end
 if isfield(handles, 'data_selected_for_PRM_resized')
     handles = rmfield(handles, 'data_selected_for_PRM_resized');
 end
-
 if isfield(handles, 'ROI_selected')
     handles = rmfield(handles, 'ROI_selected');
 end
@@ -2748,25 +2527,6 @@ set(handles.MP3_table_pixel_values, 'ColumnName', {''});
 % clear table_1
 set(handles.MP3_table1, 'ColumnName', {''});
 set(handles.MP3_table1, 'Data', {''});
-set(handles.MP3_patient_information_title, 'String', 'No images');
-
-set(handles.MP3_orientation_space_popupmenu, 'String', 'Select orientation', 'Value', 1)
-
-if ~isempty(findobj('Tag', 'legend'))
-    delete(findobj('Tag', 'legend'));
-end
-
-% set every slider value to 1
-set(handles.MP3_data1_echo_slider, 'Value', 1);
-set(handles.MP3_data2_echo_slider, 'Value', 1);
-set(handles.MP3_data3_echo_slider, 'Value', 1);
-set(handles.MP3_data4_echo_slider, 'Value', 1);
-set(handles.MP3_data1_expt_slider, 'Value', 1);
-set(handles.MP3_data2_expt_slider, 'Value', 1);
-set(handles.MP3_data3_expt_slider, 'Value', 1);
-set(handles.MP3_data4_expt_slider, 'Value', 1);
-
-
 
 % --- Executes on button press in MP3_mode_multi_button.
 function MP3_mode_multi_button_Callback(hObject, eventdata, handles)
@@ -4195,24 +3955,6 @@ catch
 end
 
 
-
-% --- Executes on mouse press over figure background, over a disabled or
-% --- inactive control, or over an axes background.
-function MP3_GUI_WindowButtonUpFcn(hObject, eventdata, handles)
-
-% hObject    handle to MP3_GUI (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-if ~strcmp(get(handles.MP3_GUI,'SelectionType'),'normal')
-    set(handles.MP3_GUI,'WindowButtonMotionFcn',   @(hObject,eventdata)MP3('MP3_GUI_WindowButtonMotionFcn',hObject,eventdata,guidata(hObject)));
-    % save contrast
-    handles.display_option.manual_contrast = 1;
-    guidata(hObject, handles)
-end
-
-
-
 % --------------------------------------------------------------------
 function MP3_copy_ScanVoi_to_other_tp_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_copy_ScanVoi_to_other_tp (see GCBO)
@@ -5073,74 +4815,6 @@ function MP3_colormap_popupmenu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over MP3_data1_expt_slider.
-function MP3_slider_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to MP3_data1_expt_slider (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-handles = guidata(hObject);
-if ~isfield(handles, 'data_loaded') && ~isfield(handles, 'data_selected_for_PRM')
-    return
-end
-
-Slider_min = get(hObject,'Min');
-Slider_max = get(hObject,'Max');
-Position = get(hObject,'Position');
-
-SliderBarWidth = Position(3)/Slider_max;
-set(hObject,'UserData',[Slider_min Slider_max SliderBarWidth Position]);
-
-cp = get(handles.MP3_GUI,'CurrentPoint');
-newValue = round((cp(1,1)-Position(1))/ SliderBarWidth); %0.01 = width of the arrow
-if  newValue ==  get(hObject,'Value')
-    return
-elseif newValue > Slider_max
-    newValue = Slider_max;
-elseif newValue < Slider_min
-    newValue = Slider_min;
-end
-
-set(hObject,'Value',newValue);
-
-MP3_update_axes(hObject, eventdata, handles)
-%
-% set(handles.MP3_GUI,'WindowButtonMotionFcn',{@MP3_slider_on_move,handles})
-% set(handles.MP3_GUI,'WindowButtonUpFcn',{@MP3_slider_release_click,handles})
-% set(handles.MP3_GUI,'WindowButtonMotionFcn', @(hObject,eventdata)MP3('MP3_slider_on_move',hObject,eventdata,guidata(hObject)))
-% set(handles.MP3_GUI,'WindowButtonUpFcn',
-% @(hObject,eventdata)MP3('MP3_slider_release_click',hObject,eventdata,guidata(hObject)));b
-%
-%
-% function MP3_slider_on_move(hObject, eventdata, handles)
-% UserData = get(gco,'UserData');
-% if ~isempty(UserData),
-%     cp = get(hObject,'CurrentPoint');
-%     newValue = round((cp(1,1)-UserData(4))/UserData(3));
-%     if  newValue ==  get(gco,'Value')
-%         return
-%     elseif newValue > UserData(2)
-%         newValue = UserData(2);
-%     elseif newValue < UserData(1)
-%         newValue = UserData(1);
-%     end
-%     set(gco,'Value',newValue);
-%     MP3_update_axes(hObject, eventdata, handles)
-% end
-
-%
-% function MP3_slider_release_click(hObject, eventdata, handles)
-%
-% set(gco,'UserData',[]);
-set(handles.MP3_GUI,'WindowButtonMotionFcn',   @(hObject,eventdata)MP3('MP3_GUI_WindowButtonMotionFcn',hObject,eventdata,guidata(hObject)));
-% set(handles.MP3_GUI,'WindowButtonUpFcn',   @(hObject,eventdata)MP3('MP3_GUI_WindowButtonUpFcn',hObject,eventdata,guidata(hObject)));
-
-
-
 
 % --------------------------------------------------------------------
 function MP3_stats_clustering_Callback(hObject, eventdata, handles)
