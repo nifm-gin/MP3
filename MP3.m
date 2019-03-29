@@ -1065,6 +1065,7 @@ if isfield(handles,'tool') && isvalid(handles.tool)
     delete(handles.tool)
 end
 handles.tool = imtool3D_nii(cellfun(@(V) V.fname, {handles.data_loaded.Scan.V},'uni',0),3,[], handles.imtool3DPanel);
+guidata(handles.MP3_GUI, handles);
 
 %MP3_update_axes(hObject, eventdata, handles)
 

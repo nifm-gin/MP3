@@ -211,11 +211,7 @@ if isequal(useForm,'s')
     
     if det(R) == 0 || ~isequal(R(find(R)), sum(R)')
         R_sort = sort(abs(R(:)));
-        if tolerance ==1
-            R(2:3,1) = 0; R([1,3],2) = 0; R(1:2,3) = 0;
-        else
-            R( find( abs(R) < tolerance*min(R_sort(end-2:end)) ) ) = 0;
-        end
+        R( find( abs(R) < tolerance*min(R_sort(end-2:end)) ) ) = 0;
         hdr.new_affine = [ [R;[0 0 0]] [T;1] ];
         
         if det(R) == 0 || ~isequal(R(find(R)), sum(R)')
