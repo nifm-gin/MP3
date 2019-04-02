@@ -723,6 +723,21 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
             table.editable = true;
         end
+    case 'check'
+        Temp =  {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
+        if ~iscell(Temp{1})
+            Params = handles.new_module.opt.table.Default(parameter_selected);
+            %table.data = Params;
+
+            table.data(1:numel(Params{1}),1) = cellstr(Params{1});
+            table.data(1:numel(Params{1}),2) = {false};
+        else
+            Params = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
+            table.data = Params{1};
+        end
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
     otherwise
         table.ColumnFormat = {'char'};
         table.data = '';
@@ -921,7 +936,7 @@ function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') 
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
@@ -968,6 +983,8 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
         end
 %     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'check')
+    handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data); 
 else
     handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data{1,1}); 
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{1,1};
@@ -1496,6 +1513,8 @@ for i=1:length(handles.module_parameters_fields)
     else
         if ~strcmp(handles.module_parameters_fields{i}, '') && isnumeric(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}))
             ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'check'))
+            ActualValues{i} = char('');
         elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI'))
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
