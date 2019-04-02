@@ -10,7 +10,7 @@ In order to fully enjoy MP³, you have to meet the following requirements:
 * Matlab 2017b or higher
 * Toolboxes (Mandatory : Image Processing Toolbox -- Recommended : Statistics and Machine Learning Toolbox ; Parallel Computing Toolbox)
 
-* Data to process in Brucker / DICOM / Philips / Nifti format
+* Data to process in Bruker / DICOM / Philips / Nifti format
 
 
 ### Download
