@@ -21,6 +21,10 @@ if isempty(opt)
     module_option(:,9)   = {'folder',           table()};
     module_option(:,10)  = {'OutputSequenceName','AllName'};
     module_option(:,11)  = {'Params',           'Vf'};
+    module_option(:,12)  = {'K',                30};
+    module_option(:,13)  = {'Lw',               0};
+    module_option(:,14)  = {'cstrS',            'i'};
+    module_option(:,15)  = {'cstrG',            'd'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -62,17 +66,32 @@ if isempty(opt)
         {'Choose a prefix for your output maps'}};
     user_parameter(:,6)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
-    user_parameter(:,7)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
+    user_parameter(:,8)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
         { 'Choose:'
         '	- ''ClassicMRF'' to use the Dan Ma method'
         '	- ''RegressionMRF'' to use the regression method'
         }'};
     
-    user_parameter(:,8)   = {'   .Parameters','check', ...
+    user_parameter(:,7)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct'},...
         'Params', '', '',...
         {'Select the parameters considered in the model (default ''Vf'')'
         }'};
+    user_parameter(:,9)   = {'   .Model settings','Text','','','','',...
+        'Recommanded K = 30, Lw = 0 and cstr = ''i''.'
+        };
+    user_parameter(:,10)  = {'       .Number of regions','numeric','','K','','',...
+        ''
+        };
+    user_parameter(:,11)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
+        ''
+        };
+    user_parameter(:,12)  = {'       .Model constraint on Sigma','cell',{'i','d',' '},'cstrS','','',...
+        ''
+        };
+    user_parameter(:,13)  = {'       .Model constraint on Gamma','cell',{'i','d',' '},'cstrG','','',...
+        ''
+        };
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -249,11 +268,13 @@ switch opt.method
             
             % Parameters of the regression
             clear Parameters
-            Parameters.K = 30;
-            Parameters.cstr.Sigma   = 'i'; %'d' can be used
-            Parameters.cstr.Gammat  = 'd'; 
-            Parameters.cstr.Gammaw  = '';
-            Parameters.Lw           = 0;
+            Parameters.K            = opt.K;
+            if strcmp(opt.cstrS, ' '), opt.cstrS = ''; end
+            if strcmp(opt.cstrG, ' '), opt.cstrG = ''; end
+            Parameters.cstr.Sigma   = opt.cstrS;
+            Parameters.cstr.Gammat  = opt.cstrG; 
+            Parameters.cstr.Gammaw  = opt.cstrG;
+            Parameters.Lw           = opt.Lw;
             
             [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
             
