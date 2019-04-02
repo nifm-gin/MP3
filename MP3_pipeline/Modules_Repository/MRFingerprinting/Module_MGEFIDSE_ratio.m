@@ -149,15 +149,19 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-tic
+
 opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
 
 % Read json files and create ratio dictionary
 d   = dir(opt.dictionary_folder_filename);
 opt.dictionary_pre_filename     = d(contains({d.name}, 'PRE_'));
-opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+if ~isempty(opt.dictionary_pre_filename)
+    opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+end
 opt.dictionary_post_filename    = d(contains({d.name}, 'POST_'));
-opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+if ~isempty(opt.dictionary_post_filename)
+    opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+end
 
 dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
 model_filename  = [opt.dictionary_folder_filename filesep 'MODEL.mat'];
@@ -210,17 +214,24 @@ Obs             = ReadJson([json_filename{1} json_filename{2}]);
 
 % If necessary smooth observations
 if strcmp(opt.filtered, 'Yes') == 1
-    gaussian_window = gausswin(3);
+    p = 2;
     for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
         signal = squeeze(Xobs(x,y,z,:));  
-        signal = [signal(1); signal; signal(end)];
-    	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
+        signal = filter(ones(1, p)/p, 1, [signal(1); signal; signal(end)]);
+%     	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
+        Xobs(x,y,z,:) = signal(2:end-1);
     end; end; end
 end
 Xobs        = permute(Xobs, [1 2 4 3]);
 
-
 % Reformat dico (not needed if MODEL is already computed)
+
+% ind = 1;
+% figure
+% plot(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(ind,:), '.-')
+% hold on
+% plot(Obs.EchoTime.value'*1e-3, interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(ind,:), Obs.EchoTime.value'*1e-3), '.-')
+
 if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
     tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
     if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals,2)
@@ -230,15 +241,14 @@ if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
         end
     end
     Dico.MRSignals = tmp;
-    
+    Dico.Tacq   = Obs.EchoTime.value'*1e-3;
     %remove row containning nan values
     nn = ~any(isnan(Dico.MRSignals),2);
     Dico.MRSignals = Dico.MRSignals(nn,:);
     Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
     Tmp{1}      = Dico;
 end
-t(1) = toc;
-    
+
 % Compute MRF
 switch opt.method
     
@@ -269,14 +279,16 @@ switch opt.method
                     case 'SO2'
                         params.Par(:,3)     = Tmp{1}.Parameters.Par(:,i);
                         params.Labels{3}    = Tmp{1}.Parameters.Labels{i};
-    %                 case 'DH2O'
-    %                     params.Par(:,4)     = Tmp{1}.Parameters.Par(:,i);
-    %                     params.Labels{4}    = Tmp{1}.Parameters.Labels{i};
                 end
             end
             Tmp{1}.Parameters = params;
-                  
-            Parameters  = []; %Parameters.Lw = 1;
+            
+            clear Parameters
+            Parameters.K = 30;
+            Parameters.cstr.Sigma   = 'i'; %'d' can be used
+            Parameters.cstr.Gammat  = 'd'; 
+            Parameters.cstr.Gammaw  = '';
+            Parameters.Lw           = 0;
             
             [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
             
@@ -287,7 +299,6 @@ switch opt.method
         Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
         Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
 end
-t(2) = toc;
 
 % Extract maps
 for i = 1:length(Tmp{1}.Parameters.Labels)
@@ -412,5 +423,5 @@ if strcmp(opt.method, 'RegressionMRF')
                 niftiwrite(StO2_conf, files_out.In2{i}, info);
         end
     end
-t(3) = toc;
+
 end
