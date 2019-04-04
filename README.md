@@ -16,6 +16,11 @@ In order to fully enjoy MP³, you have to meet the following requirements:
 ### Download
 You can download MP³ from our GIT repository. Then just add the downloaded file to your Matlab path and type `MP3` in Matlab command window. The graphical interface of the Viewer will then be displayed.
 
+
+### Developers guide
+In order to push your modifications to the community, please contact benjamin.lemasson@univ-grenoble-alpes.fr to get the developer status. Please create on your own branch from the dev one and then ask to merge it in the dev branch.
+
+
 ### Quickstart guide
 *  [If you cannot wait !](https://github.com/nifm-gin/MP3/wiki/Quickstart_guide)
 
