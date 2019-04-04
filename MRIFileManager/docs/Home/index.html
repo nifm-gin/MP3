@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<title>MRI File Manager (IRMaGe)</title>
+	<script src="../datemodif.js"></script>
+	<script src="../buttontop.js"></script>
+  </head>
+  
+  <body link="#ff5500">
+  <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+  
+	<div>
+		<object data="../bandeau.html" type="text/html" width="100%" height="100%"></object>
+		<div id='cssmenu'>
+		<ul>
+			<li class='active'><a href='#' target="_parent"><span>Home</span></a></li>
+			<li><a href='../Installation/installation.html' target="_parent"><span>Installation</span></a></li>
+			<li><a href='../Documentation/documentation.html' target="_parent"><span>Documentation</span></a></li>
+			<li><a href='../Troubleshooting/troubleshooting.html' target="_parent"><span>Troubleshooting</span></a></li>
+			<li><a href='../Dictionaries/dictionaries.html'><span>MRI Dictionaries</span></a></li>
+			<li class='last'><a href='../Irmagejson/irmagejson.html' target="_parent"><span>IRMaGe Json</span></a></li>
+		</ul>
+		</div>
+  
+		<p class="style4"><u><a href="#what">What is MRI File Manager?</a></u> - <u><a href="#synoptic">Synoptic</a></u> - <u><a href="#screenshot">Screenshots</a></u></p>	
+
+		<h2 id="what" class="style1">What is MRI File Manager?</h2>
+		<p class="style3"> MRI File Manager allows the reading of some raw and processed data files from MRI Spectrometers : </p>
+		<p class="style2">	
+		- Bruker Paravision PV5 & PV6 (raw data of magnitude type).<br>
+		- Dicom from Bruker, Philips, Siemens.<br>
+		- Philips Achieva (Par/Rec & Xml/Rec v4.2).<br>
+		- Nifti-1 (with or without Json).<br>
+		</p>
+		<p class="style3">It also allows for converting MRI images to Nifti-1: </p>
+		<p class="style2">
+		- Export MRI data in Nifti-1 format until 5 dimensions of the image (x, y, slice, frame, temporal).<br>
+		- Json files are created and associated with Nifti files in order to contain MRI parameters (<a href="../Irmagejson/irmagejson.html">see 'Irmage Json' page</a>).<br>
+		- an option of anonymization allows to hide sensitive informations about the patient (name, age, sex, weight).<br>
+		- adaptation of orientation information in Nifti headers (tested on SPM, FSL).<br>
+		- option of customizing the Nifti file names.<br>
+		</p>
+		<br>
+		<p class="style6">
+		It can be launched in standalone mode or by script with options (from Matlab, Python, ....)<br>
+		It contains 2 Yaml files that permit the extraction of MRI parameters in a personalized way (<a href="../Dictionaries/dictionaries.html">see 'MRI Dictionaries' page</a>).<br>
+		It's written in Java and is heavily based on the <a href="https://imagej.nih.gov/ij/index.html" target="_blanck">ImageJ </a> software.<br>
+		It can be run on Linux, MacOS and Windows.<br>
+		It requires only Java 8 (or more) pre-installed on your machine.
+		</p>
+		<br>
+		<h2 id="synoptic" class="style1">Synoptic</h2>
+	
+		<table  width="100%">
+		<tr>
+			<td>
+			<img src="images/Architecture.png" alt="Architecture" style="width:60%;height:60%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"><br><br><br>
+			</td>
+		</tr>
+		</table>	
+	
+		<h2 id="screenshot" class="style1">Screenshot</h2>
+	
+		<table  width="100%" border="0" cellspacing="0" cellpadding="5">
+		<tr height="50%" width="50%">
+			<td width="50%">
+			<img src="images/GalleryBr.jpg" alt="GalleryBruker" style="width:100%;height:30%;border:0;margin:auto" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Viewer tab (Bruker)
+			</td>
+			<td width="50%">
+			<img src="images/GalleryBa.png" alt="GalleryBasket" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Basket tab (for converting to Nifti)
+			</td>
+		</tr>
+		
+		<tr>
+			<td width="50%">
+			<img src="images/GalleryDi.png" alt="GalleryDicom" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Viewer tab (Dicom)
+			</td>
+			<td width="50%">
+			<img src="images/GalleryExp.png" alt="GalleryExport" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Options export files naming
+			</td>
+		</tr>
+
+		<tr>
+			<td width="50%">
+			<img src="images/GalleryPh.png" alt="GalleryPhilips" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Viewer tab (Philips)
+			</td>
+			<td width="50%">
+			<img src="images/GalleryRe.png" alt="GalleryRepertories" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Data IRM folder
+			</td>
+		</tr>
+		
+		<tr>
+			<td width="50%">
+			<img src="images/GalleryNi.png" alt="GalleryNifti" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Viewer tab (Nifti)
+			</td>
+			<td width="50%">
+			<img src="images/GalleryIm.png" alt="GalleryImageJ" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Image opened with ImageJ
+			</td>
+		</tr>
+		
+		<tr>
+			<td width="50%">
+			<img src="images/GalleryAn.PNG" alt="GalleryAnonym" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Anonymization
+			</td>
+			<td width="50%">
+			</td>
+		</tr>
+		
+		</table>
+
+		<br><br><br>
+		<script>document.write("This page was last modified on "+ DateModif())</script>
+
+	</div>
+  </body>
+</html>

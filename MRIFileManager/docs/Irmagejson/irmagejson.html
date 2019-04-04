@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<title>MRI File Manager (IRMaGe)</title>
+	<script src="../datemodif.js"></script>
+	<script src="../buttontop.js"></script>
+  </head>
+  
+  <body link="#ff5500">
+  <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+  
+	<div>
+		<object data="../bandeau.html" type="text/html" width="100%" height="100%"></object>
+		<div id='cssmenu'>
+		<ul>
+			<li><a href='../Home/index.html' target="_parent"><span>Home</span></a></li>
+			<li><a href='../Installation/installation.html' target="_parent"><span>Installation</span></a></li>
+			<li><a href='../Documentation/documentation.html' target="_parent"><span>Documentation</span></a></li>
+			<li><a href='../Troubleshooting/troubleshooting.html' target="_parent"><span>Troubleshooting</span></a></li>
+			<li><a href='../Dictionaries/dictionaries.html'><span>MRI Dictionaries</span></a></li>
+			<li class='active'><a href='../Irmagejson/irmagejson.html' target="_parent"><span>IRMaGe Json</span></a></li>
+			
+		</ul>
+		</div>
+
+		<p class="style4" >	<u><a href="#introduction">Introduction</a></u> - <u><a href="#addparam">Additionnal parameters</a></u> - <u><a href="#example">Example</a></u></p>
+		
+		<h2 id="introduction" class="style1">Introduction</h2>
+		<p class="style2">
+		A Nifti file doesn't contain the metadata needed for the analysis of MRI images. So, Json files are generated during the conversion of MRI data to Nifti and allow to record all MRI parameters needed for futur analyses.
+		They take the same name as the Nifti files (but with different extensions). The MRI labels are provided by the 2 yaml files : DictionaryMRI_System.yml and DictionaryMRI_User.yml in the 'Json' field and 
+		the 'tagJson' subfield (<a href="../Dictionaries/dictionaries.html">see 'MRI Dictionaries' page</a>).<br> 
+		For each MRI label, the structures in Json have the following form :
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>"MRI label"</i>: {
+	"format": xxxx,
+	"description": xxxx,
+	"units": xxxx,
+	"type": xxxx,
+	"value": [
+		xxxx
+		]
+	},</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+
+		<p class="style2">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>"format"</b> reserved for time parameters (ex 'Acquisition Date') and allows to specify the date format (ex "yyyy-MM-dd HH:mm:ss")<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>"description"</b> gives more details on the MRI parameter.<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>"units"</b> indicates the unit of the parameter (s, ms, Hz, ....).<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>"type"</b> indicates the type of value (int, float, string).<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>"value"</b> gives the value of the parameter. It may be a simple value ([ ]) or a list of value ([[ ]]) .<br>
+		</p>
+		<br>
+		
+		<p class="style2">		
+		Example :
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>"EchoTime": {
+	"format": null,
+	"description": "Time in ms between the middle of the excitation pulse and the peak of the echo produced ",
+	"units": "ms",
+	"type": "float",
+	"value": [
+		[
+			8.81
+		],
+		[
+			17.62
+		],
+		[
+			26.43
+		],
+		[
+			35.24
+		],
+		[
+			44.05
+		],
+		[
+			52.86
+		],
+		[
+			61.67
+		],
+		[
+			70.48
+		],
+		[
+			79.29
+		],
+		[
+			88.1
+		],
+		[
+			96.91
+		]
+  	]
+	},
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<br>
+		<h2 id="addparam" class="style1">Additional parameters</h2>
+		<p class="style2">	
+		In addition to the MRI parameters, 2 other parameters supplement the Json file :<br><br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <b>"Json_Version"</b> that indicates the Json version.<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <b>"DataAnonymized"</b> that indicates if the export has been anonymized.
+			
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>
+	"Json_Version": [
+		"Irmage2018"
+	],
+	<i>"DataAnonymized</i>: {	
+		"format": "",
+		"description": "",
+		"units": "",
+		"type": "string",
+		"value": [
+			"yes"
+		]
+	},</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<br>		
+		<h2 id="example" class="style1">Example</h2>
+		<p class="style2">	
+		Example of a Json file created by MRI File Manager :&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../Irmagejson/exampleJson.html" target="_blank">13-SO2_MSME_SENSE.json</a>
+		</p>
+
+		<br><br><br><br><br><br><br><br>
+		<script>document.write("This page was last modified on "+ DateModif())</script>
+		<br><br>
+
+		
+	</div>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../survol.css">
+	<title>MRI File Manager (IRMaGe)</title>
+	<script src="../datemodif.js"></script>
+	<script src="../buttontop.js"></script>
+  </head>
+  
+  <body link="#ff5500">
+  <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+  
+	<div>
+		<object data="../bandeau.html" type="text/html" width="100%" height="100%"></object>
+		<div id='cssmenu'>
+		<ul>
+			<li><a href='../Home/index.html' target="_parent"><span>Home</span></a></li>
+			<li><a href='../Installation/installation.html' target="_parent"><span>Installation</span></a></li>
+			<li class='active'><a href='#' target="_parent"><span>Documentation</span></a></li>
+			<li><a href='../Troubleshooting/troubleshooting.html' target="_parent"><span>Troubleshooting</span></a></li>
+			<li><a href='../Dictionaries/dictionaries.html'><span>MRI Dictionaries</span></a></li>
+			<li class='last'><a href='../Irmagejson/irmagejson.html' target="_parent"><span>IRMaGe Json</span></a></li>
+
+		</ul>
+		</div>
+		
+		<p class="style4" >	<u><a href="#viewer">Viewer</a></u> - <u><a href="#exportnifti">Export to Nifti with options</a></u> - 
+							<u><a href="#defaultfolder">Set default IRM locations</a></u> - <u><a href="#imagej">Use of  ImageJ</a></u></p>
+
+		<h2 id="viewer" class="style1">Viewer</h2>
+		<p class="style2"> This section explains how to use MRI File Manager</p>
+		<img alt="copiemri" align="center" src="./images/CaptureMRI3.PNG" style="width:70%;height:70%;border:0;"/>
+		<div class= "style3">
+		<br>
+		<ul>
+		<li>
+		<p>Click on one of the buttons 'Bruker', 'Dicom', 'Philips' or 'Nifti' to choose the data folder 
+		<a id="mouse" hover><span>
+		<img src="images/buttons.PNG" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+		<!-- <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">Version</span></pre></div></div> -->
+		</li>
+		<li>
+		<p>A dialog box opens and you have to choose the <u>root directory</u> containing the data IRM.
+		<a id="mouse" hover><span>
+		<img src="images/dialogbox.PNG" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
+		</li>
+		<li>
+		<p>A list of data appears in 'data browser' table.</p>
+		
+		<h2 class="style1"><font color="red"> If the software doesn't found the data, try to select directory <u>before</u> or <u>after</u> the one you chose.</font></h2>
+
+		<!-- <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">Version</span></pre></div></div> -->
+		</li>
+		<li>
+		<p>Select a data in 'data browser' table (only one mouse click), a list of MRI sequences appears in the table below and image thumbnails are shown on the left.
+		</p>
+		<!-- <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">Version</span></pre></div></div> -->
+		</li>
+		<li>
+		<p>For each selected sequence, MRI parameters and image preview are displayed.
+		</p>
+		<!-- <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">Version</span></pre></div></div> -->
+		</li>
+
+		<li>
+		<p>If you double-click on a sequence, the image opens with the ImageJ interface (you can open several images at once).
+		</p>
+		</li>
+		</ul>
+		</div>
+		<br>
+		
+		<h2 id="exportnifti" class="style1">Export to Nifti</h2>
+		<p class="style2"> This section explains how to convert data to Nifti-1 (file by file or all data).<br>
+		
+		<div class= "style5">
+		
+		<b>1) First, if you want, you can change the default options for naming the Nifti files (otherwise, go directly to step 2) :  </b>
+		<ul>
+		<li>
+		<p>Go to the 'File -> export -> Option export' menu. </p>
+		</li>
+		<li>
+		<p>A window 'Options export' appears </p>
+		</li>
+		<li>
+		<p>In the 'Repertory naming' tab, choose the naming of repertories
+		<a id="mouse" hover><span>
+		<img src="images/optionexport1.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>
+		<li>
+		<p>In the 'File naming' tab, choose the naming of files
+		<a id="mouse" hover><span>
+		<img src="images/optionexport2.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>
+		</li>
+		<li>
+		<p>Click on 'Apply' button. <b>Your configuration is saved for the next use of the software</b>.</p>
+		</li>
+		</ul>
+		<br>
+		<b>2) Then, you must load the basket. There are several possibilities : </b>
+		<ul>
+		<li>
+		<p><u>File by file without anonymization :</u><br></p>
+		<p>Select one or several sequences in the table at the bottom (Ctrl + mouse left click), open a pop-up menu by clicking the right mouse button and choose 'Add to basket'
+		<a id="mouse" hover><span>
+		<img src="images/addbasketSeq.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		<!-- <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">java</span> <span class="o">-</span><span class="n">Version</span></pre></div></div> -->
+		</li>
+		
+		<li>
+		<p><u>File by file with anonymization :</u><br></p>
+		<p>Select one or several sequences in the table at the bottom (Ctrl + mouse left click), open a pop-up menu by clicking the right mouse button and choose 'Anonymize and add to basket'
+		<a id="mouse" hover><span>
+		<img src="images/addbasketSeqAnon.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		<p>An anonymization window appears, modify the fields and 'Ok'
+		<a id="mouse" hover><span>
+		<img src="images/AnonWindow.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>
+
+		<li>		
+		<p><u>Full data without anonymization :</u><br></p>
+		<p>Select one or several data in the table at the top (Ctrl + mouse left click), open a pop-up menu by clicking the right mouse button and choose 'add all sequences to basket'
+		<a id="mouse" hover><span>
+		<img src="images/addbasketData.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>		
+		
+		<li>		
+		<p><u>Full data with anonymization :</u><br></p>
+		<p>Select one or several data in the table at the top (Ctrl + mouse left click), open a pop-up menu by clicking the right mouse button and choose 'anonymize and add all sequences to basket'
+		<a id="mouse" hover><span>
+		<img src="images/addbasketDataAnon.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		<p>An anonymization window appears, modify the fields and click 'Ok'
+		<a id="mouse" hover><span>
+		<img src="images/AnonWindow.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>	
+		</ul>
+		<br>
+		<b>3) Go to the basket tab : </b>
+		<ul>
+		<li>		
+		<p>if the 'Exportation Folder' field is empty, click on 'Change' to choose the folder where you want to export your data. </p>
+		</li>
+		<li>		
+		<p>Click on 'Export to Nifti-1'</p>
+		</li>
+		<li>		
+		<p>At the end of the export, a dialog box informs you if the export is a success or a failure. </p>
+		</li>
+		</ul>
+		</div>
+		</p>
+		
+		<h2 id="defaultfolder" class="style1">Set default IRM locations</h2>
+		<p class="style2"> This section explains how to define the default data folder for each format.
+		<div class= "style5">
+		<ul>
+		<li>		
+		<p>Go to the 'Option -> Current working directory' menu</p>
+		</li>
+		<li>		
+		<p>A dialog box appears
+		<a id="mouse" hover><span>
+		<img src="images/dialogboxDir.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		</li>
+		<li>		
+		<p>For each format, choose the data folder by default.</p>
+		</li>
+		<li>		
+		<p>Click on 'Ok rep' button. <b>Your configuration is saved for the next use of the software</b>.</p>
+		</li>
+		</ul>
+		</div>
+		</p>
+	
+		
+		<h2 id="imagej" class="style1">Use of ImageJ</h2>
+		<p class="style2"> This section explains how to use ImageJ tools and his plugins.</p>
+		<div class= "style5">
+		<i>(to be continued)</i>
+		</div>
+		
+		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+	
+		<script>document.write("This page was last modified on "+ DateModif())</script>
+	
+	</div>
+  </body>
+</html>
