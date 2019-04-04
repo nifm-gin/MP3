@@ -377,6 +377,10 @@ else %display VOIs list
     
     
 end
+
+% Update the groupname
+MP3_show_group_Callback(hObject, eventdata, handles)
+
 % if the pipeline Manager is open, update the information : patient selected
 % update the 'String' of MP3_pipeline_pushMP3Selection and MP3_pipeline_pushMP3TPSelection push button
 
@@ -3756,6 +3760,10 @@ function MP3_show_group_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+Scan_Selected = handles.database(finddata_selected(handles),:);
+group = ['group: ' char(Scan_Selected.Group)];
+set(handles.MP3_name_list_groupname_box, 'String', group);
+
 
 % --------------------------------------------------------------------
 function MP3_name_properties_Callback(hObject, eventdata, handles)
@@ -3769,27 +3777,41 @@ function MP3_add_info_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_add_info (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-patient = get(handles.MP3_name_list, 'Value');
-old_group_name = {handles.database(patient).group};
-group_name= inputdlg('Enter the group name', 'Add group name',1, old_group_name(1));
-if isempty(group_name)
+patients = handles.database.Patient(finddata_selected(handles));
+
+old_group_name = [cellstr(unique(handles.database.Group)); {'Other'}];
+
+
+[new_group_ind, ok1] = listdlg('PromptString','Select the new group name:',...
+    'Name', 'Select a Name',...
+    'SelectionMode','single',...
+    'ListSize', [400 300],...
+    'ListString',old_group_name);
+
+if ok1 == 0
     return
 end
-for i = 1:numel(patient)
-    handles.database(patient(i)).group = group_name{:};
+if strcmp('Other',old_group_name(new_group_ind)) == 1
+    newgroup_name = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+    newgroup_name = clean_variable_name(newgroup_name, '');
+    newgroup_name =categorical(newgroup_name);
+else
+    newgroup_name =categorical(old_group_name(new_group_ind));
 end
 
 
-if isfield(handles, 'database_all') && numel(handles.database) < numel(handles.database_all)
-    for i = 1:numel(patient)
-        for j = 1:numel(handles.database_all)
-            if strcmp(handles.database(patient(i)).name, handles.database_all(j).name) ==1
-                handles.database_all(j).group = group_name;
-            end
-        end
-    end
+for i=1:length(patients)
+    handles.database.Group(handles.database.Patient == patients(i),:) = newgroup_name;
 end
+
+
 guidata(hObject, handles);
+%% update graph and display
+MP3_update_database_display(hObject, eventdata, handles);
+
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
