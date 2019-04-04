@@ -1,0 +1,39 @@
+    #ongl {
+      float:left;
+      width:100%;
+      font-size:50%;
+      line-height:normal;
+      }
+    #ongl ul {
+      margin:0;
+      padding:5px 5px 0;
+      list-style:none;
+      }
+    #ongl li {
+      float:left;
+      background:url('images/left.gif') no-repeat left top;
+      margin:0;
+      padding:0 0 0 5px;
+      }
+    #ongl a {
+      display:block;
+      background:url('images/right.gif') no-repeat right top;
+      padding:5px 15px 4px 6px;
+      font-size:12px;
+      text-decoration:none;
+      font-weight:bold;
+      color:#765;
+      }
+    #ongl a:hover {
+      color:#333;
+      }
+    #ongl #current {
+      background-image:url('images/left_on.gif');
+      }
+    #ongl #current a {
+      background-image:url('images/right_on.gif');
+      color:#333;
+      padding-bottom:5px;
+      }
+
+  

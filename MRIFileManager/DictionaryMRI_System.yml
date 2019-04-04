@@ -46,7 +46,7 @@ dictionaryMRI:
   
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqDate=, type: string, format: "yyyy-MM-dd'T'HH:mm:ss','SSSZZZZ or HH:mm:ss dd MMM yyyy", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / HH:mm:ss ; yyyy.MM.dd", units: ~}
-                  whereDicom:   {file: ~, keyName: Image Date, type: string, format: "yyyyMMdd", units: ~}
+                  whereDicom:   {file: ~, keyName: Series Date, type: string, format: "yyyyMMdd", units: ~}
                   whereNifti:   {file: json, keyName: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
                   
                   viewer: {category: Equipment}
@@ -109,7 +109,7 @@ dictionaryMRI:
   Columns:
                   description: {info: ""}
   
-                  whereDicom:   {file: ~, keyName: Columns, type: int, format: ~, units: ~}
+                  whereDicom:   {file: dirfile,dicomdir, keyName: Columns, type: int, format: ~, units: ~}
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -119,7 +119,7 @@ dictionaryMRI:
   
                   whereBruker:  {file: subject, keyName: $SUBJECT_date=, type: string, format: "yyyy-MM-dd'T'HH:mm:ss','SSSZZZZ or HH:mm:ss dd MMM yyyy", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / hHH:mm:ss ; yyyy.MM.dd", units: ~}
-                  whereDicom:   {file: ~, keyName: Study Date, type: string, format: "yyyyMMdd", units: ~}
+                  whereDicom:   {file: ~, keyName: Study Date & Study Time, type: string, format: "yyyyMMdd ss", units: ~}
                   whereNifti:   {file: json, keyName: CreationDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
 
                   viewer: {category: Equipment}
@@ -454,6 +454,22 @@ dictionaryMRI:
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ReadDirection, type: string, format: ~, units: ~}
+                  
+  Real Value Slope:
+                  description: {info: ""}
+                  
+                  whereDicom:   {file: ~, keyName: Real World Value Slope, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Real Value Intercept:
+                  description: {info: ""}
+                  
+                  whereDicom:   {file: ~, keyName: Real World Value Intercept, type: string, format: ~, units: ~}
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   Repetition Time:
                   description: {info: "The period of time in msec between the beginning of a pulse sequence and the beginning of the succeeding pulse sequence"}
@@ -469,7 +485,7 @@ dictionaryMRI:
   Rows:
                   description: {info: ""}
   
-                  whereDicom:   {file: ~, keyName: Rows, type: int, format: ~, units: ~}
+                  whereDicom:   {file: dirfile,dicomdir, keyName: Rows, type: int, format: ~, units: ~}
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -487,7 +503,6 @@ dictionaryMRI:
   
                   whereDicom:   {file: ~, keyName: Rescale Intercept, type: string, format: ~, units: ~}
                   #wherePhilips: {file: PAR ; Xml, keyName: rescale intercept ; Rescale Intercept, type: float ; double, format: ~, units: ~}
-                            
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -497,7 +512,6 @@ dictionaryMRI:
   
                   whereDicom:   {file: ~, keyName: Rescale Slope, type: string, format: ~, units: ~}
                   #wherePhilips: {file: PAR ; Xml, keyName: rescale slope ; Rescale Slope, type: float ; double, format: ~, units: ~}
-                  
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -549,7 +563,7 @@ dictionaryMRI:
   
                   whereBruker:  {file: visu_pars, keyName: $VisuAcqSequenceName=, type: string, format: ~, units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Technique ; Technique, type: string ; string, format: ~, units: ~}
-                  whereDicom:   {file: dirfile, keyName: Sequence Name, type: string, format: ~, units: ~}
+                  whereDicom:   {file: dirfile, keyName: Series Description, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: SequenceName, type: string, format: ~, units: ~}
 
                   viewer: {category: ~}
@@ -661,3 +675,20 @@ dictionaryMRI:
 
                   viewer: {category: ~}
                   json:   {tagJson: StudyName, type: string, format: ~, units: ~}
+                  
+                  
+  Study Date:
+                  description: {info: ""}
+  
+                  whereDicom:   {file: ~, keyName: Study Date, type: string, format: ~, units: ~}
+
+                  viewer: {category: ~}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                 
+  Study Time:
+                  description: {info: ""}
+  
+                  whereDicom:   {file: ~, keyName: Study Time, type: string, format: ~, units: ~}
+
+                  viewer: {category: ~}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
