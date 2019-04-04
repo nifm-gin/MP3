@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../survol.css">
+	<title>MRI File Manager (IRMaGe)</title>
+	<script src="../datemodif.js"></script>
+	<script src="../buttontop.js"></script>
+  </head>
+  
+  <body link="#ff5500">
+  <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+  
+	<div>
+	<p class="style4" ><font size="14" color="blue" style="font-weight:bold" align="center"> Install/update Java 8</font></p><br>
+	<p class="style4" >	<u><a href="#win">Windows</a></u> - <u><a href="#lin">Linux</a></u> - <u><a href="#mac">MacOS</a></u></p><br>
+	
+	<h2 id="win" class="style1">Windows</h2>
+	<div>
+	<p><b>1) How to find Java version ?</b></p>
+		<p>&nbsp;&nbsp;- in the taskbar's search box, type Java. If you don't have Java installed, go to step 'Install Java'.</p>
+		<p>&nbsp;&nbsp;- choose 'Configure Java' from the search results </p>
+		<p>&nbsp;&nbsp;- a 'Java Control Panel' window opens <a id="mouse" hover><span>
+		<img src="images/java_config_panel.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+		<p>&nbsp;&nbsp;- in 'Java' tab, click on 'view' button  <a id="mouse" hover><span>
+		<img src="images/java_java_tab.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+		<p>&nbsp;&nbsp;- A window displays the list of Java installed   <a id="mouse" hover><span>
+		<img src="images/java_environ.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+		<p>&nbsp;&nbsp;- verify the version (1.8 or more) and, if necessary, go to step 'Update Java' </p>
+	<br>		
+	<p><b>2) Update Java </b></p>
+		<p>&nbsp;&nbsp;- in 'Update' tab, click on 'Update Now' button  <a id="mouse" hover><span>
+		<img src="images/java_update.png" align="left" width="100%" height="100%" alt="import">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+		<p>&nbsp;&nbsp;- follow instructions.</p>
+	<br>		
+	<p><b>3) Install Java </b></p>
+		<p>&nbsp;&nbsp;- <a href="https://java.com/en/download/help/windows_manual_download.xml" target="_blank">go directly to the Java site for installation</a>
+	</div>
+
+	<br>
+		
+	<h2 id="lin" class="style1">Linux</h2>
+	<div>
+	<p><b>1) How to find Java version ?</b></p>
+	<p>&nbsp;&nbsp;- open a terminal.</p>
+	<p>&nbsp;&nbsp;- enter the command <b>java -version</b> and verify the version (1.8 or more)</p>
+	<p>&nbsp;&nbsp;- if Java is not installed or if the version number is less than 8, go to step 'Install/Update Java'</p>
+	<br>		
+	<p><b>2) Install/Update Java </b></p>
+	<p>&nbsp;&nbsp;- open a terminal and execute :</p>
+	<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-set-default </span></pre></div></div>
+
+	</div>
+
+	<br>
+		
+	<h2 id="mac" class="style1">MacOS</h2>
+	
+	(to be continued)
+	
+	<br><br><br><br><br><br><br><br><br>
+
+	<script>document.write("This page was last modified on "+ DateModif())</script>
+	
+	</div>
+  </body>
+</html>
