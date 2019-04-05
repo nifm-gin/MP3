@@ -4776,16 +4776,18 @@ for i=1:size(database_to_import,1)
         tags.Path = categorical(cellstr(outfolder));
         flag = 1;
         idx = 2;
-        while flag
-            tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
-            tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
-            %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
-            tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
-            if size(tmpdatab,1) == 0
-                flag = 0;
-            else
-                tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
-                idx = idx+1;
+        if size(handles.database, 1) ~= 0
+            while flag
+                tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+                tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+                %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+                tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+                if size(tmpdatab,1) == 0
+                    flag = 0;
+                else
+                    tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+                    idx = idx+1;
+                end
             end
         end
         handles.database = [handles.database; tags];
