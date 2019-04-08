@@ -75,9 +75,8 @@ for n = 1:N
         kurt_term(:,:,k)    = alpha(n,k)*( 3 * Sigks(:,:,k)*Sigks(:,:,k)' + 6 * m*m' * Sigks(:,:,k) + m*m'*m*m' );
     end
     cov(:,:,n)  = sum(cov_term,3) - x_exp(:,n) * x_exp(:,n)';
-    kurt(:,:,n)	= inv(cov(:,:,n)*cov(:,:,n)') * sum(kurt_term,3);
+    kurt(:,:,n)	= cov(:,:,n)*cov(:,:,n)' \eye(size(cov(:,:,n)*cov(:,:,n)')) * sum(kurt_term,3);
 end
-
 
 % Formula from this site: https://www.researchgate.net/profile/Jin_Wang40/publication/221526102_Generating_daily_changes_in_market_variables_using_a_multivariate_mixture_of_normal_distributions/links/541c35ce0cf2218008c4fe0b/Generating-daily-changes-in-market-variables-using-a-multivariate-mixture-of-normal-distributions.pdf
 % Can be good to check

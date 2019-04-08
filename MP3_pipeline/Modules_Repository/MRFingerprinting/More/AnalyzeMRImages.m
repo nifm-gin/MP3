@@ -55,13 +55,15 @@ switch Method
         end
         for s = 1:slices
             %Estimation of parameters
-            [Yestim,~,Cov] = ...
+            [Yestim,~,Cov,Kurt] = ...
                 EstimateParametersFromRegression(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par, [], Parameters);
             Estimation.Regression.Y(:,:,:,s)    = reshape(Yestim, s1,s2,[]);
             Cov         = reshape(Cov,size(Cov,1),size(Cov,2),s1,s2);
+            Kurt        = reshape(Kurt,size(Kurt,1),size(Kurt,2),s1,s2);
             for ss = 1:s1
                 for sss = 1:s2
-                    Estimation.Regression.Cov(ss,sss,:,s) = diag(Cov(:,:,ss,sss))';
+                    Estimation.Regression.Cov(ss,sss,:,s)   = diag(Cov(:,:,ss,sss))';
+                    Estimation.Regression.Kurt(ss,sss,:,s)  = diag(Kurt(:,:,ss,sss))';
                 end
             end
             
