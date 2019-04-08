@@ -8,6 +8,8 @@
 	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
 	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
 	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../survol.css">
+
 	<title>MRI File Manager (IRMaGe)</title>
 	<script src="../datemodif.js"></script>
 	<script src="../buttontop.js"></script>
@@ -62,10 +64,20 @@
 		</span></pre></div></div>
 		</div>
 		</p>
+		<p class="style2">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'file'</b> specifies the file where the parameter and its value are located <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'keyName'</b> indicate the parameter name of the constructor <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'type'</b> indicate the value type (float, int, string) <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'format'</b> is reserved for time parameters (ex 'Acquisition Date') and allows to specify the date format (ex "yyyy-MM-dd HH:mm:ss"). <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'units'</b> indicate the time, dimension (or other) unit of the value (s, ms, mm, cm, hz ...). <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'category'</b> indicate where the value is to appear in the 'MRI Parameters' area of MRI File Manager. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'tagJason'</b> indicate the tag name that the parameter should have in the json file on the conversion into Nifti. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* for an empty field, use '~'
+		</p>
 		
 		<h2 id="brukerdict" class="style1">To define the Bruker MRI parameters</h2>
 		<p class="style2">
-		- Edit an yaml file<br>
+		- Edit the DictionaryMRI_User.yml<br>
 		- Example of the setting of a Bruker MRI parameter in DictionaryMRI_System.yml:
 		<div class= "style5">
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
@@ -79,10 +91,19 @@
 		</span></pre></div></div>
 		</div>
 		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>acqp, method, reco, subject</b> or <b>visu_pars</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'acqp' file.
+		<a id="mouse" hover><span>
+		<img src="images/acqp_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;(the characters <b>'$'</b> and <b>'='</b> are <b>important</b> because 'ACQ_echo_time' appears also elsewhere)
+		</p>
 		
 		<h2 id="dicomdict" class="style1">To define the Dicom MRI parameters</h2>
 		<p class="style2">
-		- Edit an yaml file<br>
+		- Edit the DictionaryMRI_User.yml<br>
 		- Example of the setting of a Dicom MRI parameter in DictionaryMRI_System.yml:
 		<div class= "style5">
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
@@ -96,10 +117,17 @@
 		</span></pre></div></div>
 		</div>
 		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>Dirfile, DicomDir </b>or <b>~</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'Dicom' file.
+		<a id="mouse" hover><span>
+		<img src="images/dicom_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
 		
 		<h2 id="philipsdict" class="style1">To define the Philips MRI parameters</h2>
 		<p class="style2">
-		- Edit an yaml file<br>
+		- Edit the DictionaryMRI_User.yml<br>
 		- Example of the setting of a Philips MRI parameter in DictionaryMRI_System.yml:
 		<div class= "style5">
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
@@ -113,10 +141,20 @@
 		</span></pre></div></div>
 		</div>
 		</p>
+		<p class="style2">
+		- 'file' always take the values <b>par ; xml</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the '.PAR' file 
+		<a id="mouse" hover><span>
+		<img src="images/par_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a> and '.xml'
+		<a id="mouse" hover><span>
+		<img src="images/xml_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
 		
 		<h2 id="niftidict" class="style1">To define the Nifti MRI parameters</h2>
 		<p class="style2">
-		- Edit an yaml file<br>
+		- Edit the DictionaryMRI_User.yml<br>
 		- Example of the setting of a Nifti MRI parameter in DictionaryMRI_System.yml:
 		<div class= "style5">
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
@@ -130,9 +168,15 @@
 		</span></pre></div></div>
 		</div>
 		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>niftiheader</b> or <b>json</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'json' file.
+		<a id="mouse" hover><span>
+		<img src="images/nifti_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
 		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-	
-	
+
 		<script>document.write("This page was last modified on "+ DateModif())</script>
 	
 	</div>
