@@ -9,7 +9,7 @@ SUMMARY Poster ([ENGLISH](https://github.com/nifm-gin/MP3/blob/master/tools/Pict
 In order to fully enjoy MP³, you have to meet the following requirements:
 * Matlab 2017b or higher
 * Toolboxes (Mandatory : Image Processing Toolbox -- Recommended : Statistics and Machine Learning Toolbox ; Parallel Computing Toolbox)
-
+* Java 8 or higher
 * Data to process in Bruker / DICOM / Philips / Nifti format
 
 
