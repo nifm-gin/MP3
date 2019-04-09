@@ -3761,7 +3761,9 @@ function MP3_show_group_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 Scan_Selected = handles.database(finddata_selected(handles),:);
-group = ['group: ' char(Scan_Selected.Group(1))];
+Unique_group = unique(Scan_Selected.Group);
+
+group = ['group: ' char(Unique_group(1))];
 set(handles.MP3_name_list_groupname_box, 'String', group);
 
 
@@ -3777,10 +3779,7 @@ function MP3_add_info_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_add_info (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-patients = get(handles.MP3_name_list, 'String');
-patients = patients(get(handles.MP3_name_list, 'Value'),:);
-patients = categorical(cellstr(patients));
+patients = handles.database.Patient(finddata_selected(handles));
 
 old_group_name = [cellstr(unique(handles.database.Group)); {'Other'}];
 
@@ -4779,16 +4778,18 @@ for i=1:size(database_to_import,1)
         tags.Path = categorical(cellstr(outfolder));
         flag = 1;
         idx = 2;
-        while flag
-            tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
-            tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
-            %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
-            tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
-            if size(tmpdatab,1) == 0
-                flag = 0;
-            else
-                tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
-                idx = idx+1;
+        if size(handles.database, 1) ~= 0
+            while flag
+                tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+                tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+                %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+                tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+                if size(tmpdatab,1) == 0
+                    flag = 0;
+                else
+                    tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+                    idx = idx+1;
+                end
             end
         end
         handles.database = [handles.database; tags];
