@@ -4678,8 +4678,8 @@ for i=1:length(UPatients)
     UTp = unique(tmp_database.Tp);
     for j=1:length(UTp)
         tmp2_database = table();
-        data_listing = [data_listing; {[char(UPatients(i)), ' - ', char(UTp(j))]}];
         tmp2_database = tmp_database(tmp_database.Tp == UTp(j),:);
+        data_listing = [data_listing; {[char(tmp2_database.Group(1)), ' - ', char(UPatients(i)), ' - ', char(UTp(j))]}];
         linked_table = [linked_table; {tmp2_database}];
     end
 end
