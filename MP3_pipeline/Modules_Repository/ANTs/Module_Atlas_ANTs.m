@@ -52,7 +52,9 @@ if isempty(opt)
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .ANTs script location','char','','script_location','', '',...
         {'The ''bin'' ANTs path (.../antsbin/bin)'}};
-    folder_files    = dir('data/atlas/*.nii*');
+    
+    s               = split(mfilename('fullpath'),'MP3_pipeline',1);
+    folder_files	= dir(fullfile(s{1}, 'data/atlas/'));
     if isempty(folder_files)
         folder_files(1).name = ' ';
     end
