@@ -3779,7 +3779,7 @@ function MP3_add_info_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_add_info (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-patients = handles.database.Patient(finddata_selected(handles));
+patients = handles.database.Patient(findpatient_selected(handles));
 
 old_group_name = [cellstr(unique(handles.database.Group)); {'Other'}];
 
