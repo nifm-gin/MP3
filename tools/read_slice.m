@@ -80,6 +80,10 @@ switch view_mode
 end
 
 
+info = niftiinfo(Vi(1).fname);
+Y = cast(Y, info.Datatype);
+
+
 function orient = get_orient(R)
 
 orient = zeros(1,3);
