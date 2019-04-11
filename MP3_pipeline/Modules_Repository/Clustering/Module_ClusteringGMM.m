@@ -595,7 +595,8 @@ for i=1:length(All_Data_Clean)
     ROI_cluster_header = ROI_nifti_header_Clean{i};
     % On a fait le même traitement sur les files_out (tout début du code) que sur l'ouverture des ROI. Il y a donc tout à penser que l'ordre des fichiers correspondra.
     ROI_cluster_header.fname = files_out.In1{i}; 
-    ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
+    %ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
+    ROI_cluster_header.pinfo = [1 0];
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
     Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');

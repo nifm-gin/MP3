@@ -3480,11 +3480,11 @@ V_ROI.fname =  [handles.database.Properties.UserData.MP3_ROI_path, file_name, '.
 
 V_ROI = rmfield(V_ROI,'private'); % Delete old nifti header. Will be recreated to match new image properties
 V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
-if spm_type(outputDatatype,'intt')
-    V_ROI = rmfield(V_ROI,'pinfo'); % integer datatype : let spm_write_vol decide on scaling
-else
+% if spm_type(outputDatatype,'intt')
+%     V_ROI = rmfield(V_ROI,'pinfo'); % integer datatype : let spm_write_vol decide on scaling
+% else
     V_ROI.pinfo(1:2) = [1;0];       % do not apply any scaling when saving as float data
-end
+%end
 % save the ROI in nii file (could be a new ROI or and old but updated)
 [ROI_matrix, FinalMat] = CropROI(ROI_matrix, V_ROI.mat);
 V_ROI.dim = [size(ROI_matrix,1), size(ROI_matrix,2), size(ROI_matrix,3)];
