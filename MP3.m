@@ -4243,6 +4243,10 @@ function MP3_copy_ScanVoi_to_other_tp_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data_selected = finddata_selected(handles);
+if numel(data_selected) > 1
+    warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
+    return
+end
 Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
