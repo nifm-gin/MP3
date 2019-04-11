@@ -1806,7 +1806,7 @@ switch get(hObject, 'Tag')
             handles = rmfield(handles, 'data_displayed');
         end
         if handles.mode == 1
-            
+            handles.data_displayed.image = single([]);
             for i=1:handles.data_loaded.number_of_scan
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = round(get(handles.MP3_data' stri '_echo_slider, ''Value''));']);
