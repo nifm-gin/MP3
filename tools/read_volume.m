@@ -110,10 +110,6 @@ switch view_mode
 end
 
 
-info = niftiinfo(Vo(1).fname);
-Y = cast(Y, info.Datatype);
-
-
 function orient = get_orient(R)
 
 orient = [];

@@ -6,6 +6,8 @@ function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr, view_mode)
 interpolation = 0;
 			
 
+
+
 Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
 
 xy = Vref(1).dim(1:2);
@@ -15,12 +17,12 @@ mat_tmp = Vref(1).mat\Vi(index_3D_vol).mat;
 
 Vi_index_3D_vol=Vi(index_3D_vol);
 
-parfor p = 1:Vref(1).dim(3)
+for p = 1:Vref(1).dim(3)
     B = spm_matrix([0 0 -p 0 0 0 1 1 1]);
     M = inv(B*mat_tmp);
 %     d = spm_slice_vol(Vi_index_3D_vol,M,xy,3);
 %     Y(:,:,p) = reshape(d,xy);
-    Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,interpolation);
+    Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,interpolation)/Vi_index_3D_vol.pinfo(1);
 end
 
 
@@ -76,10 +78,6 @@ switch view_mode
         Y = flip(Y,2);
         
 end
-
-
-info = niftiinfo(Vref(1).fname);
-Y = cast(Y, info.Datatype);
 
 
 function orient = get_orient(R)
