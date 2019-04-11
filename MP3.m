@@ -4255,8 +4255,13 @@ for i=1:numel(time_point)
     new_entry = handles.database(data_selected,:);
     new_entry.Tp = Tp_listing(time_point(i));
     new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
-    % check if the scan already exist for this time point
-    if sum(ismember(handles.database, new_entry)) == 0
+    % check if the scan already exist for this time point 
+    % but, since filename may varie  we have to remove the 'Filename'
+    % column from the table before checking if the scan to copy exist
+    % already
+    VariableNames_vector =1:length(handles.database.Properties.VariableNames);
+    VariableNames_vector(strcmp(handles.database.Properties.VariableNames,'Filename')) = [];
+    if sum(ismember(handles.database(:,VariableNames_vector), new_entry(:,VariableNames_vector))) == 0
         if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
             gunzip(fullfilename(handles, data_selected, '.nii.gz'));
             assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
