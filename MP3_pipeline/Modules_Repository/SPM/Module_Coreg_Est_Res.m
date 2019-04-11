@@ -11,20 +11,19 @@ if isempty(opt)
 %     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'folder_out',''};
     module_option(:,2)   = {'flag_test',true};
-    module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
-    module_option(:,4)   = {'OutputSequenceName','Prefix'};
-    module_option(:,5)   = {'Function','nmi'};
-    module_option(:,6)   = {'Separation','4 2'};
-    module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
-    module_option(:,8)   = {'Hist_Smooth','7 7'};
-    module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
-    module_option(:,10)   = {'Wrapping','No wrap'};
-    module_option(:,11)   = {'Masking','Dont mask images'};
-    module_option(:,12)   = {'output_filename_ext','Coreg'};
-    module_option(:,13)   = {'RefInput',2};
-    module_option(:,14)   = {'InputToReshape',1};
-    module_option(:,15)   = {'Table_in', table()};
-    module_option(:,16)   = {'Table_out', table()};
+    module_option(:,3)   = {'OutputSequenceName','Prefix'};
+    module_option(:,4)   = {'Function','nmi'};
+    module_option(:,5)   = {'Separation','4 2'};
+    module_option(:,6)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
+    module_option(:,7)   = {'Hist_Smooth','7 7'};
+    module_option(:,8)   = {'Interpolation','4th Degree B-Spline'};
+    module_option(:,9)   = {'Wrapping','No wrap'};
+    module_option(:,10)   = {'Masking','Dont mask images'};
+    module_option(:,11)   = {'output_filename_ext','Coreg'};
+    module_option(:,12)   = {'RefInput',2};
+    module_option(:,13)   = {'InputToReshape',1};
+    module_option(:,14)   = {'Table_in', table()};
+    module_option(:,15)   = {'Table_out', table()};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
         %% list of everything displayed to the user associated to their 'type'
@@ -49,38 +48,35 @@ if isempty(opt)
     ''
     'Registration parameters are stored in the headers of the "source" and the "other" images. These images are also resliced to match the source image voxel-for-voxel.'
     }'};
-
-    user_parameter(:,2)   = {'Execution Mode','cell',{'All Database','Through all sessions of one Patient','Through Each Session'},'Execution_Mode','','',...
-        'Please select the excecution mode for the coreg module'};
-    user_parameter(:,3)   = {'Reference Image','1Scan1TPXP','','', {'SequenceName', 'Tp', 'Patient'},'Mandatory',...
+    user_parameter(:,2)   = {'Reference Image','1Scan1TPXP','','', {'SequenceName', 'Tp', 'Patient'},'Mandatory',...
          'This is the image that is assumed to remain stationary (sometimes known as the target or template image), while the source image is moved to match it.'};
-    user_parameter(:,4)   = {'Source Image','1Scan','','',{'SequenceName'},'Mandatory',...
+    user_parameter(:,3)   = {'Source Image','1Scan','','',{'SequenceName'},'Mandatory',...
          'This is the image that is jiggled about to best match the reference.'};
-    user_parameter(:,5)   = {'Other Images','XScanOrXROI','','',{'SequenceName'},'Optional',...
+    user_parameter(:,4)   = {'Other Images','XScanOrXROI','','',{'SequenceName'},'Optional',...
          'These are any images that need to remain in alignment with the source image.'};
-    user_parameter(:,6)   = {'Parameters','','','','','',''};
-    user_parameter(:,7)   = {'    Estimation Options','', '','','','',...
+    user_parameter(:,5)   = {'Parameters','','','','','',''};
+    user_parameter(:,6)   = {'    Estimation Options','', '','','','',...
         'Various registration options, which are passed to the Powell optimisation algorithm.'};
-    user_parameter(:,8)   = {'       .Objective Function','cell',{'mi','ncc', 'nmi', 'ecc'},'Function','','',...
+    user_parameter(:,7)   = {'       .Objective Function','cell',{'mi','ncc', 'nmi', 'ecc'},'Function','','',...
         'Registration involves finding parameters that either maximise or minimise some objective function. For inter-modal registration, use Mutual Information, Normalised Mutual Information, or Entropy Correlation Coefficient. For within modality, you could also use Normalised Cross Correlation.'};
-    user_parameter(:,9)   = {'       .Tolerances','char','','Tolerence','','',...
+    user_parameter(:,8)   = {'       .Tolerances','char','','Tolerence','','',...
         'The average distance between sampled points (in mm).  Can be a vector to allow a coarse registration followed by increasingly fine ones.'};
-    user_parameter(:,10)  = {'       .Separation','numeric','','Separation','','',...
+    user_parameter(:,9)  = {'       .Separation','numeric','','Separation','','',...
         {'The accuracy for each parameter.  Iterations stop when differences between successive estimates are less than the required tolerance.'
         'Default Value :'
         '     - Human data : 4 2'
         '     - Rat data : 4 2 1 0.5 0.1'}};
-    user_parameter(:,11)  = {'       .Histogram Smoothing','numeric','','Hist_Smooth','','',...
+    user_parameter(:,10)  = {'       .Histogram Smoothing','numeric','','Hist_Smooth','','',...
         'Gaussian smoothing to apply to the 256x256 joint histogram. Other information theoretic coregistration methods use fewer bins, but Gaussian smoothing seems to be more elegant.'};
-    user_parameter(:,12)  = {'    Reslice options','','','','','',...
+    user_parameter(:,11)  = {'    Reslice options','','','','','',...
         'These images are resliced to the same dimensions, voxel sizes, orientation etc as the space defining image.'};
-    user_parameter(:,13)  = {'       .Interpolation','cell',{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'},'Interpolation','','',...
+    user_parameter(:,12)  = {'       .Interpolation','cell',{'Nearest neighbour', 'Trilinear', '2nd Degree B-Spline', '3rd Degree B-Spline', '4th Degree B-Spline', '5th Degree B-Spline', '6th Degree B-Spline', '7th Degree B-Spline'},'Interpolation','','',...
         'The method by which the images are sampled when being written in a different space. Nearest Neighbour is fastest, but not normally recommended. It can be useful for re-orienting images while preserving the original intensities (e.g. an image consisting of labels). Trilinear Interpolation is OK for PET, or realigned and re-sliced fMRI. If subject movement (from an fMRI time series) is included in the transformations then it may be better to use a higher degree approach. Note that higher degree B-spline interpolation is slower because it uses more neighbours.'};
-    user_parameter(:,14)  = {'       .Masking','cell',{'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'},'Wrapping','','',...
+    user_parameter(:,13)  = {'       .Masking','cell',{'No wrap','Wrap X', 'Wrap Y', 'Wrap X&Y', 'Wrap Z', 'Wrap X&Z', 'Wrap Y&Z', 'Wrap X,Y&Z'},'Wrapping','','',...
         'These are typically: No wrapping - for PET or images that have already been spatially transformed.  Wrap in  Y  - for (un-resliced) MRI where phase encoding is in the Y direction (voxel space).'};
-   user_parameter(:,15)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking','','',...
+    user_parameter(:,14)  = {'       .Wrapping','cell',{'Mask images', 'Dont mask images'},'Masking','','',...
        'Because of subject motion, different images are likely to have different patterns of zeros from where it was not possible to sample data. With masking enabled, the program searches through the whole time series looking for voxels which need to be sampled from outside the original images. Where this occurs, that voxel is set to zero for the whole set of images (unless the image format can represent NaN, in which case NaNs are used where possible).'};         
-    user_parameter(:,16)  = {'       .Filename prefix','char','','output_filename_ext','','',...
+    user_parameter(:,15)  = {'       .Filename prefix','char','','output_filename_ext','','',...
         'Specify the string to be prepended to the filenames of the resliced image file(s). Default prefix is ''Coreg''.'};
 
 
@@ -205,9 +201,9 @@ if isfield(files_in, 'In3')
                 [path, name, ~] = fileparts(files_in.In3{i});
                 jsonfile = [path, '/', name, '.json'];
                 J = ReadJson(jsonfile);
-
-                J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
+                
+                J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+                
                 [path, name, ~] = fileparts(files_out.In3{i});
                 jsonfile = [path, '/', name, '.json'];
                 WriteJson(J, jsonfile)
@@ -222,6 +218,8 @@ if isfield(files_in, 'In3')
         end
     end
     matlabbatch{1}.spm.spatial.coreg.estwrite.other = other';
+else
+    matlabbatch{1}.spm.spatial.coreg.estwrite.other = {''};
 end
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.cost_fun = opt.Function;
 matlabbatch{1}.spm.spatial.coreg.estwrite.eoptions.sep = str2num(opt.Separation);
@@ -276,8 +274,7 @@ matlabbatch{1}.spm.spatial.coreg.estwrite.roptions.prefix = opt.output_filename_
 
 
 
-
-[SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
+% [SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
 jobs = repmat(matlabbatch, 1, 1);
 inputs = cell(0, 1);
 for crun = 1:1
@@ -289,5 +286,8 @@ spm_jobman('run', jobs, inputs{:});
 
 close(SPMinter)
 close(SPMgraph)
+% rename the output file in order to match with what user expect
+[path,name,ext] = fileparts(files_out.In2{1});
+movefile(fullfile(path, [opt.output_filename_ext, name,ext]), files_out.In2{1});
 
 % 
