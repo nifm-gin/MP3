@@ -1483,11 +1483,16 @@ if  length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 2  %handles.data
     set(handles.MP3_slider_slice,'Max', 1);
     set(handles.MP3_slider_slice,'Value',1);
 else
-    set(handles.MP3_slider_slice,'Visible', 'on');
     set(handles.MP3_slider_slice,'Min',1);
     set(handles.MP3_slider_slice, 'Max', size(handles.data_displayed.image,3) );
     set(handles.MP3_slider_slice,'Value',1);
-    set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    % if one slice only
+    if size(handles.data_displayed.image, 3) ==1
+        set(handles.MP3_slider_slice,'Visible', 'off');
+    else
+        set(handles.MP3_slider_slice,'Visible', 'on');
+        set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    end
     %set(handles.MP3_slider_slice,'SliderStep',[1/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1) min(5/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1),1)]);
     
 end
@@ -3492,7 +3497,7 @@ V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
     V_ROI.pinfo(1:2) = [1;0];       % do not apply any scaling when saving as float data
 %end
 % save the ROI in nii file (could be a new ROI or and old but updated)
-[ROI_matrix, FinalMat] = CropROI(ROI_matrix, V_ROI.mat);
+[ROI_matrix, FinalMat] = CropNifti(ROI_matrix, V_ROI.mat);
 V_ROI.dim = [size(ROI_matrix,1), size(ROI_matrix,2), size(ROI_matrix,3)];
 % V_ROI.mat = adaptedstruct(1).mat;
 V_ROI.mat = FinalMat;
@@ -4249,6 +4254,10 @@ function MP3_copy_ScanVoi_to_other_tp_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data_selected = finddata_selected(handles);
+if numel(data_selected) > 1
+    warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
+    return
+end
 Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
@@ -4261,8 +4270,13 @@ for i=1:numel(time_point)
     new_entry = handles.database(data_selected,:);
     new_entry.Tp = Tp_listing(time_point(i));
     new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
-    % check if the scan already exist for this time point
-    if sum(ismember(handles.database, new_entry)) == 0
+    % check if the scan already exist for this time point 
+    % but, since filename may varie  we have to remove the 'Filename'
+    % column from the table before checking if the scan to copy exist
+    % already
+    VariableNames_vector =1:length(handles.database.Properties.VariableNames);
+    VariableNames_vector(strcmp(handles.database.Properties.VariableNames,'Filename')) = [];
+    if sum(ismember(handles.database(:,VariableNames_vector), new_entry(:,VariableNames_vector))) == 0
         if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
             gunzip(fullfilename(handles, data_selected, '.nii.gz'));
             assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)

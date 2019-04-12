@@ -1956,18 +1956,24 @@ function MP3_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% for now we clean all PSOM files  (old execution) in order to decrease
+% potential bugs
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 'dir') == 7
+    rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's')
+end
+
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
-% else
-%     %  Here we clean all PSOM files because the code do not handle these
-%     %  files for now
-%     rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MP3_data.database.Properties.UserData.MP3_data_path,  'PSOM'];
-opt_pipe.max_queued = 3;
+
+% set the number of workers as function of the capacity of the machine
+myCluster = parcluster('local');
+opt_pipe.max_queued = myCluster.NumWorkers;
 %opt_pipe.mode = 'session';
 
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data'],'dir') ~= 7
