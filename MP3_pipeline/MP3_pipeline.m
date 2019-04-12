@@ -1970,11 +1970,11 @@ if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'],'
     end
 end
 opt_pipe.path_logs = [handles.MP3_data.database.Properties.UserData.MP3_data_path,  'PSOM'];
-
-% set the number of workers as function of the capacity of the machine
-myCluster = parcluster('local');
-opt_pipe.max_queued = myCluster.NumWorkers;
-%opt_pipe.mode = 'session';
+% 
+% % set the number of workers as function of the capacity of the machine
+% myCluster = parcluster('local');
+% opt_pipe.max_queued = myCluster.NumWorkers
+% %opt_pipe.mode = 'session';
 
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data']);
@@ -2188,7 +2188,9 @@ end
 % end
 
 
-%% exectute the pipeline
+% %% execute the pipeline
+myCluster = parcluster('local');
+opt_pipe.max_queued = myCluster.NumWorkers;
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2

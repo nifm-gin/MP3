@@ -130,7 +130,7 @@ if strcmp(opt.Fill_Holes, 'Yes')
     
     
     for j=1:size(N,4)
-        parfor i=1:size(N,3)
+        for i=1:size(N,3)
             N(:,:,i,j) = imfill(N(:,:,i,j), 'holes');
         end
     end
