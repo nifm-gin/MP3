@@ -1,5 +1,5 @@
-function [OutputVol,OutputMat] = CropROI(InputVol,InputMat)
-%CropROI Crop the empty slices before and after the ROI slices and adapt
+function [OutputVol,OutputMat] = CropNifti(InputVol,InputMat)
+%CropNifti Crop the empty slices before and after the nifti slices and adapt
 %the transform matrix.
 %   Detailed explanation goes here
 
@@ -9,19 +9,19 @@ function [OutputVol,OutputMat] = CropROI(InputVol,InputMat)
 % [i, j, k, l]
 % [0, 0, 0, m]
 
-ROISlices = [];
+NiftiSlice = [];
 for i=1:size(InputVol, 3)
     A = InputVol(:,:,i);
     if any(A(:))
-        ROISlices = [ROISlices, i];
+        NiftiSlice = [NiftiSlice, i];
     end
 end
-assert(min(ROISlices) == ROISlices(1));
-assert(max(ROISlices) == ROISlices(end));
-FirstSlice = ROISlices(1);
-FinalSlice = ROISlices(end);
+assert(min(NiftiSlice) == NiftiSlice(1));
+assert(max(NiftiSlice) == NiftiSlice(end));
+FirstSlice = NiftiSlice(1);
+FinalSlice = NiftiSlice(end);
 
-OutputVol = InputVol(:,:,FirstSlice:FinalSlice);
+OutputVol = InputVol(:,:,FirstSlice:FinalSlice,:,:);
 OutputMat = InputMat;
 Movement = [0;0;FirstSlice-1;1];
 OutputMat(:,4) = InputMat * Movement;
