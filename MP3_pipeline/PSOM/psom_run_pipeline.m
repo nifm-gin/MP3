@@ -507,21 +507,37 @@ else
 end
 [flag_failed,msg] = psom_run_script(cmd_deamon,script_deamon,opt_script,opt_logs);
 
-%% If not in session mode, monitor the output of the pipeline
+%% evaluation of a new loop to wait until all jobs are done
+% coded by BL
 flag_exit = false;
 if opt.flag_verbose&&~strcmp(opt.mode_pipeline_manager,'session')
     nb_chars_old = nb_chars;
     nb_chars_init = nb_chars;
-    while (nb_chars(1)==nb_chars_init(1))||~flag_exit
-        flag_exit = ~psom_exist(file_pipe_running);
+    while flag_exit == 0
         nb_chars_old = nb_chars;
         nb_chars = psom_pipeline_visu(opt.path_logs,'monitor',nb_chars);
-        if ~any(nb_chars ~= nb_chars_old)
+        if exist([opt.path_logs, 'PIPE.exit'], 'file') == 2
+             flag_exit = 1;
+        else
             pause(0.2);
         end
     end
 end
 
+%% original code
+% flag_exit = false;
+% if opt.flag_verbose&&~strcmp(opt.mode_pipeline_manager,'session')
+%     nb_chars_old = nb_chars;
+%     nb_chars_init = nb_chars;
+%     while (nb_chars(1)==nb_chars_init(1))||~flag_exit
+%         flag_exit = ~psom_exist(file_pipe_running);
+%         nb_chars_old = nb_chars;
+%         nb_chars = psom_pipeline_visu(opt.path_logs,'monitor',nb_chars);
+%         if ~any(nb_chars ~= nb_chars_old)
+%             pause(0.2);
+%         end
+%     end
+% end
 %% check the status of the pipeline
 status = load(file_status);
 status = struct2cell(status);
