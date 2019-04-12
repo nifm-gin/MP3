@@ -1483,11 +1483,16 @@ if  length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 2  %handles.data
     set(handles.MP3_slider_slice,'Max', 1);
     set(handles.MP3_slider_slice,'Value',1);
 else
-    set(handles.MP3_slider_slice,'Visible', 'on');
     set(handles.MP3_slider_slice,'Min',1);
     set(handles.MP3_slider_slice, 'Max', size(handles.data_displayed.image,3) );
     set(handles.MP3_slider_slice,'Value',1);
-    set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    % if one slice only
+    if size(handles.data_displayed.image, 3) ==1
+        set(handles.MP3_slider_slice,'Visible', 'off');
+    else
+        set(handles.MP3_slider_slice,'Visible', 'on');
+        set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    end
     %set(handles.MP3_slider_slice,'SliderStep',[1/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1) min(5/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1),1)]);
     
 end
