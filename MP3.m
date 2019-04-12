@@ -2067,6 +2067,15 @@ for ii = 1:handles.data_loaded.number_of_ROI
         ROI_binary = handles.data_loaded.ROI(ii).nii;
         ROI_binary(abs(ROI_binary)>0) =1;
         
+        
+        Types = cell(1,length(handles.data_loaded.Scan));
+        for i=1:length(handles.data_loaded.Scan)
+            info = niftiinfo(handles.data_loaded.Scan(i).V(1).fname);
+            Types{i} = info.Datatype;
+        end
+        CommonType = FindCommonDatatype(Types);
+        ROI_binary = cast(ROI_binary, CommonType);
+        
         switch handles.data_loaded(1).number_of_scan
             case 1
                 VOI_data  = handles.data_displayed.image .* ROI_binary;
@@ -2077,7 +2086,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 if ii > 1
                     hold(handles.MP3_plot1, 'on');
                 end
-                [f, xi] = histnorm(VOI_data,nbin);
+                [f, xi] = histnorm(double(VOI_data),nbin);
                 plot(handles.MP3_plot1,xi,f,...
                     'Color',rgb(handles.colors{ii}),...
                     'Tag', strcat('MP3_plot1_1d', strii));
@@ -2176,7 +2185,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         
         table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(numel(VOI_data)*voxel_volume);
         table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
-        table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
+        table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(double(VOI_data)));
     end
     clear VOI_data
 end
@@ -3271,7 +3280,7 @@ slice_nbr = get(handles.MP3_slider_slice, 'Value');
 % select on which image will be use to draw the VOI
 if handles.data_loaded(1).number_of_scan > 1
     if handles.mode == 1
-        [which_image,ok] = listdlg('Name', 'Bip', 'ListString', unique(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan')),'ListSize', [200 150], 'PromptString', 'Which image you want to use?', 'SelectionMode', 'single');
+        [which_image,ok] = listdlg('Name', 'Bip', 'ListString', unique(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'),'stable'),'ListSize', [200 150], 'PromptString', 'Which image you want to use?', 'SelectionMode', 'single');
         if ok == 0
             return
         end
@@ -3446,9 +3455,9 @@ switch ROI_case
         
     case 'Union'
           if strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi, findobj('Tag', ['MP3_data' image_number]));
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
         elseif strcmp(get(hObject, 'Tag'), 'MP3_new_ROI_dyn')
-             handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + Drawn_ROI_matrice;
+             handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + cast(Drawn_ROI_matrice, class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
           end
        
        
@@ -3458,9 +3467,9 @@ switch ROI_case
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
     case 'Instersection'
         if strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi, findobj('Tag', ['MP3_data' image_number]))) - createMask(hroi, findobj('Tag', ['MP3_data' image_number]));
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = cast(or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii))), class(handles.data_loaded.ROI(ROI_loaded_idex).nii)) - cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
         elseif strcmp(get(hObject, 'Tag'), 'MP3_new_ROI_dyn')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), Drawn_ROI_matrice) - Drawn_ROI_matrice;        
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = cast(or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), Drawn_ROI_matrice), class(handles.data_loaded.ROI(ROI_loaded_idex).nii)) - cast(Drawn_ROI_matrice, class(handles.data_loaded.ROI(ROI_loaded_idex).nii));        
         end
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
@@ -4213,8 +4222,8 @@ G.x=G.cp(1,1);
 G.y=G.cp(1,2);
 G.xinit = G.initpnt(1,1);
 G.yinit = G.initpnt(1,2);
-G.dx = G.x-G.xinit;
-G.dy = G.y-G.yinit;
+G.dx = cast(G.x-G.xinit, class(G.initClim(2)));
+G.dy = cast(G.y-G.yinit, class(G.initClim(2)));
 G.clim = G.initClim+G.initClim(2).*[G.dx G.dy]./128;
 try
     switch get(fh,'SelectionType')
