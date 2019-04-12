@@ -284,8 +284,8 @@ spm_jobman('initcfg');
 spm_jobman('run', jobs, inputs{:});
 
 
-close(SPMinter)
-close(SPMgraph)
+% close(SPMinter)
+% close(SPMgraph)
 % rename the output file in order to match with what user expect
 [path,name,ext] = fileparts(files_out.In2{1});
 movefile(fullfile(path, [opt.output_filename_ext, name,ext]), files_out.In2{1});
