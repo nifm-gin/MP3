@@ -45,7 +45,7 @@ if isempty(opt)
         '    University of Pennsylvania'
         '    https://github.com/ANTsX/ANTs'
         ''
-        'Prerequisite: Put your ''.nii'' atlas in the ''data/atlas'' folder'
+        'Prerequisite: put your ''.nii'' or ''.nii.gz'' atlas and label files in the ''./data/atlas'' folder'
         }'};
     
     user_parameter(:,2)   = {'Select one anatomical scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -61,11 +61,11 @@ if isempty(opt)
     user_parameter(:,5)   = {'   .Atlas filename','cell', {folder_files.name}, 'atlas_filename','','',...
         {'Select your atlas file'}};
     user_parameter(:,6)   = {'   .Label filename','cell', {folder_files.name}, 'label_filename','','',...
-        {'Select your atlas labels file'}};
+        {'Select your labels file'}};
     user_parameter(:,7)   = {'   .Dimension','cell', {'2','3'},'dimension','', '',...
-        {'2 or 3 (for 2 or 3 dimensional registration of single volume)'}};
+        {'Select the dimension: 2 or 3 (for 2 or 3 dimensional registration of single volume)'}};
     user_parameter(:,8)   = {'   .Transformation','cell', {'t','r','a','s','sr','so','b','br','bo'},'transformation','','',... 
-        {'Choose the transform type (default = ''s''):'
+        {'Select the transform type (default = ''s''):'
         '    t: translation (1 stage)'
         '    r: rigid (1 stage)'
         '    a: rigid + affine (2 stages)'
@@ -76,7 +76,7 @@ if isempty(opt)
         '    br: rigid + deformable b-spline syn (2 stages)'
         '    bo: deformable b-spline syn only (1 stage)'}};    
     user_parameter(:,9)   = {'   .Mask ROI','1ROI', '', '', {'SequenceName'}, 'Optional',...
-        {'Select ROI (optional)'}};
+        {'Select ROI (optional but recommanded)'}};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -118,8 +118,6 @@ if isempty(files_out)
     
     opt.Table_out = [opt.Table_out; opt2.Table_out];
 end
-
-
 
 
 %% Syntax
@@ -230,7 +228,8 @@ elseif ~isempty(transf0) && ~isempty(transf1)
             ' -v ' '0'
             ]);
 end
-    
+
+
 % Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
@@ -248,7 +247,6 @@ temp_files = dir([s './data/atlas/' prefix '_transformation_*']);
 for i =1:size(temp_files)
     delete([s 'data/atlas/' temp_files(i).name]);
 end
-
 
 
 
