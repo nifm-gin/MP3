@@ -165,18 +165,20 @@ end
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header, 'Axial');
 end
-% save the new files (.nii & .json)
-% update the header before saving the new .nii
+
 info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
 
-info2 = info;
-info2.Filename = files_out.In1{1};
-info2.Filemoddate = char(datetime('now'));
-info2.Datatype = class(OutputImages);
+nifti_header_output = info;
+nifti_header_output.Filename = files_out.In1{1};
+nifti_header_output.Filemoddate = char(datetime('now'));
+[OutputImages_reoriented, FinalMat] = CropNifti(OutputImages_reoriented, nifti_header_output.Transform.T');
+nifti_header_output.Datatype = class(OutputImages_reoriented);
+nifti_header_output.Transform = affine3d(FinalMat');
+nifti_header_output.ImageSize = size(OutputImages_reoriented); 
+nifti_header_output.PixelDimensions = info.PixelDimensions(1:length(nifti_header_output.ImageSize));
 
-
-% save the new .nii file
-niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);
+% % save the new .nii file
+ niftiwrite(OutputImages_reoriented, files_out.In1{1}, nifti_header_output);
 
 % % so far copy the .json file of the first input
 % if opt.Table_in.Type(1) == categorical(cellstr('Scan'))
