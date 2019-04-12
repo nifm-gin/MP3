@@ -3491,7 +3491,7 @@ V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
     V_ROI.pinfo(1:2) = [1;0];       % do not apply any scaling when saving as float data
 %end
 % save the ROI in nii file (could be a new ROI or and old but updated)
-[ROI_matrix, FinalMat] = CropROI(ROI_matrix, V_ROI.mat);
+[ROI_matrix, FinalMat] = CropNifti(ROI_matrix, V_ROI.mat);
 V_ROI.dim = [size(ROI_matrix,1), size(ROI_matrix,2), size(ROI_matrix,3)];
 % V_ROI.mat = adaptedstruct(1).mat;
 V_ROI.mat = FinalMat;
