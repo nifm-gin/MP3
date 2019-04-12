@@ -12,7 +12,7 @@ function CommonDatatype = FindCommonDatatype(Types)
 %            return uint(max)
 %     elseif uint and int 
 %             if max <= 32
-%                 return uint(max*2)
+%                 return int(max*2)
 %             else
 %                 return single
 %             end
@@ -38,16 +38,16 @@ function CommonDatatype = FindCommonDatatype(Types)
 %             magnitude floating point number of the same precision as x
 %             
 %             
-% int8 :  integer in the range 0 <--> 255
-% int16 : integer in the range 0 <--> 65 535
-% int32 : integer in the range 0 <--> 4 294 967 295
-% int64 : integer in the range 0 <--> 18 446 744 073 709 551 615
+% uint8 :  unsigned integer in the range 0 <--> 255
+% uint16 : unsigned integer in the range 0 <--> 65 535
+% uint32 : unsigned integer in the range 0 <--> 4 294 967 295
+% uint64 : unsigned integer in the range 0 <--> 18 446 744 073 709 551 615
 % 
 % 
-% uint8 : integer in the range -128 <--> 127
-% uint16 : integer in the range -32 768 <--> 32 767
-% uint32 : integer in the range -2 147 483 648 <--> 2 147 483 647
-% uint64 : integer in the range -9 223 372 036 854 775 808 <--> 9 223 372 036 854 775 807
+% int8 :  signed integer in the range -128 <--> 127
+% int16 : signed integer in the range -32 768 <--> 32 767
+% int32 : signed integer in the range -2 147 483 648 <--> 2 147 483 647
+% int64 : signed integer in the range -9 223 372 036 854 775 808 <--> 9 223 372 036 854 775 807
 
 
 if any(strcmp(Types, 'double'))
@@ -81,20 +81,13 @@ elseif any(contains(Types, 'int') & ~contains(Types, 'uint')) && any(contains(Ty
         end
     end
     if max(BitNumber) <= 32
-        CommonDatatype = ['uint',num2str(max(BitNumber*2))];
+        CommonDatatype = ['int',num2str(max(BitNumber*2))];
     else
         CommonDatatype = 'single';
     end
 else
     error('Datatype non supported');
 end
-
-
-
-
-
-
-
 
 end
 
