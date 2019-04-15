@@ -1,9 +1,9 @@
 function CommonDatatype = FindCommonDatatype(Types)
 %FINDCOMMONDATATYPE Find the highest Datatype among all the ones in a cell
 %vector
-%   What the function does : 
+%   The function does : 
 %     if any(double) 
-%           return double
+%            return double
 %     elseif any(single) 
 %            return single
 %     elseif only int 
@@ -16,6 +16,8 @@ function CommonDatatype = FindCommonDatatype(Types)
 %             else
 %                 return single
 %             end
+%     else
+%             error
 %     end
     
 
