@@ -209,18 +209,18 @@ for i=1:numel(maps_to_generate)
                 %                 fun = @(x) mean(x(:));
                 %                 % Here comes the actual filtering.
                 %                 New_texture_map = nlfilter(origCData(:,:,50), [opt.Patch_size, opt.Patch_size], fun);         
-                parfor j= 1:size(origCData,3)
+                for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@mean);
                 end
             % Local_Skewness
             case 2
-                parfor j= 1:size(origCData,3)
+                for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@skewness);
                 end
-                
+                 
             % Local_Kurosis    
             case 3
-                parfor j= 1:size(origCData,3)
+                for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@kurtosis);
                 end
            % Local_Entropy
@@ -229,7 +229,7 @@ for i=1:numel(maps_to_generate)
                     
            % Local_Range
             case 5
-                parfor j= 1:size(origCData,3)
+                for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@range);
                 end
 

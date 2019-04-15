@@ -3909,7 +3909,7 @@ end
 MP3_remove_scan(hObject, eventdata, handles, nii_index)
 
 % Save database
-MP3_menu_save_database_Callback(hObject, eventdata, handles)
+%MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
