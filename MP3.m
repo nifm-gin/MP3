@@ -4480,7 +4480,7 @@ for i = 1:numel(unique(log_file.StudyName))
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
-                        if strcmp(json_data.ProtocolName.value, ProtocolsToExplain)
+                        if any(strcmp(json_data.ProtocolName.value, ProtocolsToExplain))
                             json_data.ProtocolName.value = {[json_data.ProtocolName.value{1}, '_', clean_variable_name(json_data.SequenceName.value{1},'')]};
                         end
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName.value), ''))) == 1
