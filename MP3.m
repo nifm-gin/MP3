@@ -4452,6 +4452,28 @@ end
 log_file.StudyName = categorical(cellstr(log_file.StudyName));
 log_file.CreationDate = categorical(cellstr(log_file.CreationDate));
 
+%% Add SequenceName to Protocol when usefull:
+UProt = unique(log_file.Protocol);
+ProtocolsToExplain = {};
+for i=1:length(UProt)
+    tmp_table = log_file(strcmp(log_file.Protocol,UProt(i)),:);
+    if size(tmp_table,1)>1
+        USeq = unique(tmp_table.SequenceName);
+        if length(USeq)>1
+            ProtocolsToExplain = [ProtocolsToExplain, {UProt{i}}];
+        end
+    end
+end
+
+% for i=1:size(log_file,1)
+%     if strcmp(log_file.Protocol(i), ProtocolsToExplain)
+%         log_file.Protocol{i} = [log_file.Protocol{i}, '_', log_file.SequenceName{i}];
+%     end
+% end
+%%
+
+
+
 StudyName_listing = unique(log_file.StudyName);
 for i = 1:numel(unique(log_file.StudyName))
     patient_filter = log_file.StudyName == char(StudyName_listing(i));
@@ -4468,13 +4490,14 @@ for i = 1:numel(unique(log_file.StudyName))
                 NAME = char(log_file.NameFile(index_data_to_import(m),:));
                 if exist(fullfile(MP3_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MP3_tmp_folder, [NAME, '.json']));
-                    if ~isfield(json_data, 'ProtocolName')
-                        json_data.ProtocolName.value = {'Undefined'};
-                    elseif isempty(char(json_data.ProtocolName.value))
+                    if ~isfield(json_data, 'ProtocolName') || isempty(char(json_data.ProtocolName.value))
                         json_data.ProtocolName.value = {'Undefined'};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
+                        if strcmp(json_data.ProtocolName.value, ProtocolsToExplain)
+                            json_data.ProtocolName.value = {[json_data.ProtocolName.value{1}, '_', clean_variable_name(json_data.SequenceName.value{1},'')]};
+                        end
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName.value), ''))) == 1
                             nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
                                 handles.database.Tp ==  char(tp_selected) &...
