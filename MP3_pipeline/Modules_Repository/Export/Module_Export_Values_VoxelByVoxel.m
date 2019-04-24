@@ -31,7 +31,7 @@ if isempty(opt)
     user_parameter(:,1)   = {'Description','Text','','','','',...
          {'This module aims to export data voxel-by-voxel.'
          '    - inputs: one or several scans and 1 ROI'
-         '    - output: cvs file which contains vales for each voxel. One line = values for one voxel'}
+         '    - output: cvs file which contains values for each voxel. One line = values for one voxel'}
         };
     user_parameter(:,2)   = {'   .First scan (used as the reference for the resolution)','1Scan','','', {'SequenceName'},'Mandatory',...
          'Please select the scan that will be use as reference. Every other scan selected below will be reoriented to this reference space'};
