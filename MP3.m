@@ -2168,7 +2168,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         table_data(ii*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
         VOI_data(VOI_data==0)=nan;
         
-        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(numel(VOI_data)*voxel_volume);
+        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(sum(~isnan(VOI_data))*voxel_volume); % num2cell(numel(VOI_data)*voxel_volume);
         table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
         table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
     end
