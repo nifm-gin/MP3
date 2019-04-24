@@ -108,6 +108,7 @@ end
 
 
 %% load all the input scan (other than the scan of reference)
+if isfield(files_in, 'In2')
 for i=1:length(files_in.In2)
     other_scan(i).header =  spm_vol(files_in.In2{i});
     other_scan(i).data = read_volume(other_scan(i).header, scan_of_reference.header, 0, 'Axial'); 
@@ -132,7 +133,7 @@ for i=1:length(files_in.In2)
      output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  reshape(data_to_add, [size(output_data,1), size(output_data,2), size(output_data,3), size(data_to_add,4)*size(data_to_add,5)]); 
    
 end
-
+end
 % Save data as csv file
 % Patient_name / TimePoint / Scan_name / ROI_name /
 % Coordonate_x / Coordonate_y / Coordonate_z / Name_of_the_voxel
