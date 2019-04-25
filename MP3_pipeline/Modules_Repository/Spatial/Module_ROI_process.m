@@ -113,7 +113,7 @@ info = niftiinfo(files_in.In1{1});
 if str2double(opt.Erode) ~= 0
     N = imerode(N, strel('disk',str2double(opt.Erode)));    
 elseif str2double(opt.Dilate) ~= 0
-     N = imdilate(N, strel('disk',str2double(opt.Erode)));    
+     N = imdilate(N, strel('disk',str2double(opt.Dilate)));    
 end
 
 niftiwrite(N, files_out.In1{1}, info)
