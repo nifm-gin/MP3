@@ -469,6 +469,7 @@ end
 patient = get(handles.MP3_name_list, 'Value');
 timepoint = get(handles.MP3_time_points_list, 'Value');
 if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
     set(handles.MP3_scan_VOIs_button, 'Value', 0)
     return
 end
@@ -1023,6 +1024,11 @@ guidata(handles.MP3_GUI, handles);
 function MP3_load_axes_Callback(hObject, eventdata, handles)
 
 if ~isfield(handles, 'database')
+    return
+end
+% MP3 cannot load scan(s) if multiple patients are selected
+if numel(get(handles.MP3_name_list, 'Value')) > 1
+     warndlg('Please select only 1 patient before loading scan(s)','Warning');
     return
 end
 %tstart = tic;
