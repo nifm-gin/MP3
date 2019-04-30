@@ -98,12 +98,12 @@ switch view_mode
     case 'Axial'
         
     case 'Coronal'
-        Y = permute(Y, [3 2 1]);
+        Y = permute(Y, [3 2 1 4 5]);
         Y = flip(Y,1);
         Y = flip(Y,2);
 
     case 'Saggital'
-        Y = permute(Y, [3 1 2]);
+        Y = permute(Y, [3 1 2 4 5]);
         Y = flip(Y,1);
         Y = flip(Y,2);
         

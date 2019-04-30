@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 13-Mar-2019 18:41:38
+% Last Modified by GUIDE v2.5 26-Apr-2019 16:40:28
 
 
 % Begin initialization code - DO NOT EDIT
@@ -96,7 +96,7 @@ for i=1:4
     set(eval(['handles.MP3_data', stri, '_echo_slider']), 'Visible', 'off');
     set(eval(['handles.MP3_data', stri, '_expt_slider']), 'Visible', 'off');
 end
-
+set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
 % add MRIManager.jar to the classpath (dynamic classpath)
 [filepath,name,ext] = fileparts(which('MRIManager.jar'));
@@ -469,6 +469,7 @@ end
 patient = get(handles.MP3_name_list, 'Value');
 timepoint = get(handles.MP3_time_points_list, 'Value');
 if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
     set(handles.MP3_scan_VOIs_button, 'Value', 0)
     return
 end
@@ -1021,8 +1022,15 @@ guidata(handles.MP3_GUI, handles);
 
 
 function MP3_load_axes_Callback(hObject, eventdata, handles)
+% by default this slider is hidded
+set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
 if ~isfield(handles, 'database')
+    return
+end
+% MP3 cannot load scan(s) if multiple patients are selected
+if numel(get(handles.MP3_name_list, 'Value')) > 1
+     warndlg('Please select only 1 patient before loading scan(s)','Warning');
     return
 end
 %tstart = tic;
@@ -1123,6 +1131,7 @@ for i = 1:numel(data_selected)
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
         elseif strcmp(char(handles.database(data_selected(i),:).Type), 'Cluster')
+            set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
             %% read and load the nii file
             handles.data_loaded.number_of_Cluster = handles.data_loaded.number_of_Cluster+1;
             handles.data_loaded.Cluster(handles.data_loaded.number_of_Cluster).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
@@ -1567,12 +1576,16 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
     
     
     if isfield(handles.data_loaded, 'Cluster')
+        % first clear plot_1 and table1
+        if ~isempty(get(handles.MP3_plot1, 'Children'))
+            delete(get(handles.MP3_plot1, 'Children'));
+            legend(handles.MP3_plot1,'off');
+            hold(handles.MP3_plot1, 'off');
+        end
+        set(handles.MP3_table1, 'Data', {''});
+        
         handles = MP3_update_VOI_displayed(hObject, eventdata, handles);
-        %% In the future, we will have the possibility to update MP3_plot1 here.
-    end
-    % Update the VOI_cluster matrix (new cluster, resized...)
-    if isfield(handles, 'ROI_cluster_resized')
-        handles = MP3_update_VOI_cluster_displayed(hObject,handles);
+        %% In the future, we will have the possibility to update MP3_plot1 here.     
     end
 end
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
@@ -1690,6 +1703,7 @@ if isfield(handles, 'data_displayed')
                     end
                 end
             else
+                set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
                     if fillroi
@@ -2183,7 +2197,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         table_data(ii*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
         VOI_data(VOI_data==0)=nan;
         
-        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(numel(VOI_data)*voxel_volume);
+        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(sum(~isnan(VOI_data))*voxel_volume); % num2cell(numel(VOI_data)*voxel_volume);
         table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
         table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(double(VOI_data)));
     end
@@ -2752,10 +2766,6 @@ if isfield(handles, 'ROI_PRM_resized')
     handles = rmfield(handles, 'ROI_PRM_resized');
 end
 
-if isfield(handles, 'ROI_cluster_resized')
-    handles = rmfield(handles, 'ROI_cluster_resized');
-end
-
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
     legend(handles.MP3_plot1,'off');
@@ -2789,6 +2799,8 @@ set(handles.MP3_data1_expt_slider, 'Value', 1);
 set(handles.MP3_data2_expt_slider, 'Value', 1);
 set(handles.MP3_data3_expt_slider, 'Value', 1);
 set(handles.MP3_data4_expt_slider, 'Value', 1);
+set(handles.MP3_slider_slice, 'Value', 1);
+set(handles.MP3_slice_number, 'String', 'Slice 1/1');
 
 
 
@@ -3062,13 +3074,6 @@ for slice_nbr=1:get(handles.MP3_slider_slice, 'Max')
 end
 
 
-function handles = MP3_update_VOI_cluster_displayed(hObject,handles)
-for slice_nbr=1:get(handles.MP3_slider_slice, 'Max')
-    handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)=squeeze(handles.ROI_cluster_resized.map(:,:,slice_nbr,:));
-    handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr) = handles.ROI_cluster_resized.trans(:,:,slice_nbr);
-end
-
-
 % --- Executes on slider movement.
 function MP3_PRM_slider_trans_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_PRM_slider_trans (see GCBO)
@@ -3081,8 +3086,6 @@ function MP3_PRM_slider_trans_Callback(hObject, eventdata, handles)
 
 if strcmp(get(handles.MP3_menu_roi_fill, 'Checked'), 'on')
     MP3_update_axes(hObject, eventdata, handles)
-elseif isfield(handles, 'brain_extraction_ROI')
-    MP3_Brain_Extraction(hObject, eventdata, handles)
 else
     if isfield(handles.data_loaded, 'PRM')
         trans = round(get(handles.MP3_PRM_slider_trans, 'Value'))/100;
@@ -3219,9 +3222,7 @@ end
 if isfield(handles, 'ROI_PRM_resized')
     handles = rmfield(handles, 'ROI_PRM_resized');
 end
-if isfield(handles, 'ROI_cluster_resized')
-    handles = rmfield(handles, 'ROI_cluster_resized');
-end
+
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
     legend(handles.MP3_plot1,'off');
@@ -4077,9 +4078,12 @@ function MP3_menu_roi_fill_Callback(hObject, eventdata, handles)
 
 if strcmp(get(handles.MP3_menu_roi_fill, 'Checked'), 'on')
     set(handles.MP3_menu_roi_fill, 'Checked', 'off')
+    set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 else
     set(handles.MP3_menu_roi_fill, 'Checked', 'on')
+    set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
 end
+MP3_update_axes(hObject, eventdata, handles)
 
 
 % --- If Enable == 'on', executes on mouse press in 5 pixel border.
@@ -5737,35 +5741,6 @@ function MP3_menu_Help_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --------------------------------------------------------------------
-function MP3_Help_Load_Developer_Callback(hObject, eventdata, handles)
-% hObject    handle to MP3_Help_Load_Developer (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-Path = mfilename('fullpath');
-Path = strsplit(Path, filesep);
-Path{end} = ['tools', filesep, 'ClusterGMM_(StageClement)', filesep];
-Path = strjoin(Path, filesep);
-
-NewEntry = table();
-%NewEntry = handles.database(end,:);
-NewEntry.Group = categorical(cellstr('Developer'));
-NewEntry.Patient = categorical(cellstr('Developer_Clement'));
-NewEntry.Tp = categorical(cellstr('27_11_2018'));
-NewEntry.Path = categorical(cellstr(Path));
-NewEntry.Filename = categorical(cellstr('el_luchador'));
-NewEntry.Type = categorical(cellstr('Scan'));
-NewEntry.IsRaw = categorical(1);
-NewEntry.SequenceName = categorical(cellstr('Portrait'));
-if isfield(handles, 'database')
-    handles.database = unique([handles.database; NewEntry]);
-else
-    handles.database = NewEntry;
-end
-MP3_update_database_display(hObject, eventdata, handles)
-guidata(hObject, handles)
 
 
 % --------------------------------------------------------------------
