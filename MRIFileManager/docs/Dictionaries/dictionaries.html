@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+	<link rel="stylesheet" media="screen" type="text/css" href="../styles.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../menu.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../haiku.css">
+	<link rel="stylesheet" media="screen" type="text/css" href="../survol.css">
+
+	<title>MRI File Manager (IRMaGe)</title>
+	<script src="../datemodif.js"></script>
+	<script src="../buttontop.js"></script>
+  </head>
+  
+  <body link="#ff5500">
+  <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
+  
+	<div>
+		<object data="../bandeau.html" type="text/html" width="100%" height="100%"></object>
+		<div id='cssmenu'>
+		<ul>
+			<li><a href='../Home/index.html' target="_parent"><span>Home</span></a></li>
+			<li><a href='../Installation/installation.html' target="_parent"><span>Installation</span></a></li>
+			<li><a href='../Documentation/documentation.html' target="_parent"><span>Documentation</span></a></li>
+			<li><a href='../Troubleshooting/troubleshooting.html' target="_parent"><span>Troubleshooting</span></a></li>
+			<li class='active'><a href='#'><span>MRI Dictionaries</span></a></li>
+			<li  class='last'><a href='../Irmagejson/irmagejson.html' target="_parent"><span>IRMaGe Json</span></a></li>
+			
+		</ul>
+		</div>
+
+		<p class="style4" >	<u><a href="#introduction">Introduction</a></u> - <u><a href="#brukerdict">To define the Bruker MRI parameters</a></u> - <u><a href="#dicomdict">To define the Dicom MRI parameters</a></u> - 
+							<u><a href="#philipsdict">To define the Philips MRI parameters</a></u> - <u><a href="#niftidict">To define the Nifti MRI parameters</a></u></p>
+		
+		<br>
+		
+		<h2 id="introduction" class="style1">Introduction</h2>
+		<p class="style2">
+		- This page explains how to extract the MRI parameters with the <b>DictionaryMRI_System.yml</b> and <b>DictionaryMRI_User.yml</b> files which are located in MRI File Manager directory. <br><br>
+		- This allows the user to display his MRI parameters in the viewer and export the values in the Json file when converting to Nifti.  <br><br>
+		- The files are written in Yaml. The file's header explains the structure of document. <br><br>
+		- The <b>DictionaryMRI_System.yml</b> file allows the extraction of the most important MRI parameters (resolution, number of slice, size ...). 
+			This file is very important for the regular functionning of the software. <b> It is better not to change it !</b> It is only available to verify parameters and for advanced users.
+			The extracted values are displayed in the 'Info param.' tab of the 'MRI parameters' table. <br><br> 
+		- The <b>DictionaryMRI_User.yml</b> file allows the extraction of the MRI parameters in a personalized way. This file can be modified by the user. 
+			The extracted values are displayed in the 'User param.' tab of the 'MRI parameters' table. <b><u>When you modify this file, do a backup</u></b>. <br><br>
+		- <b>Important : each MRI label must have a unique name, ensure that it isn't repeated several times in the 2 yaml files.</b><br><br>
+		- For each format, the setting of a MRI parameter must take the following form :
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>MRI label of your choice:</i><br>
+	description: {info: "<i>your comment</i>"}
+			
+	whereBruker:  {file: xxx, keyName: xxx, type: xxx, format: xxx, units: xxx}
+	wherePhilips: {file: xxx, keyName: xxx, type: xxx, format: xxx, units: xxx}
+	whereDicom:   {file: xxx, keyName: xxx, type: xxx, format: xxx, units: xxx}
+	whereNifti:   {file: xxx, keyName: xxx, type: xxx, format: xxx, units: xxx}
+                  
+	viewer: {category: xxx}
+	json:   {tagJson: xxx, type: xxx, format: xxx, units: xxx}
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<p class="style2">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'file'</b> specifies the file where the parameter and its value are located <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'keyName'</b> indicate the parameter name of the constructor <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'type'</b> indicate the value type (float, int, string) <b>(mandatory field)</b>. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'format'</b> is reserved for time parameters (ex 'Acquisition Date') and allows to specify the date format (ex "yyyy-MM-dd HH:mm:ss"). <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'units'</b> indicate the time, dimension (or other) unit of the value (s, ms, mm, cm, hz ...). <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'category'</b> indicate where the value is to appear in the 'MRI Parameters' area of MRI File Manager. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <b>'tagJason'</b> indicate the tag name that the parameter should have in the json file on the conversion into Nifti. <br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* for an empty field, use '~'
+		</p>
+		
+		<h2 id="brukerdict" class="style1">To define the Bruker MRI parameters</h2>
+		<p class="style2">
+		- Edit the DictionaryMRI_User.yml<br>
+		- Example of the setting of a Bruker MRI parameter in DictionaryMRI_System.yml:
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
+	description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
+  
+	whereBruker:  {file: acqp, keyName: $ACQ_echo_time=, type: float, format: ~, units: ms}
+
+	viewer: {category: MRI parameters}
+	json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>acqp, method, reco, subject</b> or <b>visu_pars</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'acqp' file.
+		<a id="mouse" hover><span>
+		<img src="images/acqp_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;(the characters <b>'$'</b> and <b>'='</b> are <b>important</b> because 'ACQ_echo_time' appears also elsewhere)
+		</p>
+		
+		<h2 id="dicomdict" class="style1">To define the Dicom MRI parameters</h2>
+		<p class="style2">
+		- Edit the DictionaryMRI_User.yml<br>
+		- Example of the setting of a Dicom MRI parameter in DictionaryMRI_System.yml:
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
+	description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
+
+	whereDicom:   {file: dirfile, keyName: Echo Time, type: float, format: ~, units: ms}
+
+	viewer: {category: MRI parameters}
+	json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>Dirfile, DicomDir </b>or <b>~</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'Dicom' file.
+		<a id="mouse" hover><span>
+		<img src="images/dicom_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
+		
+		<h2 id="philipsdict" class="style1">To define the Philips MRI parameters</h2>
+		<p class="style2">
+		- Edit the DictionaryMRI_User.yml<br>
+		- Example of the setting of a Philips MRI parameter in DictionaryMRI_System.yml:
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
+	description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
+
+	wherePhilips: {file: PAR ; Xml, keyName: echo_time ; Echo Time, type: float ; float, format: ~, units: ms ; ms}
+
+	viewer: {category: MRI parameters}
+	json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<p class="style2">
+		- 'file' always take the values <b>par ; xml</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the '.PAR' file 
+		<a id="mouse" hover><span>
+		<img src="images/par_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a> and '.xml'
+		<a id="mouse" hover><span>
+		<img src="images/xml_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
+		
+		<h2 id="niftidict" class="style1">To define the Nifti MRI parameters</h2>
+		<p class="style2">
+		- Edit the DictionaryMRI_User.yml<br>
+		- Example of the setting of a Nifti MRI parameter in DictionaryMRI_System.yml:
+		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b><i>Echo Time:</i><br>
+	description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
+
+	whereNifti:   {file: json, keyName: EchoTime, type: float, format: ~, units: ms}
+
+	viewer: {category: MRI parameters}
+	json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
+		</b>
+		</span></pre></div></div>
+		</div>
+		</p>
+		<p class="style2">
+		- 'file' can take the following values : <b>niftiheader</b> or <b>json</b><br>
+		- In this example, 'keyName' seeks the value of the parameter 'Echo Time' in the 'json' file.
+		<a id="mouse" hover><span>
+		<img src="images/nifti_capture.PNG" align="left" width="100%" height="100%" alt="acqpfile">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a>
+		</p>
+		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+		<script>document.write("This page was last modified on "+ DateModif())</script>
+	
+	</div>
+  </body>
+</html>

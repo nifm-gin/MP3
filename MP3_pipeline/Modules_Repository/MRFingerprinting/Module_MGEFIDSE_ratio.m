@@ -20,9 +20,11 @@ if isempty(opt)
     module_option(:,8)   = {'Table_out',        table()};
     module_option(:,9)   = {'folder',           table()};
     module_option(:,10)  = {'OutputSequenceName','AllName'};
-    module_option(:,11)  = {'output_name_bvf',  'BVf'};
-    module_option(:,12)  = {'output_name_vsi',  'VSI'};
-    module_option(:,13)  = {'output_name_sto2', 'StO2'};
+    module_option(:,11)  = {'Params',           'Vf'};
+    module_option(:,12)  = {'K',                50};
+    module_option(:,13)  = {'Lw',               0};
+    module_option(:,14)  = {'cstrS',            'd'};
+    module_option(:,15)  = {'cstrG',            'd'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -38,9 +40,15 @@ if isempty(opt)
     % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-        'Based on the Dan Ma paper [TODO: add ref]'
+        'The MRF method is based on the paper : Ma, Dan, et al. "Magnetic resonance fingerprinting." Nature (2013)'
+        'The regression method is based on the paper : Boux, Fabien, et al. [work in progress]'
         ''
-        'Prerequisite: Put your ''.json'' dictionaries (pre and post scans) in the ''data/dictionaries'' folder'
+        'Prerequisite:'
+        '      - Put your ''PRE_*.json'' and ''POST_*'' dictionary files (pre and post simulated scans) in the ''data/dictionaries'' folder'
+        '      - (or) Put your ''DICO.mat'' dictionary file ratio between the post and pre simulated scans in the ''data/dictionaries'' folder'
+        '      - (or performing the regression method) Put your ''MODEL.mat'' model file'
+        ''
+        'The dictionaries are designed with the Mrvox simulation tool'
         }'};
     
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -52,16 +60,45 @@ if isempty(opt)
     opt.Module_settings.folder = fullfile(s{1}, 'data/dictionaries/');
     if isempty(folder_files), folder_files(1).name = ' '; end
     user_parameter(:,4)   = {'   .Dictionary Pre/Post file folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
-        {'Select the folder containing Pre/Post dico files'}};
+        {'Select the folder containing Pre/Post dico files (.json), ratio dico file (.mat) and/or model file (.mat)'}};
     
     user_parameter(:,5)   = {'   .Prefix','char', '', 'prefix', '', '',...
-        {'Choose a prefix'}};
-    user_parameter(:,6)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
-        {''}};
+        {'Choose a prefix for your output maps'}};
+    user_parameter(:,13)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+        {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
+    user_parameter(:,6)   = {'   .Parameters','check', ...
+        {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct'},...
+        'Params', '', '',...
+        {'Select the parameters considered in the model (default ''Vf'')'
+        }'};
     user_parameter(:,7)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
         { 'Choose:'
-        '	- ''ClassicMRF'' to use Dan Ma method'
-        '	- ''RegressionMRF'' to use proposed approach'
+        '	- ''ClassicMRF'' to use the Dan Ma method'
+        '	- ''RegressionMRF'' to use the regression method'
+        }'};
+    user_parameter(:,8)   = {'   .Model settings (if the regression method is chosen)','Text','','','','',...
+        {'Recommanded:'
+        'K = 50'
+        'Lw = 0'
+        'cstr = ''d''.'
+        }'};
+    user_parameter(:,9)   = {'       .Number of regions','numeric','','K','','',...
+        {'Recommanded: K = 50'
+        'If K is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
+        }'};
+    user_parameter(:,10)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
+        {'Recommanded: Kw = 0'
+        'If Lw is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
+        }'};
+    user_parameter(:,11)  = {'       .Model constraint on Sigma','cell',{'i*','i','d*','d',' '},'cstrS','','',...
+        {'''d'' = diagonal'
+        '''i'' = isotropic'
+        '''*'' = equal for all K regions'
+        }'};
+    user_parameter(:,12)  = {'       .Model constraint on Gamma','cell',{'i*','i','d*','d',' '},'cstrG','','',...
+        {'''d'' = diagonal'
+        '''i'' = isotropic'
+        '''*'' = equal for all K regions'
         }'};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -80,53 +117,35 @@ end
 
 
 if isempty(files_out)
+    
+    opt.Params = opt.Params(cell2mat(opt.Params(:,2)),1);
+    
     opt.Table_out = opt.Table_in(1,:);
-    opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
-    if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.prefix), char(opt.output_name_bvf)]));
-    elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_name_bvf]));
-    end
-    opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
-    opt.Table_out.IsRaw = categorical(cellstr('0'));
-    f_out = [char(opt.Table_out.Path), char(opt.Table_out.Filename) '.nii'];
-    files_out.In1{1} = f_out;
     
-    opt.Table_out(2,:) = opt.Table_out(1,:);
-    if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName(2) = categorical(cellstr([char(opt.prefix), char(opt.output_name_vsi)]));
-    elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName(2) = categorical(cellstr([char(opt.Table_out.SequenceName(2)), opt.output_name_vsi]));
+    for i = 1:numel(opt.Params)
+        opt.Table_out(i,:) = opt.Table_out(1,:);
+        opt.Table_out(i,:).Path = categorical(cellstr([opt.folder_out, filesep]));
+        if strcmp(opt.OutputSequenceName, 'AllName')
+            opt.Table_out.SequenceName(i) = categorical(cellstr([char(opt.prefix), char(opt.Params{i})]));
+        elseif strcmp(opt.OutputSequenceName, 'Extension')
+            opt.Table_out.SequenceName(i) = categorical(cellstr([char(opt.Table_out.SequenceName(i)), opt.Params{i}]));
+        end
+        opt.Table_out.Filename(i) = categorical(cellstr([char(opt.Table_out.Patient(i)), '_', char(opt.Table_out.Tp(i)), '_', char(opt.Table_out.SequenceName(i))]));
+        opt.Table_out.IsRaw(i) = categorical(cellstr('0'));
+        files_out.In1{i} = [char(opt.Table_out.Path(i)), char(opt.Table_out.Filename(i)) '.nii'];
     end
-    opt.Table_out.Filename(2) = categorical(cellstr([char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2))])); 
-    f_out = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(2)) '.nii'];
-    files_out.In1{2} = f_out;
-    
-    opt.Table_out(3,:) = opt.Table_out(1,:);
-    if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName(3) = categorical(cellstr([char(opt.prefix), char(opt.output_name_sto2)]));
-    elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName(3) = categorical(cellstr([char(opt.Table_out.SequenceName(3)), opt.output_name_sto2]));
-    end
-    opt.Table_out.Filename(3) = categorical(cellstr([char(opt.Table_out.Patient(3)), '_', char(opt.Table_out.Tp(3)), '_', char(opt.Table_out.SequenceName(3))])); 
-    f_out = [char(opt.Table_out.Path(3)), char(opt.Table_out.Filename(3)) '.nii'];
-    files_out.In1{3} = f_out;
     
     if strcmp(opt.method,'RegressionMRF')
-        opt.Table_out(4,:) = opt.Table_out(1,:);
-        opt.Table_out(5,:) = opt.Table_out(2,:);
-        opt.Table_out(6,:) = opt.Table_out(3,:);
+        nb = i;
         
-        opt.Table_out.Filename(4) =  categorical(cellstr([char(opt.Table_out.Patient(1)), '_', char(opt.Table_out.Tp(1)), '_', char(opt.Table_out.SequenceName(1)) '_confidence'])); 
-        opt.Table_out.Filename(5) =  categorical(cellstr([char(opt.Table_out.Patient(2)), '_', char(opt.Table_out.Tp(2)), '_', char(opt.Table_out.SequenceName(2)) '_confidence'])); 
-        opt.Table_out.Filename(6) =  categorical(cellstr([char(opt.Table_out.Patient(3)), '_', char(opt.Table_out.Tp(3)), '_', char(opt.Table_out.SequenceName(3)) '_confidence'])); 
-        opt.Table_out.SequenceName(4) = categorical(cellstr([char(opt.prefix), char(opt.output_name_bvf), '_confidence']));
-        opt.Table_out.SequenceName(5) = categorical(cellstr([char(opt.prefix), char(opt.output_name_vsi), '_confidence']));
-        opt.Table_out.SequenceName(6) = categorical(cellstr([char(opt.prefix), char(opt.output_name_sto2), '_confidence']));
-            
-        files_out.In2{1} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(4)) '.nii'];
-        files_out.In2{2} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(5)) '.nii'];
-        files_out.In2{3} = [char(opt.Table_out.Path(2)), char(opt.Table_out.Filename(6)) '.nii'];
+        for i = 1:numel(opt.Params)
+            opt.Table_out(nb+i,:) = opt.Table_out(1,:);
+
+            opt.Table_out.Filename(nb+i) =  categorical(cellstr([char(opt.Table_out.Patient(i)), '_', char(opt.Table_out.Tp(i)), '_', char(opt.Table_out.SequenceName(i)) '_confidence'])); 
+            opt.Table_out.SequenceName(nb+i) = categorical(cellstr([char(opt.prefix), char(opt.Params{i}), '_confidence']));
+
+            files_out.In2{i} = [char(opt.Table_out.Path(nb+i)), char(opt.Table_out.Filename(nb+i)) '.nii'];
+        end
     end
 end
 
@@ -149,58 +168,44 @@ end
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-tic
-opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
 
 % Read json files and create ratio dictionary
+opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
+
 d   = dir(opt.dictionary_folder_filename);
 opt.dictionary_pre_filename     = d(contains({d.name}, 'PRE_'));
-opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+if ~isempty(opt.dictionary_pre_filename)
+    opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+end
 opt.dictionary_post_filename    = d(contains({d.name}, 'POST_'));
-opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+if ~isempty(opt.dictionary_post_filename)
+    opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+end
 
 dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
 model_filename  = [opt.dictionary_folder_filename filesep 'MODEL.mat'];
 
-switch opt.method
+
+if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || strcmp(opt.method, 'ClassicMRF')
     
-    case 'ClassicMRF'
-        
-        if exist(dico_filename,'file')
-            load(dico_filename)
-        else
-            Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-            Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+    % If, dico exists, load it, else, create it and save it
+    if exist(dico_filename,'file')
+        load(dico_filename)
+    else
+        Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+        Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
 
-            Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
-            Dico.Tacq           = Pre.Sequence.Tacq;
-            Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
-            Dico.Parameters.Labels = Pre.Parameters.Labels;
-            clear Pre Post
-            save(dico_filename,'Dico')
-        end
-        
-    case 'RegressionMRF'
-        
-        if ~exist(model_filename,'file')
-            if exist(dico_filename,'file')
-                load(dico_filename)
-            else
-                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
-
-                Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
-                Dico.Tacq           = Pre.Sequence.Tacq;
-                Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
-                Dico.Parameters.Labels = Pre.Parameters.Labels;
-                clear Pre Post
-                save(dico_filename,'Dico')
-            end
-        end
+        Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
+        Dico.Tacq           = Pre.Sequence.Tacq;
+        Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
+        Dico.Parameters.Labels = Pre.Parameters.Labels;
+        clear Pre Post
+        save(dico_filename,'Dico')
+    end
 end
         
 
-% Generate ratio signals from scans (and ROI if given)
+% Generate ratio signals from scans (and TODO: ROI if given)
 % TODO: what if In1 is the post and In2 the pre scan
 Xobs            = niftiread(files_in.In2{1}) ./ niftiread(files_in.In1{1});
 json_filename   = split(files_in.In2{1},'.');
@@ -210,11 +215,12 @@ Obs             = ReadJson([json_filename{1} json_filename{2}]);
 
 % If necessary smooth observations
 if strcmp(opt.filtered, 'Yes') == 1
-    gaussian_window = gausswin(3);
+    p = 2;
     for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
         signal = squeeze(Xobs(x,y,z,:));  
-        signal = [signal(1); signal; signal(end)];
-    	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
+        signal = filter(ones(1, p)/p, 1, [signal(1); signal; signal(end)]);
+%     	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
+        Xobs(x,y,z,:) = signal(2:end-1);
     end; end; end
 end
 Xobs        = permute(Xobs, [1 2 4 3]);
@@ -230,20 +236,20 @@ if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
         end
     end
     Dico.MRSignals = tmp;
-    
+    Dico.Tacq   = Obs.EchoTime.value'*1e-3;
     %remove row containning nan values
     nn = ~any(isnan(Dico.MRSignals),2);
     Dico.MRSignals = Dico.MRSignals(nn,:);
     Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
     Tmp{1}      = Dico;
 end
-t(1) = toc;
-    
-% Compute MRF
+
+
+% Compute MRF/regression
 switch opt.method
     
     case 'ClassicMRF'
-        % Find something nicer than this permute trick
+        % TODO: find something nicer than this permute trick
         Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,[]);
         Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
         
@@ -256,27 +262,27 @@ switch opt.method
             
             Tmp{1}.Parameters.Labels = labels;
         else
+            count = 1;
             
             for i = 1:length(Dico.Parameters.Labels)
                 tmp = split(Dico.Parameters.Labels{i},'.',2);
-                switch tmp{end}
-                    case 'Vf'
-                        params.Par(:,1)     = Tmp{1}.Parameters.Par(:,i);
-                        params.Labels{1}    = Tmp{1}.Parameters.Labels{i};
-                    case 'VSI'
-                        params.Par(:,2)     = Tmp{1}.Parameters.Par(:,i);
-                        params.Labels{2}    = Tmp{1}.Parameters.Labels{i};
-                    case 'SO2'
-                        params.Par(:,3)     = Tmp{1}.Parameters.Par(:,i);
-                        params.Labels{3}    = Tmp{1}.Parameters.Labels{i};
-    %                 case 'DH2O'
-    %                     params.Par(:,4)     = Tmp{1}.Parameters.Par(:,i);
-    %                     params.Labels{4}    = Tmp{1}.Parameters.Labels{i};
+                if any(strcmp(tmp{end}, opt.Params))
+                    params.Par(:,count)     = Tmp{1}.Parameters.Par(:,i);
+                    params.Labels{count}    = Tmp{1}.Parameters.Labels{i};
+                    count = count +1;
                 end
             end
             Tmp{1}.Parameters = params;
-                  
-            Parameters  = []; %Parameters.Lw = 1;
+            
+            % Parameters of the regression
+            clear Parameters
+            if opt.K >= 0,  Parameters.K = opt.K; end
+            if opt.Lw >= 0, Parameters.Lw = opt.Lw; end
+            if strcmp(opt.cstrS,' '), opt.cstrS = ''; end
+            if strcmp(opt.cstrG,' '), opt.cstrG = ''; end
+            Parameters.cstr.Sigma   = opt.cstrS;
+            Parameters.cstr.Gammat  = opt.cstrG;
+            Parameters.cstr.Gammaw  = '';
             
             [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
             
@@ -287,31 +293,37 @@ switch opt.method
         Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
         Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
 end
-t(2) = toc;
 
-% Extract maps
+
+% Extract maps (and modify unit if necessary)
+count = 1;
 for i = 1:length(Tmp{1}.Parameters.Labels)
     tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
-    switch tmp{end}
-        case 'Vf'
-            BVf     = 100*Map.Y(:,:,:,i);
-        case 'VSI'
-            VSI     = 1e6*Map.Y(:,:,:,i);
-        case 'SO2'
-            StO2    = 100*Map.Y(:,:,:,i);
-    end
-end
-if strcmp(opt.method, 'RegressionMRF')
-    for i = 1:length(Tmp{1}.Parameters.Labels)
-        tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
+    if any(strcmp(tmp{end}, opt.Params))
+        
+        Labels{count} = tmp{end};
+        
+        
         switch tmp{end}
-            case 'Vf'
-                BVf_conf    = 100*Map.Std(:,:,:,i);
-            case 'VSI'
-                VSI_conf    = 1e6*Map.Std(:,:,:,i);
-            case 'SO2'
-                StO2_conf   = 100*Map.Std(:,:,:,i);
+        %If the ression method is performed, extract also the confidence maps
+            case {'Vf', 'SO2'} %convert to percent 
+                MapStruct{count}    = 100*Map.Y(:,:,:,i);
+                if strcmp(opt.method, 'RegressionMRF')
+                    StdStruct{count}    = 100*Map.Std(:,:,:,i);
+                end
+            case {'VSI', 'R'} % convert m to µm
+                MapStruct{count}    = 1e6*Map.Y(:,:,:,i);
+                if strcmp(opt.method, 'RegressionMRF')
+                    StdStruct{count}	= 1e6*Map.Std(:,:,:,i);
+                end
+            otherwise
+                MapStruct{count} 	= Map.Y(:,:,:,i);
+                if strcmp(opt.method, 'RegressionMRF')
+                    StdStruct{count}    = 100*Map.Std(:,:,:,i);
+                end
         end
+        
+        count   = count +1;
     end
 end
 
@@ -324,93 +336,35 @@ J       = KeepModuleHistory(J, struct('files_in',files_in, 'files_out', files_ou
 
 
 % Reoriented and save nifti maps
-nifti_header = spm_vol(files_in.In1{1});
+% nifti_header = spm_vol(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 info.Filemoddate = char(datetime('now'));
 
 for i = 1:length(files_out.In1)
-    if contains(files_out.In1{i},'BVf')
+    
+    for j = 1:numel(Labels)
+                
+        if contains(files_out.In1{i},Labels{j})
             [path, name, ~] = fileparts(files_out.In1{i});
-            jsonfile = [path, '/', name, '.json'];
-            WriteJson(J, jsonfile)
+            WriteJson(J, [path, '/', name, '.json'])
             
-            %BVf     = write_volume(BVf, nifti_header);
             info.Filename = files_out.In1{i};
-            info.ImageSize = size(BVf);
-            info.PixelDimensions = info.PixelDimensions(1:length(size(BVf)));
-            info.Datatype = class(BVf);
-            
-            niftiwrite(BVf, files_out.In1{i}, info);
-    end
-    if contains(files_out.In1{i},'VSI')
-            [path, name, ~] = fileparts(files_out.In1{i});
-            jsonfile = [path, '/', name, '.json'];
-            WriteJson(J, jsonfile)
-            
-            %VSI     = write_volume(VSI, nifti_header);
-            info.Filename = files_out.In1{i};
-            info.ImageSize = size(VSI);
-            info.PixelDimensions = info.PixelDimensions(1:length(size(VSI)));
-            info.Datatype = class(VSI);
-            
-            niftiwrite(VSI, files_out.In1{i}, info);
-    end
-    if contains(files_out.In1{i},'StO2')
-            [path, name, ~] = fileparts(files_out.In1{i});
-            jsonfile = [path, '/', name, '.json'];
-            WriteJson(J, jsonfile)
-            
-            %VSI     = write_volume(VSI, nifti_header);
-            info.Filename = files_out.In1{i};
-            info.ImageSize = size(StO2);
-            info.PixelDimensions = info.PixelDimensions(1:length(size(StO2)));
-            info.Datatype = class(StO2);
-            
-            niftiwrite(StO2, files_out.In1{i}, info);
-    end
-end
+            info.ImageSize = size(MapStruct{j});
+            info.PixelDimensions = info.PixelDimensions(1:length(size(MapStruct{j})));
+            info.Datatype = class(MapStruct{j});
+            niftiwrite(MapStruct{j}, files_out.In1{i}, info);
 
-if strcmp(opt.method, 'RegressionMRF')
-    for i = 1:length(files_out.In2)
-        if contains(files_out.In2{i},'BVf')
+
+            if strcmp(opt.method, 'RegressionMRF')
                 [path, name, ~] = fileparts(files_out.In2{i});
-                jsonfile = [path, '/', name, '.json'];
-                WriteJson(J, jsonfile)
-
-                %BVf     = write_volume(BVf, nifti_header);
+                WriteJson(J, [path, '/', name, '.json'])
+                
                 info.Filename = files_out.In2{i};
-                info.ImageSize = size(BVf_conf);
-                info.PixelDimensions = info.PixelDimensions(1:length(size(BVf_conf)));
-                info.Datatype = class(BVf_conf);
-
-                niftiwrite(BVf_conf, files_out.In2{i}, info);
-        end
-        if contains(files_out.In2{i},'VSI')
-                [path, name, ~] = fileparts(files_out.In2{i});
-                jsonfile = [path, '/', name, '.json'];
-                WriteJson(J, jsonfile)
-
-                %VSI     = write_volume(VSI, nifti_header);
-                info.Filename = files_out.In2{i};
-                info.ImageSize  = size(VSI_conf);
-                info.PixelDimensions = info.PixelDimensions(1:length(size(VSI_conf)));
-                info.Datatype = class(VSI_conf);
-
-                niftiwrite(VSI_conf, files_out.In2{i}, info);
-        end
-        if contains(files_out.In2{i},'StO2')
-                [path, name, ~] = fileparts(files_out.In2{i});
-                jsonfile = [path, '/', name, '.json'];
-                WriteJson(J, jsonfile)
-
-                %VSI     = write_volume(VSI, nifti_header);
-                info.Filename = files_out.In2{i};
-                info.ImageSize  = size(StO2_conf);
-                info.PixelDimensions = info.PixelDimensions(1:length(size(StO2_conf)));
-                info.Datatype = class(StO2_conf);
-
-                niftiwrite(StO2_conf, files_out.In2{i}, info);
+                info.ImageSize = size(StdStruct{j});
+                info.PixelDimensions = info.PixelDimensions(1:length(size(StdStruct{j})));
+                info.Datatype = class(StdStruct{j});
+                niftiwrite(StdStruct{j}, files_out.In2{i}, info);
+            end
         end
     end
-t(3) = toc;
 end

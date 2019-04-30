@@ -222,7 +222,7 @@ matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = str2num(opt.Tolerence);
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = str2num(opt.Hist_Smooth);
 
 
-[SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
+% [SPMinter,SPMgraph,~] = spm('FnUIsetup','test',1);
 jobs = repmat(matlabbatch, 1, 1);
 inputs = cell(0, 1);
 for crun = 1:1
@@ -233,6 +233,6 @@ spm_jobman('run', jobs, inputs{:});
 
 
 close(SPMinter)
-close(SPMgraph)
+% close(SPMgraph)
 
 

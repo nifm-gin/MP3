@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 13-Mar-2019 18:41:38
+% Last Modified by GUIDE v2.5 26-Apr-2019 16:40:28
 
 
 % Begin initialization code - DO NOT EDIT
@@ -96,7 +96,7 @@ for i=1:4
     set(eval(['handles.MP3_data', stri, '_echo_slider']), 'Visible', 'off');
     set(eval(['handles.MP3_data', stri, '_expt_slider']), 'Visible', 'off');
 end
-
+set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
 % add MRIManager.jar to the classpath (dynamic classpath)
 [filepath,name,ext] = fileparts(which('MRIManager.jar'));
@@ -377,6 +377,10 @@ else %display VOIs list
     
     
 end
+
+% Update the groupname
+MP3_show_group_Callback(hObject, eventdata, handles)
+
 % if the pipeline Manager is open, update the information : patient selected
 % update the 'String' of MP3_pipeline_pushMP3Selection and MP3_pipeline_pushMP3TPSelection push button
 
@@ -465,6 +469,7 @@ end
 patient = get(handles.MP3_name_list, 'Value');
 timepoint = get(handles.MP3_time_points_list, 'Value');
 if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
     set(handles.MP3_scan_VOIs_button, 'Value', 0)
     return
 end
@@ -1017,8 +1022,15 @@ guidata(handles.MP3_GUI, handles);
 
 
 function MP3_load_axes_Callback(hObject, eventdata, handles)
+% by default this slider is hidded
+set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
 if ~isfield(handles, 'database')
+    return
+end
+% MP3 cannot load scan(s) if multiple patients are selected
+if numel(get(handles.MP3_name_list, 'Value')) > 1
+     warndlg('Please select only 1 patient before loading scan(s)','Warning');
     return
 end
 %tstart = tic;
@@ -1119,6 +1131,7 @@ for i = 1:numel(data_selected)
             
             handles.data_loaded.info_data_loaded = [handles.data_loaded.info_data_loaded; handles.database(data_selected(i),:)];
         elseif strcmp(char(handles.database(data_selected(i),:).Type), 'Cluster')
+            set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
             %% read and load the nii file
             handles.data_loaded.number_of_Cluster = handles.data_loaded.number_of_Cluster+1;
             handles.data_loaded.Cluster(handles.data_loaded.number_of_Cluster).V = spm_vol(char(fullfilename(handles, data_selected(i), '.nii')));
@@ -1479,11 +1492,16 @@ if  length(handles.data_loaded.Scan(1).V(1).private.dat.dim) == 2  %handles.data
     set(handles.MP3_slider_slice,'Max', 1);
     set(handles.MP3_slider_slice,'Value',1);
 else
-    set(handles.MP3_slider_slice,'Visible', 'on');
     set(handles.MP3_slider_slice,'Min',1);
     set(handles.MP3_slider_slice, 'Max', size(handles.data_displayed.image,3) );
     set(handles.MP3_slider_slice,'Value',1);
-    set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    % if one slice only
+    if size(handles.data_displayed.image, 3) ==1
+        set(handles.MP3_slider_slice,'Visible', 'off');
+    else
+        set(handles.MP3_slider_slice,'Visible', 'on');
+        set(handles.MP3_slider_slice,'SliderStep',[1/(size(handles.data_displayed.image,3) -1) min(5/(size(handles.data_displayed.image,3) -1),1)]);
+    end
     %set(handles.MP3_slider_slice,'SliderStep',[1/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1) min(5/(handles.data_loaded.Scan(1).V(1).private.dat.dim(3) -1),1)]);
     
 end
@@ -1558,12 +1576,16 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
     
     
     if isfield(handles.data_loaded, 'Cluster')
+        % first clear plot_1 and table1
+        if ~isempty(get(handles.MP3_plot1, 'Children'))
+            delete(get(handles.MP3_plot1, 'Children'));
+            legend(handles.MP3_plot1,'off');
+            hold(handles.MP3_plot1, 'off');
+        end
+        set(handles.MP3_table1, 'Data', {''});
+        
         handles = MP3_update_VOI_displayed(hObject, eventdata, handles);
-        %% In the future, we will have the possibility to update MP3_plot1 here.
-    end
-    % Update the VOI_cluster matrix (new cluster, resized...)
-    if isfield(handles, 'ROI_cluster_resized')
-        handles = MP3_update_VOI_cluster_displayed(hObject,handles);
+        %% In the future, we will have the possibility to update MP3_plot1 here.     
     end
 end
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
@@ -1681,6 +1703,7 @@ if isfield(handles, 'data_displayed')
                     end
                 end
             else
+                set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
                 if handles.data_displayed.ROI.on_slice(1,slice_nbr) == 1
                     roi_a_appliquer=handles.data_loaded.ROI(1).nii(:,:,slice_nbr);
                     if fillroi
@@ -2159,7 +2182,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         table_data(ii*3,1) = {[char(handles.data_loaded.info_data_loaded.SequenceName(ROI_indices(ii))) '-SD']};
         VOI_data(VOI_data==0)=nan;
         
-        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(numel(VOI_data)*voxel_volume);
+        table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(sum(~isnan(VOI_data))*voxel_volume); % num2cell(numel(VOI_data)*voxel_volume);
         table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
         table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
     end
@@ -2728,10 +2751,6 @@ if isfield(handles, 'ROI_PRM_resized')
     handles = rmfield(handles, 'ROI_PRM_resized');
 end
 
-if isfield(handles, 'ROI_cluster_resized')
-    handles = rmfield(handles, 'ROI_cluster_resized');
-end
-
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
     legend(handles.MP3_plot1,'off');
@@ -2765,6 +2784,8 @@ set(handles.MP3_data1_expt_slider, 'Value', 1);
 set(handles.MP3_data2_expt_slider, 'Value', 1);
 set(handles.MP3_data3_expt_slider, 'Value', 1);
 set(handles.MP3_data4_expt_slider, 'Value', 1);
+set(handles.MP3_slider_slice, 'Value', 1);
+set(handles.MP3_slice_number, 'String', 'Slice 1/1');
 
 
 
@@ -3038,13 +3059,6 @@ for slice_nbr=1:get(handles.MP3_slider_slice, 'Max')
 end
 
 
-function handles = MP3_update_VOI_cluster_displayed(hObject,handles)
-for slice_nbr=1:get(handles.MP3_slider_slice, 'Max')
-    handles.data_displayed.VOI_cluster.data(:,:,slice_nbr,:)=squeeze(handles.ROI_cluster_resized.map(:,:,slice_nbr,:));
-    handles.data_displayed.VOI_cluster.trans(:,:,slice_nbr) = handles.ROI_cluster_resized.trans(:,:,slice_nbr);
-end
-
-
 % --- Executes on slider movement.
 function MP3_PRM_slider_trans_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_PRM_slider_trans (see GCBO)
@@ -3057,8 +3071,6 @@ function MP3_PRM_slider_trans_Callback(hObject, eventdata, handles)
 
 if strcmp(get(handles.MP3_menu_roi_fill, 'Checked'), 'on')
     MP3_update_axes(hObject, eventdata, handles)
-elseif isfield(handles, 'brain_extraction_ROI')
-    MP3_Brain_Extraction(hObject, eventdata, handles)
 else
     if isfield(handles.data_loaded, 'PRM')
         trans = round(get(handles.MP3_PRM_slider_trans, 'Value'))/100;
@@ -3195,9 +3207,7 @@ end
 if isfield(handles, 'ROI_PRM_resized')
     handles = rmfield(handles, 'ROI_PRM_resized');
 end
-if isfield(handles, 'ROI_cluster_resized')
-    handles = rmfield(handles, 'ROI_cluster_resized');
-end
+
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
     legend(handles.MP3_plot1,'off');
@@ -3476,13 +3486,13 @@ V_ROI.fname =  [handles.database.Properties.UserData.MP3_ROI_path, file_name, '.
 
 V_ROI = rmfield(V_ROI,'private'); % Delete old nifti header. Will be recreated to match new image properties
 V_ROI.dt(1) = spm_type(outputDatatype); % save images in specified format
-if spm_type(outputDatatype,'intt')
-    V_ROI = rmfield(V_ROI,'pinfo'); % integer datatype : let spm_write_vol decide on scaling
-else
+% if spm_type(outputDatatype,'intt')
+%     V_ROI = rmfield(V_ROI,'pinfo'); % integer datatype : let spm_write_vol decide on scaling
+% else
     V_ROI.pinfo(1:2) = [1;0];       % do not apply any scaling when saving as float data
-end
+%end
 % save the ROI in nii file (could be a new ROI or and old but updated)
-[ROI_matrix, FinalMat] = CropROI(ROI_matrix, V_ROI.mat);
+[ROI_matrix, FinalMat] = CropNifti(ROI_matrix, V_ROI.mat);
 V_ROI.dim = [size(ROI_matrix,1), size(ROI_matrix,2), size(ROI_matrix,3)];
 % V_ROI.mat = adaptedstruct(1).mat;
 V_ROI.mat = FinalMat;
@@ -3756,6 +3766,12 @@ function MP3_show_group_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+Scan_Selected = handles.database(finddata_selected(handles),:);
+Unique_group = unique(Scan_Selected.Group);
+
+group = ['group: ' char(Unique_group(1))];
+set(handles.MP3_name_list_groupname_box, 'String', group);
+
 
 % --------------------------------------------------------------------
 function MP3_name_properties_Callback(hObject, eventdata, handles)
@@ -3769,27 +3785,41 @@ function MP3_add_info_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_add_info (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-patient = get(handles.MP3_name_list, 'Value');
-old_group_name = {handles.database(patient).group};
-group_name= inputdlg('Enter the group name', 'Add group name',1, old_group_name(1));
-if isempty(group_name)
+patients = handles.database.Patient(findpatient_selected(handles));
+
+old_group_name = [cellstr(unique(handles.database.Group)); {'Other'}];
+
+
+[new_group_ind, ok1] = listdlg('PromptString','Select the new group name:',...
+    'Name', 'Select a Name',...
+    'SelectionMode','single',...
+    'ListSize', [400 300],...
+    'ListString',old_group_name);
+
+if ok1 == 0
     return
 end
-for i = 1:numel(patient)
-    handles.database(patient(i)).group = group_name{:};
+if strcmp('Other',old_group_name(new_group_ind)) == 1
+    newgroup_name = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+    newgroup_name = clean_variable_name(newgroup_name, '');
+    newgroup_name =categorical(newgroup_name);
+else
+    newgroup_name =categorical(old_group_name(new_group_ind));
 end
 
 
-if isfield(handles, 'database_all') && numel(handles.database) < numel(handles.database_all)
-    for i = 1:numel(patient)
-        for j = 1:numel(handles.database_all)
-            if strcmp(handles.database(patient(i)).name, handles.database_all(j).name) ==1
-                handles.database_all(j).group = group_name;
-            end
-        end
-    end
+for i=1:length(patients)
+    handles.database.Group(handles.database.Patient == patients(i),:) = newgroup_name;
 end
+
+
 guidata(hObject, handles);
+%% update graph and display
+MP3_update_database_display(hObject, eventdata, handles);
+
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
@@ -3865,7 +3895,7 @@ end
 MP3_remove_scan(hObject, eventdata, handles, nii_index)
 
 % Save database
-MP3_menu_save_database_Callback(hObject, eventdata, handles)
+%MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
@@ -4033,9 +4063,12 @@ function MP3_menu_roi_fill_Callback(hObject, eventdata, handles)
 
 if strcmp(get(handles.MP3_menu_roi_fill, 'Checked'), 'on')
     set(handles.MP3_menu_roi_fill, 'Checked', 'off')
+    set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 else
     set(handles.MP3_menu_roi_fill, 'Checked', 'on')
+    set(handles.MP3_PRM_slider_trans, 'Visible', 'on');
 end
+MP3_update_axes(hObject, eventdata, handles)
 
 
 % --- If Enable == 'on', executes on mouse press in 5 pixel border.
@@ -4219,6 +4252,10 @@ function MP3_copy_ScanVoi_to_other_tp_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data_selected = finddata_selected(handles);
+if numel(data_selected) > 1
+    warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
+    return
+end
 Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
@@ -4231,8 +4268,13 @@ for i=1:numel(time_point)
     new_entry = handles.database(data_selected,:);
     new_entry.Tp = Tp_listing(time_point(i));
     new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
-    % check if the scan already exist for this time point
-    if sum(ismember(handles.database, new_entry)) == 0
+    % check if the scan already exist for this time point 
+    % but, since filename may varie  we have to remove the 'Filename'
+    % column from the table before checking if the scan to copy exist
+    % already
+    VariableNames_vector =1:length(handles.database.Properties.VariableNames);
+    VariableNames_vector(strcmp(handles.database.Properties.VariableNames,'Filename')) = [];
+    if sum(ismember(handles.database(:,VariableNames_vector), new_entry(:,VariableNames_vector))) == 0
         if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
             gunzip(fullfilename(handles, data_selected, '.nii.gz'));
             assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
@@ -4399,6 +4441,28 @@ end
 log_file.StudyName = categorical(cellstr(log_file.StudyName));
 log_file.CreationDate = categorical(cellstr(log_file.CreationDate));
 
+%% Add SequenceName to Protocol when usefull:
+UProt = unique(log_file.Protocol);
+ProtocolsToExplain = {};
+for i=1:length(UProt)
+    tmp_table = log_file(strcmp(log_file.Protocol,UProt(i)),:);
+    if size(tmp_table,1)>1
+        USeq = unique(tmp_table.SequenceName);
+        if length(USeq)>1
+            ProtocolsToExplain = [ProtocolsToExplain, {UProt{i}}];
+        end
+    end
+end
+
+% for i=1:size(log_file,1)
+%     if strcmp(log_file.Protocol(i), ProtocolsToExplain)
+%         log_file.Protocol{i} = [log_file.Protocol{i}, '_', log_file.SequenceName{i}];
+%     end
+% end
+%%
+
+
+
 StudyName_listing = unique(log_file.StudyName);
 for i = 1:numel(unique(log_file.StudyName))
     patient_filter = log_file.StudyName == char(StudyName_listing(i));
@@ -4415,13 +4479,14 @@ for i = 1:numel(unique(log_file.StudyName))
                 NAME = char(log_file.NameFile(index_data_to_import(m),:));
                 if exist(fullfile(MP3_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MP3_tmp_folder, [NAME, '.json']));
-                    if ~isfield(json_data, 'ProtocolName')
-                        json_data.ProtocolName.value = {'Undefined'};
-                    elseif isempty(char(json_data.ProtocolName.value))
-                        json_data.ProtocolName.value = {'Undefined'};
+                    if ~isfield(json_data, 'ProtocolName') || isempty(char(json_data.ProtocolName.value))
+                        json_data.ProtocolName.value = {clean_variable_name(NAME,'')};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
+                        if any(strcmp(json_data.ProtocolName.value, ProtocolsToExplain))
+                            json_data.ProtocolName.value = {[json_data.ProtocolName.value{1}, '_', clean_variable_name(json_data.SequenceName.value{1},'')]};
+                        end
                         if sum(handles.database.Patient ==  char(name_selected) & handles.database.Tp ==  char(tp_selected) &  handles.database.SequenceName == char(clean_variable_name(char(json_data.ProtocolName.value), ''))) == 1
                             nbr_of_seq = sum(handles.database.Patient ==  char(name_selected) &...
                                 handles.database.Tp ==  char(tp_selected) &...
@@ -4654,8 +4719,8 @@ for i=1:length(UPatients)
     UTp = unique(tmp_database.Tp);
     for j=1:length(UTp)
         tmp2_database = table();
-        data_listing = [data_listing; {[char(UPatients(i)), ' - ', char(UTp(j))]}];
         tmp2_database = tmp_database(tmp_database.Tp == UTp(j),:);
+        data_listing = [data_listing; {[char(tmp2_database.Group(1)), ' - ', char(UPatients(i)), ' - ', char(UTp(j))]}];
         linked_table = [linked_table; {tmp2_database}];
     end
 end
@@ -4754,16 +4819,18 @@ for i=1:size(database_to_import,1)
         tags.Path = categorical(cellstr(outfolder));
         flag = 1;
         idx = 2;
-        while flag
-            tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
-            tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
-            %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
-            tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
-            if size(tmpdatab,1) == 0
-                flag = 0;
-            else
-                tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
-                idx = idx+1;
+        if size(handles.database, 1) ~= 0
+            while flag
+                tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+                tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+                %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+                tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+                if size(tmpdatab,1) == 0
+                    flag = 0;
+                else
+                    tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+                    idx = idx+1;
+                end
             end
         end
         handles.database = [handles.database; tags];
@@ -5659,35 +5726,6 @@ function MP3_menu_Help_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --------------------------------------------------------------------
-function MP3_Help_Load_Developer_Callback(hObject, eventdata, handles)
-% hObject    handle to MP3_Help_Load_Developer (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-Path = mfilename('fullpath');
-Path = strsplit(Path, filesep);
-Path{end} = ['tools', filesep, 'ClusterGMM_(StageClement)', filesep];
-Path = strjoin(Path, filesep);
-
-NewEntry = table();
-%NewEntry = handles.database(end,:);
-NewEntry.Group = categorical(cellstr('Developer'));
-NewEntry.Patient = categorical(cellstr('Developer_Clement'));
-NewEntry.Tp = categorical(cellstr('27_11_2018'));
-NewEntry.Path = categorical(cellstr(Path));
-NewEntry.Filename = categorical(cellstr('el_luchador'));
-NewEntry.Type = categorical(cellstr('Scan'));
-NewEntry.IsRaw = categorical(1);
-NewEntry.SequenceName = categorical(cellstr('Portrait'));
-if isfield(handles, 'database')
-    handles.database = unique([handles.database; NewEntry]);
-else
-    handles.database = NewEntry;
-end
-MP3_update_database_display(hObject, eventdata, handles)
-guidata(hObject, handles)
 
 
 % --------------------------------------------------------------------

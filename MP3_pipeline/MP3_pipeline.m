@@ -22,7 +22,7 @@ function varargout = MP3_pipeline(varargin)
 
 % Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 05-Mar-2019 14:45:07
+% Last Modified by GUIDE v2.5 30-Apr-2019 12:05:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -110,6 +110,7 @@ handles.Source_selected = handles.Add_Tags_listing{1};
 %handles.MP3_pipeline_Unique_Values_Selection = 
 handles.MP3_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
+handles.Select_Number_Workers.String = 'Max';
 handles.Remove_selected = handles.Remove_Tags_listing{1};
 %handles.MP3_data.database.IsRaw = categorical(handles.MP3_data.database.IsRaw);
 
@@ -723,6 +724,21 @@ switch handles.new_module.opt.table.Type{parameter_selected}
             table.columnName = handles.new_module.opt.table.PSOM_Fields{parameter_selected};
             table.editable = true;
         end
+    case 'check'
+        Temp =  {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
+        if ~iscell(Temp{1})
+            Params = handles.new_module.opt.table.Default(parameter_selected);
+            %table.data = Params;
+
+            table.data(1:numel(Params{1}),1) = cellstr(Params{1});
+            table.data(1:numel(Params{1}),2) = {false};
+        else
+            Params = {getfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected})};
+            table.data = Params{1};
+        end
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
     otherwise
         table.ColumnFormat = {'char'};
         table.data = '';
@@ -921,7 +937,7 @@ function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster')
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') 
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
@@ -968,6 +984,8 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP
         end
 %     end
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'check')
+    handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data); 
 else
     handles.new_module.opt.Module_settings = setfield(handles.new_module.opt.Module_settings, handles.new_module.opt.table.PSOM_Fields{parameter_selected},handles.MP3_pipeline_parameter_setup_table.Data{1,1}); 
     %handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{1,1};
@@ -1496,6 +1514,8 @@ for i=1:length(handles.module_parameters_fields)
     else
         if ~strcmp(handles.module_parameters_fields{i}, '') && isnumeric(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}))
             ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'check'))
+            ActualValues{i} = char('');
         elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI'))
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
@@ -1937,19 +1957,25 @@ function MP3_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_pipeline_execute_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% for now we clean all PSOM files  (old execution) in order to decrease
+% potential bugs
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 'dir') == 7
+    rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's')
+end
+
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM']);
     if status == false
         error('Cannot create the PSOM folder to save the pipeline logs.')
     end
-% else
-%     %  Here we clean all PSOM files because the code do not handle these
-%     %  files for now
-%     rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 's');
 end
 opt_pipe.path_logs = [handles.MP3_data.database.Properties.UserData.MP3_data_path,  'PSOM'];
-opt_pipe.max_queued = 3;
-%opt_pipe.mode = 'session';
+% 
+% % set the number of workers as function of the capacity of the machine
+% myCluster = parcluster('local');
+% opt_pipe.max_queued = myCluster.NumWorkers
+% %opt_pipe.mode = 'session';
 
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data']);
@@ -2163,7 +2189,14 @@ end
 % end
 
 
-%% exectute the pipeline
+% %% execute the pipeline
+
+if isnan(str2double(handles.Select_Number_Workers.String))
+    myCluster = parcluster('local');
+    opt_pipe.max_queued = myCluster.NumWorkers;
+else
+    opt_pipe.max_queued = str2double(handles.Select_Number_Workers.String);
+end
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
@@ -3610,3 +3643,26 @@ set(fig,'PaperPositionMode','auto'); % size position
 
 print(fig, [path, file],'-depsc2')
 msgbox('Done', 'Information') ;
+
+
+
+function Select_Number_Workers_Callback(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Select_Number_Workers as text
+%        str2double(get(hObject,'String')) returns contents of Select_Number_Workers as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Select_Number_Workers_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

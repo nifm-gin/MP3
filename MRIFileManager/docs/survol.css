@@ -1,0 +1,17 @@
+p a#mouse{
+text-decoration: none; /* définition du lien qui affichera le "calque" */
+}
+p a:hover {
+background: none; correction d'un bug IE
+}
+p a span { /* définition de la balise <span> inclue dans <a> */
+display: none;
+}
+p a:hover span { /* définition de la balise <span> au survol */
+display: inline;
+position: absolute;
+font-size: 14px;
+background: green;
+text-align: center;
+color: white;
+}

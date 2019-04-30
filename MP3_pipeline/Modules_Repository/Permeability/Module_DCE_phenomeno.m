@@ -19,6 +19,8 @@ if isempty(opt)
     module_option(:,11)   = {'InputToReshape',1};
     module_option(:,12)   = {'Table_in', table()};
     module_option(:,13)   = {'Table_out', table()};
+    module_option(:,14)   = {'Slope_threshold', 'Inf'};
+
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
     opt.NameOutFiles = {opt.Module_settings.output_filename_AUC, opt.Module_settings.output_filename_Max, opt.Module_settings.output_filename_pc_enhanc, opt.Module_settings.output_filename_TTP};
@@ -43,13 +45,16 @@ if isempty(opt)
         'If you use such analysis, please refere to this article Lemasson et al. Radiology 2010'}};
     user_parameter(:,2)   = {'Select one Dynamic Contrast Enhancement scan as input','1Scan','','',{'SequenceName'},'Mandatory','Please select a Dynamic Contrast Enhancement scan (DCE)'};
     user_parameter(:,3)   = {'Parameters','','','','','',''};
-    user_parameter(:,4)   = {'   .Output filename AUC','char','AUC','output_filename_AUC','','',''};
-    user_parameter(:,5)   = {'   .Output filename Max','char', 'Max','output_filename_Max','','',''};
-    user_parameter(:,6)   = {'   .Output filename pc_enhanc','char','pc_enhanc','output_filename_pc_enhanc','','',''};
-    user_parameter(:,7)   = {'   .Output filename TTP','char','TTP','output_filename_TTP','','',''};
-    user_parameter(:,8)   = {'   .Last dyn before bolus','char','Auto','Last_dyn_before_bolus','','',{'If auto is selected, the algorithm will automatically detect the contrast agent arrival.',...
+    user_parameter(:,4)   = {'   .Slope threshold','char','Inf','Slope_threshold','','',{'You can removed voxel which have not suffisant contrast enhancement (due to low vessel permeability).',...
+        'For instance, a slope below 0.01 is a good threshold for rat data.',...
+        'Inf = no threshold (the default value)'}};
+    user_parameter(:,5)   = {'   .Output filename AUC','char','AUC','output_filename_AUC','','',''};
+    user_parameter(:,6)   = {'   .Output filename Max','char', 'Max','output_filename_Max','','',''};
+    user_parameter(:,7)   = {'   .Output filename pc_enhanc','char','pc_enhanc','output_filename_pc_enhanc','','',''};
+    user_parameter(:,8)   = {'   .Output filename TTP','char','TTP','output_filename_TTP','','',''};
+    user_parameter(:,9)   = {'   .Last dyn before bolus','char','Auto','Last_dyn_before_bolus','','',{'If auto is selected, the algorithm will automatically detect the contrast agent arrival.',...
         'Otherwise, the user can specify manually the dynamic the number of the contrast agent arrival (for example, if the baseline is constituted of 4 images and then the contrast agent is injected you can enter 4'}};
-    user_parameter(:,9)   = {'   .End of the analysis (in sec)','numeric','','End_analysis','','','User can specify the windows of signal analyzed'};
+    user_parameter(:,10)   = {'   .End of the analysis (in sec)','numeric','','End_analysis','','','User can specify the windows of signal analyzed'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %     
@@ -213,24 +218,36 @@ maxi = NaN(size(data_in_vector,1),1);
 ttp  = NaN(size(data_in_vector,1),1);
 rehaus  = NaN(size(data_in_vector,1),1);
 AUC  = NaN(size(data_in_vector,1),1);
+slope  = NaN(size(data_in_vector,1),1);
 
 
 for voxel_nbr=1:size(data_in_vector,1)% 
 %     if data_in_vector(voxel_nbr,1) ~= 0 && data_in_vector(voxel_nbr,2) ~= 0
-        tmp = squeeze(data_in_vector(voxel_nbr,:)); %
-        moy_ss_gd = mean(tmp(1:debut));
-        %std_ss_gd = std(tmp(1:debut));
+        current_dyn_smoothed = squeeze(data_in_vector(voxel_nbr,:)); %
+        moy_ss_gd = mean(current_dyn_smoothed(1:debut));
         
         %if moy_ss_gd && sum(tmp>(moy_ss_gd+2*std_ss_gd))>0
         % moving average -------------------------------
         for m=2:repetition_nbr-1
-            tmp(m) = (data_in_vector(voxel_nbr,m-1)+data_in_vector(voxel_nbr,m)+data_in_vector(voxel_nbr,m+1))/3;
+            current_dyn_smoothed(m) = (data_in_vector(voxel_nbr,m-1)+data_in_vector(voxel_nbr,m)+data_in_vector(voxel_nbr,m+1))/3;
         end
+        current_dyn_smoothed_cropped = current_dyn_smoothed(debut:fin);
         % maxi et ttp -------------------------------------
-        [maxi(voxel_nbr),ttp(voxel_nbr)] = max(tmp(debut:fin));
-        ttp(voxel_nbr) = ttp(voxel_nbr) * TR;
+        [maxi(voxel_nbr),ind_max] = max(current_dyn_smoothed_cropped);
+        warning off
+        if str2double(opt.Slope_threshold) ~= Inf
+            coefficients = polyfit(1:length(current_dyn_smoothed), current_dyn_smoothed, 1);
+            slope(voxel_nbr) = coefficients(1);
+            if slope(voxel_nbr) < str2double(opt.Slope_threshold)
+                maxi(voxel_nbr) = nan;
+                continue
+            end
+        end
+        
+        ttp(voxel_nbr) = ind_max * TR;
         % rehaussement ------------------------------------
-        rehaus(voxel_nbr) = ((max(tmp)-moy_ss_gd)/moy_ss_gd)*100;
+        rehaus(voxel_nbr) = ((maxi(voxel_nbr)-moy_ss_gd)/moy_ss_gd)*100;
+
         % maxi(voxel_nbr) = data(i,j,k,l,ttp(i,j,k,l)); % Max intensity with
         % the filter
         % AUC Area under the curve ----------------------------
@@ -238,32 +255,15 @@ for voxel_nbr=1:size(data_in_vector,1)%
         for m=debut:fin
             AUC(voxel_nbr) = AUC(voxel_nbr) + (data_in_vector(voxel_nbr,m)-moy_ss_gd);
         end
-%     else
-%         exclus(voxel_nbr) = 1;
-%     end
+
 end
 
 
-% maxi
+
 Max = reshape(maxi,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-% Max(Max < 0) = -1;
-% Max(Max > 5000) = -1;
-% Max(isnan(Max)) = -1;
-% ttp (time-to-peak(
 TTP =  reshape(ttp,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-% TTP(TTP < 0) = -1;
-% TTP(TTP > 5000) = -1;
-% TTP(isnan(TTP)) = -1;
-% rehaus = (intensite-MoySansGd)/MoySansGd
 pc_enhanc = reshape(rehaus,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-% pc_enhanc(pc_enhanc < 0) = -1;
-% pc_enhanc(pc_enhanc > 5000) = -1;
-% pc_enhanc(isnan(pc_enhanc)) = -1;
-% Area under the curve (AUC)
 AUC = reshape(AUC,[size(DCE,1),size(DCE,2),size(DCE,3)]);
-% AUC(AUC < 0) = -1;
-% AUC(AUC > 5000) = -1;
-% AUC(isnan(AUC)) = -1;
 
 %%
 mapsVar = {AUC, Max, pc_enhanc, TTP};

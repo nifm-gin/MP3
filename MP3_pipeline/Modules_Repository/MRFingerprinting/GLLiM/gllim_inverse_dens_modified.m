@@ -29,7 +29,7 @@ function [x_dens,psi,theta] = gllim_inverse_dens_modified(y,theta,chi,x_samples,
 [D,T]=size(y);
 [L,K]=size(theta.c);
 % =========================Default input values============================
-if(~exist('chi','var')||isempty(chi));chi=ones(y);end;
+if(~exist('chi','var')||isempty(chi));chi=ones(size(y));end;
 if(~exist('x_samples','var'));x_samples=[];end;
 if(~exist('verb','var')||isempty(verb));verb=1;end;
 
