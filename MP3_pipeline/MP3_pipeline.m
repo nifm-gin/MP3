@@ -22,7 +22,7 @@ function varargout = MP3_pipeline(varargin)
 
 % Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 05-Mar-2019 14:45:07
+% Last Modified by GUIDE v2.5 30-Apr-2019 12:05:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -110,6 +110,7 @@ handles.Source_selected = handles.Add_Tags_listing{1};
 %handles.MP3_pipeline_Unique_Values_Selection = 
 handles.MP3_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
+handles.Select_Number_Workers.String = 'Max';
 handles.Remove_selected = handles.Remove_Tags_listing{1};
 %handles.MP3_data.database.IsRaw = categorical(handles.MP3_data.database.IsRaw);
 
@@ -2189,13 +2190,12 @@ end
 
 
 % %% execute the pipeline
- myCluster = parcluster('local');
 
-% Limit the max number of workers to 5.
-if myCluster.NumWorkers >5
-    opt_pipe.max_queued = 5;
-else
+if isnan(str2double(handles.Select_Number_Workers.String))
+    myCluster = parcluster('local');
     opt_pipe.max_queued = myCluster.NumWorkers;
+else
+    opt_pipe.max_queued = str2double(handles.Select_Number_Workers.String);
 end
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
@@ -3643,3 +3643,26 @@ set(fig,'PaperPositionMode','auto'); % size position
 
 print(fig, [path, file],'-depsc2')
 msgbox('Done', 'Information') ;
+
+
+
+function Select_Number_Workers_Callback(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Select_Number_Workers as text
+%        str2double(get(hObject,'String')) returns contents of Select_Number_Workers as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Select_Number_Workers_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
