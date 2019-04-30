@@ -2189,8 +2189,14 @@ end
 
 
 % %% execute the pipeline
-myCluster = parcluster('local');
-opt_pipe.max_queued = myCluster.NumWorkers;
+ myCluster = parcluster('local');
+
+% Limit the max number of workers to 5.
+if myCluster.NumWorkers >5
+    opt_pipe.max_queued = 5;
+else
+    opt_pipe.max_queued = myCluster.NumWorkers;
+end
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
