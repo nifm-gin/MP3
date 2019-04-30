@@ -4480,7 +4480,7 @@ for i = 1:numel(unique(log_file.StudyName))
                 if exist(fullfile(MP3_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MP3_tmp_folder, [NAME, '.json']));
                     if ~isfield(json_data, 'ProtocolName') || isempty(char(json_data.ProtocolName.value))
-                        json_data.ProtocolName.value = {'Undefined'};
+                        json_data.ProtocolName.value = {clean_variable_name(NAME,'')};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
