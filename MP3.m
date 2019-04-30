@@ -3259,6 +3259,14 @@ function MP3_new_roi_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'data_displayed')
     return
 end
+% return if there is a mismatch of patient/time point between 
+% the scan and the ROI(s) displayed
+if numel(unique(handles.data_loaded.info_data_loaded.Patient)) > 1
+   warndlg({'The ROI(s) loaded do not correspond to the scan loaded'
+   'Please, unload the ROI(s) or load ROI(s) of the same patient/time point as the scan'}, 'Warning');
+
+    return 
+end
 
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
 
