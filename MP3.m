@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 26-Apr-2019 16:40:28
+% Last Modified by GUIDE v2.5 30-Apr-2019 11:44:24
 
 
 % Begin initialization code - DO NOT EDIT
@@ -4480,7 +4480,7 @@ for i = 1:numel(unique(log_file.StudyName))
                 if exist(fullfile(MP3_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MP3_tmp_folder, [NAME, '.json']));
                     if ~isfield(json_data, 'ProtocolName') || isempty(char(json_data.ProtocolName.value))
-                        json_data.ProtocolName.value = {clean_variable_name(NAME,'')};
+                        json_data.ProtocolName.value = {'Undefined'};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
@@ -5857,3 +5857,136 @@ function Import_data_Callback(hObject, eventdata, handles)
 % hObject    handle to Import_data (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function MP3_export_Callback_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_export_Callback (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function MP3_export_montage_Callback_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_export_montage_Callback (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% define le name of all patient in the database
+Patients_name = unique(handles.database.Patient);
+% On propose a l'utilisateur de choisir un ou plusieurs couples Patient/Timepoint
+[patients_selected, ok1] = listdlg('PromptString','Select the patient(s):',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',Patients_name);
+if ok1 == 0
+    return
+end
+
+data_selected = handles.database(ismember(handles.database.Patient, Patients_name(patients_selected)),:);
+
+% user can select the parameter he woul like to display
+Param_name = unique(data_selected.SequenceName(data_selected.Type == 'Scan'));
+[parameters_selected, ok1] = listdlg('PromptString','Select the parameter(s):',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',Param_name);
+if ok1 == 0
+    return
+end
+
+% there are 2 options
+% The montage can contain 
+% 1) all slices of each parameter
+% 2) the central slice
+[slice_selected, ok1] = listdlg('PromptString','Select the slice:',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',[{'All slices'}, {'The central slice'}]');
+if ok1 == 0
+    return
+end
+
+if slice_selected == 1 % if all slices a selected
+    for i = 1:length(patients_selected)
+        for j=1:length(parameters_selected)
+            A = Patients_name(patients_selected(i));
+            B = Param_name(parameters_selected(j));
+            h = figure('Name',strcat(char(A),'_',char(B)),'units','normalized','outerposition',[0 0 1 1]);
+            % here we get the index of the scan to display
+            file_ind = find(handles.database.Patient == Patients_name(patients_selected(i)) & handles.database.SequenceName == Param_name(parameters_selected(j)), 1);
+            if isempty( file_ind) % if the parameter do not exist for a specific patient --> skip
+                axis off
+            else
+                V = spm_vol(fullfilename(handles, file_ind, '.nii'));
+                image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
+                NbSlices = size(image_loaded,3);
+                % dependending of the number of slice to disply we ajust
+                % the subplot windows here
+                if NbSlices < 13
+                    lignes = 3;
+                    colonnes = 4;
+                elseif NbSlices < 26
+                    lignes = 5;
+                    colonnes = 5;
+                elseif NbSlices < 50
+                    lignes = 7;
+                    colonnes = 7;
+                elseif NbSlices < 73
+                    lignes = 8;
+                    colonnes = 9;
+                else
+                    warndlg('You cannot display more than 72 slices')
+                end
+                for k = 1:NbSlices
+                    image_to_display =image_loaded(:,:,k,1,1);
+                    min_value = prctile_copy(image_to_display(:),1);
+                    max_value = prctile_copy(image_to_display(:),99);
+                    if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
+                       subplot(lignes,colonnes,k)
+                        imshow(image_loaded(:,:,k,1,1),[min_value max_value])
+                        title(strcat('Tranche : ',num2str(k)));
+                    end           
+                end          
+            end
+        end
+    end
+    
+elseif slice_selected == 2 % ie if the user decide to disply the central slice only
+    h = figure('units','normalized','outerposition',[0 0 1 1]);
+    for i=1:length(patients_selected)
+        for j=1:length(parameters_selected)
+            file_ind = [];
+            % here we create a subplot which contain 1 line per patient and
+            % 1 column per parameter
+            subplot(length(patients_selected),length(parameters_selected),(i-1)*length(parameters_selected)+j)
+            annotation('textbox',[0 (1-i/(length(patients_selected)+1)) 0.1 0.1],'String',char(Patients_name(patients_selected(i))),'Interpreter','none');
+            annotation('textbox',[j/(length(parameters_selected)+1) 0.9 0.1 0.1],'String',char(Param_name(parameters_selected(j))),'Interpreter','none');
+            % here we get the index of the scan to display
+            file_ind = find(handles.database.Patient == Patients_name(patients_selected(i)) & handles.database.SequenceName == Param_name(parameters_selected(j)));
+            if isempty( file_ind) % if the parameter do not exist for a specific patient --> skip
+                axis off
+            else
+                
+                V = spm_vol(fullfilename(handles, file_ind, '.nii'));
+                image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
+                
+                if mod(size(image_loaded,3), 2) == 1
+                    TrancheCentrale = floor((size(image_loaded,3)+1)/2);
+                else
+                    TrancheCentrale = floor(size(image_loaded,3)/2);
+                end
+                image_to_display =image_loaded(:,:,TrancheCentrale,1,1);
+                min_value = prctile_copy(image_to_display(:),1);
+                max_value = prctile_copy(image_to_display(:),99);
+                if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
+                    imshow(image_loaded(:,:,TrancheCentrale,1,1),[min_value max_value])
+                end
+                title(strcat('Tranche : ',num2str(TrancheCentrale)));
+            end
+        end
+    end
+end
+
+
+
