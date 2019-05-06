@@ -22,7 +22,7 @@ function varargout = MP3_pipeline(varargin)
 
 % Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 05-Mar-2019 14:45:07
+% Last Modified by GUIDE v2.5 30-Apr-2019 12:05:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -110,6 +110,7 @@ handles.Source_selected = handles.Add_Tags_listing{1};
 %handles.MP3_pipeline_Unique_Values_Selection = 
 handles.MP3_pipeline_TagsToPrint = {'Patient', 'Tp', 'SequenceName'};
 handles.Remove_Tags_listing = {'NoMoreTags'};
+handles.Select_Number_Workers.String = 'Max';
 handles.Remove_selected = handles.Remove_Tags_listing{1};
 %handles.MP3_data.database.IsRaw = categorical(handles.MP3_data.database.IsRaw);
 
@@ -288,7 +289,9 @@ function MP3_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 
 set(handles.MP3_pipeline_manager_GUI, 'pointer', 'watch');
 drawnow;
-
+if ~isfield(handles, 'new_module')
+    return
+end
 if ~isfield(handles.new_module, 'opt')
     return
 end
@@ -2189,8 +2192,13 @@ end
 
 
 % %% execute the pipeline
-myCluster = parcluster('local');
-opt_pipe.max_queued = myCluster.NumWorkers;
+
+if isnan(str2double(handles.Select_Number_Workers.String))
+    myCluster = parcluster('local');
+    opt_pipe.max_queued = myCluster.NumWorkers;
+else
+    opt_pipe.max_queued = str2double(handles.Select_Number_Workers.String);
+end
 
 if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
@@ -2325,7 +2333,14 @@ function MP3_pipeline_close_modules_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_pipeline_close_modules_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+selection = questdlg(['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '?'],...
+                     ['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '...'],...
+                     'Yes','No','Yes');
+if strcmp(selection,'No')
+    return;
+end
 
+delete(handles.MP3_pipeline_manager_GUI)
 
 function [Add_list, Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, InitialListing)
 
@@ -2726,7 +2741,7 @@ if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     ColoredJobNames = {''};
 else
     %SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedIndex};
-    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex};
+    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex}; 
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
     SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
@@ -2739,8 +2754,11 @@ else
     end
 end
 handles.MP3_pipeline_JobsNames = JobNames;
+old_job_seleced = get(handles.MP3_pipeline_JobsList, 'Value');
 set(handles.MP3_pipeline_JobsList, 'String',ColoredJobNames);
-set(handles.MP3_pipeline_JobsList, 'Value', 1);
+if old_job_seleced ~=1
+    set(handles.MP3_pipeline_JobsList, 'Value', old_job_seleced-1 );
+end
 MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
 guidata(hObject, handles)
 
@@ -3543,29 +3561,30 @@ Module.Jobs = rmfield(Module.Jobs, SelectedJob);
 if isempty(fieldnames(Module.Jobs))
     MP3_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
     handles.MP3_pipeline_ParamsModules = rmfield(handles.MP3_pipeline_ParamsModules, SelectedModule);
+    if isempty(fieldnames(handles.MP3_pipeline_ParamsModules))
+        handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
+    end
 else
     
-    %% update Output databse of the  selected module.
-    Outputs = fieldnames(Job.files_out);
-    for i=1:length(Outputs)
-        Files = Job.files_out.(Outputs{i});
-        for j=1:length(Files)
-            [path, name, ~] = fileparts(Files{j});
-            line = Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:);
-            assert(line.Path == categorical(cellstr([path, filesep])));
-            Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
+    %% update Output databse of the  selected module if needed.
+    if ~isempty(Job.files_out)
+        Outputs = fieldnames(Job.files_out);
+        for i=1:length(Outputs)
+            Files = Job.files_out.(Outputs{i});
+            for j=1:length(Files)
+                [path, name, ~] = fileparts(Files{j});
+                line = Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:);
+                assert(line.Path == categorical(cellstr([path, filesep])));
+                Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
+            end
         end
     end
     handles.MP3_pipeline_ParamsModules.(SelectedModule) =  Module;
     [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
     [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
     [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+    
 end
-
-
-
-
-
 guidata(hObject, handles);
 
 function Coloredlistbox = DisplayColoredListbox(Names, handles)
@@ -3637,3 +3656,26 @@ set(fig,'PaperPositionMode','auto'); % size position
 
 print(fig, [path, file],'-depsc2')
 msgbox('Done', 'Information') ;
+
+
+
+function Select_Number_Workers_Callback(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Select_Number_Workers as text
+%        str2double(get(hObject,'String')) returns contents of Select_Number_Workers as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Select_Number_Workers_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Select_Number_Workers (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
