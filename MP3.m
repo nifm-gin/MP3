@@ -5892,7 +5892,7 @@ if ok1 == 0
 end
 
 data_selected = handles.database(ismember(handles.database.Patient, Patients_name(patients_selected)),:);
-
+time_point_listing = unique(data_selected.Tp);
 % user can select the parameter he woul like to display
 Param_name = unique(data_selected.SequenceName(data_selected.Type == 'Scan'));
 [parameters_selected, ok1] = listdlg('PromptString','Select the parameter(s):',...
@@ -5953,7 +5953,7 @@ if slice_selected == 1 % if all slices a selected
                     if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
                        subplot(lignes,colonnes,k)
                         imshow(image_loaded(:,:,k,1,1),[min_value max_value])
-                        title(strcat('Tranche : ',num2str(k)));
+                        title(strcat('slice : ',num2str(k)));
                     end           
                 end          
             end
@@ -5962,35 +5962,51 @@ if slice_selected == 1 % if all slices a selected
     
 elseif slice_selected == 2 % ie if the user decide to disply the central slice only
     h = figure('units','normalized','outerposition',[0 0 1 1]);
+    %% this code try to add titles to column and row. But tat the end, titles are not aligned to images.
+    % therfore I decided to add a title to each image
+    
+%     for i = 1:length(time_point_listing)
+%         % display time point
+%         annotation('textbox',[(1/(length(time_point_listing)+1))*i 0.9 0.1 0.1],'String',char(time_point_listing(i)),'Interpreter','none');
+%         for j = 1:length(parameters_selected)
+%             % display parameters
+%             annotation('textbox',[(1/(length(time_point_listing)*length(parameters_selected)+2)) * (((i-1)*length(parameters_selected))+j) 0.80 0.1 0.1],'String',char(Param_name(parameters_selected(j))),'Interpreter','none');
+%         end
+%     end
+%     for i = 1:length(patients_selected)
+%          annotation('textbox',[0 (1-i/(length(patients_selected)+1)) 0.1 0.1],'String',char(Patients_name(patients_selected(i))),'Interpreter','none');    
+%     end
+
     for i=1:length(patients_selected)
         for j=1:length(parameters_selected)
             file_ind = [];
-            % here we create a subplot which contain 1 line per patient and
-            % 1 column per parameter
-            subplot(length(patients_selected),length(parameters_selected),(i-1)*length(parameters_selected)+j)
-            annotation('textbox',[0 (1-i/(length(patients_selected)+1)) 0.1 0.1],'String',char(Patients_name(patients_selected(i))),'Interpreter','none');
-            annotation('textbox',[j/(length(parameters_selected)+1) 0.9 0.1 0.1],'String',char(Param_name(parameters_selected(j))),'Interpreter','none');
-            % here we get the index of the scan to display
+            % here we get the index of the scan(s) to display
             file_ind = find(handles.database.Patient == Patients_name(patients_selected(i)) & handles.database.SequenceName == Param_name(parameters_selected(j)));
             if isempty( file_ind) % if the parameter do not exist for a specific patient --> skip
                 axis off
             else
-                
-                V = spm_vol(fullfilename(handles, file_ind, '.nii'));
-                image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
-                
-                if mod(size(image_loaded,3), 2) == 1
-                    TrancheCentrale = floor((size(image_loaded,3)+1)/2);
-                else
-                    TrancheCentrale = floor(size(image_loaded,3)/2);
+                for jj = 1:numel(file_ind)
+                    % here we create a subplot which contain 1 line per patient and
+                    % 1 column per parameter
+                    subplot(length(patients_selected),length(parameters_selected)*length(time_point_listing),...
+                         (i-1)*length(parameters_selected)* length(time_point_listing) + ((find(time_point_listing == handles.database.Tp(file_ind(jj)))-1) *length(parameters_selected)) + j)                   
+
+                    V = spm_vol(fullfilename(handles, file_ind(jj), '.nii'));
+                    image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
+                    
+                    if mod(size(image_loaded,3), 2) == 1
+                        TrancheCentrale = floor((size(image_loaded,3)+1)/2);
+                    else
+                        TrancheCentrale = floor(size(image_loaded,3)/2);
+                    end
+                    image_to_display =image_loaded(:,:,TrancheCentrale,1,1);
+                    min_value = prctile_copy(image_to_display(:),1);
+                    max_value = prctile_copy(image_to_display(:),99);
+                    if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
+                        imshow(image_loaded(:,:,TrancheCentrale,1,1),[min_value max_value])
+                    end
+                    title(strcat(char(Patients_name(patients_selected(i))), '-',char(handles.database.Tp(file_ind(jj))), '-', char(Param_name(parameters_selected(j))), '-s: ', num2str(TrancheCentrale)));
                 end
-                image_to_display =image_loaded(:,:,TrancheCentrale,1,1);
-                min_value = prctile_copy(image_to_display(:),1);
-                max_value = prctile_copy(image_to_display(:),99);
-                if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
-                    imshow(image_loaded(:,:,TrancheCentrale,1,1),[min_value max_value])
-                end
-                title(strcat('Tranche : ',num2str(TrancheCentrale)));
             end
         end
     end
