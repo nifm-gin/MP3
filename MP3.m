@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 26-Apr-2019 16:40:28
+% Last Modified by GUIDE v2.5 30-Apr-2019 19:26:45
 
 
 % Begin initialization code - DO NOT EDIT
@@ -5857,3 +5857,100 @@ function Import_data_Callback(hObject, eventdata, handles)
 % hObject    handle to Import_data (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Import_Manually_Callback(hObject, eventdata, handles)
+% hObject    handle to Import_Manually (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+msgbox('This option is not completely finished, sorry, it will be available soon!')
+return
+
+
+[file,path] = uigetfile('*.nii', 'Manual Import : select the nifti file to import');
+
+if file == 0
+    return
+end
+
+Tags = handles.database.Properties.VariableNames;
+
+
+[~, IndFilename] = max(strcmp(Tags, 'Filename'));
+[~, IndPath] = max(strcmp(Tags, 'Path'));
+[~, IndIsRaw] = max(strcmp(Tags, 'IsRaw'));
+[~, IndType] = max(strcmp(Tags, 'Type'));
+
+Init = cell(1, length(Tags));
+Init{IndFilename} = file(1:end-4);
+Init{IndPath} = '';
+
+
+
+Editable = repmat([true], 1,length(Tags));
+Editable(IndFilename) = false;
+Editable(IndPath) = false;
+f = figure;
+t = uitable(f, 'Data', Init);
+t.Position = [20,20,100*length(Tags), 50];
+%t.Position(4) = 50;
+t.ColumnName = Tags;
+t.ColumnEditable = Editable;
+
+%uiwait(f);
+while ishandle(t) && ishandle(f)
+    Vec = t.Data;
+    pause(1)
+end
+
+
+if strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '1')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_Raw_data_path;
+    %%%CREATE A JSON
+elseif strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '0')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_Derived_data_path;
+    %%%CREATE A JSON
+elseif strcmp(Vec(IndType), 'ROI')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+elseif strcmp(Vec(IndType), 'Cluster')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+    %%%CREATE A MAT
+else
+    error('Type not supported');
+end
+
+
+
+%Vec = categorical(Vec);
+
+A = cell2table(Vec);
+A.Properties.VariableNames = Tags;
+
+% J'ai pas trouvé mieux .... Les tables sont des variables insupportables
+for i=1:length(Tags)
+    A.(Tags{i}) = categorical(A.(Tags{i}));
+end
+
+
+handles.database = unique([handles.database; A]);
+%%% CHECK IF THERE IS NO ENTRY WITH THE SAME PATIENT/TP/SEQUENCENAME
+
+
+guidata(hObject, handles)
+
+% update database
+MP3_update_database_display(hObject, eventdata, handles)
+
+%update handes
+%guidata(hObject, handles)
+
+%Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+    
+
+
+
+
