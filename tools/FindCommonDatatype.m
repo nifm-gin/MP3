@@ -88,7 +88,8 @@ elseif any(contains(Types, 'int') & ~contains(Types, 'uint')) && any(contains(Ty
         CommonDatatype = 'single';
     end
 else
-    error('Datatype non supported');
+    warning('Datatype non supported, ''double'' returned');
+    CommonDatatype = 'double';
 end
 
 end
