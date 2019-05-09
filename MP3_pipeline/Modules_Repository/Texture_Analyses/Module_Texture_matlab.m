@@ -172,21 +172,16 @@ end
 
 nifti_header = spm_vol(files_in.In1{1});
 Im = read_volume(nifti_header, nifti_header, 0, 'axial');
+% data have to be converted to double before computing any
+% maps
+if isa(class(Im), 'double') ==0
+    origin_class =  class(Im);
+    Im = double(Im);
+end
 
-%Im(Im == 0) = NaN;
-%clim = [1040.30956306678 1111.37427864798];
-%clim = [1050 1100];
-%clim = [10 60];
+% data are nomalized and centered
 clim = [nanmin(Im(:)) nanmax(Im(:))];
-
 origCData = (Im-clim(1))/diff(clim);
-% 
-% clim = [ 0 1];
-% rescaled_Im = nan(size(Im));
-% for i=1:size(Im,3)
-%     rescaled_Im(:,:,i) = imadjust(origCData(:,:,i), clim, [0, 1]); % imadjust(im(:,:,i),[nanmin(im(:)) nanmax(im(:))]);
-%     %rescaled_Im(:,:,i) = imadjust(origCData(:,:,i), [nanmin(origCData(:)) nanmax(origCData(:))], [0, 1]); % imadjust(im(:,:,i),[nanmin(im(:)) nanmax(im(:))]);
-% end
 
 info = niftiinfo(files_in.In1{1});
 
@@ -206,38 +201,37 @@ for i=1:numel(maps_to_generate)
         switch i
             % Local_Mean
             case 1
-                %                 fun = @(x) mean(x(:));
-                %                 % Here comes the actual filtering.
-                %                 New_texture_map = nlfilter(origCData(:,:,50), [opt.Patch_size, opt.Patch_size], fun);         
                 for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@mean);
                 end
-            % Local_Skewness
+                
+                % Local_Skewness
             case 2
                 for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@skewness);
                 end
-                 
-            % Local_Kurosis    
+
+                % Local_Kurosis
             case 3
                 for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@kurtosis);
                 end
-           % Local_Entropy
+                
+                % Local_Entropy
             case 4
-                    New_texture_map = entropyfilt(origCData, patch_2D);
-                    
-           % Local_Range
+                New_texture_map = entropyfilt(origCData, patch_2D);
+                
+                % Local_Range
             case 5
                 for j= 1:size(origCData,3)
                     New_texture_map(:,:,j) = colfilt(origCData(:,:,j),patch_in_vector,'sliding',@range);
                 end
-
-            % Local_SD
+                
+                % Local_SD
             case 6
-                    New_texture_map = stdfilt(origCData, patch_2D);
-
+                New_texture_map = stdfilt(origCData, patch_2D);   
         end
+        
         files_out_nbr = files_out_nbr+1;
         %transform the OutputImages matrix in order to match to the nii header of the
         % first input (rotation/translation)
@@ -255,7 +249,16 @@ for i=1:numel(maps_to_generate)
         niftiwrite(map_reoriented, files_out.In1{files_out_nbr}, info2)
         
         % so far copy the .json file of the first input
-        copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{files_out_nbr}, '.nii', '.json'))
+       % copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{files_out_nbr}, '.nii', '.json'))
+
+        if exist(strrep(files_in.In1{1}, '.nii', '.json'), 'file') == 2
+            J = ReadJson(strrep(files_in.In1{1}, '.nii', '.json'));
+            J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+            
+            [path, name, ~] = fileparts(files_out.In1{files_out_nbr});
+            jsonfile = [path, '/', name, '.json'];
+            WriteJson(J, jsonfile)
+        end
     end
 end
 
