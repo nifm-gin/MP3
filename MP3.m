@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 06-May-2019 11:21:25
+% Last Modified by GUIDE v2.5 09-May-2019 17:04:31
 
 
 
@@ -4504,7 +4504,7 @@ for i = 1:numel(unique(log_file.StudyName))
                 if exist(fullfile(MP3_tmp_folder, [NAME, '.json']), 'file')
                     json_data = spm_jsonread(fullfile(MP3_tmp_folder, [NAME, '.json']));
                     if ~isfield(json_data, 'ProtocolName') || isempty(char(json_data.ProtocolName.value))
-                        json_data.ProtocolName.value = {'Undefined'};
+                        json_data.ProtocolName.value = {clean_variable_name(NAME,'')};
                     end
                     if ~isempty(handles.database)
                         %% check if a scan with the same SequenceName exist for this patient at this time point. If so, add suffix to the SequenceName (ie. SequenceName(X)
@@ -6112,3 +6112,10 @@ elseif slice_selected == 2 % ie if the user decide to disply the central slice o
         end
     end
 end
+
+
+% --------------------------------------------------------------------
+function Menu_Export_Callback(hObject, eventdata, handles)
+% hObject    handle to Menu_Export (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
