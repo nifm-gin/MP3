@@ -123,7 +123,11 @@ if size(N,4) == 1
    error([files_in.In1{1} ' is not a 4d image']);
     %return
 end
-
+% data have to be converted to double before computing the perfusion map
+if isa(class(N), 'double') ==0
+    origin_class =  class(N);
+    N = double(N);
+end
 
 %% Realign if needed
 if strcmp(opt.Realign, 'Yes')
