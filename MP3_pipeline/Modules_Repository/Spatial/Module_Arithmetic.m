@@ -111,8 +111,19 @@ else
     ref_scan = 2;
 end
 input1 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+Types{1} = class(input1);
+
 if isfield(files_in, 'In2')
     input2 = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0, 'Axial');
+    Types{2} = class(input2);
+    % if there is a missmatch in the data type we have to convert data type
+    % before doing any operation except the multiplication to a scalar
+    if ~strcmp(opt.Operation, 'Multiplication (Between Scan 1 and Scalar)')   
+        CommonType = FindCommonDatatype(Types);       
+        input1 = cast(input1, CommonType);
+        input2 = cast(input2, CommonType);
+    end
+    
 end
 
 switch opt.Operation
@@ -180,12 +191,6 @@ nifti_header_output.MultiplicativeScaling = 1;
 
 % % save the new .nii file
  niftiwrite(OutputImages_reoriented, files_out.In1{1}, nifti_header_output);
-
-% % so far copy the .json file of the first input
-% if opt.Table_in.Type(1) == categorical(cellstr('Scan'))
-%     copyfile(strrep(files_in.In1{1}, '.nii', '.json'), strrep(files_out.In1{1}, '.nii', '.json'))
-% end
-% 
 
 %% Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
