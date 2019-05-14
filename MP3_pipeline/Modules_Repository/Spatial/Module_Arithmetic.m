@@ -176,6 +176,7 @@ nifti_header_output.Datatype = class(OutputImages_reoriented);
 nifti_header_output.Transform = affine3d(FinalMat');
 nifti_header_output.ImageSize = size(OutputImages_reoriented); 
 nifti_header_output.PixelDimensions = info.PixelDimensions(1:length(nifti_header_output.ImageSize));
+nifti_header_output.MultiplicativeScaling = 1;
 
 % % save the new .nii file
  niftiwrite(OutputImages_reoriented, files_out.In1{1}, nifti_header_output);

@@ -317,7 +317,9 @@ function MP3_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 
 set(handles.MP3_pipeline_manager_GUI, 'pointer', 'watch');
 drawnow;
-
+if ~isfield(handles, 'new_module')
+    return
+end
 if ~isfield(handles.new_module, 'opt')
     return
 end
@@ -2398,7 +2400,14 @@ function MP3_pipeline_close_modules_button_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_pipeline_close_modules_button (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+selection = questdlg(['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '?'],...
+                     ['Close ' get(handles.MP3_pipeline_manager_GUI,'Name') '...'],...
+                     'Yes','No','Yes');
+if strcmp(selection,'No')
+    return;
+end
 
+delete(handles.MP3_pipeline_manager_GUI)
 
 function [Add_list, Remove_list]=UpdateAdd_Remove_Popup(NewTagListing, InitialListing)
 
@@ -2799,7 +2808,7 @@ if ~isfield(handles, 'MP3_pipeline_ParamsModules')
     ColoredJobNames = {''};
 else
     %SelectedModule = handles.MP3_pipeline_pipeline_listbox_Raw{SelectedIndex};
-    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex};
+    SelectedModule = handles.MP3_pipeline_pipeline_listbox.String{SelectedIndex}; 
     revertcolor2 = @(string) extractAfter(extractBefore(string,'</Font></html>'), '">');
     SelectedModule = revertcolor2(SelectedModule);
     Module = handles.MP3_pipeline_ParamsModules.(SelectedModule);
@@ -2812,8 +2821,11 @@ else
     end
 end
 handles.MP3_pipeline_JobsNames = JobNames;
+old_job_seleced = get(handles.MP3_pipeline_JobsList, 'Value');
 set(handles.MP3_pipeline_JobsList, 'String',ColoredJobNames);
-set(handles.MP3_pipeline_JobsList, 'Value', 1);
+if old_job_seleced ~=1
+    set(handles.MP3_pipeline_JobsList, 'Value', old_job_seleced-1 );
+end
 MP3_pipeline_JobsList_Callback(hObject, eventdata, handles)
 guidata(hObject, handles)
 
@@ -3616,29 +3628,30 @@ Module.Jobs = rmfield(Module.Jobs, SelectedJob);
 if isempty(fieldnames(Module.Jobs))
     MP3_pipeline_DeleteModule_Callback(hObject, eventdata, handles)
     handles.MP3_pipeline_ParamsModules = rmfield(handles.MP3_pipeline_ParamsModules, SelectedModule);
+    if isempty(fieldnames(handles.MP3_pipeline_ParamsModules))
+        handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
+    end
 else
     
-    %% update Output databse of the  selected module.
-    Outputs = fieldnames(Job.files_out);
-    for i=1:length(Outputs)
-        Files = Job.files_out.(Outputs{i});
-        for j=1:length(Files)
-            [path, name, ~] = fileparts(Files{j});
-            line = Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:);
-            assert(line.Path == categorical(cellstr([path, filesep])));
-            Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
+    %% update Output databse of the  selected module if needed.
+    if ~isempty(Job.files_out)
+        Outputs = fieldnames(Job.files_out);
+        for i=1:length(Outputs)
+            Files = Job.files_out.(Outputs{i});
+            for j=1:length(Files)
+                [path, name, ~] = fileparts(Files{j});
+                line = Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:);
+                assert(line.Path == categorical(cellstr([path, filesep])));
+                Module.OutputDatabase(Module.OutputDatabase.Filename == categorical(cellstr(name)),:) = [];
+            end
         end
     end
     handles.MP3_pipeline_ParamsModules.(SelectedModule) =  Module;
     [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
     [hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
     [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
+    
 end
-
-
-
-
-
 guidata(hObject, handles);
 
 function Coloredlistbox = DisplayColoredListbox(Names, handles)

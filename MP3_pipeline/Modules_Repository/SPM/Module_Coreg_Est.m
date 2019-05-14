@@ -232,7 +232,7 @@ spm_jobman('initcfg');
 spm_jobman('run', jobs, inputs{:});
 
 
-close(SPMinter)
-% close(SPMgraph)
+%close(SPMinter)
+%close(SPMgraph)
 
 

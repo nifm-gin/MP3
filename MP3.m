@@ -23,7 +23,8 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 26-Apr-2019 16:40:28
+% Last Modified by GUIDE v2.5 09-May-2019 17:04:31
+
 
 
 % Begin initialization code - DO NOT EDIT
@@ -1825,7 +1826,13 @@ switch get(hObject, 'Tag')
             handles = rmfield(handles, 'data_displayed');
         end
         if handles.mode == 1
-            
+            Types = cell(1,length(handles.data_loaded.Scan));
+            for i=1:length(handles.data_loaded.Scan)
+                info = niftiinfo(handles.data_loaded.Scan(i).V(1).fname);
+                Types{i} = info.Datatype;
+            end
+            CommonType = FindCommonDatatype(Types);
+            handles.data_displayed.image = cast([], CommonType);
             for i=1:handles.data_loaded.number_of_scan
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = round(get(handles.MP3_data' stri '_echo_slider, ''Value''));']);
@@ -2075,6 +2082,15 @@ for ii = 1:handles.data_loaded.number_of_ROI
         ROI_binary = handles.data_loaded.ROI(ii).nii;
         ROI_binary(abs(ROI_binary)>0) =1;
         
+        
+        Types = cell(1,length(handles.data_loaded.Scan));
+        for i=1:length(handles.data_loaded.Scan)
+            info = niftiinfo(handles.data_loaded.Scan(i).V(1).fname);
+            Types{i} = info.Datatype;
+        end
+        CommonType = FindCommonDatatype(Types);
+        ROI_binary = cast(ROI_binary, CommonType);
+        
         switch handles.data_loaded(1).number_of_scan
             case 1
                 VOI_data  = handles.data_displayed.image .* ROI_binary;
@@ -2085,7 +2101,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 if ii > 1
                     hold(handles.MP3_plot1, 'on');
                 end
-                [f, xi] = histnorm(VOI_data,nbin);
+                [f, xi] = histnorm(double(VOI_data),nbin);
                 plot(handles.MP3_plot1,xi,f,...
                     'Color',rgb(handles.colors{ii}),...
                     'Tag', strcat('MP3_plot1_1d', strii));
@@ -2184,7 +2200,7 @@ for ii = 1:handles.data_loaded.number_of_ROI
         
         table_data(ii*3-2,2:2+size(VOI_data,2)-1) = num2cell(sum(~isnan(VOI_data))*voxel_volume); % num2cell(numel(VOI_data)*voxel_volume);
         table_data(ii*3-1,2:2+size(VOI_data,2)-1) = num2cell(nanmean(VOI_data));
-        table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(VOI_data));
+        table_data(ii*3,2:2+size(VOI_data,2)-1) = num2cell(nanstd(double(VOI_data)));
     end
     clear VOI_data
 end
@@ -3259,6 +3275,14 @@ function MP3_new_roi_Callback(hObject, eventdata, handles)
 if ~isfield(handles, 'data_displayed')
     return
 end
+% return if there is a mismatch of patient/time point between 
+% the scan and the ROI(s) displayed
+if numel(unique(handles.data_loaded.info_data_loaded.Patient)) > 1
+   warndlg({'The ROI(s) loaded do not correspond to the scan loaded'
+   'Please, unload the ROI(s) or load ROI(s) of the same patient/time point as the scan'}, 'Warning');
+
+    return 
+end
 
 slice_nbr = get(handles.MP3_slider_slice, 'Value');
 
@@ -3266,7 +3290,7 @@ slice_nbr = get(handles.MP3_slider_slice, 'Value');
 % select on which image will be use to draw the VOI
 if handles.data_loaded(1).number_of_scan > 1
     if handles.mode == 1
-        [which_image,ok] = listdlg('Name', 'Bip', 'ListString', unique(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan')),'ListSize', [200 150], 'PromptString', 'Which image you want to use?', 'SelectionMode', 'single');
+        [which_image,ok] = listdlg('Name', 'Bip', 'ListString', unique(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'),'stable'),'ListSize', [200 150], 'PromptString', 'Which image you want to use?', 'SelectionMode', 'single');
         if ok == 0
             return
         end
@@ -3441,9 +3465,9 @@ switch ROI_case
         
     case 'Union'
           if strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + createMask(hroi, findobj('Tag', ['MP3_data' image_number]));
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
         elseif strcmp(get(hObject, 'Tag'), 'MP3_new_ROI_dyn')
-             handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + Drawn_ROI_matrice;
+             handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) + cast(Drawn_ROI_matrice, class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
           end
        
        
@@ -3453,9 +3477,9 @@ switch ROI_case
         ROI_matrix = write_volume(handles.data_loaded.ROI(ROI_loaded_idex).nii, handles.data_loaded.Scan(Scan_of_reference_selected).V, handles.view_mode);
     case 'Instersection'
         if strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), createMask(hroi, findobj('Tag', ['MP3_data' image_number]))) - createMask(hroi, findobj('Tag', ['MP3_data' image_number]));
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = cast(or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii))), class(handles.data_loaded.ROI(ROI_loaded_idex).nii)) - cast(createMask(hroi, findobj('Tag', ['MP3_data' image_number])), class(handles.data_loaded.ROI(ROI_loaded_idex).nii));
         elseif strcmp(get(hObject, 'Tag'), 'MP3_new_ROI_dyn')
-            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), Drawn_ROI_matrice) - Drawn_ROI_matrice;        
+            handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr) = cast(or(handles.data_loaded.ROI(ROI_loaded_idex).nii(:,:,slice_nbr), Drawn_ROI_matrice), class(handles.data_loaded.ROI(ROI_loaded_idex).nii)) - cast(Drawn_ROI_matrice, class(handles.data_loaded.ROI(ROI_loaded_idex).nii));        
         end
         % transform the ROI_matrix in order to match to the nii hearder
         % (rotation/translation)
@@ -4211,8 +4235,8 @@ G.x=G.cp(1,1);
 G.y=G.cp(1,2);
 G.xinit = G.initpnt(1,1);
 G.yinit = G.initpnt(1,2);
-G.dx = G.x-G.xinit;
-G.dy = G.y-G.yinit;
+G.dx = cast(G.x-G.xinit, class(G.initClim(2)));
+G.dy = cast(G.y-G.yinit, class(G.initClim(2)));
 G.clim = G.initClim+G.initClim(2).*[G.dx G.dy]./128;
 try
     switch get(fh,'SelectionType')
@@ -5855,5 +5879,243 @@ MP3_menu_save_database_Callback(hObject, eventdata, handles)
 % --------------------------------------------------------------------
 function Import_data_Callback(hObject, eventdata, handles)
 % hObject    handle to Import_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Import_Manually_Callback(hObject, eventdata, handles)
+% hObject    handle to Import_Manually (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+msgbox('This option is not completely finished, sorry, it will be available soon!')
+return
+
+
+[file,path] = uigetfile('*.nii', 'Manual Import : select the nifti file to import');
+
+if file == 0
+    return
+end
+
+Tags = handles.database.Properties.VariableNames;
+
+
+[~, IndFilename] = max(strcmp(Tags, 'Filename'));
+[~, IndPath] = max(strcmp(Tags, 'Path'));
+[~, IndIsRaw] = max(strcmp(Tags, 'IsRaw'));
+[~, IndType] = max(strcmp(Tags, 'Type'));
+
+Init = cell(1, length(Tags));
+Init{IndFilename} = file(1:end-4);
+Init{IndPath} = '';
+
+
+
+Editable = repmat([true], 1,length(Tags));
+Editable(IndFilename) = false;
+Editable(IndPath) = false;
+f = figure;
+t = uitable(f, 'Data', Init);
+t.Position = [20,20,100*length(Tags), 50];
+%t.Position(4) = 50;
+t.ColumnName = Tags;
+t.ColumnEditable = Editable;
+
+%uiwait(f);
+while ishandle(t) && ishandle(f)
+    Vec = t.Data;
+    pause(1)
+end
+
+
+if strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '1')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_Raw_data_path;
+    %%%CREATE A JSON
+elseif strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '0')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_Derived_data_path;
+    %%%CREATE A JSON
+elseif strcmp(Vec(IndType), 'ROI')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+elseif strcmp(Vec(IndType), 'Cluster')
+    Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+    %%%CREATE A MAT
+else
+    error('Type not supported');
+end
+
+
+
+%Vec = categorical(Vec);
+
+A = cell2table(Vec);
+A.Properties.VariableNames = Tags;
+
+% J'ai pas trouvé mieux .... Les tables sont des variables insupportables
+for i=1:length(Tags)
+    A.(Tags{i}) = categorical(A.(Tags{i}));
+end
+
+
+handles.database = unique([handles.database; A]);
+%%% CHECK IF THERE IS NO ENTRY WITH THE SAME PATIENT/TP/SEQUENCENAME
+
+
+guidata(hObject, handles)
+
+% update database
+MP3_update_database_display(hObject, eventdata, handles)
+
+%update handes
+%guidata(hObject, handles)
+
+%Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+    
+
+
+% --------------------------------------------------------------------
+function Export_montage_Callback(hObject, eventdata, handles)
+% hObject    handle to Export_montage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% define le name of all patient in the database
+Patients_name = unique(handles.database.Patient);
+% On propose a l'utilisateur de choisir un ou plusieurs couples Patient/Timepoint
+[patients_selected, ok1] = listdlg('PromptString','Select the patient(s):',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',Patients_name);
+if ok1 == 0
+    return
+end
+
+data_selected = handles.database(ismember(handles.database.Patient, Patients_name(patients_selected)),:);
+time_point_listing = unique(data_selected.Tp);
+% user can select the parameter he woul like to display
+Param_name = unique(data_selected.SequenceName(data_selected.Type == 'Scan'));
+[parameters_selected, ok1] = listdlg('PromptString','Select the parameter(s):',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',Param_name);
+if ok1 == 0
+    return
+end
+
+% there are 2 options
+% The montage can contain 
+% 1) all slices of each parameter
+% 2) the central slice
+[slice_selected, ok1] = listdlg('PromptString','Select the slice:',...
+    'Name', 'Selecting...',...
+    'ListSize', [400 300],...
+    'ListString',[{'All slices'}, {'The central slice'}]');
+if ok1 == 0
+    return
+end
+
+if slice_selected == 1 % if all slices a selected
+    for i = 1:length(patients_selected)
+        for j=1:length(parameters_selected)
+            A = Patients_name(patients_selected(i));
+            B = Param_name(parameters_selected(j));
+            h = figure('Name',strcat(char(A),'_',char(B)),'units','normalized','outerposition',[0 0 1 1]);
+            % here we get the index of the scan to display
+            file_ind = find(handles.database.Patient == Patients_name(patients_selected(i)) & handles.database.SequenceName == Param_name(parameters_selected(j)), 1);
+            if isempty( file_ind) % if the parameter do not exist for a specific patient --> skip
+                axis off
+            else
+                V = spm_vol(fullfilename(handles, file_ind, '.nii'));
+                image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
+                NbSlices = size(image_loaded,3);
+                % dependending of the number of slice to disply we ajust
+                % the subplot windows here
+                if NbSlices < 13
+                    lignes = 3;
+                    colonnes = 4;
+                elseif NbSlices < 26
+                    lignes = 5;
+                    colonnes = 5;
+                elseif NbSlices < 50
+                    lignes = 7;
+                    colonnes = 7;
+                elseif NbSlices < 73
+                    lignes = 8;
+                    colonnes = 9;
+                else
+                    warndlg('You cannot display more than 72 slices')
+                end
+                for k = 1:NbSlices
+                    image_to_display =image_loaded(:,:,k,1,1);
+                    min_value = prctile_copy(image_to_display(:),1);
+                    max_value = prctile_copy(image_to_display(:),99);
+                    if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
+                       subplot(lignes,colonnes,k)
+                        imshow(image_loaded(:,:,k,1,1),[min_value max_value])
+                        title(strcat('slice : ',num2str(k)));
+                    end           
+                end          
+            end
+        end
+    end
+    
+elseif slice_selected == 2 % ie if the user decide to disply the central slice only
+    h = figure('units','normalized','outerposition',[0 0 1 1]);
+    %% this code try to add titles to column and row. But tat the end, titles are not aligned to images.
+    % therfore I decided to add a title to each image
+    
+%     for i = 1:length(time_point_listing)
+%         % display time point
+%         annotation('textbox',[(1/(length(time_point_listing)+1))*i 0.9 0.1 0.1],'String',char(time_point_listing(i)),'Interpreter','none');
+%         for j = 1:length(parameters_selected)
+%             % display parameters
+%             annotation('textbox',[(1/(length(time_point_listing)*length(parameters_selected)+2)) * (((i-1)*length(parameters_selected))+j) 0.80 0.1 0.1],'String',char(Param_name(parameters_selected(j))),'Interpreter','none');
+%         end
+%     end
+%     for i = 1:length(patients_selected)
+%          annotation('textbox',[0 (1-i/(length(patients_selected)+1)) 0.1 0.1],'String',char(Patients_name(patients_selected(i))),'Interpreter','none');    
+%     end
+
+    for i=1:length(patients_selected)
+        for j=1:length(parameters_selected)
+            file_ind = [];
+            % here we get the index of the scan(s) to display
+            file_ind = find(handles.database.Patient == Patients_name(patients_selected(i)) & handles.database.SequenceName == Param_name(parameters_selected(j)));
+            if isempty( file_ind) % if the parameter do not exist for a specific patient --> skip
+                axis off
+            else
+                for jj = 1:numel(file_ind)
+                    % here we create a subplot which contain 1 line per patient and
+                    % 1 column per parameter
+                    subplot(length(patients_selected),length(parameters_selected)*length(time_point_listing),...
+                         (i-1)*length(parameters_selected)* length(time_point_listing) + ((find(time_point_listing == handles.database.Tp(file_ind(jj)))-1) *length(parameters_selected)) + j)                   
+
+                    V = spm_vol(fullfilename(handles, file_ind(jj), '.nii'));
+                    image_loaded= read_slice(V, V, 1, 1, handles.view_mode);
+                    
+                    if mod(size(image_loaded,3), 2) == 1
+                        TrancheCentrale = floor((size(image_loaded,3)+1)/2);
+                    else
+                        TrancheCentrale = floor(size(image_loaded,3)/2);
+                    end
+                    image_to_display =image_loaded(:,:,TrancheCentrale,1,1);
+                    min_value = prctile_copy(image_to_display(:),1);
+                    max_value = prctile_copy(image_to_display(:),99);
+                    if  ~isnan(min_value*max_value) && sum([min_value max_value] ~= [0 0]) ~= 0 &&  min_value ~= max_value
+                        imshow(image_loaded(:,:,TrancheCentrale,1,1),[min_value max_value])
+                    end
+                    title(strcat(char(Patients_name(patients_selected(i))), '-',char(handles.database.Tp(file_ind(jj))), '-', char(Param_name(parameters_selected(j))), '-s: ', num2str(TrancheCentrale)));
+                end
+            end
+        end
+    end
+end
+
+
+% --------------------------------------------------------------------
+function Menu_Export_Callback(hObject, eventdata, handles)
+% hObject    handle to Menu_Export (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

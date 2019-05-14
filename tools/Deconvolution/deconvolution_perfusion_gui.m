@@ -195,7 +195,7 @@ Sv=diag(S);
 % VT = numel(find(mask_computation));
 % loopnb = 0;
 tic
-parfor vox = 1:size(data_in_vector,1) %  % findn(mask_computation).'
+for vox = 1:size(data_in_vector,1) %  % findn(mask_computation).'
     if sum(data_in_vector(vox,:)) ~= 0 
         r = zeros(size(CVOXpad));
         
