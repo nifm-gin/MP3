@@ -2178,24 +2178,24 @@ if exist('biograph') == 2
 end
 
 %% Check if some existing files will be rewrited
-
-Name_Jobs = fieldnames(Pipeline);
-Files_out = {};
-for i=1:length(Name_Jobs)
-    Job = Pipeline.(Name_Jobs{i});
-    for j=1:size(Job.opt.Table_out,1)
-        switch char(Job.opt.Table_out.Type(j))
-            case 'Scan'
-                Folder = '/Derived_data/';
-            case {'ROI', 'Cluster'}
-                Folder = '/ROI_data/';
-            case 'Deleted'
-                continue
-        end
-        FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
-        Files_out = [Files_out; {FileName}];
-    end
-end
+% 
+% Name_Jobs = fieldnames(Pipeline);
+% Files_out = {};
+% for i=1:length(Name_Jobs)
+%     Job = Pipeline.(Name_Jobs{i});
+%     for j=1:size(Job.opt.Table_out,1)
+%         switch char(Job.opt.Table_out.Type(j))
+%             case 'Scan'
+%                 Folder = '/Derived_data/';
+%             case {'ROI', 'Cluster'}
+%                 Folder = '/ROI_data/';
+%             case 'Deleted'
+%                 continue
+%         end
+%         FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
+%         Files_out = [Files_out; {FileName}];
+%     end
+% end
 
 
 % Overwrite_Files = {};
@@ -2235,6 +2235,23 @@ if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
         delete(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'))
     end
+    
+    
+    % Check if some files need to be deleted. if yes, replace the
+    % DeleteFile jobs by the output ob psom_add_clean.
+    
+    %pipeline2 = psom_add_clean(pipeline,name_job,files_clean)
+    Name_Jobs = fieldnames(handles.psom.pipeline);
+    pipe_tmp = handles.psom.pipeline;
+    for i=1:length(Name_Jobs)
+        Job = handles.psom.pipeline.(Name_Jobs{i});
+        if strcmp(Job.command, 'Module_DeleteFile(files_in,files_out,opt);')
+            pipe_tmp = rmfield(pipe_tmp, Name_Jobs{i});
+            pipe_tmp = psom_add_clean(pipe_tmp, Name_Jobs{i}, Job.files_in);
+        end
+    end
+    handles.psom.pipeline = orderfields(pipe_tmp, Name_Jobs);
+    
     psom_run_pipeline(handles.psom.pipeline, opt_pipe)
     % We have to wait until PSOM finish to update every files before
     % loading PIPE_statu.mat
@@ -2272,11 +2289,15 @@ for i=1:length(Jobs)
        case 'finished' 
            update = true;
            J = getfield(handles.psom.pipeline, Jobs{i});
-           A = getfield(J, 'files_out');
-           C = getfield(J, 'files_in');
+           if isfield(J, 'files_out')
+               A = getfield(J, 'files_out');
+           else
+               A = [];
+           end
+           %C = getfield(J, 'files_in');
            % If there is no file_out from a module
-           if isempty(A)
-               continue
+           if isempty(A) && isfield(J, 'files_clean')
+               A.In1 = J.files_clean;
            end
            Outputs = fieldnames(A);
            for j=1:length(Outputs)
@@ -2286,7 +2307,7 @@ for i=1:length(Jobs)
                    path_out = [path_out, filesep];
                    outdb = handles.MP3_pipeline_TmpDatabase(handles.MP3_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
-                   if height(outdb) > 1
+                   if height(outdb) > 1 % It means we have a Scan/ROI/Cluster, and the same entry with the type Delete.
                        assert(height(outdb) == 2)
                        outdb = outdb(outdb.Type ~= 'Deleted', :);
                        assert(height(outdb) == 1)
@@ -2299,14 +2320,16 @@ for i=1:length(Jobs)
                            continue
                        end
                        Deleted_files = [Deleted_files; outdb];
-                       filename_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.nii.gz'];
-                       if ~exist(filename_to_delete, 'file')
-                           filename_to_delete = strrep(filename_to_delete, '.nii.gz', '.nii');
+                       if ~handles.MP3_pipeline_radiobuttonPSOM.Value % If basic loop used (not PSOM) 
+                           filename_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.nii.gz'];
                            if ~exist(filename_to_delete, 'file')
-                               error(['File not found : ', filename_to_delete]);
+                               filename_to_delete = strrep(filename_to_delete, '.nii.gz', '.nii');
+                               if ~exist(filename_to_delete, 'file')
+                                   error(['File not found : ', filename_to_delete]);
+                               end
                            end
+                           delete(filename_to_delete);
                        end
-                       delete(filename_to_delete);
                        switch char(outdb.Type)
                            case 'Scan'
                                json_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.json'];
