@@ -2252,7 +2252,7 @@ if handles.MP3_pipeline_radiobuttonPSOM.Value
     end
     handles.psom.pipeline = orderfields(pipe_tmp, Name_Jobs);
     
-    psom_run_pipeline(handles.psom.pipeline, opt_pipe)
+    psom_run_pipeline(handles.psom.pipeline, opt_pipe);
     % We have to wait until PSOM finish to update every files before
     % loading PIPE_statu.mat
     PSOM_finished = 0;
