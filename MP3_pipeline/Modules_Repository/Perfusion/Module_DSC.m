@@ -254,7 +254,7 @@ end
 if isfield(files_in, 'In2')
     nifti_header_ROI = spm_vol(files_in.In2{1});
     ROI = read_volume(nifti_header_ROI, nifti_header_data, 0);
-    N = double(N);
+    ROI = double(ROI);
     aif = N.*repmat(ROI, [1 1 1 size(N, 4)]);
     aif(aif == 0)=nan;
     aif = squeeze(nanmean(nanmean(nanmean(aif))))';
