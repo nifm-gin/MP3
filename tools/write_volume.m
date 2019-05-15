@@ -59,7 +59,8 @@ if ~isequal(orient, [1 2 3])
     flip_orient = orient - rot_orient;
     
     V0_size = Vo(1).private.dat.dim;
-    V0_dim = 1:length(V0_size);
+    %V0_dim = 1:length(V0_size);
+    V0_dim = 1:length(size(Data));
     V0_dim(1:3) = rot_orient;
     Data = permute(Data, V0_dim);
     for i = [3 2 1]
