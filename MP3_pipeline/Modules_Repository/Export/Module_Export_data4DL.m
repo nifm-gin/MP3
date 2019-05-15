@@ -38,7 +38,7 @@ if isempty(opt)
     user_parameter(:,3)   = {'   .Input Scans','XScan','','', {'SequenceName'},'Mandatory',...
          'Please select evey scan (other than the reference scan) that you would like to concatenate to the reference scan'};
     user_parameter(:,4)   = {'   .ROI','1ROI','','',{'SequenceName'},'Mandatory',...
-         'Please select one ROI. This ROI will be used to extract evec voxel in this ROI'};
+         'Please select one ROI. This ROI will be used to extract evey voxel in this ROI'};
     user_parameter(:,5)   = {'   .Output filename','char','Data_4DL','Output_filename','', '',''};
 
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional', 'Help'};
@@ -63,7 +63,7 @@ if strcmp(files_out, '')
     tags_out_In = tags;
     tags_out_In.IsRaw = categorical(0);
     tags_out_In.Path = categorical(cellstr([opt.folder_out, filesep]));
-    tags_out_In.SequenceName = categorical(cellstr('Data_4DL'));
+    tags_out_In.SequenceName = categorical(cellstr(opt.Output_filename));
     tags_out_In.Filename = categorical(cellstr([char(tags_out_In.Patient), '_', char(tags_out_In.Tp), '_', char(tags_out_In.SequenceName)]));
     f_out = [char(tags_out_In.Path), char(tags_out_In.Patient), '_', char(tags_out_In.Tp), '_', char(tags_out_In.SequenceName), '.nii'];
     files_out.In1{1} = f_out;
@@ -100,11 +100,34 @@ end
 scan_of_reference.header = spm_vol(files_in.In1{1});
 scan_of_reference.data=  read_volume(scan_of_reference.header, scan_of_reference.header, 0, 'Axial'); %si tout marche, on peut virer cette ligne
 
-%% load the ROI 
+%% load the ROI
 ROI.header = spm_vol(files_in.In3{1});
 ROI.data=  read_volume(ROI.header, scan_of_reference.header, 0, 'Axial'); %si tout marche, on peut virer cette ligne
 
-output_data = scan_of_reference.data .* ROI.data;
+
+
+ 
+
+%% load all the input scan (other than the scan of reference)
+for i=1:length(files_in.In2)
+    other_scan(i).header =  spm_vol(files_in.In2{i});
+    other_scan(i).data = read_volume(other_scan(i).header, scan_of_reference.header, 0, 'Axial'); % si tout marche, on peut virer cette ligne
+    % read json file
+    other_scan(i).json = spm_jsonread(strrep(files_in.In2{i}, '.nii', '.json'));
+    
+end
+% all data need to be in the same class
+% we use the function FindCommonDatatype to define the common class
+Types = cell(1,length(other_scan)+1);
+Types{1} = class(scan_of_reference.data);
+for i=1:length(other_scan)
+    Types{i+1} = class(other_scan(i).data);
+end
+CommonType = FindCommonDatatype(Types);
+
+% the ROI needs to have the same class as the data
+output_data = cast(scan_of_reference.data, CommonType) .* cast(ROI.data, CommonType);
+
 
   % read json file
 scan_of_reference.json = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
@@ -124,16 +147,16 @@ end
 
 if numel(size(scan_of_reference.data)) <= 4
     output_json.SequenceName.value = repmat(cellstr(opt.Table_in.SequenceName(1)), [size(scan_of_reference.data,4), 1]);
-    if numel(output_json.EchoTime.value) ~= size(scan_of_reference.data, 4)
+    if isfield(output_json, 'EchoTime') && numel(output_json.EchoTime.value) ~= size(scan_of_reference.data, 4)
         output_json.EchoTime.value = repmat(scan_of_reference.json.EchoTime.value, [size(scan_of_reference.data,4), 1]);
     end
-    if numel(output_json.RepetitionTime.value) ~= size(scan_of_reference.data, 4)
+    if isfield(output_json, 'RepetitionTime') && numel(output_json.RepetitionTime.value) ~= size(scan_of_reference.data, 4)
         output_json.RepetitionTime.value =repmat(scan_of_reference.json.RepetitionTime.value, [size(scan_of_reference.data,4), 1]);
     end
-    if numel(output_json.InversionTime.value) ~= size(scan_of_reference.data, 4)
+    if isfield(output_json, 'InversionTime') && numel(output_json.InversionTime.value) ~= size(scan_of_reference.data, 4)
         output_json.InversionTime.value =repmat(scan_of_reference.json.InversionTime.value, [size(scan_of_reference.data,4), 1]);
     end
-     if numel(output_json.SpinEchoTime.value) ~= size(scan_of_reference.data, 4)
+     if isfield(output_json, 'SpinEchoTime') && numel(output_json.SpinEchoTime.value) ~= size(scan_of_reference.data, 4)
         output_json.SpinEchoTime.value =repmat(output_json.SpinEchoTime.value, [size(scan_of_reference.data,4), 1]);
     end
 elseif numel(size(scan_of_reference.data)) == 5
@@ -142,49 +165,49 @@ elseif numel(size(scan_of_reference.data)) == 5
 end
 
 
- 
-
-%% load all the input scan (other than the scan of reference)
 for i=1:length(files_in.In2)
-    other_scan(i).header =  spm_vol(files_in.In2{i});
-    other_scan(i).data = read_volume(other_scan(i).header, scan_of_reference.header, 0, 'Axial'); % si tout marche, on peut virer cette ligne
-    % read json file
-    other_scan(i).json = spm_jsonread(strrep(files_in.In2{i}, '.nii', '.json'));
-    
-    
     if size(other_scan(i).data, 5) > 1 % for 5d scan
-  
-%         [a, b, c, d, e ] = size(other_scan(i).data);
-%         output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  reshape(other_scan(i).data,[a, b, c, d * e ]);
+        
+        %         [a, b, c, d, e ] = size(other_scan(i).data);
+        %         output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  reshape(other_scan(i).data,[a, b, c, d * e ]);
         disp('not coded for 5D data')
         output_data = [];
         return
         
     else
-        % concatanate data
-        output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  other_scan(i).data.* ROI.data;
+        % concatanate data but first the ROI and the scan to concatanate
+        % need to have the same class as the scan of reference
+        output_data(:,:,:,size(output_data,4)+1:size(output_data,4)+length(other_scan(i).header)) =  cast(other_scan(i).data, CommonType)  .* cast(ROI.data, CommonType);
         % update json information
         output_json.SequenceName.value = [output_json.SequenceName.value' repmat(cellstr(opt.Table_in.SequenceName(i+1)), [size(other_scan(i).data,4), 1])']';
-        if length(other_scan(i).json.EchoTime.value)  ~= size(other_scan(i).data,4)
-            output_json.EchoTime.value = [output_json.EchoTime.value' repmat(other_scan(i).json.EchoTime.value, [size(other_scan(i).data,4), 1])']';
-        else
-            output_json.EchoTime.value = [output_json.EchoTime.value' other_scan(i).json.EchoTime.value']';
+        if isfield(other_scan(i).json, 'EchoTime.')
+            if length(other_scan(i).json.EchoTime.value)  ~= size(other_scan(i).data,4)
+                output_json.EchoTime.value = [output_json.EchoTime.value' repmat(other_scan(i).json.EchoTime.value, [size(other_scan(i).data,4), 1])']';
+            else
+                output_json.EchoTime.value = [output_json.EchoTime.value' other_scan(i).json.EchoTime.value']';
+            end
         end
-        if length(other_scan(i).json.RepetitionTime.value)  ~= size(other_scan(i).data,4)
-            output_json.RepetitionTime.value = [output_json.RepetitionTime.value' repmat(other_scan(i).json.RepetitionTime.value, [size(other_scan(i).data,4), 1])']';
-        else
-            output_json.RepetitionTime.value = [output_json.RepetitionTime.value' other_scan(i).json.RepetitionTime.value']';
+        if isfield(other_scan(i).json, 'RepetitionTime')
+            if  length(other_scan(i).json.RepetitionTime.value)  ~= size(other_scan(i).data,4)
+                output_json.RepetitionTime.value = [output_json.RepetitionTime.value' repmat(other_scan(i).json.RepetitionTime.value, [size(other_scan(i).data,4), 1])']';
+            else
+                output_json.RepetitionTime.value = [output_json.RepetitionTime.value' other_scan(i).json.RepetitionTime.value']';
+            end
         end
-       if length(other_scan(i).json.InversionTime.value)  ~= size(other_scan(i).data,4)
-            output_json.InversionTime.value = [output_json.InversionTime.value' repmat(other_scan(i).json.InversionTime.value, [size(other_scan(i).data,4), 1])']';
-        else
-            output_json.InversionTime.value = [output_json.InversionTime.value' other_scan(i).json.InversionTime.value']';
+        if isfield(other_scan(i).json, 'InversionTime')
+            if  length(other_scan(i).json.InversionTime.value)  ~= size(other_scan(i).data,4)
+                output_json.InversionTime.value = [output_json.InversionTime.value' repmat(other_scan(i).json.InversionTime.value, [size(other_scan(i).data,4), 1])']';
+            else
+                output_json.InversionTime.value = [output_json.InversionTime.value' other_scan(i).json.InversionTime.value']';
+            end
         end
-       if length(other_scan(i).json.SpinEchoTime.value)  ~= size(other_scan(i).data,4)
-            output_json.SpinEchoTime.value = [output_json.SpinEchoTime.value' repmat(other_scan(i).json.SpinEchoTime.value, [size(other_scan(i).data,4), 1])']';
-        else
-            output_json.SpinEchoTime.value = [output_json.SpinEchoTime.value' other_scan(i).json.SpinEchoTime.value']';
-        end      
+        if isfield(other_scan(i).json, 'SpinEchoTime')
+            if   length(other_scan(i).json.SpinEchoTime.value)  ~= size(other_scan(i).data,4)
+                output_json.SpinEchoTime.value = [output_json.SpinEchoTime.value' repmat(other_scan(i).json.SpinEchoTime.value, [size(other_scan(i).data,4), 1])']';
+            else
+                output_json.SpinEchoTime.value = [output_json.SpinEchoTime.value' other_scan(i).json.SpinEchoTime.value']';
+            end
+        end
     end
     
     
@@ -209,6 +232,8 @@ info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 info2.Datatype = class(output_data);
 info2.ImageSize = size(output_data);
+info2.PixelDimensions = ones([1,length(size(output_data))]);
+info2.PixelDimensions(1:length(info.PixelDimensions)) = info.PixelDimensions;
 
 % save the new .nii file
 niftiwrite(output_data, files_out.In1{1}, info2);
