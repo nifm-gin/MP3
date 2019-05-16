@@ -147,8 +147,8 @@ if strcmp(opt.Realign, 'Yes')
     keepscans = setdiff(allscans,ignorescans);
 
     [~, file, ~] = fileparts(files_in.In1{1});
-    TmpFile = [opt.folder_out, '/TMP_FILE_Module_Susceptibility', file,'.nii'];
-    OutTmpFile = [opt.folder_out, '/rTMP_FILE_Module_Susceptibility', file, '.nii'];
+    TmpFile = [opt.folder_out, filesep, 'TMP_FILE_Module_DSC_', file,'.nii'];
+    OutTmpFile = [opt.folder_out, filesep, 'rTMP_FILE_Module_DSC_', file, '.nii'];
     copyfile(files_in.In1{1},  TmpFile);
     
     Scan_to_realign_nii_filename = cell(length(keepscans), 1);
@@ -176,17 +176,22 @@ if strcmp(opt.Realign, 'Yes')
     spm('defaults', 'FMRI');
     spm_jobman('run', jobs, inputs{:});
     clear matlabbatch 
-     
-    N2 = niftiread(OutTmpFile);
+    
+    N2_header = spm_vol(OutTmpFile);
+    N2 = read_volume(N2_header, N2_header, 0);
+    
     N3 = N;
     N3(:,:,:,keepscans) = N2(:,:,:,keepscans);
+    % the matrix of the DSC is updated using the resut of the realign
     N = N3;
+    % replace NaN by 0, otherwise the option RemoveBackground crashes
+    N(isnan(N)) = 0;
+    % then every data created by SPM are deleted
     delete(TmpFile);
     delete(OutTmpFile);
     delete(strrep(TmpFile, '.nii', '.mat'))
-    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_Susceptibility', file, '.nii'], ['meanTMP_FILE_Module_Susceptibility', file, '.nii']))
-    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_Susceptibility', file, '.nii'], ['rp_TMP_FILE_Module_Susceptibility', file, '.txt']))
-
+    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_DSC_', file, '.nii'], ['meanTMP_FILE_Module_DSC_', file, '.nii']))
+    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_DSC_', file, '.nii'], ['rp_TMP_FILE_Module_DSC_', file, '.txt']))
 end
 
 
