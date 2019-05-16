@@ -122,9 +122,19 @@ elseif strcmp(opt.Output_orientation, 'Second input')
 else
     ref_scan = 3;
 end
+% all data have to be in double before any calculs
 DeltaR2 = read_volume(input(1).nifti_header, input(ref_scan).nifti_header, 0);
+if isa(class(DeltaR2), 'double') ==0
+    DeltaR2 = double(DeltaR2);
+end
 DeltaR2Star = read_volume(input(2).nifti_header, input(ref_scan).nifti_header, 0);
+if isa(class(DeltaR2Star), 'double') ==0
+    DeltaR2Star = double(DeltaR2Star);
+end
 ADC = read_volume(input(3).nifti_header, input(ref_scan).nifti_header, 0);
+if isa(class(DeltaR2Star), 'double') ==0
+    DeltaR2Star = double(DeltaR2Star);
+end
 
 B0=opt.B0;
 gamma=opt.Gamma; gamma = gamma*10^8;
