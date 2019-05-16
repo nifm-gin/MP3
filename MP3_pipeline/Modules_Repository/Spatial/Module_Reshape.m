@@ -153,21 +153,16 @@ elseif axes == 5
 
     
 end
-
-
-info.ImageSize = size(NewIm);
-
-info.PixelDimensions = info.PixelDimensions(1:length(size(NewIm)));
-
-info.ImageSize = size(NewIm);
-
-
 info2 = info;
+
+NewIm = cast(NewIm,info.Datatype); 
+info2.ImageSize = size(NewIm);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(NewIm)));
+info2.ImageSize = size(NewIm);
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
-NewIm=int16(NewIm);
-info2.Datatype = class(NewIm);
+
 niftiwrite(NewIm, files_out.In1{1}, info2)
 
 if exist(jsonfile)
