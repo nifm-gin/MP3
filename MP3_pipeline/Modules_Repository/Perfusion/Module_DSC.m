@@ -304,20 +304,24 @@ info = niftiinfo(files_in.In1{1});
 
 
 for i=1:length(mapsVar)
-    info2 = info;
-    info2.Filename = files_out.In1{i};
-    info2.Filemoddate = char(datetime('now'));
-    info2.Datatype = class(mapsVar{i});
-    info2.PixelDimensions = info.PixelDimensions(1:length(size(mapsVar{i})));
-    info2.ImageSize = size(mapsVar{i});
-    info2.MultiplicativeScaling = 1;
-    %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
+  
     
     % reorient the scan
     mapsVar_reoriented{i} = write_volume(mapsVar{i}, nifti_header_data, 0);
+    
+    % update the header
+     info2 = info;
+    info2.Filename = files_out.In1{i};
+    info2.Filemoddate = char(datetime('now'));
+    info2.Datatype = class(mapsVar_reoriented{i});
+    info2.PixelDimensions = info.PixelDimensions(1:length(size(mapsVar{i})));
+    info2.ImageSize = size(mapsVar_reoriented{i});
+    info2.MultiplicativeScaling = 1;
+    %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
+    
     niftiwrite(mapsVar_reoriented{i}, files_out.In1{i}, info2)
     
-
+    % update and save the json 
     J2 = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
     [path, name, ~] = fileparts(files_out.In1{i});
