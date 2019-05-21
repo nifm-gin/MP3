@@ -131,11 +131,13 @@ J = ReadJson(jsonfile);
 
 %% Process your data
 % set python command
-cmd = strcat('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i',{' '}, files_in.In1{1}, {' '}, '-m', {' '},...
-    files_in.In2{1}, {' '}, '-oBVf', {' '}, files_out.In1{1}, {' '}, '-oVSI', {' '}, files_out.In1{2}, {' '}, '-oSO2', {' '}, files_out.In1{3}, {' '}, '-n', {' '}, opt.folder, opt.model_folder_filename, '.tar');
+cmd = sprintf('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i %s -m %s --outFileBVf %s --outFileVSI %s --outFileSO2 %s -n %s%s.tar',...
+    files_in.In1{1},  files_in.In2{1}, files_out.In1{1}, files_out.In1{2}, files_out.In1{3}, opt.folder, opt.model_folder_filename);
+% cmd = strcat('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i',{' '}, files_in.In1{1}, {' '}, '-m', {' '},...
+%     files_in.In2{1}, {' '}, '-oBVf', {' '}, files_out.In1{1}, {' '}, '-oVSI', {' '}, files_out.In1{2}, {' '}, '-oSO2', {' '}, files_out.In1{3}, {' '}, '-n', {' '}, opt.folder, opt.model_folder_filename, '.tar');
 % cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.In1{:},  ' -f', {' '}, num2str(opt.Fractional_intensity_threshold), {' '}, '-g 0 -n -m -t');
 % execute the command
-system(cmd{:});
+system(cmd);
 
 % Get the output header
 info2 = info;
@@ -144,19 +146,21 @@ info2.Filemoddate = char(datetime('now'));
 
 % Save informations about the module in the json that will be associated to
 % the file out.
-J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+J = KeepModuleHistory(J, struct('files_in', files_in.In1, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
 J.ProtocolName.value = opt.model_folder_filename;
 J.SequenceName.value = opt.model_folder_filename;
 
 %% Write the output files
 
 % Write the nifti, thanks to the data, the header, and the file_out name.
-niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
+%niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
 
 % Write the associated json.
-[path, name, ~] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-WriteJson(J, jsonfile)
+for i =1:numel(files_out.In1)
+    [path, name, ~] = fileparts(files_out.In1{i});
+    jsonfile = [path, '/', name, '.json'];
+    WriteJson(J, jsonfile)
+end
 
 %% It's already over !
 
