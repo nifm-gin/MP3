@@ -10,16 +10,12 @@ if isempty(opt)
     % --> module_option(2,:) = defaults values
     
     
-    module_option(:,1)   = {'model_folder_filename',  'MP3/data/DL_models.model.tar'};
-    module_option(:,2)   = {'prefix',           'DL_'};
-    module_parameters(:,1)  = {'OutputSequenceName','AllName'};
-    
-    
-%     module_parameters(:,1)   = {'output_filename_ext','_Smooth'};
-%     module_parameters(:,2)   = {'OutputSequenceName','Extension'};
-%     module_parameters(:,3)   = {'Type','2-D Gaussian'};
-%     module_parameters(:,4)   = {'Sigma',1};
-%     
+    module_parameters(:,1)   = {'model_folder_filename',  'MP3/data/DL_models.model.tar'};
+    module_parameters(:,2)   = {'model_mask', 'Mask'};
+    module_parameters(:,3)   = {'OutputSequenceName','AllName'};
+    module_parameters(:,4)   = {'output_filename_BVf','BVf'};
+    module_parameters(:,5)   = {'output_filename_VSI','VSI'};
+    module_parameters(:,6)   = {'output_filename_SO2','SO2'};   
     
     %% System parameters : Do not modify without understanding the behaviour of the software.
     
@@ -36,8 +32,8 @@ if isempty(opt)
     
     Parameters = [module_parameters, system_parameters, initialisation_parameters];
     
-    opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
-    
+    opt.Module_settings  = psom_struct_defaults(struct(), Parameters(1,:), Parameters(2,:));
+    opt.NameOutFiles = {opt.Module_settings.output_filename_BVf, opt.Module_settings.output_filename_VSI, opt.Module_settings.output_filename_SO2};
     
     %% Each line displayed to the user :
     
@@ -47,6 +43,7 @@ if isempty(opt)
         }'};
     
     user_parameter(:,2)   = {'Select the scan to use','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'   .Mask to apply', '1ROI', '', 'model_mask', {'SequenceName'}, 'Mandatory', 'Mask to restrain the computation to the ROI'};
     
     s               = split(mfilename('fullpath'),'MP3_pipeline',1);
     model_files	= dir(fullfile(s{1}, 'data/DL_models/'));
@@ -54,12 +51,8 @@ if isempty(opt)
     [~, model_names, ~] = cellfun(@fileparts, {model_files.name}, 'UniformOutput', false);
     opt.Module_settings.folder = fullfile(s{1}, 'data/DL_models/');
     if isempty(model_files), model_files(1).name = ' '; end
-    user_parameter(:,3)   = {'   .Model to use','cell', model_names, 'model_folder_filename','','Mandatory',...
+    user_parameter(:,4)   = {'   .Model to use','cell', model_names, 'model_folder_filename','','Mandatory',...
         {'Select the model to use for data evaluation (.tar)'}};
-%     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
-%     user_parameter(:,4)   = {'   .Output filename extension','char','','output_filename_ext','', '',''};
-%     user_parameter(:,5)   = {'   .Type','cell', {'2-D Gaussian', '3-D Gaussian'},'Type','', '',''};
-%     user_parameter(:,6)   = {'   .Sigma','numeric','','Sigma','', '',''};
     
     % Concatenate these user_parameters, and store them in opt.table
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -74,26 +67,30 @@ if isempty(opt)
     return
     
 end
-%%%%%%%%
-
+%%%%%%%
 % Here we generate the names of the files_out, thanks to the names of the
 % files_in and some of the parameters selected by the user.
 % This paragraph is peculiar to the number and the kind of the files_out.
 % Please modify it to automatically generate the name of each output file.
-if isempty(files_out)
-    opt.Table_out = opt.Table_in;
-    opt.Table_out.IsRaw = categorical(0);
-    opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
-    if strcmp(opt.OutputSequenceName, 'AllName')
-        opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
-    elseif strcmp(opt.OutputSequenceName, 'Extension')
-        opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
-    end
-    opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
-    f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
-    files_out.In1{1} = f_out;
-end
 
+opt.NameOutFiles = {opt.output_filename_BVf, opt.output_filename_VSI, opt.output_filename_SO2};
+
+if isempty(files_out)
+    for i=1:length(opt.NameOutFiles)
+        table_out_tmp = opt.Table_in(1,:);
+        table_out_tmp.IsRaw = categorical(0);
+        table_out_tmp.Path = categorical(cellstr([opt.folder_out, filesep]));
+        if strcmp(opt.OutputSequenceName, 'AllName')
+            table_out_tmp.SequenceName = categorical(strcat(cellstr(opt.NameOutFiles{i}), '_', opt.model_folder_filename));
+        elseif strcmp(opt.OutputSequenceName, 'Extension')
+            table_out_tmp.SequenceName = categorical(cellstr([char(table_out_tmp.SequenceName), '_', opt.NameOutFiles{i}]));
+        end
+        table_out_tmp.Filename = categorical(cellstr([char(table_out_tmp.Patient), '_', char(table_out_tmp.Tp), '_', char(table_out_tmp.SequenceName)]));
+        f_out = [char(table_out_tmp.Path), char(table_out_tmp.Patient), '_', char(table_out_tmp.Tp), '_', char(table_out_tmp.SequenceName), '.nii'];
+        files_out.In1{i} = f_out;
+        opt.Table_out = [opt.Table_out; table_out_tmp];
+    end
+end
 
 
 
@@ -133,36 +130,13 @@ J = ReadJson(jsonfile);
 
 
 %% Process your data
+% set python command
+cmd = strcat('env -i /home/delphina/data_ssd/anaconda3/bin/python EvaluationScript.py -i ', files_in.In1{1}, ' -m ', files_in.In2{1}, ' -oBVf ', files_out.In1{1}, ...
+    ' -oVSI ', files_out.In1{2}, ' -oSO2 ', files_out.In1{3}, ' -n ', opt.model_folder_filename, '.tar');
+% cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.In1{:},  ' -f', {' '}, num2str(opt.Fractional_intensity_threshold), {' '}, '-g 0 -n -m -t');
+% execute the command
+system(cmd);
 
-Informations = whos('N');
-FilteredImages = zeros(size(N), Informations.class);
-Size = size(N);
-NbDim = length(Size);
-
-if NbDim >4
-    Dim_To_Merge = Size(4:end);
-    NewDim = prod(Dim_To_Merge);
-    NewN = reshape(N, Size(1), Size(2), Size(3), NewDim);
-else
-    NewN = N;
-end
-
-Sigma = opt.Sigma;
-if strcmp(opt.Type, '2-D Gaussian')
-    for i=1:size(NewN,3)
-        for j=1:size(NewN,4)
-            FilteredImages(:,:,i,j) = imgaussfilt(NewN(:,:,i,j), Sigma);
-        end
-    end
-elseif strcmp(opt.Type, '3-D Gaussian')
-    for j=1:size(NewN,4)
-        FilteredImages(:,:,:,j) = imgaussfilt3(NewN(:,:,:,j), Sigma);
-    end
-    
-end
-
-% Get the output data
-NewFilteredImages = reshape(FilteredImages, Size);
 
 
 % Get the output header
