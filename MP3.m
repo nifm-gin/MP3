@@ -2383,6 +2383,11 @@ function MP3_clic_on_image(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+
 if ~strcmp(get(handles.MP3_GUI,'SelectionType'),'normal')
     G.initpnt=get(gca,'currentpoint');
     G.initClim = get(gca,'Clim');
