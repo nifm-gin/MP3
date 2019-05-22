@@ -2279,6 +2279,11 @@ for i=1:length(Jobs)
                    end
                    if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
+                       % If intersect du triplet patient/Tp/sequencename
+                       % entre mp3_data.database et outdb, on faut
+                       % remplacer l'entrée de la database par celle de
+                       % outdb. A FAIRE
+                       
                        handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
