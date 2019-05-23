@@ -220,9 +220,14 @@ for i=1:length(roi_files)
         Name_TP = opt.Table_in.Tp(opt.Table_in.Filename == categorical(cellstr(sname)));
         Name_Group = opt.Table_in.Group(opt.Table_in.Filename == categorical(cellstr(sname)));
         nifti_header = spm_vol(Files{j});
-        ROI_NaN = ROI{i};
+%         ROI_NaN = ROI{i};
+%         ROI_NaN(ROI_NaN == 0) = NaN;
+        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial');
+         % the ROI needs to have the same class as the data
+        ROI_NaN = cast(ROI{i}, class(input{j}));
         ROI_NaN(ROI_NaN == 0) = NaN;
-        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
+        input{j} = input{j}.*ROI_NaN;
+        
         %% merge the 4th and the 5th dimension (mean data)
 %         Vec = mean(input{j},4);
 %         NameScans = [NameScans, {char(Name_Scan)}];
@@ -320,7 +325,7 @@ VoxValues = table2array(Clust_Data_In(:,4:end));
 
 
 
-opts = statset('UseParallel', true, 'MaxIter', 1000);
+%opts = statset('UseParallel', true, 'MaxIter', 1000);
 
 if strcmp(opt.SlopeHeuristic, 'Yes')
     
@@ -431,7 +436,7 @@ else
     [ClusteredVox, ~, ~, ~] = kmeans(VoxValues,opt.NbClusters,'Options', opts, 'OnlinePhase', 'on');
     for zz = 1:opt.NbClusters
         mu(zz,:) = mean(VoxValues(ClusteredVox == zz,:));
-        sigma(:,:,zz) = cov(VoxValues(ClusteredVox == zz,:), VoxValues(ClusteredVox == zz,2));
+        sigma(:,:,zz) = cov(VoxValues(ClusteredVox == zz,:));
         proportion(zz) = sum(ClusteredVox == zz)/numel(ClusteredVox);
         
     end

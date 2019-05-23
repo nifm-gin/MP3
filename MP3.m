@@ -2418,8 +2418,10 @@ slice_nbre = get(handles.MP3_slider_slice, 'Value');
 tag = get(get(hObject, 'Children'), 'Tag');
 if size(tag,1)>1
     currPt_on_axe=eval(['get(handles.' tag{end} ',''CurrentPoint'');']);
-else
+elseif ~isempty(tag)
     currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']);
+else
+    return
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);

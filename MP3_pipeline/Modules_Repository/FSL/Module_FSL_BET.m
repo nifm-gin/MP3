@@ -38,7 +38,7 @@ if isempty(opt)
         'Output --> a brain mask saved as ROI'
         ''
         'WARNING'
-        'FSL needs to be install by the user first in /usr/local/fsl'
+        'FSL 6.0.1 needs to be install by the user first in /usr/local/fsl'
         }'};
     
     user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -118,25 +118,24 @@ system(cmd{:});
 %unzip the mask
 gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
 
-% % test docker
-% cmd_4_docker = [{'bids/mrtrix3_connectome'},strcat('bet %i1 %i2 -f',{' '},  num2str(opt.Fractional_intensity_threshold),{' '}, '-g 0 -n -m -t'),files_in.In1, files_out.In1];
-% system_docker(cmd_4_docker{:})
-% gunzip(strrep(files_out.In1{:}, '.nii', '_mask.nii.gz'))
-
-
-if strcmp(opt.Fill_Holes, 'Yes')
-    N = niftiread(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
-    info = niftiinfo(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
-    
-    
-    for j=1:size(N,4)
-        for i=1:size(N,3)
-            N(:,:,i,j) = imfill(N(:,:,i,j), 'holes');
-        end
-    end
-    
-    niftiwrite(N, strrep(files_out.In1{:}, '.nii', '_mask.nii'), info);
+% the Mask needs to be open in order to check the size of the nii. Indeed
+% ROI can not be > 3D
+N = niftiread(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
+info = niftiinfo(strrep(files_out.In1{:}, '.nii', '_mask.nii'));
+if length(size(N))>3
+    N = squeeze(N(:,:,:,1,1,1,1));
+    info.ImageSize = size(N);
+    info.PixelDimensions =  info.PixelDimensions(1:length(size(N)));
 end
-
+% if the option Fill_Holes is check exectute this loop
+if strcmp(opt.Fill_Holes, 'Yes')
+    for i=1:size(N,3)
+        N(:,:,i) = imfill(N(:,:,i), 'holes');
+    end    
+end
+% update the nii header
+info.Datatype = class(N);
+% write the nii 
+niftiwrite(N, strrep(files_out.In1{:}, '.nii', '_mask.nii'), info);
 % rename the output file (BET add by default '_mask' the the file name)
 movefile(strrep(files_out.In1{:}, '.nii', '_mask.nii'), strrep(files_out.In1{:}, '.nii', '.nii'), 'f')

@@ -148,6 +148,8 @@ for i=1:numel(files_in.In3)
     ROI.header = spm_vol(files_in.In3{i});
     ROI.data=  read_volume(ROI.header, scan_of_reference.header, 0, 'Axial');
     % mask the output_data using the current ROI
+    % but first the ROI needs to have the same class as the data
+    ROI.data = cast(ROI.data, class(output_data));
     current_output_data = output_data.* ROI.data;
     % then create a cvs_table_template
     cvs_table_template(1,1:size([{'Ref_Patient_name'}, {'Ref_TimePoint'}, {'Ref_Scan_name'},  {'ROI_name'}, {'Coordonate_x'}, {'Coordonate_y'}, {'Coordonate_z'},  voxel_name(:)'  ],2)) = ...
