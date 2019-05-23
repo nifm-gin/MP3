@@ -11,11 +11,11 @@ if isempty(opt)
     
     
     module_parameters(:,1)   = {'model_folder_filename',  'MP3/data/DL_models.model.tar'};
-    module_parameters(:,2)   = {'model_mask', 'Mask'};
-    module_parameters(:,3)   = {'OutputSequenceName','AllName'};
-    module_parameters(:,4)   = {'output_filename_BVf','BVf'};
-    module_parameters(:,5)   = {'output_filename_VSI','VSI'};
-    module_parameters(:,6)   = {'output_filename_SO2','SO2'};   
+%     module_parameters(:,2)   = {'model_mask', 'Mask'};
+    module_parameters(:,2)   = {'OutputSequenceName','AllName'};
+    module_parameters(:,3)   = {'output_filename_BVf','BVf'};
+    module_parameters(:,4)   = {'output_filename_VSI','VSI'};
+    module_parameters(:,5)   = {'output_filename_SO2','SO2'};   
     
     %% System parameters : Do not modify without understanding the behaviour of the software.
     
@@ -43,7 +43,7 @@ if isempty(opt)
         }'};
     
     user_parameter(:,2)   = {'Select the scan to use','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'   .Mask to apply', '1ROI', '', 'model_mask', {'SequenceName'}, 'Mandatory', 'Mask to restrain the computation to the ROI'};
+%     user_parameter(:,3)   = {'   .Mask to apply', '1ROI', '', 'model_mask', {'SequenceName'}, 'Mandatory', 'Mask to restrain the computation to the ROI'};
     
     s               = split(mfilename('fullpath'),'MP3_pipeline',1);
     model_files	= dir(fullfile(s{1}, 'data/DL_models/'));
@@ -51,7 +51,7 @@ if isempty(opt)
     [~, model_names, ~] = cellfun(@fileparts, {model_files.name}, 'UniformOutput', false);
     opt.Module_settings.folder = fullfile(s{1}, 'data/DL_models/');
     if isempty(model_files), model_files(1).name = ' '; end
-    user_parameter(:,4)   = {'   .Model to use','cell', model_names, 'model_folder_filename','','Mandatory',...
+    user_parameter(:,3)   = {'   .Model to use','cell', model_names, 'model_folder_filename','','Mandatory',...
         {'Select the model to use for data evaluation (.tar)'}};
     
     % Concatenate these user_parameters, and store them in opt.table
@@ -131,10 +131,8 @@ J = ReadJson(jsonfile);
 
 %% Process your data
 % set python command
-cmd = sprintf('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i %s -m %s --outFileBVf %s --outFileVSI %s --outFileSO2 %s -n %s%s.tar',...
-    files_in.In1{1},  files_in.In2{1}, files_out.In1{1}, files_out.In1{2}, files_out.In1{3}, opt.folder, opt.model_folder_filename);
-% cmd = strcat('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i',{' '}, files_in.In1{1}, {' '}, '-m', {' '},...
-%     files_in.In2{1}, {' '}, '-oBVf', {' '}, files_out.In1{1}, {' '}, '-oVSI', {' '}, files_out.In1{2}, {' '}, '-oSO2', {' '}, files_out.In1{3}, {' '}, '-n', {' '}, opt.folder, opt.model_folder_filename, '.tar');
+cmd = sprintf('env -i /home/delphina/data_ssd/anaconda3/bin/python /home/delphina/data_ssd/Git/Drone/EvaluationScript.py -i %s --outFileBVf %s --outFileVSI %s --outFileSO2 %s -n %s%s.tar',...
+    files_in.In1{1}, files_out.In1{1}, files_out.In1{2}, files_out.In1{3}, opt.folder, opt.model_folder_filename);
 % cmd = strcat('/usr/local/fsl/bin/bet', {' '}, files_in.In1{:}, {' '}, files_out.In1{:},  ' -f', {' '}, num2str(opt.Fractional_intensity_threshold), {' '}, '-g 0 -n -m -t');
 % execute the command
 system(cmd);
@@ -146,21 +144,19 @@ info2.Filemoddate = char(datetime('now'));
 
 % Save informations about the module in the json that will be associated to
 % the file out.
-J = KeepModuleHistory(J, struct('files_in', files_in.In1, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
 J.ProtocolName.value = opt.model_folder_filename;
 J.SequenceName.value = opt.model_folder_filename;
 
 %% Write the output files
 
 % Write the nifti, thanks to the data, the header, and the file_out name.
-%niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
+niftiwrite(NewFilteredImages, files_out.In1{1}, info2)
 
 % Write the associated json.
-for i =1:numel(files_out.In1)
-    [path, name, ~] = fileparts(files_out.In1{i});
-    jsonfile = [path, '/', name, '.json'];
-    WriteJson(J, jsonfile)
-end
+[path, name, ~] = fileparts(files_out.In1{1});
+jsonfile = [path, '/', name, '.json'];
+WriteJson(J, jsonfile)
 
 %% It's already over !
 
