@@ -36,7 +36,7 @@ if isempty(opt)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
     user_parameter(:,2)   = {'Select the first scan','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication (Between Scans)', 'Division', 'Percentage',...
-        'Union', 'Intersection',...
+        'Union', 'Intersection', 'Moyenne temporelle',...
         'Addition (Between a Scan and a Scalar)', 'Soubtraction (Between a Scan and a Scalar)', 'Multiplication (Between a Scan and a Scalar)', 'Division (Between a Scan and a Scalar)'},'Operation','', '',''};
     user_parameter(:,4)   = {'Select the second scan','1ScanOr1ROI','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','','',...
@@ -177,6 +177,8 @@ switch opt.Operation
         OutputImages = input1 + opt.Constant;
     case 'Division (Between a Scan and a Scalar)'
         OutputImages = input1 ./ opt.Constant;
+    case 'Moyenne temporelle'
+        OutputImages = mean(input1,4);
 end
 
 % transform the OutputImages matrix in order to match to the nii header of the
