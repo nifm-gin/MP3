@@ -2279,6 +2279,11 @@ for i=1:length(Jobs)
                    end
                    if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
+                       % If intersect du triplet patient/Tp/sequencename
+                       % entre mp3_data.database et outdb, on faut
+                       % remplacer l'entrée de la database par celle de
+                       % outdb. A FAIRE
+                       
                        handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
@@ -3505,8 +3510,20 @@ for i=1:length(JobNames)
         
         % Dont check on the path cause the Datab one is still set to Tmp.
         Lia = ismember(Tmpdatab(:,[1:3 5:end]), Datab(:,[1:3 5:end]));
+        %UPDATE : on the previous line, we could have the case where 2
+        %files have the same triplet Patient/Tp/SequenceName but a
+        %different Filename. Then, as its 2 differents entries, the new one
+        %will be concatenate to the database and leads to an error in the
+        %viewer.
+        % So now we are going to check the unicity of this triplet.
+        Lib = ismember(Tmpdatab(:,[2 3 8]), Datab(:,[2 3 8]));
         
-        if sum(Lia)==1
+        % UPDATE : If sum(Lib) is > 1, then an entry with the same triplet will
+        % return a warning to the user (orange job), and if sum(Lia) is >
+        % 1, then an entry with a different filename (and other tags) will 
+        % return a warning to the user (orange job)
+        
+        if sum(Lia)==1 && sum(Lib)==1
         % Le job ecrit un fichier qui n'existe pas, la seule entree
         % retournee par intersect est l'entree temporaire du job en
         % question

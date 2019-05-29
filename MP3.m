@@ -2383,6 +2383,11 @@ function MP3_clic_on_image(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+
 if ~strcmp(get(handles.MP3_GUI,'SelectionType'),'normal')
     G.initpnt=get(gca,'currentpoint');
     G.initClim = get(gca,'Clim');
@@ -5430,9 +5435,15 @@ function MP3_plot1_Texture_analysis_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_plot1_Texture_analysis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') 
     return
 end
+if ~isfield(handles, 'data_loaded') ||  ~isfield(handles.data_loaded, 'number_of_ROI')
+    warndlg('Please load one or more scans and one or more ROI to use this feature.')
+    return
+end
+
+
 %% code to generate texture values for 1 scan and X ROIs
 ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
 Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
@@ -5441,14 +5452,14 @@ texture_values = table;
 warning('off')
 for i = 1:handles.data_loaded.number_of_scan
     for j = 1:handles.data_loaded.number_of_ROI
-        volume = squeeze(handles.data_displayed.image(:,:,:,i));
-        mask = handles.data_loaded.ROI(j).nii;
+        volume = double(squeeze(handles.data_displayed.image(:,:,:,i)));
+        mask = double(handles.data_loaded.ROI(j).nii);
         matrix_tmp = volume .* mask;
         matrix_tmp(matrix_tmp==0)=nan;
         
         texture_values.SequenceName(size(texture_values,1)+1) = nominal(Scan_names(i,:));
         texture_values.ROI(size(texture_values,1)) = nominal(ROI_names(j,:));
-        texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:3)) * sum(mask(:));
+        texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(1:3)) * sum(mask(:));
         %  texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
         texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
         texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
@@ -5458,8 +5469,8 @@ for i = 1:handles.data_loaded.number_of_scan
         texture_values.Percentile_99(size(texture_values,1)) = prctile_copy(matrix_tmp(:),99);
         
         [ROIonly,~,~,~] = prepareVolume(volume,mask,'MRscan',...
-            sum(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:2))/2 , ...
-            handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(3), 1,...
+            sum(handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(1:2))/2 , ...
+            handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(3), 1,...
             'pixelW','Global','Equal',128);
         [texture] =  getGlobalTextures(ROIonly,100);
         texture_values.Kurtosis(size(texture_values,1)) = texture.Kurtosis;
