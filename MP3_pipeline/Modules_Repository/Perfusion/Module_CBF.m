@@ -314,7 +314,7 @@ end
 % end
 
 
-if exist(alpha, 'var')
+if exist('alpha', 'var')
     if isempty(InvEff_ROI)
         InvEff_ROI = true(size(ASL_InvEff));
     end
