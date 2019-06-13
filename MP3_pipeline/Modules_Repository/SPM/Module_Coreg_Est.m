@@ -115,12 +115,12 @@ if strcmp(files_out, '')
                 tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
                 if tags_out_In3.Type == 'Scan'
                     tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
-                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName), '.nii'];
+                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName)]));
                 else
                     tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
-                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_ROI_', char(tags_out_In3.SequenceName), '.nii'];
+                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_ROI_', char(tags_out_In3.SequenceName)]));
                 end
                 files_out.In3{i} = f_out;
                 opt.Table_out = [opt.Table_out ; tags_out_In3];
