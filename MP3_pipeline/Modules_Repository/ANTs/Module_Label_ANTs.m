@@ -11,12 +11,13 @@ if isempty(opt)
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'rois', ''};
     module_option(:,2)   = {'output_extension', '_report'};
+    module_option(:,3)   = {'rotate_angle',     0};
     
-    module_option(:,3)   = {'RefInput',         1};
-    module_option(:,4)   = {'InputToReshape',   1};
-    module_option(:,5)   = {'Table_in',         table()};
-    module_option(:,6)   = {'Table_out',        table()};
-    module_option(:,7)   = {'OutputSequenceName','Extension'};
+    module_option(:,4)   = {'RefInput',         1};
+    module_option(:,5)   = {'InputToReshape',   1};
+    module_option(:,6)   = {'Table_in',         table()};
+    module_option(:,7)   = {'Table_out',        table()};
+    module_option(:,8)   = {'OutputSequenceName','Extension'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -47,6 +48,8 @@ if isempty(opt)
         {'Select all ROIs to extract separeted by '','' character (no space)'}};
     user_parameter(:,6)   = {'   .Ouput extension','char','','output_extension','', '',...
         {'Give the output extension'}};
+    user_parameter(:,7)   = {'   .Rotation angle','char','','rotate_angle','', '',...
+        {'Give the rotation angle if needed'}};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -86,7 +89,10 @@ end
 label_map   = niftiread(files_in.In1{1});
 label_list	= unique(label_map(:));
 label_list  = label_list(label_list ~= 0);
-    
+
+% Is needed, rotate label map
+%label_map = imrotate3(label_map,opt.rotate_angle,[0 0 1]);
+
 % Extract parameters
 nb_maps     = length(files_in.In2);
 nb_rois     = length(label_list);
@@ -137,7 +143,10 @@ for map = 1:nb_maps
     end
 end
 
-save([char(opt.Table_in.Path(1)) filesep char(opt.Table_in.Patient(1)) '_' ...
+folder = [fileparts(opt.folder_out) filesep 'Reports'];
+if ~exist(folder,'dir'), mkdir(folder); end
+    
+save([folder filesep char(opt.Table_in.Patient(1)) '_' ...
       char(opt.Table_in.Tp(1)) opt.output_extension '.mat'], 'Report')
 
 
