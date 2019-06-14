@@ -91,7 +91,7 @@ label_list	= unique(label_map(:));
 label_list  = label_list(label_list ~= 0);
 
 % Is needed, rotate label map
-%label_map = imrotate3(label_map,opt.rotate_angle,[0 0 1]);
+label_map = imrotate3(label_map,opt.rotate_angle,[0 0 1]);
 
 % Extract parameters
 nb_maps     = length(files_in.In2);
