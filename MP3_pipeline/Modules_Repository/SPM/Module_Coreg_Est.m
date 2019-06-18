@@ -14,7 +14,7 @@ if isempty(opt)
     module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
     module_option(:,4)   = {'OutputSequenceName','Prefix'};
     module_option(:,5)   = {'Function','nmi'};
-    module_option(:,6)   = {'Separation','4 2'};
+    module_option(:,6)   = {'Separation','4 2 1 0.5 0.1'};
     module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
     module_option(:,8)   = {'Hist_Smooth','7 7'};
     module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
