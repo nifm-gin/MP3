@@ -2968,7 +2968,7 @@ if ~isempty(get(handles.MP3_plot1, 'Children'))
 end
 
 %coordonates = handles.data_ploted.coordonates;
-ROI_binary = handles.data_loaded.ROI.nii;
+ROI_binary = double(handles.data_loaded.ROI.nii);
 ROI_binary(abs(ROI_binary)>0) = true;
 
 % create a matrice which contains the coordonates (x,y,z) of each voxel)
