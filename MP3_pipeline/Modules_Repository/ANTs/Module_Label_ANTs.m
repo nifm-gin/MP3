@@ -10,8 +10,8 @@ if isempty(opt)
 	% --> module_option(1,:) = field names
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'rois', ''};
-    module_option(:,2)   = {'output_extension', '_labels'};
-    module_option(:,3)   = {'resume', 'Yes'};
+    module_option(:,2)   = {'output_extension', '_report'};
+    module_option(:,3)   = {'rotate_angle',     0};
     
     module_option(:,4)   = {'RefInput',         1};
     module_option(:,5)   = {'InputToReshape',   1};
@@ -48,8 +48,8 @@ if isempty(opt)
         {'Select all ROIs to extract separeted by '','' character (no space)'}};
     user_parameter(:,6)   = {'   .Ouput extension','char','','output_extension','', '',...
         {'Give the output extension'}};
-    user_parameter(:,7)   = {'   .Resume data','cell',{'Yes', 'No'},'resume','', '',...
-        {''}};
+    user_parameter(:,7)   = {'   .Rotation angle','char','','rotate_angle','', '',...
+        {'Give the rotation angle if needed'}};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -64,27 +64,6 @@ if isempty(opt)
     
 end
 %%%%%%%%
-
-
-if isempty(files_out)
-    
-    tmp_Table_out = opt.Table_in(1,:);
-    tmp_Table_out.IsRaw = categorical(0);   
-    tmp_Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
-    if strcmp(opt.OutputSequenceName, 'AllName')
-        tmp_Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext_atlas));
-    elseif strcmp(opt.OutputSequenceName, 'Extension')
-        tmp_Table_out.SequenceName = categorical(cellstr([char(opt.Table_in(1,:).SequenceName), opt.output_extension]));
-    end
-    tmp_Table_out.Filename = categorical(cellstr([char(opt.Table_in(1,:).Patient), '_', char(opt.Table_in(1,:).Tp), '_', char(tmp_Table_out.SequenceName)]));
-    tmp_Table_out.Type = categorical(cellstr('Cluster'));
-    opt.Table_out = tmp_Table_out;
-        
-    files_out.In1{1} = [char(tmp_Table_out.Path), char(opt.Table_in.Patient(1)), '_', char(opt.Table_in.Tp(1)), '_', char(tmp_Table_out.SequenceName), '.nii'];
-
-end
-
-
 
 
 %% Syntax
@@ -106,98 +85,68 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-nb_maps = length(files_in.In2);
+% Load label map
+label_map   = niftiread(files_in.In1{1});
+label_list	= unique(label_map(:));
+label_list  = label_list(label_list ~= 0);
 
+% Is needed, rotate label map
+label_map = imrotate3(label_map,opt.rotate_angle,[0 0 1]);
 
-% Create label maps
-if strcmp(opt.resume,'No')
+% Extract parameters
+nb_maps     = length(files_in.In2);
+nb_rois     = length(label_list);
+
+% Create and init struct
+Report    	= struct();
+%metadata
+Report.name	= string(opt.Table_in.Patient(1));
+Report.time	= string(opt.Table_in.Tp(1));
+Report.model = string(opt.Table_in.Group(1));
+Report.group = string();
+%data
+Report.data.labels{1} = string(opt.Table_in.SequenceName(2:end));
+Report.data.labels{2} = string(label_list);
+Report.data.labels{3} = {'Mean','Std','Skewness','Kurtosis',...
+                       'Median','25thPercentile','75thPercentile',...
+                       'Density'};
+Report.data.values = nan(length(Report.data.labels{1}),...%Maps
+                         length(Report.data.labels{2}),...%ROIs
+                         length(Report.data.labels{3}));  %Summ
+                   
+                   
+% Complete data values
+for map = 1:nb_maps
     
-    label_map = niftiread(files_in.In1{1});
-    if isempty(opt.rois)
-        labels = unique(label_map(:));
-    else
-        labels = split(opt.rois, ',');
-    end
-
-    new_label_map = nan(size(label_map));
-    for l = 1:length(labels)
-        new_label_map(label_map == str2double(labels{l})) = 1;
-    end
-
-
-    for nn = 1:nb_maps
-
-        complete_map = niftiread(files_in.In2{nn});
-        complete_map = imresize3(complete_map, size(label_map)); %TODO
-
-        labelized_map = complete_map .* new_label_map;
-
-
-        % save nifti file
-        % update the header before saving the new .nii
-        info = niftiinfo(files_in.In2{nn});
-        info.Filename       = files_out.In1{1};
-        info.Filemoddate    = char(datetime('now'));
-        info.ImageSize      = size(labelized_map);
-        info.PixelDimensions = info.PixelDimensions(1:length(size(labelized_map)));
-
-        niftiwrite(labelized_map, files_out.In1{nn}, info);
-
-
-        % Json processing
-        [path, name, ~] = fileparts(files_in.In1{1});
-        jsonfile = [path, '/', name, '.json'];
-
-        J = ReadJson(jsonfile);
-        J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
-        [path, name, ~] = fileparts(files_out.In1{nn});
-        jsonfile = [path, '/', name, '.json'];
-        WriteJson(J, jsonfile)    
-    end
-
-    
-%Create a full structure to resume data
-elseif strcmp(opt.resume,'Yes')
-    
-    Resume = struct();
-    
-    label_map = niftiread(files_in.In1{1});
-    Label   = unique(label_map(:));
-    
-    for nn = 1:nb_maps
-        if exist(files_in.In2{nn},'file')
-            complete_map = niftiread(files_in.In2{nn});
-            complete_map = imresize3(complete_map, size(label_map)); %TODO
-
-            for l = 1:length(Label)
-                h       = reshape(complete_map(label_map == Label(l)), 1,[]);
-                Mean(l,1) = nanmean(h);
-                Variance(l,1) = nanvar(h);
-                Number(l,1) = length(h);
-                Hist{l} = h;
-            end
-
-            name = char(opt.Table_in(nn+1,:).SequenceName);
-            eval(['Resume.' name ' = table(Label, Mean, Variance, Number);']);
-            eval(['Complete.' name ' = Hist;']);
-        else
-            for l = 1:length(Label)
-                Mean(l,1) = nan;
-                Variance(l,1) = nan;
-                Number(l,1) = nan;
-                Hist{l} = nan;
-            end
+    if exist(files_in.In2{map},'file')
+        
+        % Load map
+        complete_map = niftiread(files_in.In2{map});
+        %TODO: improve this rescale
+        complete_map = imresize3(complete_map, size(label_map)); 
+                
+        for lab = 1:nb_rois
             
-            eval(['Resume.' name ' = table(Label, Mean, Variance, Number);']);
-            eval(['Complete.' name ' = Hist;']);
+            % Hist
+            h   = complete_map(label_map == label_list(lab));
+            
+            % Resume
+            Report.data.values(map,lab,1)   = nanmean(h);
+            Report.data.values(map,lab,2)   = nanstd(h);
+            Report.data.values(map,lab,3)   = skewness(h);
+            Report.data.values(map,lab,4)   = kurtosis(h);
+            Report.data.values(map,lab,5)   = nanmedian(h);
+            Report.data.values(map,lab,6)   = prctile(h,25);
+            Report.data.values(map,lab,7)   = prctile(h,75);
+            Report.data.values(map,lab,8)   = sum(~isnan(h));
         end
     end
-    
-    niftiwrite([], files_out.In1{1});
-    [path,filename] = fileparts(files_out.In1{1});
-    save([path filesep filename '.mat'], 'Resume', 'Complete')
 end
 
+folder = [fileparts(opt.folder_out) filesep 'Reports'];
+if ~exist(folder,'dir'), mkdir(folder); end
+    
+save([folder filesep char(opt.Table_in.Patient(1)) '_' ...
+      char(opt.Table_in.Tp(1)) opt.output_extension '.mat'], 'Report')
 
 

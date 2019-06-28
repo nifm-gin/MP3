@@ -326,7 +326,7 @@ else
         end
 
         
-        SO2map = BVf_map;
+        SO2map = BVf;
         if length(find(temp_slice_nbr == size(R2Prim,3))) ~= numel(temp_slice_nbr)
             for i = 1:size(R2Prim, 3)
                 for j = 1:size(BVf, 3)

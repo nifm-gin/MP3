@@ -119,6 +119,7 @@ I = niftiread(files_in.In1{1});
 voxel_volume = prod(nifti_info.raw.pixdim(2:4));
 voxel_surface = prod(nifti_info.raw.pixdim(2:3));
 
+I(I(:) < 0) = nan; % PCNN3D does not support negative values
 
 maxiter = 200;
 OptMask = 0;
