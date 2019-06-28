@@ -1026,7 +1026,7 @@ function MP3_load_axes_Callback(hObject, eventdata, handles)
 % by default this slider is hidded
 set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') || isempty(handles.database)
     return
 end
 % MP3 cannot load scan(s) if multiple patients are selected
@@ -4777,17 +4777,19 @@ for i=1:size(database_to_import,1)
     switch char(database_to_import.Type(i))
         case 'Scan'
             if char(database_to_import.IsRaw(i)) == '1'
+                infolder = [dir, filesep, 'Raw_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Raw_data_path;
                 
             else
+                infolder = [dir, filesep, 'Derived_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
             end
             % Copy nifti file 
             extension = '.nii.gz';
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
-                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+                filename = [infolder, char(database_to_import.Filename(i)), extension];
             end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
@@ -4826,11 +4828,12 @@ for i=1:size(database_to_import,1)
             
         case {'ROI', 'Cluster'}
             extension = '.nii.gz';
+            infolder = [dir, filesep, 'ROI_data', filesep];
             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
-                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+                filename = [infolder, char(database_to_import.Filename(i)), extension];
             end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
             original_filename = char(database_to_import.Filename(i));
