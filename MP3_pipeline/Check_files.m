@@ -28,7 +28,7 @@ for i=1:length(Fields)
         [~,~,ext_nii] = fileparts(file);
         if ~strcmp(ext_nii, '.nii')
             Status = 0;
-            Message = 'Files need to be .nii';
+            Message = 'Files need to be .nii or .nii.gz';
             Wrong_File = file;
             return
         end

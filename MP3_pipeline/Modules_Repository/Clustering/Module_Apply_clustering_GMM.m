@@ -198,9 +198,11 @@ for i=1:length(roi_files)
         Name_TP = opt.Table_in.Tp(opt.Table_in.Filename == categorical(cellstr(sname)));
         Name_Group = opt.Table_in.Group(opt.Table_in.Filename == categorical(cellstr(sname)));
         nifti_header = spm_vol(Files{j});
-        ROI_NaN = ROI{i};
+        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial');
+        % the ROI needs to have the same class as the data
+        ROI_NaN = cast(ROI{i}, class(input{j}));
         ROI_NaN(ROI_NaN == 0) = NaN;
-        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
+        input{j} = input{j}.*ROI_NaN;
         %% merge the 4th and the 5th dimension (mean data)
         %         Vec = mean(input{j},4);
         %         NameScans = [NameScans, {char(Name_Scan)}];

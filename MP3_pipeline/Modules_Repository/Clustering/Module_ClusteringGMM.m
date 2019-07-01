@@ -295,9 +295,10 @@ for i=1:length(roi_files)
         Name_TP = opt.Table_in.Tp(opt.Table_in.Filename == categorical(cellstr(sname)));
         Name_Group = opt.Table_in.Group(opt.Table_in.Filename == categorical(cellstr(sname)));
         nifti_header = spm_vol(Files{j});
-        ROI_NaN = ROI{i};
+        In = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial');
+        ROI_NaN = cast(ROI{i}, class(In));
         ROI_NaN(ROI_NaN == 0) = NaN;
-        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
+        input{j} = In.*ROI_NaN;
         %% merge the 4th and the 5th dimension (mean data)
 %         Vec = mean(input{j},4);
 %         NameScans = [NameScans, {char(Name_Scan)}];
@@ -595,8 +596,9 @@ for i=1:length(All_Data_Clean)
     ROI_cluster_header = ROI_nifti_header_Clean{i};
     % On a fait le même traitement sur les files_out (tout début du code) que sur l'ouverture des ROI. Il y a donc tout à penser que l'ordre des fichiers correspondra.
     ROI_cluster_header.fname = files_out.In1{i}; 
-    %ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
-    ROI_cluster_header.pinfo = [1 0];
+   % ROI_cluster_header.dim = [256,256,1];
+    ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
+    %ROI_cluster_header.pinfo = [1 0 0];
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
     Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');

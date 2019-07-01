@@ -78,6 +78,14 @@ dictionaryMRI:
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  B-values effective:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_DwEffBval=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: Diffusion}
+                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
 
   BandWidth:
                   description: {info: ""}
@@ -135,6 +143,22 @@ dictionaryMRI:
 
                   viewer: {category: Dimensions}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Diffusion Ao Images number:
+                  description: {info: ""}
+                    
+                  whereBruker:  {file: method, keyName: $PVM_DwAoImages=, type: int, format: ~, units: ~}
+
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                  
+  Direction Diffusion:
+                  description: {info: ""}
+                    
+                  whereBruker:  {file: method, keyName: $PVM_DwDir=, type: int, format: ~, units: ~}
+
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: DirectionDiffusion, type: int, format: ~, units: ~}
 
   Echo Time:
                   description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}

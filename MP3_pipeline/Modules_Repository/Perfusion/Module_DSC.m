@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_Susceptibility(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_DSC(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -37,16 +37,30 @@ if isempty(opt)
          % --> user_parameter(6,:) = IsInputMandatoryOrOptional : If none, the input is set as Optional. 
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
-    user_parameter(:,1)   = {'Select one PERF scan as input','1Scan','','',{'SequenceName'},'Mandatory',''};
+    user_parameter(:,1)   = {'Select one Dynamic Susceptibility Contrast (DSC) scan as input','1Scan','','',{'SequenceName'},'Mandatory',''};
     user_parameter(:,2)   = {'Parameters','','','','','',''};
-    user_parameter(:,3)   = {'   .Remove background','cell',{'No','Yes'},'RemoveBackground','','','Remove the background of the perf image before comlputation. Method by Jean-Albert Lotterie (CHU Toulouse)'};
+    user_parameter(:,3)   = {'   .Remove background','cell',{'No','Yes'},'RemoveBackground','','',{'Remove the background of the perf image before computation. Method by Jean-Albert Lotterie (CHU Toulouse):', newline, ...
+        'The following algorithm works on the mean volume of the 4D-input. It works as follow: ', char(13), ...
+        ' - Define the 8 voxels at the 8 corners of the volume as the zone 1 (the background).', ...
+        ' - -Define the others voxels as the zone 2.', ...
+        ' - Define m1 and m2 the means of those 2 zones.', ...
+        ' - Compute m the arithmetic mean of m1 and m2.', ...
+        ' - Iterative loop: ', ...
+        '     - Define the voxels with a signal intensity lower than m as the new zone 1, with a mean m1.', ...
+        '     - The other voxels define the zone 2, with the mean m2.', ...
+        'The loop stops when floor(m), where m is still the arithmetic mean of m1 and m2, is stable.', ...
+        'All the values of the zone 1 voxels are then set to NaN for each volume of the 4D-input.', ...
+        }};
     user_parameter(:,4)   = {'   .Realign 4th dimension','cell',{'No','Yes'},'Realign','','',''};
-    user_parameter(:,5)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','','',''};
-    user_parameter(:,6)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','','',''};
-    user_parameter(:,7)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','','',''};
-    user_parameter(:,8)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','','',''};
-    user_parameter(:,9)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
-    user_parameter(:,10)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','','',''};
+    user_parameter(:,5)   = {'   .Select 1 ROI for the AIF (if empty, the AIF will be autoamtically defined)','1ROI','','',{'SequenceName'}, 'Optional',...
+        {'By deflaut, the Arterial Input function (AIF) is automatically determined.'
+        'User can manually select one Region-of-interest (ROI). This ROI will be used as AIF'}};
+    user_parameter(:,6)   = {'   .Output filename extension CBV','char','CBV','output_filename_ext_CBV','','',''};
+    user_parameter(:,7)   = {'   .Output filename extension CBF','char', 'CBF','output_filename_ext_CBF','','',''};
+    user_parameter(:,8)   = {'   .Output filename extension MTT','char','MTT','output_filename_ext_MTT','','',''};
+    user_parameter(:,9)   = {'   .Output filename extension TMAX','char','TMAX','output_filename_ext_TMAX','','',''};
+    user_parameter(:,10)   = {'   .Output filename extension TTP','char','TTP','output_filename_ext_TTP','','',''};
+    user_parameter(:,11)   = {'   .Output filename extension T0','char','T0','output_filename_ext_T0','','',''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
 %     
@@ -63,12 +77,9 @@ end
 
 opt.NameOutFiles = {opt.output_filename_ext_CBV, opt.output_filename_ext_CBF, opt.output_filename_ext_MTT, opt.output_filename_ext_TMAX, opt.output_filename_ext_TTP, opt.output_filename_ext_T0};
 
-
-
-
 if isempty(files_out)
     for i=1:length(opt.NameOutFiles)
-        table_out_tmp = opt.Table_in;
+        table_out_tmp = opt.Table_in(opt.Table_in.Type == 'Scan',:);
         table_out_tmp.IsRaw = categorical(0);
         table_out_tmp.Path = categorical(cellstr([opt.folder_out, filesep]));
         if strcmp(opt.OutputSequenceName, 'AllName')
@@ -85,25 +96,10 @@ end
 
 
 
-
-
-
-
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
     error('Module_Susceptibility:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
-
-
-% [path_nii,name_nii,ext_nii] = fileparts(char(files_in.In1{1}));
-% if ~strcmp(ext_nii, '.nii')
-%      error('First file need to be a .nii, not a %s. Path : %s, Name : %s, opt.files_in : %s', ext_nii, path_nii, ext_nii, files_in);  
-% end
-% 
-% %% Building default output names
-% if strcmp(opt.folder_out,'') % if the output folder is left empty, use the same folder as the input
-%     opt.folder_out = path_nii;    
-% end
 
 
 %% If the test flag is true, stop here !
@@ -121,26 +117,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-N = niftiread(files_in.In1{1});
+nifti_header_data = spm_vol(files_in.In1{1});
+N = read_volume(nifti_header_data, nifti_header_data, 0);
 if size(N,4) == 1
    error([files_in.In1{1} ' is not a 4d image']);
     %return
 end
+% data have to be converted to double before computing the perfusion map
+if isa(class(N), 'double') ==0
+    origin_class =  class(N);
+    N = double(N);
+end
 
-N = double(N);
-info = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
-jsonfile = [path, '/', name, '.json'];
-
-J = ReadJson(jsonfile);
-
-
-
-
-%% Realign
-
-
+%% Realign if needed
 if strcmp(opt.Realign, 'Yes')
     data_4d = squeeze(N);
     
@@ -158,8 +147,8 @@ if strcmp(opt.Realign, 'Yes')
     keepscans = setdiff(allscans,ignorescans);
 
     [~, file, ~] = fileparts(files_in.In1{1});
-    TmpFile = [opt.folder_out, '/TMP_FILE_Module_Susceptibility', file,'.nii'];
-    OutTmpFile = [opt.folder_out, '/rTMP_FILE_Module_Susceptibility', file, '.nii'];
+    TmpFile = [opt.folder_out, filesep, 'TMP_FILE_Module_DSC_', file,'.nii'];
+    OutTmpFile = [opt.folder_out, filesep, 'rTMP_FILE_Module_DSC_', file, '.nii'];
     copyfile(files_in.In1{1},  TmpFile);
     
     Scan_to_realign_nii_filename = cell(length(keepscans), 1);
@@ -187,17 +176,22 @@ if strcmp(opt.Realign, 'Yes')
     spm('defaults', 'FMRI');
     spm_jobman('run', jobs, inputs{:});
     clear matlabbatch 
-     
-    N2 = niftiread(OutTmpFile);
+    
+    N2_header = spm_vol(OutTmpFile);
+    N2 = read_volume(N2_header, N2_header, 0);
+    
     N3 = N;
     N3(:,:,:,keepscans) = N2(:,:,:,keepscans);
+    % the matrix of the DSC is updated using the resut of the realign
     N = N3;
+    % replace NaN by 0, otherwise the option RemoveBackground crashes
+    N(isnan(N)) = 0;
+    % then every data created by SPM are deleted
     delete(TmpFile);
     delete(OutTmpFile);
     delete(strrep(TmpFile, '.nii', '.mat'))
-    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_Susceptibility', file, '.nii'], ['meanTMP_FILE_Module_Susceptibility', file, '.nii']))
-    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_Susceptibility', file, '.nii'], ['rp_TMP_FILE_Module_Susceptibility', file, '.txt']))
-
+    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_DSC_', file, '.nii'], ['meanTMP_FILE_Module_DSC_', file, '.nii']))
+    delete(strrep(OutTmpFile, ['rTMP_FILE_Module_DSC_', file, '.nii'], ['rp_TMP_FILE_Module_DSC_', file, '.txt']))
 end
 
 
@@ -260,16 +254,33 @@ end
 
 
 
-%% Processing
-meansignal = mean(squeeze(N),4);
-volume_mask = meansignal>max(N(:))*0.01;
-[aif,scores] = extraction_aif_volume(squeeze(N),volume_mask);
+%% defin the Arterial input function.
+% could be manual using a ROI or automatique
+if isfield(files_in, 'In2')
+    nifti_header_ROI = spm_vol(files_in.In2{1});
+    ROI = read_volume(nifti_header_ROI, nifti_header_data, 0);
+    ROI = double(ROI);
+    aif = N.*repmat(ROI, [1 1 1 size(N, 4)]);
+    aif(aif == 0)=nan;
+    aif = squeeze(nanmean(nanmean(nanmean(aif))))';
+else
+    meansignal = mean(squeeze(N),4);
+    volume_mask = meansignal>max(N(:))*0.01;
+    [aif,scores] = extraction_aif_volume(squeeze(N),volume_mask);
+end
 
-if sum(cell2num(scores(:,5))) > 10
+if exist('scores', 'var') &&  sum(cell2num(scores(:,5))) > 10
     error('No computation because the AIF is not good enough');
 else
-    [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime.value(1)*10^(-3),J.EchoTime.value*10^(-3));
-    %maps = {'CBV','CBF','MTT','TMAX','TTP','T0'};
+    [path, name, ext] = fileparts(files_in.In1{1});
+    jsonfile = [path, '/', name, '.json'];
+    J = ReadJson(jsonfile);
+    % We are now using the information about the unit of the repetition
+    % time and the echo time in order to automatically convert it to second
+        [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),...
+            J.RepetitionTime.value(1) * convert_units(J.RepetitionTime.units, 'sec'),J.EchoTime.value* convert_units(J.RepetitionTime.units, 'sec'));
+      % the conversions were hard coded before
+%     [~,~,~,TMAX,TTP,T0, CBV,CBF,MTT,~,~,~,~] = deconvolution_perfusion_gui(aif,squeeze(N),J.RepetitionTime.value(1)*10^(-3),J.EchoTime.value*10^(-3));
     if strcmp(opt.RemoveBackground, 'Yes')
         CBV(ExcluededVoxels) = NaN;
         CBF(ExcluededVoxels) = NaN;
@@ -283,23 +294,34 @@ else
 end
 
 
-
+  
+  
 %% Reshape to the input scan size
 %FilteredImages = reshape(FilteredImages, Size);
 
 
+info = niftiinfo(files_in.In1{1});
+
+
 for i=1:length(mapsVar)
-    info2 = info;
+  
+    
+    % reorient the scan
+    mapsVar_reoriented{i} = write_volume(mapsVar{i}, nifti_header_data, 0);
+    
+    % update the header
+     info2 = info;
     info2.Filename = files_out.In1{i};
     info2.Filemoddate = char(datetime('now'));
-    info2.Datatype = class(mapsVar{i});
+    info2.Datatype = class(mapsVar_reoriented{i});
     info2.PixelDimensions = info.PixelDimensions(1:length(size(mapsVar{i})));
-    info2.ImageSize = size(mapsVar{i});
+    info2.ImageSize = size(mapsVar_reoriented{i});
     info2.MultiplicativeScaling = 1;
     %info2.Description = [info.Description, 'Modified by Susceptibility Module'];
-    niftiwrite(mapsVar{i}, files_out.In1{i}, info2)
     
-
+    niftiwrite(mapsVar_reoriented{i}, files_out.In1{i}, info2)
+    
+    % update and save the json 
     J2 = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
     [path, name, ~] = fileparts(files_out.In1{i});

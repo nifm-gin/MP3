@@ -43,7 +43,7 @@ if isempty(opt)
     'WARNING: if you so far you cannot change the order of the action. Therefore if Erode = 1 and Dilate = 2, the module will execute first and erosion of 1 voxel and then a dilation of 2 voxels'
     '         If you want to do all way round, you have to add 2 times the module. First module the Erode = 0 and Dilate = 2 and then a second module with Erode = 1 and Dilate = 0'
     }'};
-    user_parameter(:,2)   = {'Select one scan as input','1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select one ROI as input','1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
     user_parameter(:,4)   = {'   .Output filename extension','char','_Extension','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Erode (in voxel)','numeric',0,'Erode','', '','Erode: the ROI will be eroded from X voxels'};

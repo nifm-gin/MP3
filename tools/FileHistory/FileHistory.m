@@ -220,6 +220,18 @@ function [hObject, handles] = UpdateJobsValuesList(hObject, handles)
         NewEntrie = [];
         for i=1:length(Entrie)
             EntrieSpl = split(Entrie{i}, filesep);
+            % if the json file was created using another OS that the one
+            % used to disply the fileHistory information, split may not work 
+            % (because of the mismatch in the filesep ('/' vs '\'). In that
+            % case, there is no way than executing the folling loop
+            if strcmp(EntrieSpl, Entrie{i})
+                if strcmp(filesep, '/')
+                    EntrieSpl = split(Entrie{i}, '\');
+                else
+                    EntrieSpl = split(Entrie{i}, '/');
+                end
+                
+            end
             name = strjoin(EntrieSpl(end-1:end), filesep);
             %[~,name,~] = fileparts(Entrie{i});
             NewEntrie = [NewEntrie; {name}];
