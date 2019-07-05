@@ -95,8 +95,8 @@ for x = 1:numel(Patient_listing)
         sub_databaseScan = sub_database(sub_database.Type == categorical(cellstr('Scan')),:);
         % figure out which scan is the scan of reference and which scan(s)
         % corresponds to the other scan(s)
-        sub_databaseScanofRef = sub_database(sub_databaseScan.SequenceName == scan_of_ref,:);
-        sub_databaseOtherScan = sub_database(sub_databaseScan.SequenceName ~= scan_of_ref,:);
+        sub_databaseScanofRef = sub_databaseScan(sub_databaseScan.SequenceName == scan_of_ref,:);
+        sub_databaseOtherScan = sub_databaseScan(sub_databaseScan.SequenceName ~= scan_of_ref,:);
         
         sub_databaseROI = sub_database(sub_database.Type == categorical(cellstr('ROI')),:);
         if ~isempty(sub_databaseScanofRef)
@@ -196,7 +196,8 @@ for x = 1:numel(Patient_listing)
                 end
                 %calcuate the ROI volume
                 ROI_info = niftiinfo([char(sub_databaseROI.Path(i)) char(sub_databaseROI.Filename(i)) '.nii']);
-                voxel_volume = prod(ROI_info.raw.pixdim(2:4));
+                voxel_volume = abs(prod(diag(scan_of_reference.header.mat(1:3,1:3))));
+                %voxel_volume = prod(ROI_info.raw.pixdim(2:4));
                 current_cvs_table.ROI_volume_mm3 = sum(ROI.data(:))*voxel_volume;
                 current_cvs_table(:,7:end) = num2cell(computed_values);
                 % concatanate the current_cvs_table into one big table
