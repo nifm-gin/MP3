@@ -2116,8 +2116,12 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
                 VOI_data(:,2) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
                 
-                % keep only voxel which has x and y values
-                VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
+%                 % keep only voxel which has x and y values
+%                 VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
+
+                 VOI_data((VOI_data(:,1)) == 0,1) = NaN;
+                 VOI_data((VOI_data(:,2)) == 0,2) = NaN;
+                
                 
                 scatter(handles.MP3_plot1, VOI_data(:,1), VOI_data(:,2), 'filled',...
                     'SizeData', 20,...
