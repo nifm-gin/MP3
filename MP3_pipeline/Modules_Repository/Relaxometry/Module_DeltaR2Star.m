@@ -36,6 +36,7 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '',...
         {'Description of the module : this module compute a deltaR2* map from two T2* maps acquired before and after a UPSIO injection',...
+        'Output map in ms-1', ...
         'If you use this function, please refere to this article : Tropes et al. MRM 2015'}};
     user_parameter(:,2)   = {'Select the T2_star_Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the T2_star_Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -193,6 +194,12 @@ J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'o
 [path, name, ~] = fileparts(files_out.In1{1});
 jsonfile = [path, '/', name, '.json'];
 WriteJson(J, jsonfile)
+
+
+
+% 
+
+
 
 
 % 
