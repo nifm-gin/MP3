@@ -330,8 +330,12 @@ for l = 1:size(localTable, 1)
     fprintf(htmlFid, '<tr>\n');
     fprintf(htmlFid, ['<td class="myLabel"> <p class="rotate">' localTable.Properties.RowNames{l} '</p> </td>\n']);
     for i = 1:size(localTable, 2)
-        fprintf(htmlFid, strcat('<td> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
-            '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);"/> </td>\n'));
+        if ~ismissing(localTable(l,i).Variables)
+            fprintf(htmlFid, strcat('<td> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
+                '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);"/> </td>\n'));
+        else
+            fprintf(htmlFid, strcat('<td> </td>\n'));
+        end
     end
     fprintf(htmlFid, '</tr>\n');
 end
