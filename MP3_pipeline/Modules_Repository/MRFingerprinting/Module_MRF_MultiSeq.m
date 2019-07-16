@@ -4,6 +4,7 @@ function [files_in,files_out,opt] = Module_MRF_MultiSeq(files_in,files_out,opt)
 %% Initialization and syntax checks %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% Initialize the module's parameters with default values 
+
 if isempty(opt)
 
 	%   % define every option needed to run this module
@@ -11,22 +12,23 @@ if isempty(opt)
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'dictionary_folder_filename',  'Dictionary Folder'};
     module_option(:,2)   = {'combUsed', 'Post/Pre'};
-    module_option(:,3)   = {'applyNorm', 'Yes'};   
-    module_option(:,4)   = {'prefix',           'MRF_'};
-    module_option(:,5)   = {'method',           'ClassicMRF'};
-    module_option(:,6)   = {'filtered',         'No'};
+    module_option(:,3)   = {'indivNorm', 'Yes'};
+    module_option(:,4)   = {'finalNorm', 'Yes'};
+    module_option(:,5)   = {'prefix',           'MRF_'};
+    module_option(:,6)   = {'method',           'ClassicMRF'};
+    module_option(:,7)   = {'filtered',         'No'};
     
-    module_option(:,7)   = {'RefInput',         1};
-    module_option(:,8)   = {'InputToReshape',   1};
-    module_option(:,9)   = {'Table_in',         table()};
-    module_option(:,10)   = {'Table_out',        table()};
-    module_option(:,11)   = {'folder',           table()};
-    module_option(:,12)  = {'OutputSequenceName','AllName'};
-    module_option(:,13)  = {'Params',           'Vf'};
-    module_option(:,14)  = {'K',                50};
-    module_option(:,15)  = {'Lw',               0};
-    module_option(:,16)  = {'cstrS',            'd'};
-    module_option(:,17)  = {'cstrG',            'd'};
+    module_option(:,8)   = {'RefInput',         1};
+    module_option(:,9)   = {'InputToReshape',   1};
+    module_option(:,10)   = {'Table_in',         table()};
+    module_option(:,11)   = {'Table_out',        table()};
+    module_option(:,12)   = {'folder',           table()};
+    module_option(:,13)  = {'OutputSequenceName','AllName'};
+    module_option(:,14)  = {'Params',           'Vf'};
+    module_option(:,15)  = {'K',                50};
+    module_option(:,16)  = {'Lw',               0};
+    module_option(:,17)  = {'cstrS',            'd'};
+    module_option(:,18)  = {'cstrG',            'd'};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -46,70 +48,74 @@ if isempty(opt)
         'The regression method is based on the paper : Boux, Fabien, et al. [work in progress]'
         ''
         'Prerequisite:'
-        '      - Put your ''PRE_*.json'' and ''POST_*'' dictionary files (pre and post simulated scans) in the ''data/dictionaries'' folder'
+        '      - Put your dictionary files (pre and post simulated scans and/or MSME) in the ''data/dictionaries'' folder'
         '      - (or) Put your ''DICO.mat'' dictionary file ratio between the post and pre simulated scans in the ''data/dictionaries'' folder'
         '      - (or performing the regression method) Put your ''MODEL.mat'' model file'
         ''
         'The dictionaries are designed with the Mrvox simulation tool'
         }'};
     
-    user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, '',''};
+    user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, '',''};
     user_parameter(:,4)   = {'Select the MSME scan','1Scan','','',{'SequenceName'}, '',''};
     user_parameter(:,5)   = {'Select the sequence combination to use', 'cell', {'Post/Pre','Pre-Post','MSME-Post/Pre','MSME-Pre-Post'}, 'combUsed', '','Mandatory', 'Combination of signals to use'};
-    user_parameter(:,6)   = {'Normalize signals', 'cell', {'Yes', 'No'}, 'applyNorm', '','Optional', 'Do you want to normalize the signals before MRF?'};
+    user_parameter(:,6)   = {'Normalize each signals', 'cell', {'Yes', 'No'}, 'indivNorm', '','Optional', 'Do you want to normalize (N2) each signal before concatenation? NB: MGEFIDSE are not normalized in case of Ratio'};
+    user_parameter(:,7)   = {'Normalize final signal', 'cell', {'Yes', 'No'}, 'finalNorm', '','Optional', 'Do you want to normalize (N2) the final concatenation before MRF?'};
     
     s               = split(mfilename('fullpath'),'MP3_pipeline',1);
     folder_files	= dir(fullfile(s{1}, 'data/dictionaries/'));
     folder_files    = folder_files([folder_files.isdir]);
     opt.Module_settings.folder = fullfile(s{1}, 'data/dictionaries/');
     if isempty(folder_files), folder_files(1).name = ' '; end
-    user_parameter(:,7)   = {'   .Dictionary folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
+    user_parameter(:,8)   = {'   .Dictionary folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
         {'Select the folder containing dico files (.json), ratio dico file (.mat) and/or model file (.mat)'}};
     
-    user_parameter(:,8)   = {'   .Prefix','char', '', 'prefix', '', '',...
+    user_parameter(:,9)   = {'   .Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix for your output maps'}};
-    user_parameter(:,16)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+    user_parameter(:,17)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
-    user_parameter(:,9)   = {'   .Parameters','check', ...
+    user_parameter(:,10)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
         {'Select the parameters considered in the model (default ''Vf'')'
         }'};
-    user_parameter(:,10)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
+    user_parameter(:,11)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
         { 'Choose:'
         '	- ''ClassicMRF'' to use the Dan Ma method'
         '	- ''RegressionMRF'' to use the regression method'
         }'};
-    user_parameter(:,11)   = {'   .Model settings (if the regression method is chosen)','Text','','','','',...
+    user_parameter(:,12)   = {'   .Model settings (if the regression method is chosen)','Text','','','','',...
         {'Recommanded:'
         'K = 50'
         'Lw = 0'
         'cstr = ''d''.'
         }'};
-    user_parameter(:,12)   = {'       .Number of regions','numeric','','K','','',...
+    user_parameter(:,13)   = {'       .Number of regions','numeric','','K','','',...
         {'Recommanded: K = 50'
         'If K is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
         }'};
-    user_parameter(:,13)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
+    user_parameter(:,14)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
         {'Recommanded: Kw = 0'
         'If Lw is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
         }'};
-    user_parameter(:,14)  = {'       .Model constraint on Sigma','cell',{'i*','i','d*','d',' '},'cstrS','','',...
+    user_parameter(:,15)  = {'       .Model constraint on Sigma','cell',{'i*','i','d*','d',' '},'cstrS','','',...
         {'''d'' = diagonal'
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
-    user_parameter(:,15)  = {'       .Model constraint on Gamma','cell',{'i*','i','d*','d',' '},'cstrG','','',...
+    user_parameter(:,16)  = {'       .Model constraint on Gamma','cell',{'i*','i','d*','d',' '},'cstrG','','',...
         {'''d'' = diagonal'
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
+    %user_parameter(:,17)   = {'Select the scans to use for dico reduction','XScan','','',{'SequenceName'}, '',''};
+    %user_parameter(:,18)   = {'Select the parameter(s) to pre-'}
+
+    
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
     %%
-    
     % So for no input file is selected and therefore no output
     % The output file will be generated automatically when the input file
     % will be selected by the user
@@ -119,7 +125,6 @@ if isempty(opt)
     
 end
 %%%%%%%%
-
 
 if isempty(files_out)
     
@@ -157,7 +162,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Smoothing:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('MRF_MultiSeq:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% If the test flag is true, stop here !
@@ -172,22 +177,24 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+opt.finalNorm = strcmp(opt.finalNorm, 'Yes');
 
 % Read json files and create ratio dictionary
 opt.dictionary_folder_filename = fullfile(opt.folder, opt.dictionary_folder_filename);
 
 d = dir(opt.dictionary_folder_filename);
-opt.dictionary_pre_filename     = d(contains({d.name}, 'PRE_'));
-if ~isempty(opt.dictionary_pre_filename)
-    opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
-end
-opt.dictionary_post_filename    = d(contains({d.name}, 'POST_'));
-if ~isempty(opt.dictionary_post_filename)
-    opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+if contains(opt.combUsed, 'Pre')
+    opt.dictionary_pre_filename     = d(contains({d.name}, 'PRE_'));
+    if ~isempty(opt.dictionary_pre_filename)
+        opt.dictionary_pre_filename     = opt.dictionary_pre_filename.name;
+    end
+    opt.dictionary_post_filename    = d(contains({d.name}, 'POST_'));
+    if ~isempty(opt.dictionary_post_filename)
+        opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
+    end
 end
 
-if contains(opt.combUsed, 'MSME') % Using MSME is optional
+if contains(opt.combUsed, 'MSME')
     opt.dictionary_MSME_filename    = d(contains({d.name}, 'MSME'));
     if ~isempty(opt.dictionary_MSME_filename)
         opt.dictionary_MSME_filename    = opt.dictionary_MSME_filename.name;
@@ -273,6 +280,16 @@ switch opt.combUsed
             Tmp{1}      = Dico;
         end
         
+        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
+            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+                XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
+                XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
+            end; end; end
+        end
+        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
+        Xobs            = cat(timeDim, XobsPre, XobsPost);
+        Xobs            = permute(Xobs, [1 2 4 3]);
+        
     case 'Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
         XobsPost            = niftiread(files_in.In2{1});
@@ -295,7 +312,7 @@ switch opt.combUsed
             end; end; end
         end
         
-        if strcmp(opt.applyNorm, 'Yes') % Normalize nifti signals
+        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
             for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
                 XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
@@ -314,11 +331,11 @@ switch opt.combUsed
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
-                    if strcmp(opt.applyNorm, 'Yes') % Normalize dico
+                    if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
-                    end
+                    endCTA 
                     tmpPost(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
-                    if strcmp(opt.applyNorm, 'Yes') % Normalize dico
+                    if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
                     end
                 end
@@ -331,6 +348,7 @@ switch opt.combUsed
             Dico.MRSignals      = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
             Tmp{1}              = Dico;
+        end
         end
         
     case 'MSME-Pre-Post'
@@ -353,10 +371,13 @@ switch opt.combUsed
                 signalPost = squeeze(XobsPost(x,y,z,:));  
                 signalPost = filter(ones(1, p)/p, 1, [signalPost(1); signalPost; signalPost(end)]);
                 XobsPost(x,y,z,:) = signalPost(2:end-1);
+                % MSME
+                signalMSME = squeeze(XobsMSME(x,y,z,:));  
+                signalMSME = filter(ones(1, p)/p, 1, [signalMSME(1); signalMSME; signalMSME(end)]);
+                XobsMSME(x,y,z,:) = signalMSME(2:end-1);
             end; end; end
         end
-        
-        if strcmp(opt.applyNorm, 'Yes') % Normalize nifti signals
+        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
             for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
                 XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
@@ -380,7 +401,7 @@ switch opt.combUsed
                     tmpPost(i,:) = interp1(Dico.Tacq{1}(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
                 end
             end
-            if strcmp(opt.applyNorm, 'Yes') % Normalize dico
+            if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
                     tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
@@ -397,9 +418,62 @@ switch opt.combUsed
             Tmp{1}              = Dico;
         end
         
-        case 'MSME-Post/Pre'
-            
+    case 'MSME-Post/Pre'
+        Xobs                = niftiread(files_in.In2{1}) ./ niftiread(files_in.In1{1});
+        XobsMSME            = niftiread(files_in.In3{1});
+        json_filename       = split(files_in.In2{1},'.');
+        json_filename{2}    = '.json';
+        Obs                 = ReadJson([json_filename{1} json_filename{2}]);
         
+        % If necessary smooth observations
+        if strcmp(opt.filtered, 'Yes') == 1
+            p = 2;
+            for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
+                % Ratio
+                signal = squeeze(Xobs(x,y,z,:));  
+                signal = filter(ones(1, p)/p, 1, [signal(1); signal; signal(end)]);
+                Xobs(x,y,z,:) = signal(2:end-1);
+                % MSME
+                signalMSME = squeeze(XobsMSME(x,y,z,:));  
+                signalMSME = filter(ones(1, p)/p, 1, [signalMSME(1); signalMSME; signalMSME(end)]);
+                XobsMSME(x,y,z,:) = signalMSME(2:end-1);
+            end; end; end
+        end
+        
+        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
+            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+                XobsMSME(x,y,z,:) = XobsMSME(x,y,z,:)./(sqrt(sum(XobsMSME(x,y,z,:).^2)));
+            end; end; end
+        end
+        timeDim         = find(size(Xobs)==length(Obs.EchoTime.value));
+        XobsRatio       = Xobs; % create copy for dimension
+        Xobs            = cat(timeDim, XobsMSME, Xobs);
+        Xobs            = permute(Xobs, [1 2 4 3]);
+
+        
+         % Reformat dico (not needed if MODEL is already computed)
+        if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+            tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));          
+            if size(XobsPre,length(size(XobsRatio))) ~= size(Dico.MRSignals{1},2)
+                warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
+                for i = 1:size(Dico.MRSignals{1},1)
+                    tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:)./Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
+                end
+            end
+            if strcmp(opt.indivNorm, 'Yes') % Normalize dico
+                for i = 1:size(Dico.MRSignals{1},1)
+                    Dico.MRSignals{3}(i,:) = Dico.MRSignals{3}(i,:)./(sqrt(sum(Dico.MRSignals{3}(i,:).^2)));
+                end
+            end
+            tmp                 = cat(2, Dico.MRSignals{3}, tmp);
+            Dico.MRSignals      = tmp;
+            Dico.Tacq           = Obs.EchoTime.value'*1e-3;
+            %remove row containning nan values
+            nn                  = ~any(isnan(Dico.MRSignals),2);
+            Dico.MRSignals      = Dico.MRSignals(nn,:);
+            Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
+            Tmp{1}              = Dico;
+        end
         
 end %end switch
 % Compute MRF/regression
@@ -407,7 +481,7 @@ switch opt.method
     
     case 'ClassicMRF'
         % TODO: find something nicer than this permute trick
-        Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,[]);
+        Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method, [], [], [], opt.finalNorm);
         Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
         
     case 'RegressionMRF'
