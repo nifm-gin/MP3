@@ -1,14 +1,21 @@
-function [Yestim, score, Xestim] = EstimateParametersFromGrid(Xobs, Xgrid, Ygrid, verb)
+function [Yestim, score, Xestim] = EstimateParametersFromGrid(Xobs, Xgrid, Ygrid, verb, flagNorm)
 
-narginchk(3, 4)
-if nargin == 3, verb = 0; end
+narginchk(3, 5)
+if nargin == 4, flagNorm = 1; end
+if nargin == 3, verb = 0; flagNorm = 1; end
 
 % normalization
-Xobs_normalized     = (1 ./ sum(Xobs.^2, 2) .^0.5) * ones(1, size(Xobs, 2))  .* Xobs;
-Xgrid_normalized    = (1 ./ sum(Xgrid.^2, 2).^0.5) * ones(1, size(Xgrid, 2)) .* Xgrid;
+switch flagNorm
+    case 1
+        Xobs_normalized     = (1 ./ sum(Xobs.^2, 2) .^0.5) * ones(1, size(Xobs, 2))  .* Xobs;
+        Xgrid_normalized    = (1 ./ sum(Xgrid.^2, 2).^0.5) * ones(1, size(Xgrid, 2)) .* Xgrid;
+        % dot-product/scalar product comparison
+        score       = Xobs_normalized * Xgrid_normalized';
+    case 0
+        % dot-product/scalar product comparison
+        score       = Xobs * Xgrid';
+end
 
-% dot-product/scalar product comparison
-score       = Xobs_normalized * Xgrid_normalized';
 [~, idx]    = max(score, [], 2);
 
 % R2 version
