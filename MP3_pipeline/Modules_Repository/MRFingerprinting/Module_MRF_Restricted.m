@@ -29,7 +29,7 @@ if isempty(opt)
     module_option(:,16)  = {'Lw',               0};
     module_option(:,17)  = {'cstrS',            'd'};
     module_option(:,18)  = {'cstrG',            'd'};
-    module_option(:,19)  = {'DimToRestrict', 'T2'};
+    module_option(:,19)  = {'RelErr', 0.05};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -109,10 +109,9 @@ if isempty(opt)
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
-    %user_parameter(:,17)   = {'Select the scans to use for dico reduction','XScan','','',{'SequenceName'}, '',''};
-    %user_parameter(:,18)   = {'Select the parameter(s) to pre-'}
-    user_para
-    
+    user_parameter(:,17)   = {'Select the scans to use for T2 reduction','1Scan','','',{'SequenceName'}, '',''};
+    user_parameter(:,18)   = {'Select the scans to use for ADC reduction','1Scan','','',{'SequenceName'}, '',''};
+    user_parameter(:,19)   = {'Relative error tolerated on prior input value','numeric','','RelErr','','',''};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -213,8 +212,17 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
     else        
         switch opt.combUsed
             case {'Post/Pre', 'Pre-Post'}
-                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+%                 Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+                
+                Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
+                    [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
+                
+                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
+                    [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
+                
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.Tacq               = Pre.Sequence.Tacq;
@@ -223,9 +231,23 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
                 clear Pre Post
                 save(dico_filename,'Dico')
             case {'MSME-Post/Pre','MSME-Pre-Post'}
-                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
-                MSME    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_MSME_filename]);
+%                 Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+                
+                Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
+                    [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
+                
+                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
+                    [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
+                
+%                 MSME    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_MSME_filename]);
+                
+                MSME     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                MSME.MRSignals = reshape(MSME.MRSignals.x_ArrayData_(:,1) + 1i*MSME.MRSignals.x_ArrayData_(:,2),...
+                    [MSME.MRSignals.x_ArraySize_(1), MSME.MRSignals.x_ArraySize_(2)]);
+                
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.MRSignals{3}       = abs(MSME.MRSignals);
@@ -278,7 +300,7 @@ switch opt.combUsed
             nn = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-            Tmp{1}      = Dico;
+%             Tmp{1}      = Dico;
         end
         
         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
@@ -334,7 +356,7 @@ switch opt.combUsed
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
-                    endCTA 
+                    end
                     tmpPost(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
@@ -348,9 +370,9 @@ switch opt.combUsed
             nn                  = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals      = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-            Tmp{1}              = Dico;
+%             Tmp{1}              = Dico;
         end
-        end
+        %end
         
     case 'MSME-Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
@@ -416,7 +438,7 @@ switch opt.combUsed
             nn                  = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals      = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-            Tmp{1}              = Dico;
+%             Tmp{1}              = Dico;
         end
         
     case 'MSME-Post/Pre'
@@ -473,104 +495,167 @@ switch opt.combUsed
             nn                  = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals      = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-            Tmp{1}              = Dico;
+%             Tmp{1}              = Dico;
         end
         
 end %end switch
-% Compute MRF/regression
-switch opt.method
-    
-    case 'ClassicMRF'
-        % TODO: find something nicer than this permute trick
-        Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method, [], [], [], opt.finalNorm);
-        Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
-        
-    case 'RegressionMRF'
-        
-        %Compute the learing only one time per dictionar        
-        if exist(model_filename,'file')
-            load(model_filename,'Parameters','labels');
-            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
-            
-            Tmp{1}.Parameters.Labels = labels;
-        else
-            count = 1;
-            
-            for i = 1:length(Dico.Parameters.Labels)
-                tmp = split(Dico.Parameters.Labels{i},'.',2);
-                if any(strcmp(tmp{end}, opt.Params))
-                    params.Par(:,count)     = Tmp{1}.Parameters.Par(:,i);
-                    params.Labels{count}    = Tmp{1}.Parameters.Labels{i};
-                    count = count +1;
-                end
-            end
-            Tmp{1}.Parameters = params;
-            
-            % Parameters of the regression
-            clear Parameters
-            if opt.K >= 0,  Parameters.K = opt.K; end
-            if opt.Lw >= 0, Parameters.Lw = opt.Lw; end
-            if strcmp(opt.cstrS,' '), opt.cstrS = ''; end
-            if strcmp(opt.cstrG,' '), opt.cstrG = ''; end
-            Parameters.cstr.Sigma   = opt.cstrS;
-            Parameters.cstr.Gammat  = opt.cstrG;
-            Parameters.cstr.Gammaw  = '';
-            
-            [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
-            
-            labels      = Tmp{1}.Parameters.Labels; 
-            save(model_filename,'Parameters', 'labels')
-        end
-        
-        Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
-        Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
+
+%% Dico restriction
+% Check input restriction maps
+inPar = {'T2', 'DH20'};
+inMaps = [0,0];
+if isfield(files_in, 'In4')
+    inMaps(1)=1;
+end
+if isfield(files_in, 'In5')
+    inMaps(2)=1;
 end
 
+%% Iterate on restriction maps
+for i =1:numel(inMaps)
+    if inMaps(i)
+        %% Reduce the number of search
+        colNb           = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), inPar{i}));
+        inNumber        = sprintf('In%i', 3+i);
+        MapPath         = files_in.(inNumber);
+        RestMap         = niftiread(MapPath{1});
+        RestMap         = round(RestMap); % round T2 values to reduce the amount of restrictions to perform
+        Values          = unique(RestMap); % get unique values
+        minVal          = min(Dico.Parameters.Par(:,colNb))*1e3; % min of the dico
+        maxVal          = max(Dico.Parameters.Par(:,colNb))*1e3; % max of the dico
+        Values          = Values(minVal <= Values);
+        Values          = Values(Values <= maxVal);
+        [nanRow, nanCol, nanSl] = ind2sub(size(RestMap), find(RestMap < minVal & RestMap > maxVal)) % Get coordinates of points that will not fit the dico
+        %% Dico Restriction
+        for v=1:numel(Values)
+            % Removing dico entries where parameter of interest is out of
+            % the tolerated range
+            keptValues  = find(Values(v)*(1-opt.RelErr) <= Dico.Parameters.Par(:,colNb)*1e3 &...
+                Dico.Parameters.Par(:,colNb)*1e3 <= Values(v)*(1+opt.RelErr));
+            
+            % Copying the restricted dico
+            Tmp{1}.Parameters.Par = Dico.Parameters.Par(keptValues, :);
+            Tmp{1}.Parameters.Labels = Dico.Parameters.Labels;
+            Tmp{1}.MRSignals = Dico.MRSignals(keptValues, :);
+            
+            [row, col, sl] = ind2sub(size(RestMap), find(RestMap == Values(v))); % Get coordinates of voxels considered at this iteration
+            
+            for k=1:numel(row)
+                localXobs(k,:) = Xobs(row(k), col(k), :, sl(k)); % Keep only the corresponding voxels in the observation
+            end
+            %% Compute MRF/regression
+            switch opt.method
+                case 'ClassicMRF'
+                    % TODO: find something nicer than this permute trick
+                    Estimation  = AnalyzeMRImages(localXobs,Tmp,opt.method, [], [], [], opt.finalNorm);
+                    Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
 
-% Extract maps (and modify unit if necessary)
-count = 1;
-for i = 1:length(Tmp{1}.Parameters.Labels)
-    tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
-    if any(strcmp(tmp{end}, opt.Params))
-        
-        Labels{count} = tmp{end};
-        
-        
-        switch tmp{end}
-        %If the ression method is performed, extract also the confidence maps
-            case {'Vf', 'SO2'} %convert to percent 
-                MapStruct{count}    = 100*Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
-                    StdStruct{count}    = 100*Map.Std(:,:,:,i);
-                end
-            case {'VSI', 'R'} % convert m to µm
-                MapStruct{count}    = 1e6*Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
-                    StdStruct{count}	= 1e6*Map.Std(:,:,:,i);
-                end
-            case 'T2' % convert s to ms
-                MapStruct{count}    = 1e3*Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
-                    StdStruct{count}	= 1e6*Map.Std(:,:,:,i);
-                end
-            otherwise
-                MapStruct{count} 	= Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
-                    StdStruct{count}    = 100*Map.Std(:,:,:,i);
-                end
-        end
-        
-        count   = count +1;
+                case 'RegressionMRF'
+                    %Compute the learing only one time per dictionar        
+                    if exist(model_filename,'file')
+                        load(model_filename,'Parameters','labels');
+                        Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
+
+                        Tmp{1}.Parameters.Labels = labels;
+                    else
+                        count = 1;
+
+                        for z = 1:length(Dico.Parameters.Labels)
+                            tmp = split(Dico.Parameters.Labels{z},'.',2);
+                            if any(strcmp(tmp{end}, opt.Params))
+                                params.Par(:,count)     = Tmp{1}.Parameters.Par(:,z);
+                                params.Labels{count}    = Tmp{1}.Parameters.Labels{z};
+                                count = count +1;
+                            end
+                        end
+                        Tmp{1}.Parameters = params;
+
+                        % Parameters of the regression
+                        clear Parameters
+                        if opt.K >= 0,  Parameters.K = opt.K; end
+                        if opt.Lw >= 0, Parameters.Lw = opt.Lw; end
+                        if strcmp(opt.cstrS,' '), opt.cstrS = ''; end
+                        if strcmp(opt.cstrG,' '), opt.cstrG = ''; end
+                        Parameters.cstr.Sigma   = opt.cstrS;
+                        Parameters.cstr.Gammat  = opt.cstrG;
+                        Parameters.cstr.Gammaw  = '';
+
+                        [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
+
+                        labels      = Tmp{1}.Parameters.Labels; 
+                        save(model_filename,'Parameters', 'labels')
+                    end
+
+                    Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
+                    Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
+            end
+            %% Extract maps (and modify unit if necessary)
+            count = 1;
+            for k = 1:length(Tmp{1}.Parameters.Labels)
+                tmp = split(Tmp{1}.Parameters.Labels{k},'.',2);
+                if any(strcmp(tmp{end}, opt.Params))
+
+                    Labels{count} = tmp{end};
+
+                    switch tmp{end}
+                    %If the ression method is performed, extract also the confidence maps
+                        case {'Vf', 'SO2'} %convert to percent 
+                            for j = 1:numel(row)
+                                MapStruct{count}(row(j), col(j), sl(j))     = 100*Map.Y(j,:,:,k);
+                                if strcmp(opt.method, 'RegressionMRF')
+                                    StdStruct{count}(row(j), col(j), sl(j)) = 100*Map.Std(j,:,:,k);
+                                end
+                            end
+                        case {'VSI', 'R'} % convert m to µm
+                            for j = 1:numel(row)
+                                MapStruct{count}(row(j), col(j), sl(j))     = 1e6*Map.Y(j,:,:,k);
+                                if strcmp(opt.method, 'RegressionMRF')
+                                    StdStruct{count}(row(j), col(j), sl(j))	= 1e6*Map.Std(j,:,:,k);
+                                end
+                            end
+                        case 'T2' % convert s to ms
+                            for j = 1:numel(row)
+                                MapStruct{count}(row(j), col(j), sl(j))     = 1e3*Map.Y(j,:,:,k);
+                                if strcmp(opt.method, 'RegressionMRF')
+                                    StdStruct{count}(row(j), col(j), sl(j))	= 1e6*Map.Std(j,:,:,k);
+                                end
+                            end
+                        otherwise
+                            for j = 1:numel(row)
+                                MapStruct{count}(row(j), col(j), sl(j)) 	= Map.Y(j,:,:,k);
+                                if strcmp(opt.method, 'RegressionMRF')
+                                    StdStruct{count}(row(j), col(j), sl(j)) = 100*Map.Std(j,:,:,k);
+                                end
+                            end
+                    end   % end switch tmp    
+                    count   = count +1;
+                end %end if any
+            end % end for k in labels
+        end % end for(Values)   
+    end % end if(inMaps)
+
+end % end for(inMaps) 
+
+%% Ensure output dimension is correct
+if any(size(MapStruct{1}) ~= size(RestMap))
+    [s1, s2, s3] = size(RestMap);
+    for i = 1:numel(MapStruct)
+        MapStruct{i}(s1, s2, s3) = 0;
     end
 end
 
-    
-% Json processing
+%% Put NaN where out of the dico 
+for i = 1:numel(MapStruct)
+    for j = i:numel(nanRow)
+        MapStruct{i}(nanRow(j), nanCol(j), nanSl(j)) = nan;
+    end
+end
+
+%% Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J       = ReadJson(jsonfile);
 J       = KeepModuleHistory(J, struct('files_in',files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
 
 % Reoriented and save nifti maps
 % nifti_header = spm_vol(files_in.In1{1});
