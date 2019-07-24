@@ -219,14 +219,14 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
                 Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
                     [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
                 
-                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
                 Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
                     [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
                 
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.Tacq               = Pre.Sequence.Tacq;
-                Dico.Parameters.Par     = Pre.Parameters.Par; % Parameters used to simulate X signals
+                Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par); % Parameters used to simulate X signals
                 Dico.Parameters.Labels  = Pre.Parameters.Labels;
                 clear Pre Post
                 save(dico_filename,'Dico')
@@ -253,7 +253,7 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
                 Dico.MRSignals{3}       = abs(MSME.MRSignals);
                 Dico.Tacq{1}            = Pre.Sequence.Tacq;
                 Dico.Tacq{2}            = MSME.Sequence.Tacq;
-                Dico.Parameters.Par     = Pre.Parameters.Par; % Parameters used to simulate X signals
+                Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par); % Parameters used to simulate X signals
                 Dico.Parameters.Labels  = Pre.Parameters.Labels;
                 clear Pre Post MSME
                 save(dico_filename,'Dico')    
@@ -303,15 +303,15 @@ switch opt.combUsed
 %             Tmp{1}      = Dico;
         end
         
-        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
-            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
-                XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
-                XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
-            end; end; end
-        end
-        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
-        Xobs            = cat(timeDim, XobsPre, XobsPost);
-        Xobs            = permute(Xobs, [1 2 4 3]);
+%         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
+%             for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+%                 XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
+%                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
+%             end; end; end
+%         end
+%         timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
+%         Xobs            = cat(timeDim, XobsPre, XobsPost);
+%         Xobs            = permute(Xobs, [1 2 4 3]);
         
     case 'Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
@@ -525,7 +525,7 @@ for i =1:numel(inMaps)
         maxVal          = max(Dico.Parameters.Par(:,colNb))*1e3; % max of the dico
         Values          = Values(minVal <= Values);
         Values          = Values(Values <= maxVal);
-        [nanRow, nanCol, nanSl] = ind2sub(size(RestMap), find(RestMap < minVal & RestMap > maxVal)) % Get coordinates of points that will not fit the dico
+        [nanRow, nanCol, nanSl] = ind2sub(size(RestMap), find(RestMap < minVal & RestMap > maxVal)); % Get coordinates of points that will not fit the dico
         %% Dico Restriction
         for v=1:numel(Values)
             % Removing dico entries where parameter of interest is out of
@@ -690,3 +690,4 @@ for i = 1:length(files_out.In1)
         end
     end
 end
+

@@ -280,16 +280,16 @@ switch opt.combUsed
             Tmp{1}      = Dico;
         end
         
-        if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
-            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
-                XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
-                XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
-            end; end; end
-        end
-        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
-        Xobs            = cat(timeDim, XobsPre, XobsPost);
-        Xobs            = permute(Xobs, [1 2 4 3]);
-        
+%         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
+%             for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+%                 XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
+%                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
+%             end; end; end
+%         end
+%         timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
+%         Xobs            = cat(timeDim, XobsPre, XobsPost);
+%         Xobs            = permute(Xobs, [1 2 4 3]);
+%         
     case 'Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
         XobsPost            = niftiread(files_in.In2{1});
