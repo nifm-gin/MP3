@@ -1,4 +1,4 @@
-function [Yestim, Parameters, Cov, Kurt] = EstimateParametersFromRegression(Xtest, Xtrain, Ytrain, Ytest, Parameters)
+function [Yestim, Parameters, Cov, Kurt, Pik] = EstimateParametersFromRegression(Xtest, Xtrain, Ytrain, Ytest, Parameters)
 
 if ~exist('Parameters','var')
     Parameters.maxiter     = 200;
@@ -45,6 +45,6 @@ end
 if isempty(Xtest)
     Yestim = [];
 else
-    [Yestim, Cov, Kurt] = EstimateParametersFromModel(Xtest, Parameters.theta, 0);
+    [Yestim, Cov, Kurt, Pik] = EstimateParametersFromModel(Xtest, Parameters.theta, 0);
 end
 
