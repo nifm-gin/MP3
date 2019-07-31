@@ -214,6 +214,7 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
             case {'Post/Pre', 'Pre-Post'}
                 Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
                 Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.Tacq               = Pre.Sequence.Tacq;
@@ -333,7 +334,7 @@ switch opt.combUsed
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
-                    endCTA 
+                    end 
                     tmpPost(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
@@ -349,7 +350,7 @@ switch opt.combUsed
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
             Tmp{1}              = Dico;
         end
-        end
+        %end
         
     case 'MSME-Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
