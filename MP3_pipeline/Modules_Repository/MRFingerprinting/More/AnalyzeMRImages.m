@@ -6,7 +6,10 @@ if ~exist('Parameters','var'),  Parameters = []; end
 if ~exist('References','var'),  References = []; end
 if ~exist('Outliers','var'),    Outliers = []; end
 
-% Can be a problem remove this line if necessary - 20/02/2019
+% This parameters is only used to enable the parameter data normalisation
+normalization = 1;
+
+% Can be a problem, remove this line if necessary - 20/02/2019
 if isempty(Parameters), Parameters = struct(); end
 
 switch length(size(Sequences))
@@ -45,27 +48,67 @@ switch Method
         end
         
     case 'RegressionMRF'
-                
+        
         if ~any(strcmp(fieldnames(Parameters),'theta'))
+            
+            %Normalize trainning data
+            if normalization == 1
+                Parameters.factors.Ymean	= nanmean(Dico{f}.Parameters.Par,1);
+                Parameters.factors.Ystd     = nanstd(Dico{f}.Parameters.Par);
+                Dico{f}.Parameters.Par      = (Dico{f}.Parameters.Par - Parameters.factors.Ymean) ./ Parameters.factors.Ystd;
+                
+%                 Parameters.factors.Xmean	= nanmean(Dico{f}.MRSignals,1);
+%                 Parameters.factors.Xstd     = nanstd(Dico{f}.MRSignals);
+%                 Dico{f}.MRSignals           = (Dico{f}.MRSignals - Parameters.factors.Xmean) ./ Parameters.factors.Xstd;
+                
+                Parameters.factors.normalization = 1;
+            else
+                Parameters.factors.Ymean	= 0;
+                Parameters.factors.Ystd     = 1;
+                
+%                 Parameters.factors.Xmean	= 0;
+%                 Parameters.factors.Xstd     = 1;
+                
+                Parameters.factors.normalization = 0;
+            end
+            
             Xtrain = abs(Dico{f}.MRSignals);
             [~,Parameters] = EstimateParametersFromRegression(Xtrain, Xtrain, Dico{f}.Parameters.Par, Dico{f}.Parameters.Par, Parameters);
         else
-            Dico{f}.MRSignals = [];
-            Dico{f}.Parameters.Par = [];
+            Dico{f}.MRSignals       = [];
+            Dico{f}.Parameters.Par  = [];
         end
+        
         for s = 1:slices
+            
+            %Normalize observations
+%             if any(strcmp(fieldnames(Parameters),'factors')) && normalization == 1
+%                 Sequences(:,:,:,s) = reshape((reshape(Sequences(:,:,:,s),s1*s2,t) - Parameters.factors.Xmean) ./ Parameters.factors.Xstd, s1,s2,[]);
+%             end
+            
             %Estimation of parameters
-            [Yestim,~,Cov,Kurt] = ...
+            [Yestim,~,Cov,~,Pik] = ...
                 EstimateParametersFromRegression(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par, [], Parameters);
+            
+            %Rescale
+            if any(strcmp(fieldnames(Parameters),'factors')) && normalization == 1
+                Yestim(:,1:end-Parameters.Lw) = (Yestim(:,1:end-Parameters.Lw) .* Parameters.factors.Ystd) + Parameters.factors.Ymean;
+            end
             Estimation.Regression.Y(:,:,:,s)    = reshape(Yestim, s1,s2,[]);
-            Cov         = reshape(Cov,size(Cov,1),size(Cov,2),s1,s2);
-            Kurt        = reshape(Kurt,size(Kurt,1),size(Kurt,2),s1,s2);
+            
+            Cov  	= reshape(Cov,size(Cov,1),size(Cov,2),s1,s2);
             for ss = 1:s1
                 for sss = 1:s2
-                    Estimation.Regression.Cov(ss,sss,:,s)   = diag(Cov(:,:,ss,sss))';
-                    Estimation.Regression.Kurt(ss,sss,:,s)  = diag(Kurt(:,:,ss,sss))';
+                    if any(strcmp(fieldnames(Parameters),'factors')) && normalization == 1
+                        Estimation.Regression.Cov(ss,sss,:,s)   = diag(Cov(:,:,ss,sss))';
+                        Estimation.Regression.Cov(ss,sss,1:end-Parameters.Lw,s) = squeeze(Estimation.Regression.Cov(ss,sss,1:end-Parameters.Lw,s))' .* Parameters.factors.Ystd.^2;
+                    else
+                        Estimation.Regression.Cov(ss,sss,:,s)   = diag(Cov(:,:,ss,sss))';
+                    end
                 end
             end
+            
+            Estimation.Regression.Pik = Pik;
             
             %Remove outliers
             if ~isempty(Outliers)

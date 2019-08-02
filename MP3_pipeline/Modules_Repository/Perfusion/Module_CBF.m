@@ -160,7 +160,7 @@ TransitMap = [];
 
 if isfield(files_in, 'In3')
     input(3).nifti_header = spm_vol(files_in.In3{1});
-    InvEff_ROI = read_volume(input(3).nifti_header, input(1).nifti_header, 0);
+    InvEff_ROI = read_volume(input(3).nifti_header, input(2).nifti_header, 0);
 end
 if isfield(files_in, 'In4')
     input(4).nifti_header = spm_vol(files_in.In4{1});
