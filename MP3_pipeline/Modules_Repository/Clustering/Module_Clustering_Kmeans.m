@@ -102,7 +102,8 @@ if strcmp(files_out, '')
                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
                 if size(DbRois, 1) == 0
-                    continue
+                    continuet*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
                 end
 %                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
 %                 datab = datab(datab.(Tag2) == UTag2(j),:);
@@ -164,7 +165,8 @@ for i=1:length(UTag1)
         
         if size(DbRois, 1) == 0
             continue
-        end
+        endt*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
         
         %datab = databScans(databScans.(Tag1) == UTag1(i),:);
@@ -457,7 +459,7 @@ Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Si
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
 
 if strcmp(opt.Normalization_mode, 'All Database')
-    Informations.Normalization_mode = 'Patient-by-Patient';
+    Informations.Normalization_mode = 'All Database';
     Informations.NanMean_VoxValues = NanMean_VoxValues;
     Informations.NanStd_VoxValues = NanStd_VoxValues;
 end
