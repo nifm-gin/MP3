@@ -153,7 +153,7 @@ if strcmp(opt.update, 'Yes')
     if ~exist([folder '/' file],'file')
         T   = table({char(opt.Table_in.Patient(1))},{char(opt.Table_in.Tp(1))},DeltaKhiUSPIO,'VariableNames',{'Patient','Tp','DeltaKhiUSPIO'}); 
     else 
-        T   = readtable([folder '/' file]);
+        T   = sortrows(readtable([folder '/' file]));
         
         if any(strcmp(T.Patient,char(opt.Table_in.Patient(1))) & strcmp(T.Tp,char(opt.Table_in.Tp(1))))
             flag = find(strcmp(T.Patient,char(opt.Table_in.Patient(1))) & strcmp(T.Tp,char(opt.Table_in.Tp(1))) == 1);
