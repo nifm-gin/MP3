@@ -366,6 +366,7 @@ SizeMax = max(Size);
 All_Data_Clean = {};
 ROI_Clean = {};
 VecVoxToDeleteClean = {};
+VecVoxToKeepClean = {};
 Clust_Data_In = [];
 ROI_nifti_header_Clean = {};
 for i=1:length(All_Data)
@@ -377,7 +378,7 @@ for i=1:length(All_Data)
     %
     VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete{i}];
     %VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete];
-
+    VecVoxToKeepClean = [VecVoxToKeepClean, VecVoxToKeep(i)];
     
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
     ROI_nifti_header_Clean = [ROI_nifti_header_Clean, ROI_nifti_header{i}];
@@ -480,9 +481,9 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
             %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
             %modele en modifiant l'initialisation. Le modele renvoye est celui
             %de plus grande vraisemblance.
-            modeles(kk) = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
+            modeles{kk} = fitgmdist( VoxValues, kk, 'Options', options, 'Regularize', 1e-5, 'Replicates', Number_of_replicate);
             
-            loglike(kk) = -modeles(kk).NegativeLogLikelihood;
+            loglike(kk) = -modeles{kk}.NegativeLogLikelihood;
             
             %La ligne suivante permet uniquement de suivre l'avancement du
             %calcul des modeles
@@ -584,12 +585,12 @@ end
 
 ind = 1;
 for i=1:length(All_Data_Clean)
-    Cluster = ROI_Clean{i};
-    Cluster(logical(Cluster)) = NaN;
+    TheCluster = ROI_Clean{i};
+    TheCluster(logical(TheCluster)) = NaN;
     %ROI_Clust = logical(ROI{i});
     %Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
     
-    Cluster(VecVoxToKeep{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    TheCluster(VecVoxToKeepClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
 
     ind = ind+size(All_Data_Clean{i},1);
     
@@ -601,40 +602,9 @@ for i=1:length(All_Data_Clean)
     %ROI_cluster_header.pinfo = [1 0 0];
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
-    Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
-    Out = spm_write_vol(ROI_cluster_header, Cluster);
+    TheCluster = write_volume(TheCluster,ROI_nifti_header_Clean{i}, 'axial');
+    Out = spm_write_vol(ROI_cluster_header, TheCluster);
 end
-
-
-% data_in_table.cluster(isnan(data_in_table.cluster)) = size(handles.color_RGB,1);
-% 
-% Couleurs = handles.color_RGB;
-% Cartes = nominal(data_in_table.Properties.VarNames(8:end-1));
-% 
-% % A partir du classement des pixels, on calcule les statistiques du
-% % clustering
-% [MoyCartesTranches, ProbTranches, MoyCartesVolume, ProbVolume, Ecart_Type_Global, Sign, MoyGlobal] = AnalyseClusterGMM(data_in_table);
-% 
-% ROI = char(unique(data_in_table.VOI));
-% 
-% %On cree 2 strutures que l'on va sauvegarder avec chaque uvascroi. Ces
-% %structures contiennent les informations et les statistiques du clustering.
-% Informations = struct('Couleurs',Couleurs,'Cartes', Cartes , 'Modele', gmfit, 'Sign', Sign,'ROI',ROI);
-% Statistiques = struct('MoyCartesTranches', MoyCartesTranches , 'ProbTranches', ProbTranches , 'MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
-% % IA_patient_list = {handles.MIA_data.database.name};
-% NomDossier = [];
-% for i = 1:length(Informations.Cartes)
-%     NomDossier = [NomDossier '_' char(Informations.Cartes(i))];
-% end
-% NomDossier2 = [num2str(length(Informations.Cartes)) 'Cartes' filesep NomDossier];
-% logbook = {};
-% answer = inputdlg('Comment voulez vous nommer ce clustering ?', 'Choix du nom du clustering', 1,{strcat(num2str(k),'C_',NomDossier)});
-% if ~exist(strcat(handles.MIA_data.database(1).path,NomDossier2), 'dir')
-%     mkdir(strcat(handles.MIA_data.database(1).path,NomDossier2));
-% end
-% save([strcat( handles.MIA_data.database(1).path,NomDossier2), filesep,answer{1} '-clusterGMM.mat'],'Informations', 'Statistiques');
-
-
 
 
 
