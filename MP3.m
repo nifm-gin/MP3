@@ -823,7 +823,7 @@ for i=1:numel(idx_scan_to_rename)
     new_nii_filename = strrep(cellstr(handles.database.Filename(idx_scan_to_rename(i))), cellstr(handles.database.Tp(idx_scan_to_rename(i))), NewTp);
     
     % rename the scan file
-    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0
+    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0 && exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 0
         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
             fullfilename(handles, idx_scan_to_rename(i), '.nii'));
         msgbox(warning_text, 'rename file warning') ;
@@ -831,7 +831,12 @@ for i=1:numel(idx_scan_to_rename)
         msgbox('The new .nii file exist already!!') ;
         
     else
-        movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        end
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii.gz'), 'f')
+        end
         if exist(fullfilename(handles, idx_scan_to_rename(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_scan_to_rename(i), '.json'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.json'), 'f');
         end
@@ -906,7 +911,7 @@ end
 new_nii_filename = strrep(cellstr(handles.database.Filename(data_selected)), cellstr(handles.database.SequenceName(data_selected)), newparameter);
 
 % rename the scan file
-if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0
+if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0 && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 0
     warning_text = sprintf('##$ This file no not exist\n##$ %s',...
         fullfilename(handles, data_selected, '.nii'));
     msgbox(warning_text, 'rename file warning') ;
@@ -914,7 +919,12 @@ elseif exist(string(strcat(cellstr(handles.database.Path(data_selected)),new_nii
     msgbox('The new .nii file exist already!!') ;
     
 else
-    movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    if exist(fullfilename(handles, data_selected, '.nii'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    end
+    if exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii.gz'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii.gz'), 'f')
+    end
     % rename json file if needed
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
