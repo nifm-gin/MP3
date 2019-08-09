@@ -1,0 +1,57 @@
+{
+	"tool-version": "1.0.0",
+	"name": "bet",
+	"author": "TONIC",
+	"description": "Brain extraction using FSL BET: generate a brain mask and a masked brain\n\nUsage:    bet <input> <output> [options]\n\nMain bet2 options:\n  -o          generate brain surface outline overlaid onto original image\n  -m          generate binary brain mask\n  -s          generate approximate skull image\n  -n          don't generate segmented brain image output\n  -f <f>      fractional intensity threshold (0->1); default=0.5; smaller values give larger brain outline estimates\n  -g <g>      vertical gradient in fractional intensity threshold (-1->1); default=0; positive values give larger brain outline at bottom, smaller at top\n  -r <r>      head radius (mm not voxels); initial surface sphere is set to half of this\n  -c <x y z>  centre-of-gravity (voxels not mm) of initial mesh surface.\n  -t          apply thresholding to segmented brain image and mask\n  -e          generates brain surface as mesh in .vtk format\n\nVariations on default bet2 functionality (mutually exclusive options):\n  (default)   just run bet2\n  -R          robust brain centre estimation (iterates BET several times)\n  -S          eye & optic nerve cleanup (can be useful in SIENA)\n  -B          bias field & neck cleanup (can be useful in SIENA)\n  -Z          improve BET if FOV is very small in Z (by temporarily padding end slices)\n  -F          apply to 4D FMRI data (uses -f 0.3 and dilates brain mask slightly)\n  -A          run bet2 and then betsurf to get additional skull and scalp surfaces (includes registrations)\n  -A2 <T2>    as with -A, when also feeding in non-brain-extracted T2 (includes registrations)\n\nMiscellaneous options:\n  -v          verbose (switch on diagnostic messages)\n  -h          display this help, then exits\n  -d          debug (don't delete temporary intermediate images)\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "3D image",
+			"value-key": "[3D_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "3d_image",
+			"name": "3D image"
+		},
+		{
+			"description": "Output Prefix",
+			"default-value": "brain",
+			"value-key": "[OUTPUT_PREFIX]",
+			"type": "String",
+			"optional": false,
+			"id": "output_prefix",
+			"name": "Output Prefix"
+		},
+		{
+			"description": "Output Directory",
+			"value-key": "[OUTPUT_DIRECTORY]",
+			"type": "String",
+			"optional": false,
+			"id": "output_directory",
+			"name": "Output Directory"
+		}
+	],
+	"output-files": [
+		{
+			"description": "masked image",
+			"value-key": "[MASKED_IMAGE]",
+			"path-template": "[OUTPUT_DIRECTORY]\\[OUTPUT_PREFIX].nii.gz",
+			"optional": false,
+			"id": "masked_image",
+			"name": "masked image"
+		},
+		{
+			"description": "mask",
+			"value-key": "[MASK]",
+			"path-template": "[OUTPUT_DIRECTORY]\\[OUTPUT_PREFIX]_mask.nii.gz",
+			"optional": false,
+			"id": "mask",
+			"name": "mask"
+		}
+	],
+	"command-line": "bet [3D_IMAGE] [MASKED_IMAGE] -m"
+}

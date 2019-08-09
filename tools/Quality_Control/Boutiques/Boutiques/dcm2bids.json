@@ -1,0 +1,54 @@
+{
+	"tool-version": "1.0.0",
+	"name": "dcm2bids",
+	"author": "TONIC",
+	"description": "usage: dcm2bids [-h] -d DICOM_DIR [DICOM_DIR ...] -p PARTICIPANT [-s SESSION]\n                -c CONFIG [-o OUTPUT_DIR] [--forceDcm2niix] [--clobber]\n                [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-a ANONYMIZER]\n\noptional arguments:\n  -h, --help            show this help message and exit\n  -d DICOM_DIR [DICOM_DIR ...], --dicom_dir DICOM_DIR [DICOM_DIR ...]\n                        DICOM directory(ies)\n  -p PARTICIPANT, --participant PARTICIPANT\n                        Participant ID\n  -s SESSION, --session SESSION\n                        Session ID\n  -c CONFIG, --config CONFIG\n                        JSON configuration file (see example\/config.json)\n  -o OUTPUT_DIR, --output_dir OUTPUT_DIR\n                        Output BIDS directory, Default: current directory\n  --forceDcm2niix       Overwrite old temporary dcm2niix output if it exists\n  --clobber             Overwrite output if it exists\n  -l {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --log_level {DEBUG,INFO,WARNING,ERROR,CRITICAL}\n                        Set logging level\n  -a ANONYMIZER, --anonymizer ANONYMIZER\n                        Link to a shell script to anonymize each anat images\n                        The call syntax must be `anonymizer input output`\n                        e.g., pydeface.py\n\n            Documentation at https:\/\/github.com\/cbedetti\/Dcm2Bids\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "taduv\/dcm2bids",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "DICOM directory(ies)",
+			"value-key": "[DICOM_DIRECTORY_IES_]",
+			"type": "String",
+			"optional": false,
+			"id": "dicom_directory_ies_",
+			"name": "DICOM directory(ies)"
+		},
+		{
+			"description": "Output Directory",
+			"value-key": "[OUTPUT_DIRECTORY]",
+			"type": "String",
+			"optional": false,
+			"id": "output_directory",
+			"name": "Output Directory"
+		},
+		{
+			"description": "Participant ID",
+			"value-key": "[PARTICIPANT_ID]",
+			"type": "String",
+			"optional": false,
+			"id": "participant_id",
+			"name": "Participant ID"
+		},
+		{
+			"description": "config file",
+			"value-key": "[CONFIG_FILE]",
+			"type": "File",
+			"optional": false,
+			"id": "config_file",
+			"name": "config file"
+		},
+		{
+			"description": "Session",
+			"value-key": "[SESSION]",
+			"type": "String",
+			"optional": false,
+			"id": "session",
+			"name": "Session"
+		}
+	],
+	"command-line": "dcm2bids -d [DICOM_DIRECTORY_IES_] -o [OUTPUT_DIRECTORY] -p [PARTICIPANT_ID] -c [CONFIG_FILE] -s [SESSION]"
+}

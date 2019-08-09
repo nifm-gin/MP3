@@ -1,0 +1,50 @@
+No valid files found:
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/GetFullPath.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/LICENSE
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/MLDropTarget.class
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/README.md
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/anonymize_dicm.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dd.exe
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dicm2nii.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dicm2nii_help.mat
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dicm_dict.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dicm_hdr.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/dicm_img.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/example_data.mat
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/functionSignatures.json
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/java_dnd.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/nii_moco.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/nii_stc.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/nii_tool.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/nii_viewer.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/nii_xform.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/pigz
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/pigz.exe
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/pthreadGC2.dll
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/rename_dicm.m
+
+Unknown file type: /Users/Tanguy/code/spm_apps/apps/BIDS/src/dicm2nii/xml2par.m
+.
