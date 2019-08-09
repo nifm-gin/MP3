@@ -683,6 +683,33 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
+        
+    case {'XROIOrXCluster', '1ROIOr1Cluster'}
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Cluster' | handles.MP3_pipeline_Filtered_Table.Type == 'ROI')));
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        
+        
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
 %      case 'XScanOrXROI'
 %         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName);
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
@@ -939,10 +966,10 @@ function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') 
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') 
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROIOr1Cluster') 
     if sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
         %handles.new_module.opt.table.Default{parameter_selected} = [handles.MP3_pipeline_parameter_setup_table.ColumnName(1); {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}}];
@@ -2502,7 +2529,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2562,7 +2589,7 @@ end
 %% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2597,7 +2624,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
