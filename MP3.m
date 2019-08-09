@@ -6072,6 +6072,7 @@ if slice_selected == 1 % if all slices a selected
                     colonnes = 9;
                 else
                     warndlg('You cannot display more than 72 slices')
+                    return
                 end
                 for k = 1:NbSlices
                     image_to_display =image_loaded(:,:,k,1,1);

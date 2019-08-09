@@ -17,7 +17,8 @@ function CommonDatatype = FindCommonDatatype(Types)
 %                 return single
 %             end
 %     else
-%             error
+%             warning
+%             return double
 %     end
     
 
