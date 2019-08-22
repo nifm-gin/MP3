@@ -17,7 +17,7 @@ if isempty(opt)
     module_option(:,6)   = {'Table_out', table()};
     module_option(:,7)   = {'Output_HTML_Folder','HTML_Quality_Control'};
     module_option(:,8)   = {'Contrast','0.5 0.99'};
-    module_option(:,9)   = {'NumSlices', 'Max(12)'};
+    module_option(:,9)   = {'NumSlices', '9'};
     module_option(:,10)   = {'AutomaticJobsCreation', 'No'};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
@@ -32,15 +32,21 @@ if isempty(opt)
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
          {'This module create a Quelity Control report as an HTML page. Max 12 images.'
-         'This module uses the toolbox "Spinal Cord Toolbox" (https://sourceforge.net/projects/spinalcordtoolbox/) and its adaptation by Tanguy Duval (TONIC - Toulouse)'}
+         'This module uses the toolbox "Spinal Cord Toolbox" (https://sourceforge.net/projects/spinalcordtoolbox/) and its adaptation by Tanguy Duval (TONIC - Toulouse).'
+         'Then adapted to MP3 by Clément Brossard.'}
         };
     user_parameter(:,2)   = {'   .Scan','1Scan','','', {'SequenceName'},'Mandatory',...
          'Please select the scan that will be displayed'};
     user_parameter(:,3)   = {'   .ROI','1ROIOr1Cluster','','',{'SequenceName'},'Optional',...
          'You can also select an ROI or a cluster that will be displayed on the scan'};
-    user_parameter(:,4)   = {'   .Output HTML folder','char','','Output_HTML_Folder','', '',''};
-    user_parameter(:,5)   = {'   .Contrast tolerence','char','','Contrast','', '',''};
-    user_parameter(:,6)   = {'   .Index of the slices to display','char','','NumSlices','', '',''};
+    user_parameter(:,4)   = {'   .Output HTML folder','char','','Output_HTML_Folder','', '','the name of the folder where will be saved your HTML quality control report, inside your project folder.'};
+    user_parameter(:,5)   = {'   .Contrast tolerence','char','','Contrast','', '','Vector of 2 values that specify the fraction of the image to saturate, at low and high pixel values (cf matlab function stretchlim)'};
+    user_parameter(:,6)   = {'   .Which slices display?','char','','NumSlices','', '',...
+        {'3 Possibilities:'
+        '''All'' -  Display all the slices of the volume (or the ROI/Cluster if selected).'
+        'A vector: for instance ''5:10'' or ''3 6 7'' - Display the slices of the volume (or the ROI/Cluster if selected) with the number of the indexes of the vector.'
+        'A scalar: for instance ''x'' - Display x slices of the volume distributed among the volume to display (or the ROI/Cluster if selected)'}
+        };
 
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional', 'Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -146,7 +152,7 @@ for i=1:size(databScans,1)
 %     
     overlay = '';
     command = '';
-    
+    cmap = [];
     if ~isempty(files_in.In2)
         info = niftiinfo(roi);
         B = write_volume(cast(roi_vol, info.Datatype), roi_h, 'Axial');
@@ -154,9 +160,11 @@ for i=1:size(databScans,1)
         overlay = [Path_nii, 'ROI.nii'];
         command = char(databROIs.SequenceName(1));
         C = write_volume(file_vol, roi_h, 'Axial');
+        NSlicesTot = size(B,3);
     else
         info = niftiinfo(file1);
         C = write_volume(file_vol, file_h, 'Axial');
+        NSlicesTot = size(C,3);
     end
     info.Datatype = class(C);
     niftiwrite(C, [Path_nii, 'T2.nii'], info);
@@ -166,34 +174,31 @@ for i=1:size(databScans,1)
     img = [Path_nii, 'T2.nii'];
     contrast = char(databScans.SequenceName(i));
     
-    %z = [2 3 4 5 6 7 8 9 10 11 12 13 14];%2:round(size(file_vol,3)/4);
-    if strcmp(opt.NumSlices, 'Max(12)')
-        if isempty(files_in.In2) % No ROI/Cluster
-            NSlicesTot = size(file_vol,3);
-            if NSlicesTot<12
-                z = 1:NSlicesTot;
-            else
-                Space = round(NSlicesTot/12);
-                Indexes = round(Space/2):Space:NSlicesTot;
-                z = unique(Indexes);
-            end
+    if length(str2num(opt.NumSlices))==1 %#ok<ST2NM> % If z is a scalar, select z slices in the volume.
+        if NSlicesTot<str2num(opt.NumSlices) %#ok<ST2NM>
+            z = 1:NSlicesTot;
         else
-            NSlicesTot = size(roi_vol,3);
-            if NSlicesTot<12
-                z = 1:NSlicesTot;
-            else
-                Space = round(NSlicesTot/12);
-                Indexes = round(Space/2):Space:NSlicesTot;
-                z = unique(Indexes);
-                if length(z)>12
-                    z = z(1:12);
-                end
+            Space = round(NSlicesTot/str2num(opt.NumSlices)); %#ok<ST2NM>
+            Indexes = round(Space/2):Space:NSlicesTot;
+            z = unique(Indexes);
+            if length(z)>str2num(opt.NumSlices) %#ok<ST2NM>
+                z = z(1:str2num(opt.NumSlices)); %#ok<ST2NM>
             end
         end
-    else
+    elseif strcmp(opt.NumSlices, 'All')
+        z = 1:NSlicesTot;
+    elseif length(str2num(opt.NumSlices))>1 %#ok<ST2NM> % If z is a vector, select the slices with the indexes of z.
         z = str2num(opt.NumSlices); %#ok<ST2NM>
+        if any(z>NSlicesTot) % If an index of z is higher than the slice with the highest index, delete it.
+            z(z>NSlicesTot) = [];
+        end
     end
-    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z)
+    Map = which('rgb_color_table.mat');
+    if exist(Map, 'file')
+        load(which('rgb_color_table.mat'), 'num');
+        cmap = num;
+    end
+    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, cmap)
 
 end
 

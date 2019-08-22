@@ -1,4 +1,4 @@
-function qc_write(qcdir,inputdate,subject,img,overlay,contrast,command, z)
+function qc_write(qcdir,inputdate,subject,img,overlay,contrast,command, z, cmap)
 if iscell(qcdir),   qcdir   = qcdir{1}; end
 if iscell(overlay), overlay = overlay{1}; end
 if isnumeric(command), command = num2str(command); end
@@ -36,14 +36,14 @@ elseif exist(overlay,'file') && (strcmp(overlay(max(1,end-3):end),'.nii') || str
         [~,~,z]=find3d(overlay_dat);
         z = round(linspace(min(z),max(z),Nslices));
     end
-    U = uniquetol(overlay_dat(round(linspace(1,end,min(end,1000)))),.1/max(1,nanmax(overlay_dat(:))));
+    U = uniquetol(overlay_dat(round(linspace(1,end,min(end,1000)))),.1/max(1,nanmax(overlay_dat(:)))); % Unique values (with a tolerance) in a vector made of 1000 points on the image. Can be a bit few ...
     U = U(~isnan(U));
     if length(U)<20 % this is a Mask
         ismask = true;
-        segpng = makeimagestack(rot90(overlay_dat(:,:,z)),[],[],[round(Nslices/div) div],0);
+        segpng = makeimagestack(rot90(overlay_dat(:,:,z)),[],[],[floor(Nslices/div)+1 div],0);
     else % this is an image
         ismask = false;
-        segpng = makeimagestack(rot90(overlay_dat(:,:,z)),-3,[],[round(Nslices/div) div],0);
+        segpng = makeimagestack(rot90(overlay_dat(:,:,z)),-3,[],[floor(Nslices/div)+1 div],0);
     end
     % manage anisotropic pixels
     newdim = size(segpng).*(h.pixdim([3 2])/min(h.pixdim([3 2])));
@@ -57,7 +57,12 @@ elseif exist(overlay,'file') && (strcmp(overlay(max(1,end-3):end),'.nii') || str
     segpng = imresize(segpng, 1000/size(segpng,2),'nearest');
     
     if ismask
-        segpngrgb = ind2rgb(uint8(segpng),jet(5));
+        if ~exist('cmap','var') || isempty(cmap)
+            cmap = jet(length(unique(segpng(:))));
+        else
+            cmap = circshift(cmap,1,1);
+        end
+        segpngrgb = ind2rgb(uint8(segpng),cmap);
         imwrite(segpngrgb,fullfile(qcdir,subject,'overlay_img.png'),'Alpha',double(segpng>0))
     else
         imwrite(segpng,fullfile(qcdir,subject,'overlay_img.png'))
@@ -76,9 +81,9 @@ elseif exist(img{1},'file')  && (strcmp(img{1}(max(1,end-3):end),'.nii') || strc
         tmpimg = nanmean(tmpimg,4);
         if ~exist('z','var'), z = round(linspace(1,size(tmpimg,3),min(6,size(tmpimg,3)))); end
         if iim == 1
-            img2D = makeimagestack(rot90(tmpimg(:,:,z)),-3,[],[round(Nslices/div) div],0);
+            img2D = makeimagestack(rot90(tmpimg(:,:,z)),-3,[],[floor(Nslices/div)+1 div],0);
         else
-            img2D = cat(2+double(length(imgdat)==3),makeimagestack(rot90(tmpimg(:,:,z)),-3,[],[round(Nslices/div) div],0),img2D);
+            img2D = cat(2+double(length(imgdat)==3),makeimagestack(rot90(tmpimg(:,:,z)),-3,[],[floor(Nslices/div)+1 div],0),img2D);
         end
     end
     % resize image to square pixels
