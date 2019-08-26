@@ -57,6 +57,10 @@
                       Next
                   </span>
               </a>
+<input type="button" value="Hide ROI" onclick="document.getElementById('overlay-img').style.visibility = 'hidden'">
+<input type="button" value="Display ROI" onclick="document.getElementById('overlay-img').style.visibility = 'visible'">
+<input type="button" value="Run Animation" onclick="document.getElementById('overlay-img').style.animationPlayState = 'running'">
+<input type="button" value="Pause Animation" onclick="document.getElementById('overlay-img').style.animationPlayState = 'paused'">
               <table id="table" class="table table-condensed"
                   data-search="true"
                   data-show-multi-sort="true" 
