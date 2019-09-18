@@ -18,7 +18,8 @@ if isempty(opt)
     module_option(:,7)   = {'Output_HTML_Folder','HTML_Quality_Control'};
     module_option(:,8)   = {'Contrast','0.5 0.99'};
     module_option(:,9)   = {'NumSlices', '9'};
-    module_option(:,10)   = {'AutomaticJobsCreation', 'No'};
+    module_option(:,10)   = {'Supine', 'Yes'};
+    module_option(:,11)   = {'AutomaticJobsCreation', 'No'};
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
 %   
         %% list of everything displayed to the user associated to their 'type'
@@ -31,7 +32,7 @@ if isempty(opt)
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
-         {'This module create a Quelity Control report as an HTML page. Max 12 images.'
+         {'This module create a Quelity Control report as an HTML page.'
          'This module uses the toolbox "Spinal Cord Toolbox" (https://sourceforge.net/projects/spinalcordtoolbox/) and its adaptation by Tanguy Duval (TONIC - Toulouse).'
          'Then adapted to MP3 by Clément Brossard.'}
         };
@@ -47,7 +48,11 @@ if isempty(opt)
         'A vector: for instance ''5:10'' or ''3 6 7'' - Display the slices of the volume (or the ROI/Cluster if selected) with the number of the indexes of the vector.'
         'A scalar: for instance ''x'' - Display x slices of the volume distributed among the volume to display (or the ROI/Cluster if selected)'}
         };
-
+    user_parameter(:,7)   = {'   .Data acquired in Paravision with the HEAD SUPINE option?','cell',{'Yes', 'No'},'Supine','', '',...
+        {'Some researchers are used to acquire data in paravision with the HEAD_SUPINE option instead of HEAD_PRONE, the default one.'
+        'It changes the way of encoding images and it results in a rotation of 180° of the images.'
+        'In order to adapt the report to your data, please specify this parameter.'}
+        };
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional', 'Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
 %%
@@ -82,6 +87,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The core of the brick starts here %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if strcmp(opt.Supine, 'Yes')
+    flag_rot = 1;
+else
+    flag_rot = 0;
+end
+
+
 databScans = opt.Table_in(opt.Table_in.Type == categorical(cellstr('Scan')),:);
 databROIs = opt.Table_in(opt.Table_in.Type == categorical(cellstr('ROI')) | opt.Table_in.Type == categorical(cellstr('Cluster')),:);
 for i=1:size(databScans,1)
@@ -100,8 +113,18 @@ for i=1:size(databScans,1)
         roi_h = spm_vol(roi);
         roi_vol = read_volume(roi_h, roi_h, 0, 'Axial');
         file_vol = read_volume(file_h, roi_h, 0, 'Axial');
+        if flag_rot
+            roi_vol = flip(roi_vol, 1);
+            file_vol = flip(file_vol, 1);
+           %roi_vol = imrotate(roi_vol,180);
+           %file_vol = imrotate(file_vol,180);
+        end
     else
         file_vol = read_volume(file_h, file_h, 0, 'Axial');
+        if flag_rot
+           file_vol = flip(file_vol, 1);
+           %file_vol = imrotate(file_vol,180);
+        end
     end
 
     Path_html = [opt.Table_in.Properties.UserData.MP3_data_path, filesep, 'HTML', filesep, opt.Output_HTML_Folder, filesep];
@@ -170,7 +193,8 @@ for i=1:size(databScans,1)
     niftiwrite(C, [Path_nii, 'T2.nii'], info);
     qcdir = Path_html;
     inputdate = datestr(datetime('now'));
-    subject = [char(databScans.Patient(i)), ' - ', char(databScans.Tp(i))];
+    subject = [char(databScans.Patient(i)), '-', char(databScans.Tp(i)), '-', char(databScans.SequenceName(i))];
+    subject_name = [char(databScans.Patient(i)), '-', char(databScans.Tp(i))];
     img = [Path_nii, 'T2.nii'];
     contrast = char(databScans.SequenceName(i));
     
@@ -198,7 +222,7 @@ for i=1:size(databScans,1)
         load(which('rgb_color_table.mat'), 'num');
         cmap = num;
     end
-    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, cmap)
+    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, cmap, subject_name)
 
 end
 
