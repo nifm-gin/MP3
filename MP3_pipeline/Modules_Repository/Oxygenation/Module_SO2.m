@@ -388,9 +388,9 @@ end
 
 
 OutputImages = SO2map;
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 5000) = NaN;
+%OutputImages(isnan(OutputImages)) = NaN;
 
 
 OutputImages(isinf(OutputImages)) = -1;
