@@ -1,4 +1,4 @@
-function qc_write(qcdir,inputdate,subject,img,overlay,contrast,command, z, cmap)
+function qc_write(qcdir,inputdate,subject,img,overlay,contrast,command, z, cmap, subject_name)
 if iscell(qcdir),   qcdir   = qcdir{1}; end
 if iscell(overlay), overlay = overlay{1}; end
 if isnumeric(command), command = num2str(command); end
@@ -97,7 +97,7 @@ end
 qcjson(end).background_img = strrep(fullfile(subject,'bkg_img.png'),'\','/');
 qcjson(end).contrast       = contrast;
 qcjson(end).command        = command;
-qcjson(end).subject        = subject;
+qcjson(end).subject        = subject_name;
 
 % delete duplicated lines
 [~,ia] = unique({qcjson.background_img},'last');
