@@ -54,6 +54,7 @@ if isempty(opt)
         '      - (or performing the regression method) Put your ''MODEL.mat'' model file'
         ''
         'The dictionaries are designed with the Mrvox simulation tool'
+        'Dictionary is updated with T2 from the T2 map and restricted for ADC'
         }'};
     
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, '',''};
@@ -109,9 +110,9 @@ if isempty(opt)
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
-    user_parameter(:,17)   = {'Select the scans to use for T2 reduction','1Scan','','',{'SequenceName'}, '',''};
-    user_parameter(:,18)   = {'Select the scans to use for ADC reduction','1Scan','','',{'SequenceName'}, '',''};
-    user_parameter(:,19)   = {'Relative error tolerated on prior input value','numeric','','RelErr','','',''};
+    user_parameter(:,17)   = {'Select the T2 map to use for dico pre-processing','1Scan','','',{'SequenceName'}, 'Mandatory','If dico generated without T2, an exponential will be applied based on this map'};
+    user_parameter(:,18)   = {'Select the scans to use for ADC reduction','1Scan','','',{'SequenceName'}, 'Mandatory','The dico will be restricted on the ADC dimension for each point'};
+    user_parameter(:,19)   = {'Relative error tolerated on prior input value','numeric','','RelErr','','','Tolerance on the restriction'};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -500,9 +501,45 @@ switch opt.combUsed
         
 end %end switch
 
-%% Dico restriction
+%% Iteration on T2 values
+
+T2Map               = niftiread(files_in.In4);
+T2Values            = unique(round(T2Map)); % get unique values (rounded to limit iterations)
+
+ADCMap              = niftiread(files_in.In5);
+                    % minVal          = min(Dico.Parameters.Par(:,colNb))*1e3; % min of the dico
+                    % maxVal          = max(Dico.Parameters.Par(:,colNb))*1e3; % max of the dico
+                    % Values          = Values(minVal <= Values);
+                    % Values          = Values(Values <= maxVal);
+                    % [nanRow, nanCol, nanSl] = ind2sub(size(T2Map), find(T2Map < minVal & T2Map > maxVal)); % Get coordinates of points that will not fit the dico
+
+%% Dico Restriction
+for v=1:numelT2Values)
+%     % Removing dico entries where parameter of interest is out of
+%     % the tolerated range
+%     keptValues  = find(Values(v)*(1-opt.RelErr) <= Dico.Parameters.Par(:,colNb)*1e3 &...
+%         Dico.Parameters.Par(:,colNb)*1e3 <= Values(v)*(1+opt.RelErr));
+
+    Tmp{1}.Parameters.Par = Dico.Parameters.Par;
+    Tmp{1}.Parameters.Labels = Dico.Parameters.Labels;
+    % Apply exponential with current T2 to whole Dico
+    ExpMat = repmat(exp(-Dico.Tacq / T2Values(v)), [size(Dico.MRSignals, 1), 1]);
+    Tmp{1}.MRSignals = Dico.MRSignals .* ExpMat; % Dico updated with T2
+
+    [row, col, sl] = ind2sub(size(RestMap), find(RestMap == T2Values(v))); % Get coordinates of voxels considered at this iteration
+
+    %% Iteration on ADC values
+    for Vox = 1:numel(row)
+    end
+end
+
+
+
+
+
+
 % Check input restriction maps
-inPar = {'T2', 'DH20'};
+inPar = {'DH20', 'T2'};
 inMaps = [0,0];
 if isfield(files_in, 'In4')
     inMaps(1)=1;
