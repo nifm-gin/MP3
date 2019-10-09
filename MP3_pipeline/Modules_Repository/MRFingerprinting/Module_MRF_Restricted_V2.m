@@ -73,13 +73,16 @@ if isempty(opt)
         {'Select the folder containing dico files (.json), ratio dico file (.mat) and/or model file (.mat)'}};
     
     user_parameter(:,9)   = {'   .Prefix','char', '', 'prefix', '', '',...
-        {'Choose a prefix for your output maps'}};
+        {'Choose a prefix for your output maps'
+        'WARNING: If selecting "R", make sure that the prefix does not contain any "R", as in "MRF"'
+        }'};
     user_parameter(:,17)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
     user_parameter(:,10)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
         {'Select the parameters considered in the model (default ''Vf'')'
+        'WARNING: If selecting "R", make sure that the prefix does not contain any "R", as in "MRF"'
         }'};
     user_parameter(:,11)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
         { 'Choose:'
@@ -510,18 +513,22 @@ ADCPath             = files_in.In5;
 ADCMap              = niftiread(ADCPath{1});
 ADCValues           = round(ADCMap); % units in µm2/s
 colNb               = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), 'DH2O'));
-minADC              = min(Dico.Parameters.Par(:,colNb))*1e12; % min of the dico
-maxADC              = max(Dico.Parameters.Par(:,colNb))*1e12; % max of the dico
+minDicoADC              = min(Dico.Parameters.Par(:,colNb))*1e12; % min of the dico
+maxDicoADC              = max(Dico.Parameters.Par(:,colNb))*1e12; % max of the dico
+% minADCValues            = min(min(min(ADCValues)));
+% maxADCValues            = max(max(max(ADCValues)));
+ADCValues(ADCValues*(1+opt.RelErr) < minDicoADC) = nan;
+ADCValues(ADCValues*(1-opt.RelErr) > maxDicoADC) = nan;
 % Remove values outside the dico (with error range)
-[nanRow, nanCol, nanSl] = ind2sub(size(ADCValues), [find(ADCValues < minADC* (1-opt.RelErr)); find(ADCValues > maxADC *(1+opt.RelErr))]); % Get coordinates of points that will not fit the dico
+%[nanRow, nanCol, nanSl] = ind2sub(size(ADCValues), [find(ADCValues < minDicoADC* (1-opt.RelErr)); find(ADCValues > maxDicoADC *(1+opt.RelErr))]); % Get coordinates of points that will not fit the dico
 %ADCValues               = ADCValues(minADC * (1-opt.RelErr) <= ADCValues);
 %ADCValues               = ADCValues(ADCValues <= maxADC *(1+opt.RelErr));
-if ~isempty(nanRow)
-    warning('%i voxels will not be evaluated as their ADC value falls outside the dictionary range', size(nanRow,1))
+if nnz(isnan(ADCValues))
+    warning('%i voxels will not be evaluated as their ADC value falls outside the dictionary range', nnz(isnan(ADCValues)))
     %ADCValues(nanRow, nanCol, nanSl) = NaN; %marche pas
-    for i = 1:numel(nanRow)
-        ADCValues(nanRow(i), nanCol(i), nanSl(i)) = NaN;
-    end
+%     for i = 1:numel(nanRow)
+%         ADCValues(nanRow(i), nanCol(i), nanSl(i)) = NaN;
+%     end
 end
 check=0;
 %% Dico Restriction
@@ -533,24 +540,30 @@ for v=1:numel(T2Values)
     %fprintf('Exp applied\n')
     
     [row, col, sl] = ind2sub(size(T2Map), find(round(T2Map) == T2Values(v))); % Get coordinates of voxels considered at this iteration
-    fprintf('%i voxels with T2 = %i\n', numel(row), T2Values(v))
+    %fprintf('%i voxels with T2 = %i\n', numel(row), T2Values(v))
     
     %% Iteration on ADC values
     for Vox = 1:numel(row)
         Tmp{1}.MRSignals = MRSignalsExp;
         locADC = ADCValues(row(Vox), col(Vox), sl(Vox));
         if isnan(locADC)
-            fprintf('Local ADC was nan\n')
+            %fprintf('Local ADC was nan\n')
             continue
         end
         check = check+1;
         % Remove dico entries where ADC does not match that of current
         % voxel
-        keptValuesInf  = find(Dico.Parameters.Par(:,colNb)*1e12 <= locADC*(1+opt.RelErr));
-        keptValuesSup  = find(locADC*(1-opt.RelErr) <= Dico.Parameters.Par(keptValuesInf,colNb)*1e12); 
+        %keptValuesInf  = find(Dico.Parameters.Par(:,colNb)*1e12 <= locADC*(1+opt.RelErr));
+        %keptValuesSup  = find(locADC*(1-opt.RelErr) <= Dico.Parameters.Par(keptValuesInf,colNb)*1e12); 
         
-        Tmp{1}.MRSignals = Tmp{1}.MRSignals(keptValuesSup, :);
-        Tmp{1}.Parameters.Par = Dico.Parameters.Par(keptValuesSup, :);
+        toRemoveInf     = Dico.Parameters.Par(:,colNb)*1e12 <= locADC*(1-opt.RelErr);
+        toRemoveSup     = Dico.Parameters.Par(:,colNb)*1e12 >= locADC*(1+opt.RelErr);
+        toKeep          = ~(toRemoveInf + toRemoveSup);
+        
+        Tmp{1}.MRSignals = Tmp{1}.MRSignals(toKeep, :);
+        Tmp{1}.Parameters.Par = Dico.Parameters.Par(toKeep, :);
+%         Tmp{1}.MRSignals = Tmp{1}.MRSignals(keptValuesSup, :);
+%         Tmp{1}.Parameters.Par = Dico.Parameters.Par(keptValuesSup, :);
         Tmp{1}.Parameters.Labels = Dico.Parameters.Labels;
         
         localXobs = Xobs(row(Vox), col(Vox),: , sl(Vox)); %Xobs : X, Y, Time, Z
@@ -657,9 +670,12 @@ end
 
 %% Put NaN where out of the dico
 for i = 1:numel(MapStruct)
-    for j = i:numel(nanRow)
-        MapStruct{i}(nanRow(j), nanCol(j), nanSl(j)) = nan;
-    end
+    MapStruct{i}(isnan(ADCValues))= nan;
+    %MapStruct{i}(ADCValues*(1+opt.RelErr) < minDicoADC) = nan;
+    %MapStruct{i}(ADCValues*(1-opt.RelErr) > maxDicoADC) = nan;
+%     for j = i:numel(nanRow)
+%         MapStruct{i}(nanRow(j), nanCol(j), nanSl(j)) = nan;
+%     end
 end
 
 %% Json processing
