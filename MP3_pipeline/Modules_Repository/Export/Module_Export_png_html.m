@@ -273,8 +273,11 @@ for x = 1:numel(Patient_listing)
             roi.header = spm_vol([char(roi_database.Path(1)) char(roi_database.Filename(1)) '.nii']);
             roi.data = read_volume(roi.header, scan_of_reference.header, 0, 'Axial');
             roiSlice = roi.data(:,:,midSlice);
+            Data = scan_of_reference.data(:,:,midSlice,1);
+            Data(roiSlice ==0 ) = nan;
             BBox = regionprops(roiSlice, 'BoundingBox');
-            pngData = imcrop(scan_of_reference.data(:,:,midSlice,1), BBox.BoundingBox);
+            %pngData = imcrop(scan_of_reference.data(:,:,midSlice,1), BBox.BoundingBox);
+            pngData = imcrop(Data, BBox.BoundingBox);
         else
             pngData = scan_of_reference.data(:,:,midSlice,1);
         end
@@ -282,6 +285,9 @@ for x = 1:numel(Patient_listing)
         % Scale data on [0,1] before png conversion
         pngData = pngData - min(min(pngData));
         pngData = pngData/max(max(pngData));
+        
+        % Remove 
+        
         imwrite(pngData, [imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png'])
         localTable(1, colIndex) = {[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png']};
         % process following scans
@@ -294,8 +300,11 @@ for x = 1:numel(Patient_listing)
             % get bounding box if asked
             if strcmp(opt.applyBbox, 'Yes')
                 roiSlice = roi.data(:,:,midSlice);
+                Data = scan.data(:,:,midSlice,1);
+                Data(roiSlice ==0 ) = nan;
                 BBox = regionprops(roiSlice, 'BoundingBox');
-                pngData = imcrop(scan.data(:,:,midSlice,1), BBox.BoundingBox);
+                %pngData = imcrop(scan.data(:,:,midSlice,1), BBox.BoundingBox);
+                pngData = imcrop(Data, BBox.BoundingBox);
             else
                 pngData = scan.data(:,:,midSlice,1);
             end
