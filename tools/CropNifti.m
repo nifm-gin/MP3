@@ -16,16 +16,23 @@ for i=1:size(InputVol, 3)
         NiftiSlice = [NiftiSlice, i];
     end
 end
-assert(min(NiftiSlice) == NiftiSlice(1));
-assert(max(NiftiSlice) == NiftiSlice(end));
-FirstSlice = NiftiSlice(1);
-FinalSlice = NiftiSlice(end);
+if isempty(NiftiSlice)
+   OutputVol = InputVol;
+   OutputMat = InputMat;
+else
+    assert(min(NiftiSlice) == NiftiSlice(1));
+    assert(max(NiftiSlice) == NiftiSlice(end));
+    FirstSlice = NiftiSlice(1);
+    FinalSlice = NiftiSlice(end);
 
-OutputVol = InputVol(:,:,FirstSlice:FinalSlice,:,:);
-OutputMat = InputMat;
-Movement = [0;0;FirstSlice-1;1];
-OutputMat(:,4) = InputMat * Movement;
-%OutputMat(3,4) = InputMat(3,4) + (FirstSlice-1)*InputMat(3,3);
+    OutputVol = InputVol(:,:,FirstSlice:FinalSlice,:,:);
+    OutputMat = InputMat;
+    Movement = [0;0;FirstSlice-1;1];
+    OutputMat(:,4) = InputMat * Movement;
+    %OutputMat(3,4) = InputMat(3,4) + (FirstSlice-1)*InputMat(3,3);
+    
+end
+
 
 end
 
