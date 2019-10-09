@@ -14,7 +14,7 @@ if isempty(opt)
     module_option(:,3)   = {'Execution_Mode','Through all sessions of one Patient'};
     module_option(:,4)   = {'OutputSequenceName','Prefix'};
     module_option(:,5)   = {'Function','nmi'};
-    module_option(:,6)   = {'Separation','4 2'};
+    module_option(:,6)   = {'Separation','4 2 1 0.5 0.1'};
     module_option(:,7)   = {'Tolerence','0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001'};
     module_option(:,8)   = {'Hist_Smooth','7 7'};
     module_option(:,9)   = {'Interpolation','4th Degree B-Spline'};
@@ -115,12 +115,12 @@ if strcmp(files_out, '')
                 tags_out_In3.SequenceName = categorical(cellstr([opt.output_filename_ext, char(tags_out_In3.SequenceName)]));
                 if tags_out_In3.Type == 'Scan'
                     tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName), '.nii'];
-                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-', char(tags_out_In3.SequenceName)]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName), '.nii'];
+                     tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_', char(tags_out_In3.SequenceName)]));
                 else
                     tags_out_In3.Path = categorical(cellstr([opt.folder_out, filesep]));
-                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName), '.nii'];
-                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '-', char(tags_out_In3.Tp), '-ROI-', char(tags_out_In3.SequenceName)]));
+                    f_out = [char(tags_out_In3.Path), char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_ROI_', char(tags_out_In3.SequenceName), '.nii'];
+                    tags_out_In3.Filename = categorical(cellstr([char(tags_out_In3.Patient), '_', char(tags_out_In3.Tp), '_ROI_', char(tags_out_In3.SequenceName)]));
                 end
                 files_out.In3{i} = f_out;
                 opt.Table_out = [opt.Table_out ; tags_out_In3];

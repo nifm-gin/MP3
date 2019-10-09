@@ -106,9 +106,15 @@ end
 %% Get data from a specific axe      %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N = niftiread(files_in.In1{1});
+% open the data in the correct orientation (as the display in MP3
+info_spm = spm_vol(files_in.In1{1});
+N = read_volume(info_spm, info_spm, 0);
+
+% nii hearder
 info = niftiinfo(files_in.In1{1});
-[path, name, ext] = fileparts(files_in.In1{1});
+
+% N = niftiread(files_in.In1{1});
+[path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 
 
@@ -125,7 +131,7 @@ end
 
 if axes == 3
 
-    NewIm = N(:,:,index(1):index(2));  
+    NewIm = N(:,:,index(1):index(2),:,:,:,:);  
     
     OutputMat = info.Transform.T';
     Movement = [0;0;index(1)-1;1];
@@ -137,38 +143,32 @@ elseif axes == 4
  
     NewIm= zeros( [ size(N,1),size(N,2),size(N,3),length(index)] , Informations.class); 
     for i = 1: length(index)
-        NewIm(:,:,:,i) = N(:,:,:,index(i));  
+        NewIm(:,:,:,i) = N(:,:,:,index(i),:,:,:);  
     end        
  
     
 elseif axes == 5
-   
-    NewIm = zeros([size(N,1),size(N,2),size(N,3),size(N,4),length(index)], Informations.class);
-    
-    for i = 1:  length(index)
-        NewIm(:,:,:,:,i) = N(:,:,:,:,index(i));     
-    end
-        
-        
 
-    
+    NewIm = zeros([size(N,1),size(N,2),size(N,3),size(N,4),length(index)], Informations.class); 
+    for i = 1:  length(index)
+        NewIm(:,:,:,:,i) = N(:,:,:,:,index(i),:,:);     
+    end
 end
 
-
-info.ImageSize = size(NewIm);
-
-info.PixelDimensions = info.PixelDimensions(1:length(size(NewIm)));
-
-info.ImageSize = size(NewIm);
-
+% reorient data before saving it
+NewIm_reoriented = write_volume(NewIm, info_spm, 0);
 
 info2 = info;
+
+NewIm = cast(NewIm_reoriented,info.Datatype); 
+info2.ImageSize = size(NewIm_reoriented);
+info2.PixelDimensions = info.PixelDimensions(1:length(size(NewIm_reoriented)));
+info2.ImageSize = size(NewIm_reoriented);
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
-NewIm=int16(NewIm);
-info2.Datatype = class(NewIm);
-niftiwrite(NewIm, files_out.In1{1}, info2)
+
+niftiwrite(NewIm_reoriented, files_out.In1{1}, info2)
 
 if exist(jsonfile)
     J = ReadJson(jsonfile);

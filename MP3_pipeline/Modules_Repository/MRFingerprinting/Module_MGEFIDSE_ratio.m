@@ -13,6 +13,7 @@ if isempty(opt)
     module_option(:,2)   = {'prefix',           'MRF_'};
     module_option(:,3)   = {'method',           'ClassicMRF'};
     module_option(:,4)   = {'filtered',         'No'};
+    module_option(:,16)  = {'removed',          0};
     
     module_option(:,5)   = {'RefInput',         1};
     module_option(:,6)   = {'InputToReshape',   1};
@@ -23,8 +24,8 @@ if isempty(opt)
     module_option(:,11)  = {'Params',           'Vf'};
     module_option(:,12)  = {'K',                50};
     module_option(:,13)  = {'Lw',               0};
-    module_option(:,14)  = {'cstrS',            'd'};
-    module_option(:,15)  = {'cstrG',            'd'};
+    module_option(:,14)  = {'cstrS',            'd*'};
+    module_option(:,15)  = {'cstrG',            ''};
     
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -44,7 +45,7 @@ if isempty(opt)
         'The regression method is based on the paper : Boux, Fabien, et al. [work in progress]'
         ''
         'Prerequisite:'
-        '      - Put your ''PRE_*.json'' and ''POST_*'' dictionary files (pre and post simulated scans) in the ''data/dictionaries'' folder'
+        '      - Put your ''PRE_*.json'' and ''POST_*.json'' dictionary files (pre and post simulated scans) in the ''data/dictionaries'' folder'
         '      - (or) Put your ''DICO.mat'' dictionary file ratio between the post and pre simulated scans in the ''data/dictionaries'' folder'
         '      - (or performing the regression method) Put your ''MODEL.mat'' model file'
         ''
@@ -64,8 +65,12 @@ if isempty(opt)
     
     user_parameter(:,5)   = {'   .Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix for your output maps'}};
+    
     user_parameter(:,13)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
+    user_parameter(:,14)   = {'   .Remove last echoes?','numeric','', 'removed', '', '',...
+        {''}};
+    
     user_parameter(:,6)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
@@ -208,6 +213,7 @@ end
 % Generate ratio signals from scans (and TODO: ROI if given)
 % TODO: what if In1 is the post and In2 the pre scan
 Xobs            = niftiread(files_in.In2{1}) ./ niftiread(files_in.In1{1});
+info            = niftiinfo(files_in.In2{1});
 json_filename   = split(files_in.In2{1},'.');
 json_filename{2} = '.json';
 Obs             = ReadJson([json_filename{1} json_filename{2}]);
@@ -223,20 +229,46 @@ if strcmp(opt.filtered, 'Yes') == 1
         Xobs(x,y,z,:) = signal(2:end-1);
     end; end; end
 end
-Xobs        = permute(Xobs, [1 2 4 3]);
+
+% If necessary, remove echoes
+if opt.removed > 0
+    clear tmp
+    for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
+        tmp(x,y,z,:) = Xobs(x,y,z,1:end-opt.removed);
+    end; end; end
+    Xobs    = tmp;
+    Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
+end
+
+
+% If necessary, permute column 
+dim_time    = find(info.PixelDimensions == 0);
+if dim_time == 4
+    perm_vect = [1 2 4 3];
+elseif dim_time == 1 || dim_time == 2
+    error('Failed')
+else
+    perm_vect = [1 2 3 4];
+end
+Xobs        = permute(Xobs, perm_vect);
 
 
 % Reformat dico (not needed if MODEL is already computed)
 if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
-    tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
+    
     if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals,2)
         warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
+        tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
         for i = 1:size(Dico.MRSignals,1)
-            tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3);
+            try
+                tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3, 'method','extrap');
+            end
         end
+        Dico.MRSignals = tmp;
+        Dico.MRSignals = tmp;
+        Dico.Tacq   = Obs.EchoTime.value'*1e-3;
     end
-    Dico.MRSignals = tmp;
-    Dico.Tacq   = Obs.EchoTime.value'*1e-3;
+    
     %remove row containning nan values
     nn = ~any(isnan(Dico.MRSignals),2);
     Dico.MRSignals = Dico.MRSignals(nn,:);
@@ -249,9 +281,8 @@ end
 switch opt.method
     
     case 'ClassicMRF'
-        % TODO: find something nicer than this permute trick
         Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,[]);
-        Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
+        Map.Y       = permute(Estimation.GridSearch.Y, perm_vect);
         
     case 'RegressionMRF'
         
@@ -290,8 +321,8 @@ switch opt.method
             save(model_filename,'Parameters', 'labels')
         end
         
-        Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
-        Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
+        Map.Y   = permute(Estimation.Regression.Y, perm_vect);
+        Map.Std	= permute(Estimation.Regression.Cov, perm_vect).^.5;
 end
 
 

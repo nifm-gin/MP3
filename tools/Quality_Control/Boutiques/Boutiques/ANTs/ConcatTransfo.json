@@ -1,0 +1,48 @@
+{
+	"tool-version": "1.0.0",
+	"name": "ConcatTransfo",
+	"author": "TONIC",
+	"description": "Concatenate multiple ANTs warping fields using ComposeMultiTransform.\n\nFor instance if you have\n- Warping field: anatomical to MNI template\n- Affine matrix: Diffusion to anatomical\nYou can obtain the transform diffusion to MNI template\n\n\nComposeMultiTransform ImageDimension output_field [-R reference_image] {[deformation_field | [-i] affine_transform_txt ]}\n  Usage has the same form as WarpImageMultiTransform\n For Example:\n\nComposeMultiTransform Dimension  outwarp.nii   -R template.nii   ExistingWarp.nii  ExistingAffine.nii\n or for an inverse mapping :\nComposeMultiTransform Dimension  outwarp.nii   -R template.nii   -i ExistingAffine.nii ExistingInverseWarp.nii\n recalling that the -i option takes the inverse of the affine mapping\n\nOr: to compose multiple affine text file into one:\nComposeMultiTransform ImageDimension output_affine_txt [-R reference_affine_txt] {[-i] affine_transform_txt}\nThis will be evoked if a text file is given as the second parameter. In this case reference_affine_txt is used to define the center of the output affine.  The default reference is the first given affine text file. This ignores all non-txt files among the following parameters.\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "Reference Image",
+			"value-key": "[REFERENCE_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "reference_image",
+			"name": "Reference Image"
+		},
+		{
+			"description": "1st warping field (or affine matrix)",
+			"value-key": "[1ST_WARPING_FIELD__OR_AFFINE_MATRIX_]",
+			"type": "File",
+			"optional": false,
+			"id": "1st_warping_field__or_affine_matrix_",
+			"name": "1st warping field (or affine matrix)"
+		},
+		{
+			"description": "2nd warping field",
+			"value-key": "[2ND_WARPING_FIELD]",
+			"type": "File",
+			"optional": false,
+			"id": "2nd_warping_field",
+			"name": "2nd warping field"
+		}
+	],
+	"output-files": [
+		{
+			"description": "Ouput warping field",
+			"value-key": "[OUPUT_WARPING_FIELD]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "ouput_warping_field",
+			"name": "Ouput warping field"
+		}
+	],
+	"command-line": "ComposeMultiTransform 3 [OUPUT_WARPING_FIELD] -R [REFERENCE_IMAGE] [1ST_WARPING_FIELD__OR_AFFINE_MATRIX_] [2ND_WARPING_FIELD]"
+}

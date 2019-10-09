@@ -102,7 +102,8 @@ if strcmp(files_out, '')
                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
                 if size(DbRois, 1) == 0
-                    continue
+                    continuet*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
                 end
 %                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
 %                 datab = datab(datab.(Tag2) == UTag2(j),:);
@@ -164,7 +165,8 @@ for i=1:length(UTag1)
         
         if size(DbRois, 1) == 0
             continue
-        end
+        endt*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
         
         %datab = databScans(databScans.(Tag1) == UTag1(i),:);
@@ -220,9 +222,14 @@ for i=1:length(roi_files)
         Name_TP = opt.Table_in.Tp(opt.Table_in.Filename == categorical(cellstr(sname)));
         Name_Group = opt.Table_in.Group(opt.Table_in.Filename == categorical(cellstr(sname)));
         nifti_header = spm_vol(Files{j});
-        ROI_NaN = ROI{i};
+%         ROI_NaN = ROI{i};
+%         ROI_NaN(ROI_NaN == 0) = NaN;
+        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial');
+         % the ROI needs to have the same class as the data
+        ROI_NaN = cast(ROI{i}, class(input{j}));
         ROI_NaN(ROI_NaN == 0) = NaN;
-        input{j} = read_volume(nifti_header, ROI_nifti_header{i}, 0, 'axial').*ROI_NaN;
+        input{j} = input{j}.*ROI_NaN;
+        
         %% merge the 4th and the 5th dimension (mean data)
 %         Vec = mean(input{j},4);
 %         NameScans = [NameScans, {char(Name_Scan)}];
@@ -290,6 +297,7 @@ SizeMax = max(Size);
 All_Data_Clean = {};
 ROI_Clean = {};
 VecVoxToDeleteClean = {};
+VecVoxToKeepClean = {};
 Clust_Data_In = [];
 ROI_nifti_header_Clean = {};
 for i=1:length(All_Data)
@@ -301,7 +309,7 @@ for i=1:length(All_Data)
     %
     VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete{i}];
     %VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete];
-
+    VecVoxToKeepClean = [VecVoxToKeepClean, VecVoxToKeep(i)];
     
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
     ROI_nifti_header_Clean = [ROI_nifti_header_Clean, ROI_nifti_header{i}];
@@ -320,7 +328,7 @@ VoxValues = table2array(Clust_Data_In(:,4:end));
 
 
 
-opts = statset('UseParallel', true, 'MaxIter', 1000);
+%opts = statset('UseParallel', true, 'MaxIter', 1000);
 
 if strcmp(opt.SlopeHeuristic, 'Yes')
     
@@ -431,7 +439,7 @@ else
     [ClusteredVox, ~, ~, ~] = kmeans(VoxValues,opt.NbClusters,'Options', opts, 'OnlinePhase', 'on');
     for zz = 1:opt.NbClusters
         mu(zz,:) = mean(VoxValues(ClusteredVox == zz,:));
-        sigma(:,:,zz) = cov(VoxValues(ClusteredVox == zz,:), VoxValues(ClusteredVox == zz,2));
+        sigma(:,:,zz) = cov(VoxValues(ClusteredVox == zz,:));
         proportion(zz) = sum(ClusteredVox == zz)/numel(ClusteredVox);
         
     end
@@ -452,7 +460,7 @@ Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Si
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
 
 if strcmp(opt.Normalization_mode, 'All Database')
-    Informations.Normalization_mode = 'Patient-by-Patient';
+    Informations.Normalization_mode = 'All Database';
     Informations.NanMean_VoxValues = NanMean_VoxValues;
     Informations.NanStd_VoxValues = NanStd_VoxValues;
 end
@@ -470,12 +478,12 @@ end
 
 ind = 1;
 for i=1:length(All_Data_Clean)
-    Cluster = ROI_Clean{i};
-    Cluster(logical(Cluster)) = NaN;
+    TheCluster = ROI_Clean{i};
+    TheCluster(logical(TheCluster)) = NaN;
     %ROI_Clust = logical(ROI{i});
     %Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
     
-    Cluster(VecVoxToKeep{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    TheCluster(VecVoxToKeepClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
 
     ind = ind+size(All_Data_Clean{i},1);
     
@@ -485,8 +493,8 @@ for i=1:length(All_Data_Clean)
     ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
-    Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
-    Out = spm_write_vol(ROI_cluster_header, Cluster);
+    TheCluster = write_volume(TheCluster,ROI_nifti_header_Clean{i}, 'axial');
+    Out = spm_write_vol(ROI_cluster_header, TheCluster);
 end
 
 
@@ -520,6 +528,6 @@ end
 
 
 
-
+end
 
 

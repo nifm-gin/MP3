@@ -683,6 +683,33 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
+        
+    case {'XROIOrXCluster', '1ROIOr1Cluster'}
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Cluster' | handles.MP3_pipeline_Filtered_Table.Type == 'ROI')));
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
+        
+        
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
 %      case 'XScanOrXROI'
 %         SequenceType_listing = unique(handles.MP3_pipeline_Filtered_Table.SequenceName);
 %         if isempty(handles.new_module.opt.table.Default{parameter_selected})
@@ -939,10 +966,10 @@ function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') 
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') 
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROIOr1Cluster') 
     if sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
         %handles.new_module.opt.table.Default{parameter_selected} = [handles.MP3_pipeline_parameter_setup_table.ColumnName(1); {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}}];
@@ -2279,6 +2306,11 @@ for i=1:length(Jobs)
                    end
                    if statusNii && statusJson && statusMat
                        outdb.Path = NewPath;
+                       % If intersect du triplet patient/Tp/sequencename
+                       % entre mp3_data.database et outdb, on faut
+                       % remplacer l'entrée de la database par celle de
+                       % outdb. A FAIRE
+                       
                        handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
                        %eval(['delete ' B{k}]);
                    elseif ~statusNii
@@ -2497,7 +2529,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2557,7 +2589,7 @@ end
 %% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2592,7 +2624,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -3505,8 +3537,20 @@ for i=1:length(JobNames)
         
         % Dont check on the path cause the Datab one is still set to Tmp.
         Lia = ismember(Tmpdatab(:,[1:3 5:end]), Datab(:,[1:3 5:end]));
+        %UPDATE : on the previous line, we could have the case where 2
+        %files have the same triplet Patient/Tp/SequenceName but a
+        %different Filename. Then, as its 2 differents entries, the new one
+        %will be concatenate to the database and leads to an error in the
+        %viewer.
+        % So now we are going to check the unicity of this triplet.
+        Lib = ismember(Tmpdatab(:,[2 3 8]), Datab(:,[2 3 8]));
         
-        if sum(Lia)==1
+        % UPDATE : If sum(Lib) is > 1, then an entry with the same triplet will
+        % return a warning to the user (orange job), and if sum(Lia) is >
+        % 1, then an entry with a different filename (and other tags) will 
+        % return a warning to the user (orange job)
+        
+        if sum(Lia)==1 && sum(Lib)==1
         % Le job ecrit un fichier qui n'existe pas, la seule entree
         % retournee par intersect est l'entree temporaire du job en
         % question

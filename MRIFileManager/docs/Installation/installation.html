@@ -82,7 +82,7 @@
 		<p><u>By script with options:</u><br><br>
 		You can launch MRI File Manager through another application by script with some options. In this instance, <u>some functions are deactivated.</u><br><br>
 		<b>usage :</b>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar [options]  </span></pre></div></div>		
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar [options]  </span></pre></div></div>		
 
 		<b>options :</b><br>
 		
@@ -115,6 +115,10 @@
 		<td>'[ExportOptions] &lt;integer&gt;'</td>
 		<td>(7)</td>
 		</tr>
+		<tr>
+		<td>'[ProjectsDir] &lt;string&gt;'</td>
+		<td>(8)</td>
+		</tr>
 		</table>
 		<br><br>
 		
@@ -127,53 +131,60 @@
 		<td><br> (1) </td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar '[ExportNifti] C:\\Users\\Documents\\DataIRM\\NifTI'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportNifti] C:\\Users\\Documents\\DataIRM\\NifTI'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(2)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar '[ExportToMP3] PatientName-StudyName-CreationDate-<br>SeqNumber-Protocol-SequenceName-AcquisitionTime'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportToMP3] PatientName-StudyName-CreationDate-<br>SeqNumber-Protocol-SequenceName-AcquisitionTime'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(3)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar 'CloseAfterExport'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'CloseAfterExport'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(4)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar 'NoLogExport'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoLogExport'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(5)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar '[LookAndFeel] com.sun.java.swing.plaf.windows.WindowsLookAndFeel'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[LookAndFeel] com.sun.java.swing.plaf.windows.WindowsLookAndFeel'</span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(6)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar 'NoExitSystem'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoExitSystem'</span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(7)</td>
 		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java Xms512m -Xmx4096m -jar '[ExportOptions] 000'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportOptions] 000'</span></pre></div></div>
+		</td>
+		</tr>
+		<tr>
+		<td><br>(8)</td>
+		<td> </td>
+		<td>
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ProjectsDir] //home//user//Documents'</span></pre></div></div>
 		</td>
 		</tr>
 		</table>
-		
+		<br>
 		<b>examples :</b><br>
 		<p class="style3"> Python</p>
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> import <b>subprocess</b><br> <b>subprocess</b>.call(['java','-Xms512M','-Xmx4096M','-jar','MRIManager.jar',options])</span></pre></div></div>
@@ -192,6 +203,21 @@
 		<p class="style2">
 <!-- 		You can retrieve an older version of MRI File Manager. They just need to download (click on 'get this MRIManager.jar version') and to replace MRIManager.jar in its directory.
  -->
+ 		<div class= "style5">
+		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>06/06/2019 : Version 19.3.0a
+	Bugs fixed:
+	  - DICOM : dimension reversed for some Dicom.
+	  - problem of the dialogue window 'Loading thumbnail ...' that did not always close resolved
+	Features added :
+	  - Bruker : possibility to generate bvecs/bvals files for reading of diffusion by MrTrix 
+		(see page 'Documentation', section 'Set options')
+	  - add option [ProjectsDir] for the script (see page 'Installation', section 'Launching of the software')
+	Others:
+	  - Json Irmage : now, all parameters that have floating or integer values (same single) are presented as an array (list of list)
+	  - better management of items in the basket
+	  - exit code = 100 (for populse_mia project only)
+		
+	</b></span></pre></div></div></div>
 
  		<div class= "style5">
 		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>04/04/2019 : Version 19.2.3a

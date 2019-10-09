@@ -1,0 +1,48 @@
+{
+	"tool-version": "1.0.0",
+	"name": "eddy_correct",
+	"author": "TONIC",
+	"description": "\nUsage: eddy_correct <4dinput> <4doutput> <reference_no> [<interp>]\n       Choose interp from {trilinear,spline} def - trilinear\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "4D dwi",
+			"value-key": "[4D_DWI]",
+			"type": "File",
+			"optional": false,
+			"id": "4d_dwi",
+			"name": "4D dwi"
+		},
+		{
+			"description": "reference number",
+			"value-key": "[REFERENCE_NUMBER]",
+			"type": "Number",
+			"optional": false,
+			"id": "reference_number",
+			"name": "reference number"
+		},
+		{
+			"description": "interpolation",
+			"value-key": "[INTERPOLATION]",
+			"type": "String",
+			"optional": false,
+			"id": "interpolation",
+			"name": "interpolation"
+		}
+	],
+	"output-files": [
+		{
+			"description": "4D dwi",
+			"value-key": "[4D_DWI]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "4d_dwi",
+			"name": "4D dwi"
+		}
+	],
+	"command-line": "eddy_correct [4D_DWI] [4D_DWI] [REFERENCE_NUMBER] [INTERPOLATION]"
+}

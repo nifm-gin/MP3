@@ -31,8 +31,9 @@
 		</ul>
 		</div>
 		
-		<p class="style4" >	<u><a href="#viewer">Viewer</a></u> - <u><a href="#exportnifti">Export to Nifti with options</a></u> - 
-							<u><a href="#defaultfolder">Set default IRM locations</a></u> - <u><a href="#imagej">Use of  ImageJ</a></u></p>
+		<p class="style4" >	<u><a href="#viewer">Viewer</a></u> - <u><a href="#exportnifti">Export to Nifti</a></u> - 
+							<u><a href="#defaultfolder">Set default IRM locations</a></u> - 
+							<u><a href="#options">Set options</a></u> - <u><a href="#imagej">Use of  ImageJ</a></u></p>
 
 		<h2 id="viewer" class="style1">Viewer</h2>
 		<p class="style2"> This section explains how to use MRI File Manager</p>
@@ -105,9 +106,8 @@
 		<img src="images/optionexport2.png" align="left" width="100%" height="100%" alt="import">
 		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
 		</li>
-		</li>
 		<li>
-		<p>Click on 'Apply' button. <b>Your configuration is saved for the next use of the software</b>.</p>
+		<p>Click on 'Apply' button. <br><br><b>Your configuration is saved for the next use of the software</b>.</p>
 		</li>
 		</ul>
 		<br>
@@ -187,12 +187,39 @@
 		<p>For each format, choose the data folder by default.</p>
 		</li>
 		<li>		
-		<p>Click on 'Ok rep' button. <b>Your configuration is saved for the next use of the software</b>.</p>
+		<p>Click on 'Ok rep' button. <br><br>
+		<b>Your configuration is saved for the next use of the software</b>.</p>
 		</li>
 		</ul>
 		</div>
 		</p>
-	
+		
+		<h2 id="options" class="style1">Set options</h2>
+		<p class="style2"> There are other export options :
+		<div class= "style5">
+		<ul>
+		<li>
+		<p><b>file separation for parametric images from Bruker</b> ('File -> export -> Option export' menu and 'out dimension' tab)
+		<a id="mouse" hover><span>
+		<img src="images/OptionsBr.png" align="left" width="100%" height="100%" alt="optionBruker">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
+				This option (for Bruker only) allows to export the parametric images to Nifti separately (example : signal intensity, T2 relaxation time, std dev of the fit, ....)
+		</li>
+		<li>
+		<p><b>creation of bvecs/bvals files for MrTrix </b> ('File -> export -> Option export' menu and 'other' tab).
+		<a id="mouse" hover><span>
+		<img src="images/OptionsBvec.png" align="left" width="100%" height="100%" alt="optionBvec">
+		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p></p>
+				You can generate bvecs/bvals files for reading diffusion sequences with MrTrix (Bruker only).<br>
+				In this case, 2 files will be created (if the sequence contains the diffusion values) : <br><br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- a bvecs/bvals file with a <b>'-bvecs-bvals-MRtrix' suffix</b> and a <b>'.txt' extension</b> <br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- an additional Nifti file with a <b> '-MRtrix' suffix </b> and <b>his transformation matrix reset to zero<b><br><br>
+			
+		<b>Your configuration is saved for the next use of the software</b>
+		</li>
+		</ul>
+		</div>
+		</p>
 		
 		<h2 id="imagej" class="style1">Use of ImageJ</h2>
 		<p class="style2"> This section explains how to use ImageJ tools and his plugins.</p>

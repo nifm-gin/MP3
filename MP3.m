@@ -823,7 +823,7 @@ for i=1:numel(idx_scan_to_rename)
     new_nii_filename = strrep(cellstr(handles.database.Filename(idx_scan_to_rename(i))), cellstr(handles.database.Tp(idx_scan_to_rename(i))), NewTp);
     
     % rename the scan file
-    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0
+    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0 && exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 0
         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
             fullfilename(handles, idx_scan_to_rename(i), '.nii'));
         msgbox(warning_text, 'rename file warning') ;
@@ -831,7 +831,12 @@ for i=1:numel(idx_scan_to_rename)
         msgbox('The new .nii file exist already!!') ;
         
     else
-        movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        end
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii.gz'), 'f')
+        end
         if exist(fullfilename(handles, idx_scan_to_rename(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_scan_to_rename(i), '.json'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.json'), 'f');
         end
@@ -906,7 +911,7 @@ end
 new_nii_filename = strrep(cellstr(handles.database.Filename(data_selected)), cellstr(handles.database.SequenceName(data_selected)), newparameter);
 
 % rename the scan file
-if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0
+if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0 && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 0
     warning_text = sprintf('##$ This file no not exist\n##$ %s',...
         fullfilename(handles, data_selected, '.nii'));
     msgbox(warning_text, 'rename file warning') ;
@@ -914,7 +919,12 @@ elseif exist(string(strcat(cellstr(handles.database.Path(data_selected)),new_nii
     msgbox('The new .nii file exist already!!') ;
     
 else
-    movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    if exist(fullfilename(handles, data_selected, '.nii'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    end
+    if exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii.gz'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii.gz'), 'f')
+    end
     % rename json file if needed
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
@@ -1026,7 +1036,7 @@ function MP3_load_axes_Callback(hObject, eventdata, handles)
 % by default this slider is hidded
 set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') || isempty(handles.database)
     return
 end
 % MP3 cannot load scan(s) if multiple patients are selected
@@ -2383,6 +2393,11 @@ function MP3_clic_on_image(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+
 if ~strcmp(get(handles.MP3_GUI,'SelectionType'),'normal')
     G.initpnt=get(gca,'currentpoint');
     G.initClim = get(gca,'Clim');
@@ -2413,8 +2428,10 @@ slice_nbre = get(handles.MP3_slider_slice, 'Value');
 tag = get(get(hObject, 'Children'), 'Tag');
 if size(tag,1)>1
     currPt_on_axe=eval(['get(handles.' tag{end} ',''CurrentPoint'');']);
-else
+elseif ~isempty(tag)
     currPt_on_axe=eval(['get(handles.' tag ',''CurrentPoint'');']);
+else
+    return
 end
 [pixel_coordinates_2d] = [round(currPt_on_axe(1,1)) round(currPt_on_axe(1,2)) round(currPt_on_axe(1,3))];
 voxel = pixel_coordinates_2d(1:2);
@@ -2961,7 +2978,7 @@ if ~isempty(get(handles.MP3_plot1, 'Children'))
 end
 
 %coordonates = handles.data_ploted.coordonates;
-ROI_binary = handles.data_loaded.ROI.nii;
+ROI_binary = double(handles.data_loaded.ROI.nii);
 ROI_binary(abs(ROI_binary)>0) = true;
 
 % create a matrice which contains the coordonates (x,y,z) of each voxel)
@@ -3545,7 +3562,7 @@ if ~isempty(ROI_idex)
     handles.data_loaded.info_data_loaded.Filename(ROI_data_loaded_idex) = file_name;
 else
     %% add new ROI data to the database
-    new_data = table(categorical(cellstr('Undefined')), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
+    new_data = table(categorical(handles.data_loaded.info_data_loaded.Group(which_image)), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
         categorical(handles.data_loaded.info_data_loaded.Tp(which_image)),...
         categorical(cellstr([handles.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
         categorical(cellstr('ROI')), categorical(0), categorical(newVOI_name),...
@@ -4770,17 +4787,19 @@ for i=1:size(database_to_import,1)
     switch char(database_to_import.Type(i))
         case 'Scan'
             if char(database_to_import.IsRaw(i)) == '1'
+                infolder = [dir, filesep, 'Raw_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Raw_data_path;
                 
             else
+                infolder = [dir, filesep, 'Derived_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
             end
             % Copy nifti file 
             extension = '.nii.gz';
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
-                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+                filename = [infolder, char(database_to_import.Filename(i)), extension];
             end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
@@ -4819,11 +4838,12 @@ for i=1:size(database_to_import,1)
             
         case {'ROI', 'Cluster'}
             extension = '.nii.gz';
+            infolder = [dir, filesep, 'ROI_data', filesep];
             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
-            filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+            filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
-                filename = [char(database_to_import.Path(i)), char(database_to_import.Filename(i)), extension];
+                filename = [infolder, char(database_to_import.Filename(i)), extension];
             end
             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
             original_filename = char(database_to_import.Filename(i));
@@ -5428,9 +5448,15 @@ function MP3_plot1_Texture_analysis_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_plot1_Texture_analysis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') 
     return
 end
+if ~isfield(handles, 'data_loaded') ||  ~isfield(handles.data_loaded, 'number_of_ROI')
+    warndlg('Please load one or more scans and one or more ROI to use this feature.')
+    return
+end
+
+
 %% code to generate texture values for 1 scan and X ROIs
 ROI_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'ROI'));
 Scan_names = char(handles.data_loaded.info_data_loaded.SequenceName(handles.data_loaded.info_data_loaded.Type == 'Scan'));
@@ -5439,14 +5465,14 @@ texture_values = table;
 warning('off')
 for i = 1:handles.data_loaded.number_of_scan
     for j = 1:handles.data_loaded.number_of_ROI
-        volume = squeeze(handles.data_displayed.image(:,:,:,i));
-        mask = handles.data_loaded.ROI(j).nii;
+        volume = double(squeeze(handles.data_displayed.image(:,:,:,i)));
+        mask = double(handles.data_loaded.ROI(j).nii);
         matrix_tmp = volume .* mask;
         matrix_tmp(matrix_tmp==0)=nan;
         
         texture_values.SequenceName(size(texture_values,1)+1) = nominal(Scan_names(i,:));
         texture_values.ROI(size(texture_values,1)) = nominal(ROI_names(j,:));
-        texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:3)) * sum(mask(:));
+        texture_values.ROI_Size_mm(size(texture_values,1)) = prod(handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(1:3)) * sum(mask(:));
         %  texture_values.Entropy(size(texture_values,1)) = entropy(matrix_tmp);
         texture_values.Mean(size(texture_values,1)) = nanmean(matrix_tmp(:));
         texture_values.Median(size(texture_values,1)) = nanmedian(matrix_tmp(:));
@@ -5456,8 +5482,8 @@ for i = 1:handles.data_loaded.number_of_scan
         texture_values.Percentile_99(size(texture_values,1)) = prctile_copy(matrix_tmp(:),99);
         
         [ROIonly,~,~,~] = prepareVolume(volume,mask,'MRscan',...
-            sum(handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(1:2))/2 , ...
-            handles.data_loaded.Scan(scan_of_reference).json.Grid_spacings__X_Y_Z_T_____.value(3), 1,...
+            sum(handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(1:2))/2 , ...
+            handles.data_loaded.Scan(scan_of_reference).json.GridSpacings_X_Y_Z_T_____.value(3), 1,...
             'pixelW','Global','Equal',128);
         [texture] =  getGlobalTextures(ROIonly,100);
         texture_values.Kurtosis(size(texture_values,1)) = texture.Kurtosis;
@@ -6046,6 +6072,7 @@ if slice_selected == 1 % if all slices a selected
                     colonnes = 9;
                 else
                     warndlg('You cannot display more than 72 slices')
+                    return
                 end
                 for k = 1:NbSlices
                     image_to_display =image_loaded(:,:,k,1,1);

@@ -54,8 +54,8 @@ if isempty(opt)
          % --> user_parameter(7,:) = Help : text data which describe the parameter (it
          % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','', '','Description of the module'}  ;
-    user_parameter(:,2)   = {'Select the ASL_InvEff scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the pCasl scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select the pCasl scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the ASL_InvEff scan','1Scan','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,4)   = {'   .Output filename','char','CBF','output_filename_ext','','',...
         {'Specify the name of the output scan.'
         'Default filename extension is ''CBF''.'}'};
@@ -139,17 +139,19 @@ end
 % else
 %     ref_scan = 2;
 % end
-ref_scan = 2 ;
+ref_scan = 1 ;
 
 input(1).nifti_header = spm_vol(files_in.In1{1});
-input(2).nifti_header = spm_vol(files_in.In2{1});
+pCasl = read_volume(input(1).nifti_header, input(1).nifti_header, 0);
+J_pCasl = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
+
+if isfield(files_in, 'In2')
+    input(2).nifti_header = spm_vol(files_in.In2{1});
+    ASL_InvEff = read_volume(input(2).nifti_header, input(2).nifti_header, 0);
+    J_ASL_InvEff = spm_jsonread(strrep(files_in.In2{1}, '.nii', '.json'));
+end
 
 
-J_ASL_InvEff = spm_jsonread(strrep(files_in.In1{1}, '.nii', '.json'));
-J_pCasl = spm_jsonread(strrep(files_in.In2{1}, '.nii', '.json'));
-
-ASL_InvEff = read_volume(input(1).nifti_header, input(1).nifti_header, 0);
-pCasl = read_volume(input(2).nifti_header, input(2).nifti_header, 0);
 
 InvEff_ROI = [];
 M0Map = [];
@@ -158,7 +160,7 @@ TransitMap = [];
 
 if isfield(files_in, 'In3')
     input(3).nifti_header = spm_vol(files_in.In3{1});
-    InvEff_ROI = read_volume(input(3).nifti_header, input(1).nifti_header, 0);
+    InvEff_ROI = read_volume(input(3).nifti_header, input(2).nifti_header, 0);
 end
 if isfield(files_in, 'In4')
     input(4).nifti_header = spm_vol(files_in.In4{1});
@@ -312,7 +314,7 @@ end
 % end
 
 
-if ~isempty(ASL_InvEff)
+if exist('ASL_InvEff', 'var')
     if isempty(InvEff_ROI)
         InvEff_ROI = true(size(ASL_InvEff));
     end
@@ -558,9 +560,9 @@ switch quantification_method
                 InvTimeM0 = LabelTime + PostLabelTime;
                 interSliceTimeM0 = interSliceTime;
                 %M0SatYN=char2logical(scan_acqp('##$PVM_FovSatOnOff=',ASL.texte,0));
-                M0SatYN = J_ASL_InvEff.FovSatOnOff.value{1};
+                M0SatYN = J_pCasl.FovSatOnOff.value{1};
                 %M0_TR = scan_acqp('##$PVM_RepetitionTime=',ASL.texte,1);
-                M0_TR = J_ASL_InvEff.RepetitionTime;
+                M0_TR = J_pCasl.RepetitionTime;
                 % M0 = map from a given scan (see which condition)
             elseif( ~isempty(M0Map) )
                 %methodM0 = scan_acqp('##$Method=',M0map.texte,0);
@@ -850,9 +852,9 @@ end
 
 
 OutputImages = output_data{1};
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 10000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 10000) = NaN;
+%OutputImages(isnan(OutputImages)) = NaN;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end

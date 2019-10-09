@@ -53,8 +53,25 @@ if size(Informations(1).Sign,2) == 1
     t1.Position(4) = t1.Extent(4);
     
     
+    col = cell(1,2);
+    col{1,1} = 'Patient';
+    col{1,2} = 'TimePoint';
+    t3 = uitable(f1,'Data',{char(Informations.Sign(1)), char(Informations.Sign(2))},'ColumnName',col);
+    
+    
+    t3.Position(3) = t3.Extent(3);
+    t3.Position(4) = t3.Extent(4);
+    t3.Position(1) = 0;
+    t3.Position(2) = 980-t3.Position(4);
+    
+    
+    
+    for i = 1:size(MoyClust,1)/2
+        MoyClust2(i,:) = MoyClust(2*i-1,:);
+    end
+    
     subplot(2,2,4)
-    radarPlot(MoyClust.',Informations,Couleurs)
+    radarPlot(MoyClust2.',Informations,Couleurs)
     
     
     

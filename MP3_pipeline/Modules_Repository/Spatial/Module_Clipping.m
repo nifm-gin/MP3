@@ -108,18 +108,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
 data = niftiread(files_in.In1{1});
 info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
-
-
-
-data(data<opt.Clim_Min) = 0;
-data(data>opt.Clim_Max) = 0;
-
+ 
+data(data<opt.Clim_Min) = str2double(opt.Remplace_by);
+data(data>opt.Clim_Max) = str2double(opt.Remplace_by);
 
 info2 = info;
 info2.Filename = files_out.In1{1};

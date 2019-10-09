@@ -175,6 +175,8 @@ for x = 1:numel(Patient_listing)
                 % first load the ROI
                 ROI.header = spm_vol([char(sub_databaseROI.Path(i)) char(sub_databaseROI.Filename(i)) '.nii']);
                 ROI.data=  read_volume(ROI.header, scan_of_reference.header, 0, 'Axial');
+                % the ROI needs to have the same class as the data
+                ROI.data = cast( ROI.data, class(output_data));
                 % mask the output_data using the current ROI
                 current_output_data = output_data.* ROI.data;
                 

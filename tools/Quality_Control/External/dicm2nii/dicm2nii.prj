@@ -1,0 +1,158 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="1412186155" file="C:\Users\TONIC\Documents\code\dicm2nii\dicm2nii.prj" location="C:\Users\TONIC\Documents\code\dicm2nii" name="dicm2nii" preferred-package-location="C:\Users\TONIC\Documents\code\dicm2nii\dicm2nii\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>dicm2nii</param.appname>
+    <param.icon>${PROJECT_ROOT}\dicm2nii_resources\icon.ico</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\dicm2nii_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\dicm2nii_resources\icon_32.png</file>
+      <file>${PROJECT_ROOT}\dicm2nii_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\dicm2nii_resources\icon_16.png</file>
+    </param.icons>
+    <param.version>1.1</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot>C:\Users\TONIC\Desktop\dcm2nii.png</param.screenshot>
+    <param.guid />
+    <param.installpath.string>\dicm2nii\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}\dicm2nii\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\dicm2nii\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\dicm2nii\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\dicm2nii</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <param.native.matlab>false</param.native.matlab>
+    <param.checkbox>false</param.checkbox>
+    <param.example />
+    <param.help.text />
+    <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.install.notes />
+      <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+      <param.native.matlab />
+      <param.checkbox />
+      <param.example />
+      <param.help.text />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\dicm2nii.m</file>
+    </fileset.main>
+    <fileset.resources />
+    <fileset.package />
+    <fileset.depfun>
+      <file>${PROJECT_ROOT}\dicm_dict.m</file>
+      <file>${PROJECT_ROOT}\dicm_hdr.m</file>
+      <file>${PROJECT_ROOT}\dicm_img.m</file>
+      <file>${PROJECT_ROOT}\GetFullPath.m</file>
+      <file>${PROJECT_ROOT}\java_dnd.m</file>
+      <file>${PROJECT_ROOT}\nii_tool.m</file>
+      <file>${PROJECT_ROOT}\nii_viewer.m</file>
+      <file>${PROJECT_ROOT}\nii_xform.m</file>
+      <file>${PROJECT_ROOT}\write_tsv.m</file>
+    </fileset.depfun>
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}\dicm2nii\for_testing" name="dicm2nii.exe" optional="false">C:\Users\TONIC\Documents\code\dicm2nii\dicm2nii\for_testing\dicm2nii.exe</file>
+      <file location="${PROJECT_ROOT}\dicm2nii\for_testing" name="readme.txt" optional="true">C:\Users\TONIC\Documents\code\dicm2nii\dicm2nii\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\dicm2nii\for_testing" name="splash.png" optional="false">C:\Users\TONIC\Documents\code\dicm2nii\dicm2nii\for_testing\splash.png</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2018a_full</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
+        <toolbox name="polyspacebugfinder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
+      </toolbox>
+      <toolbox>
+        <polyspacebugfinder>
+          <enabled>true</enabled>
+        </polyspacebugfinder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

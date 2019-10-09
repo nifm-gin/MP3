@@ -326,7 +326,7 @@ else
         end
 
         
-        SO2map = BVf_map;
+        SO2map = BVf;
         if length(find(temp_slice_nbr == size(R2Prim,3))) ~= numel(temp_slice_nbr)
             for i = 1:size(R2Prim, 3)
                 for j = 1:size(BVf, 3)
@@ -388,9 +388,9 @@ end
 
 
 OutputImages = SO2map;
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 5000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 5000) = NaN;
+%OutputImages(isnan(OutputImages)) = NaN;
 
 
 OutputImages(isinf(OutputImages)) = -1;

@@ -1,0 +1,48 @@
+{
+	"tool-version": "1.0.0",
+	"name": "dwi2mask",
+	"author": "TONIC",
+	"description": "MRtrix 3.0_RC3                      dwi2mask                         May 22 2018\n\n     dwi2mask: part of the MRtrix3 package\n\nSYNOPSIS\n     Generates a whole brain mask from a DWI image\n\nUSAGE\n\n     dwi2mask [ options ] input output\n\n        input        the input DWI image containing volumes that are both\n                     diffusion weighted and b=0\n\n        output       the output whole-brain mask image\n\n\nDESCRIPTION\n\n     All diffusion weighted and b=0 volumes are used to obtain a mask that\n     includes both brain tissue and CSF.\n\n     In a second step peninsula-like extensions, where the peninsula itself is\n     wider than the bridge connecting it to the mask, are removed. This may\n     help removing artefacts and non-brain parts, e.g. eyes, from the mask.\n\nOPTIONS\n\n  -clean_scale value\n     the maximum scale used to cut bridges. A certain maximum scale cuts\n     bridges up to a width (in voxels) of 2x the provided scale. Setting this\n     to 0 disables the mask cleaning step. (Default: 2)\n\nDW gradient table import options\n\n  -grad file\n     Provide the diffusion-weighted gradient scheme used in the acquisition in\n     a text file. This should be supplied as a 4xN text file with each line is\n     in the format [ X Y Z b ], where [ X Y Z ] describe the direction of the\n     applied gradient, and b gives the b-value in units of s\/mm^2. If a\n     diffusion gradient scheme is present in the input image header, the data\n     provided with this option will be instead used.\n\n  -fslgrad bvecs bvals\n     Provide the diffusion-weighted gradient scheme used in the acquisition in\n     FSL bvecs\/bvals format files. If a diffusion gradient scheme is present in\n     the input image header, the data provided with this option will be instead\n     used.\n\n  -bvalue_scaling mode\n     specifies whether the b-values should be scaled by the square of the\n     corresponding DW gradient norm, as often required for multi-shell or DSI\n     DW acquisition schemes. The default action can also be set in the MRtrix\n     config file, under the BValueScaling entry. Valid choices are yes\/no,\n     true\/false, 0\/1 (default: true).\n\nStandard options\n\n  -info\n     display information messages.\n\n  -quiet\n     do not display information messages or progress status. Alternatively,\n     this can be achieved by setting the MRTRIX_QUIET environment variable to a\n     non-empty string.\n\n  -debug\n     display debugging messages.\n\n  -force\n     force overwrite of output files. Caution: Using the same file as input and\n     output might cause unexpected behaviour.\n\n  -nthreads number\n     use this number of threads in multi-threaded applications (set to 0 to\n     disable multi-threading).\n\n  -help\n     display this information page and exit.\n\n  -version\n     display version information and exit.\n\nAUTHOR\n     David Raffelt (david.raffelt@florey.edu.au), Thijs Dhollander\n     (thijs.dhollander@gmail.com) and Ben Jeurissen\n     (ben.jeurissen@uantwerpen.be)\n\nCOPYRIGHT\n     Copyright (c) 2008-2018 the MRtrix3 contributors.\n     This Source Code Form is subject to the terms of the Mozilla Public\n     License, v. 2.0. If a copy of the MPL was not distributed with this\n     file, you can obtain one at http:\/\/mozilla.org\/MPL\/2.0\/\n     MRtrix3 is distributed in the hope that it will be useful,\n     but WITHOUT ANY WARRANTY; without even the implied warranty\n     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n     For more details, see http:\/\/www.mrtrix.org\/\n\nREFERENCES\n     Dhollander T, Raffelt D, Connelly A. Unsupervised 3-tissue response\n     function estimation from single-shell or multi-shell diffusion MR data\n     without a co-registered T1 image. ISMRM Workshop on Breaking the Barriers\n     of Diffusion MRI, 2016, 5.\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "4D dwi",
+			"value-key": "[4D_DWI]",
+			"type": "File",
+			"optional": false,
+			"id": "4d_dwi",
+			"name": "4D dwi"
+		},
+		{
+			"description": "bvecs file (in FSL format)",
+			"value-key": "[BVECS_FILE__IN_FSL_FORMAT_]",
+			"type": "File",
+			"optional": false,
+			"id": "bvecs_file__in_fsl_format_",
+			"name": "bvecs file (in FSL format)"
+		},
+		{
+			"description": "bvals file (in FSL format)",
+			"value-key": "[BVALS_FILE__IN_FSL_FORMAT_]",
+			"type": "File",
+			"optional": false,
+			"id": "bvals_file__in_fsl_format_",
+			"name": "bvals file (in FSL format)"
+		}
+	],
+	"output-files": [
+		{
+			"description": "3D Mask",
+			"value-key": "[3D_MASK]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "3d_mask",
+			"name": "3D Mask"
+		}
+	],
+	"command-line": "dwi2mask -fslgrad [BVECS_FILE__IN_FSL_FORMAT_] [BVALS_FILE__IN_FSL_FORMAT_] [4D_DWI] [3D_MASK]"
+}
