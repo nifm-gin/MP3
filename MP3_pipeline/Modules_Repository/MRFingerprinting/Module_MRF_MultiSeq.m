@@ -55,7 +55,7 @@ if isempty(opt)
         'The dictionaries are designed with the Mrvox simulation tool'
         }'};
     
-    user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, '',''};
+    user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select the MGEFIDSE Post scan','1Scan','','',{'SequenceName'}, '',''};
     user_parameter(:,4)   = {'Select the MSME scan','1Scan','','',{'SequenceName'}, '',''};
     user_parameter(:,5)   = {'Select the sequence combination to use', 'cell', {'Post/Pre','Pre-Post','MSME-Post/Pre','MSME-Pre-Post'}, 'combUsed', '','Mandatory', 'Combination of signals to use'};
