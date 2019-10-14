@@ -749,11 +749,12 @@ else
         handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
         % update the path in the table
         %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
-        handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
-        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
-        
+        if ~isempty(handles.database)
+            handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
+            handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
+            handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
+            handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
+        end
         
         guidata(hObject, handles);
     end
@@ -4840,6 +4841,9 @@ for i=1:size(database_to_import,1)
             extension = '.nii.gz';
             infolder = [dir, filesep, 'ROI_data', filesep];
             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
+            if ~exist(outfolder, 'dir')
+                mkdir(outfolder);
+            end
             filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
@@ -4855,7 +4859,10 @@ for i=1:size(database_to_import,1)
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
-           
+            if ~status1
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
+            status2 = 1;
             
     end
     if status1 && status2
