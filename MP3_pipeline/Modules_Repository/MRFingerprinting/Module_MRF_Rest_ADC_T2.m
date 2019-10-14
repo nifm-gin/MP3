@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_MRF_Restricted_V2(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_MRF_Rest_ADC_T2(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -535,10 +535,9 @@ check=0;
 for v=1:numel(T2Values)
     
     % Apply exponential with current T2 to whole Dico
-    ExpMat = repmat(exp(-Dico.Tacq / T2Values(v)), [size(Dico.MRSignals,1), size(Dico.MRSignals,2)/numel(Dico.Tacq)]);
+    ExpMat = repmat(exp(-Dico.Tacq / (T2Values(v)*1e-3) ), [size(Dico.MRSignals,1), size(Dico.MRSignals,2)/numel(Dico.Tacq)]);
     MRSignalsExp = Dico.MRSignals .* ExpMat; % Dico updated with T2
-    %fprintf('Exp applied\n')
-    
+    %fprintf('Exp applied\n')    
     [row, col, sl] = ind2sub(size(T2Map), find(round(T2Map) == T2Values(v))); % Get coordinates of voxels considered at this iteration
     %fprintf('%i voxels with T2 = %i\n', numel(row), T2Values(v))
     
