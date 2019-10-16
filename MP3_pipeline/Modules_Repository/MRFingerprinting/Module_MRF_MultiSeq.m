@@ -273,6 +273,7 @@ switch opt.combUsed
                 end
             end
             Dico.MRSignals = tmp;
+            clear tmp;
             Dico.Tacq   = Obs.EchoTime.value'*1e-3;
             %remove row containning nan values
             nn = ~any(isnan(Dico.MRSignals),2);
@@ -328,7 +329,7 @@ switch opt.combUsed
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmpPre = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             tmpPost = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(XobsPre,length(size(XobsPre))) ~= size(Dico.MRSignals{1},2)
+            if size(XobsPre,length(size(XobsPre))-1) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
@@ -340,9 +341,13 @@ switch opt.combUsed
                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
                     end
                 end
+                tmp = cat(2, tmpPre, tmpPost);
+            else
+                tmp = cat(2, Dico.MRSignals{1}, Dico.MRSignals{2});
             end
-            tmp                 = cat(2, tmpPre, tmpPost);
+            
             Dico.MRSignals      = tmp;
+            clear tmp;
             Dico.Tacq           = Obs.EchoTime.value'*1e-3;
             %remove row containning nan values
             nn                  = ~any(isnan(Dico.MRSignals),2);
