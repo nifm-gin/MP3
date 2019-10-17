@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_MRF_Rest_ADC_T2(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_MRF_Rest-ADC_Mult-T2(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
