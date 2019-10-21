@@ -33,6 +33,7 @@ if isempty(opt)
     module_parameters(:,6)   = {'tableName', 'Vf'};
     module_parameters(:,7)   = {'AutomaticJobsCreation', 'No'};
     module_parameters(:,8)   = {'makeMain', 'No'};
+    module_parameters(:,9)   = {'dispSlice', 2};
 
     %% System parameters : Do not modify without understanding the behaviour of the software.
     
@@ -133,6 +134,7 @@ if isempty(opt)
     user_parameter(:,9)   = {'    .Reference scan','1Scan','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,10)   = {'    .Scans to compare','XScan','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,11)  = {'    .ROI for BBox','1ROI','','',{'SequenceName'}, 'Optional',''}; 
+    user_parameter(:,12)  = {'    .Slice to show','numeric','','dispSlice','', 'Optional',''}; 
    
 
     % Concatenate these user_parameters, and store them in opt.table
