@@ -266,11 +266,13 @@ switch opt.combUsed
         % Reformat dico (not needed if MODEL is already computed)
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals{1},2)
+            if size(Xobs,length(size(Xobs))-1) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:)./Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                 end
+            else
+                tmp = Dico.MRSignals{2}./Dico.MRSignals{1};
             end
             Dico.MRSignals = tmp;
             clear tmp;
