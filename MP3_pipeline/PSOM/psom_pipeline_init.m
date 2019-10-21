@@ -688,9 +688,9 @@ end
 
 Jobs_to_process = list_jobs(flag_restart);
 
-f = figure;
+f = figure('Name', 'Jobs_Listing');
 t = uitable(f, 'Position', [30,50,500,325],'ColumnName', 'The following jobs will be executed' ,'Data',Jobs_to_process);
-btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'delete(gcf);');
+btnContinue = uicontrol('Parent', f, 'Position', [200,10,100,40], 'String', 'OK', 'Callback', 'uiresume(findobj(''Name'', ''Jobs_Listing''));');
 uiwait(f)
 answer = questdlg('GO ?', 'It''s time to choose', 'Yes', 'No', 'No');
 delete(f)
@@ -760,16 +760,18 @@ for num_j = 1:length(list_jobs)
     % repetitive data. Is store only one instance of each different value.
     % But the dictionnary of these values is not cleaned, and it can takes
     % a lot of space when you only store a few data. The following lines
-    % clean this dictionnary.
+    % clean this dictionnary. Coded by CB
     
-%    %% Conversion in cell array and then table
-    Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
-    Table_in_Values = cellstr(table2array(pipeline.(job_name).opt.Table_in));
-    pipeline.(job_name).opt.Table_in = cell2table(Table_in_Values, 'VariableNames', Table_in_Names);
-    Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
-    if ~isempty(pipeline.(job_name).opt.Table_out) 
-        Table_out_Values = cellstr(table2array(pipeline.(job_name).opt.Table_out));
-        pipeline.(job_name).opt.Table_out = cell2table(Table_out_Values, 'VariableNames', Table_out_Names);
+    if isfield(pipeline.(job_name), 'opt')
+    %    %% Conversion in cell array and then table
+        Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
+        Table_in_Values = cellstr(table2array(pipeline.(job_name).opt.Table_in));
+        pipeline.(job_name).opt.Table_in = cell2table(Table_in_Values, 'VariableNames', Table_in_Names);
+        Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
+        if ~isempty(pipeline.(job_name).opt.Table_out) 
+            Table_out_Values = cellstr(table2array(pipeline.(job_name).opt.Table_out));
+            pipeline.(job_name).opt.Table_out = cell2table(Table_out_Values, 'VariableNames', Table_out_Names);
+        end
     end
 % %% Conversion in structure and then table
 %     Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;

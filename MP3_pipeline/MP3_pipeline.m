@@ -158,22 +158,50 @@ for i=1:size(CellsColoured, 1)
     Folder = Folders(end-1);
     switch Folder{1}
         case 'Raw_data'
+            if ~strcmp(char(InputTable.Type(i)), 'Deleted')
+                Color = [0 1 1];%Cyan
+            else
+                Color = [1 0 0];%Red
+            end
             for j=1:size(CellsColoured,2)
-                CellsColoured{i,j} = colergen(rgb2hex([0 1 1]), CellsColoured{i,j}); %Cyan
+                CellsColoured{i,j} = colergen(rgb2hex(Color), CellsColoured{i,j});
             end
         case 'Derived_data'
+            if ~strcmp(char(InputTable.Type(i)), 'Deleted')
+                Color = [0 1 0];%Green
+            else
+                Color = [1 0 0];%Red
+            end
             for j=1:size(CellsColoured,2)
-                CellsColoured{i,j} = colergen(rgb2hex([0 1 0]), CellsColoured{i,j});%Green
+                CellsColoured{i,j} = colergen(rgb2hex(Color), CellsColoured{i,j});
             end
         case 'Tmp'
+            if ~strcmp(char(InputTable.Type(i)), 'Deleted')
+                Color = [1 1 0];%Yellow
+            else
+                Color = [1 0 0];%Red
+            end
             for j=1:size(CellsColoured,2)
-                CellsColoured{i,j} = colergen(rgb2hex([1 1 0]), CellsColoured{i,j});%Yellow
+                CellsColoured{i,j} = colergen(rgb2hex(Color), CellsColoured{i,j});
             end
         case 'ROI_data'
+            if ~strcmp(char(InputTable.Type(i)), 'Deleted')
+                Color = [1 0 1];%Magenta
+            else
+                Color = [1 0 0];%Red
+            end
             for j=1:size(CellsColoured,2)
-                CellsColoured{i,j} = colergen(rgb2hex([1 0 1]), CellsColoured{i,j});%Magenta
+                CellsColoured{i,j} = colergen(rgb2hex(Color), CellsColoured{i,j});
             end
             
+    end
+    
+    %%Files to be deleted will be displayed in red!
+    
+    if strcmp(char(InputTable.Type(i)), 'Deleted')
+        for j=1:size(CellsColoured,2)
+                CellsColoured{i,j} = colergen(rgb2hex([1 0 0]), CellsColoured{i,j});%Red
+        end
     end
     
 end
@@ -574,7 +602,8 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.ColumnFormat = {'char'};
         
     case {'1ScanOr1ROI', 'XScanOrXROI'}
-        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName));
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type ~= 'Deleted')));
+        handles.MP3_pipeline_Filtered_Table = handles.MP3_pipeline_Filtered_Table(handles.MP3_pipeline_Filtered_Table.Type ~= 'Deleted', :);
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -2176,22 +2205,24 @@ if exist('biograph') == 2
 end
 
 %% Check if some existing files will be rewrited
-
-Name_Jobs = fieldnames(Pipeline);
-Files_out = {};
-for i=1:length(Name_Jobs)
-    Job = Pipeline.(Name_Jobs{i});
-    for j=1:size(Job.opt.Table_out,1)
-        switch char(Job.opt.Table_out.Type(j))
-            case 'Scan'
-                Folder = '/Derived_data/';
-            case {'ROI', 'Cluster'}
-                Folder = '/ROI_data/';
-        end
-        FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
-        Files_out = [Files_out; {FileName}];
-    end
-end
+% 
+% Name_Jobs = fieldnames(Pipeline);
+% Files_out = {};
+% for i=1:length(Name_Jobs)
+%     Job = Pipeline.(Name_Jobs{i});
+%     for j=1:size(Job.opt.Table_out,1)
+%         switch char(Job.opt.Table_out.Type(j))
+%             case 'Scan'
+%                 Folder = '/Derived_data/';
+%             case {'ROI', 'Cluster'}
+%                 Folder = '/ROI_data/';
+%             case 'Deleted'
+%                 continue
+%         end
+%         FileName = strrep([char(Job.opt.Table_out.Path(j)), char(Job.opt.Table_out.Filename(j)), '.nii'], ['/Tmp/', char(Job.opt.Table_out.Filename(j)), '.nii'], [Folder, char(Job.opt.Table_out.Filename(j)), '.nii']); 
+%         Files_out = [Files_out; {FileName}];
+%     end
+% end
 
 
 % Overwrite_Files = {};
@@ -2231,7 +2262,24 @@ if handles.MP3_pipeline_radiobuttonPSOM.Value
     if exist(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'), 'file') == 2
         delete(fullfile(opt_pipe.path_logs, 'PIPE_history.txt'))
     end
-    psom_run_pipeline(handles.psom.pipeline, opt_pipe)
+    
+    
+    % Check if some files need to be deleted. if yes, replace the
+    % DeleteFile jobs by the output ob psom_add_clean.
+    
+    %pipeline2 = psom_add_clean(pipeline,name_job,files_clean)
+    Name_Jobs = fieldnames(handles.psom.pipeline);
+    pipe_tmp = handles.psom.pipeline;
+    for i=1:length(Name_Jobs)
+        Job = handles.psom.pipeline.(Name_Jobs{i});
+        if strcmp(Job.command, 'Module_DeleteFile(files_in,files_out,opt);')
+            pipe_tmp = rmfield(pipe_tmp, Name_Jobs{i});
+            pipe_tmp = psom_add_clean(pipe_tmp, Name_Jobs{i}, Job.files_in);
+        end
+    end
+    handles.psom.pipeline = orderfields(pipe_tmp, Name_Jobs);
+    
+    psom_run_pipeline(handles.psom.pipeline, opt_pipe);
     % We have to wait until PSOM finish to update every files before
     % loading PIPE_statu.mat
     PSOM_finished = 0;
@@ -2260,6 +2308,7 @@ end
 
 Jobs = fieldnames(handles.psom.pipeline);
 update = false;
+Deleted_files = table();
 for i=1:length(Jobs)
    switch  Result.(Jobs{i}) %getfield(Result, Jobs{i})
        case 'failed'
@@ -2267,11 +2316,15 @@ for i=1:length(Jobs)
        case 'finished' 
            update = true;
            J = getfield(handles.psom.pipeline, Jobs{i});
-           A = getfield(J, 'files_out');
-           C = getfield(J, 'files_in');
+           if isfield(J, 'files_out')
+               A = getfield(J, 'files_out');
+           else
+               A = [];
+           end
+           %C = getfield(J, 'files_in');
            % If there is no file_out from a module
-           if isempty(A)
-               continue
+           if isempty(A) && isfield(J, 'files_clean')
+               A.In1 = J.files_clean;
            end
            Outputs = fieldnames(A);
            for j=1:length(Outputs)
@@ -2281,44 +2334,97 @@ for i=1:length(Jobs)
                    path_out = [path_out, filesep];
                    outdb = handles.MP3_pipeline_TmpDatabase(handles.MP3_pipeline_TmpDatabase.Path == path_out, :);
                    outdb = outdb(outdb.Filename == name_out, :);
-                   assert(height(outdb) == 1)
-                   Folders = strsplit(path_out, filesep);
-                   switch char(outdb.Type)
-                       case 'Scan'
-                           Folders{end-1} = 'Derived_data';
-                       case 'ROI'
-                           Folders{end-1} = 'ROI_data';
-                       case 'Cluster'
-                           Folders{end-1} = 'ROI_data';
-                   end
-                   NewPath = strjoin(Folders, filesep);
-                   [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
-                   
-                   if strcmp(char(outdb.Type), 'Scan')
-                       [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
-                       statusMat = 1;
-                   elseif strcmp(char(outdb.Type), 'Cluster')
-                       [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
-                       statusJson = 1;
-                   else
-                       statusJson = 1;
-                       statusMat = 1;
-                   end
-                   if statusNii && statusJson && statusMat
-                       outdb.Path = NewPath;
-                       % If intersect du triplet patient/Tp/sequencename
-                       % entre mp3_data.database et outdb, on faut
-                       % remplacer l'entrée de la database par celle de
-                       % outdb. A FAIRE
+                   if height(outdb) > 1 % It means we have a Scan/ROI/Cluster, and the same entry with the type Delete.
+                       assert(height(outdb) == 2)
+                       outdb = outdb(outdb.Type ~= 'Deleted', :);
+                       assert(height(outdb) == 1)
+                       [~,ia,~] = intersect(handles.MP3_data.database, outdb);
+                       handles.MP3_data.database(ia, :) = [];
+                       if ~isempty(Deleted_files) && ~isempty(intersect(Deleted_files, outdb))
+                           % Check if the files we want to deleted has
+                           % already been deleted. If yes, don't do
+                           % anything.
+                           continue
+                       end
+                       Deleted_files = [Deleted_files; outdb];
+                       if ~handles.MP3_pipeline_radiobuttonPSOM.Value % If basic loop used (not PSOM) 
+                           filename_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.nii.gz'];
+                           if ~exist(filename_to_delete, 'file')
+                               filename_to_delete = strrep(filename_to_delete, '.nii.gz', '.nii');
+                               if ~exist(filename_to_delete, 'file')
+                                   error(['File not found : ', filename_to_delete]);
+                               end
+                           end
+                           delete(filename_to_delete);
+                       end
+                       switch char(outdb.Type)
+                           case 'Scan'
+                               json_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.json'];
+                               delete(json_to_delete);
+                           case 'Cluster'
+                               mat_to_delete = [char(outdb.Path), filesep, char(outdb.Filename), '.mat'];
+                               delete(mat_to_delete);
+                       end
                        
-                       handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
-                       %eval(['delete ' B{k}]);
-                   elseif ~statusNii
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
-                   elseif ~statusJson
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.json'])
-                   elseif ~statusMat
-                       warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
+                   else
+% <<<<<<< HEAD
+%                        statusJson = 1;
+%                        statusMat = 1;
+%                    end
+%                    if statusNii && statusJson && statusMat
+%                        outdb.Path = NewPath;
+%                        % If intersect du triplet patient/Tp/sequencename
+%                        % entre mp3_data.database et outdb, on faut
+%                        % remplacer l'entrée de la database par celle de
+%                        % outdb. A FAIRE
+%                        
+%                        handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
+%                        %eval(['delete ' B{k}]);
+%                    elseif ~statusNii
+%                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
+%                    elseif ~statusJson
+%                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.json'])
+%                    elseif ~statusMat
+%                        warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
+% =======
+                       assert(height(outdb) == 1)
+                       Folders = strsplit(path_out, filesep);
+                       if strcmp(char(outdb.Type), 'Deleted')
+                           handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
+                       end
+                       switch char(outdb.Type)
+                           case 'Scan'
+                               Folders{end-1} = 'Derived_data';
+                           case 'ROI'
+                               Folders{end-1} = 'ROI_data';
+                           case 'Cluster'
+                               Folders{end-1} = 'ROI_data';
+                       end
+                       NewPath = strjoin(Folders, filesep);
+                       [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
+
+                       if strcmp(char(outdb.Type), 'Scan')
+                           [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
+                           statusMat = 1;
+                       elseif strcmp(char(outdb.Type), 'Cluster')
+                           [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           statusJson = 1;
+                       else
+                           statusJson = 1;
+                           statusMat = 1;
+                       end
+                       if statusNii && statusJson && statusMat
+                           outdb.Path = NewPath;
+                           handles.MP3_data.database = unique([handles.MP3_data.database ; outdb]);
+                           %eval(['delete ' B{k}]);
+                       elseif ~statusNii
+                           warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.nii'])
+                       elseif ~statusJson
+                           warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.json'])
+                       elseif ~statusMat
+                           warning('Cannot move the file %s from the ''Tmp'' to the ''Derived_data''/''ROI_data'' folder.', [name_out, '.mat'])
+                       end
+% >>>>>>> ModuleDeleteFiles
                    end
                    
                end
