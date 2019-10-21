@@ -102,7 +102,8 @@ if strcmp(files_out, '')
                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
                 if size(DbRois, 1) == 0
-                    continue
+                    continuet*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
                 end
 %                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
 %                 datab = datab(datab.(Tag2) == UTag2(j),:);
@@ -164,7 +165,8 @@ for i=1:length(UTag1)
         
         if size(DbRois, 1) == 0
             continue
-        end
+        endt*Number_of_replicate);
+        loop_inputs = repmat(1:ptsheurist,
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
         
         %datab = databScans(databScans.(Tag1) == UTag1(i),:);
@@ -295,6 +297,7 @@ SizeMax = max(Size);
 All_Data_Clean = {};
 ROI_Clean = {};
 VecVoxToDeleteClean = {};
+VecVoxToKeepClean = {};
 Clust_Data_In = [];
 ROI_nifti_header_Clean = {};
 for i=1:length(All_Data)
@@ -306,7 +309,7 @@ for i=1:length(All_Data)
     %
     VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete{i}];
     %VecVoxToDeleteClean = [VecVoxToDeleteClean, VecVoxToDelete];
-
+    VecVoxToKeepClean = [VecVoxToKeepClean, VecVoxToKeep(i)];
     
     Clust_Data_In = [Clust_Data_In ; All_Data{i}];
     ROI_nifti_header_Clean = [ROI_nifti_header_Clean, ROI_nifti_header{i}];
@@ -457,7 +460,7 @@ Informations = struct('Cartes', {NameScans(4:end)} , 'Modele', gmfit, 'Sign', Si
 Statistiques = struct('MoyCartesVolume', MoyCartesVolume , 'ProbVolume', ProbVolume, 'Ecart_Type_Global', Ecart_Type_Global,'MoyGlobal', MoyGlobal);
 
 if strcmp(opt.Normalization_mode, 'All Database')
-    Informations.Normalization_mode = 'Patient-by-Patient';
+    Informations.Normalization_mode = 'All Database';
     Informations.NanMean_VoxValues = NanMean_VoxValues;
     Informations.NanStd_VoxValues = NanStd_VoxValues;
 end
@@ -475,12 +478,12 @@ end
 
 ind = 1;
 for i=1:length(All_Data_Clean)
-    Cluster = ROI_Clean{i};
-    Cluster(logical(Cluster)) = NaN;
+    TheCluster = ROI_Clean{i};
+    TheCluster(logical(TheCluster)) = NaN;
     %ROI_Clust = logical(ROI{i});
     %Cluster(~VecVoxToDeleteClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
     
-    Cluster(VecVoxToKeep{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
+    TheCluster(VecVoxToKeepClean{i}) = ClusteredVox(ind:ind+size(All_Data_Clean{i},1)-1);
 
     ind = ind+size(All_Data_Clean{i},1);
     
@@ -490,8 +493,8 @@ for i=1:length(All_Data_Clean)
     ROI_cluster_header = rmfield(ROI_cluster_header, 'pinfo');
     ROI_cluster_header = rmfield(ROI_cluster_header, 'private');
 
-    Cluster = write_volume(Cluster,ROI_nifti_header_Clean{i}, 'axial');
-    Out = spm_write_vol(ROI_cluster_header, Cluster);
+    TheCluster = write_volume(TheCluster,ROI_nifti_header_Clean{i}, 'axial');
+    Out = spm_write_vol(ROI_cluster_header, TheCluster);
 end
 
 
@@ -525,6 +528,6 @@ end
 
 
 
-
+end
 
 

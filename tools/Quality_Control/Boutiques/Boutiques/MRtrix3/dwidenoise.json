@@ -1,0 +1,32 @@
+{
+	"tool-version": "1.0.0",
+	"name": "dwidenoise",
+	"author": "TONIC",
+	"description": "MRtrix 3.0_RC3-135-g2b8e7d0c       dwidenoise                        Mar  3 2019\n\n     dwidenoise: part of the MRtrix3 package\n\nSYNOPSIS\n     Denoise DWI data and estimate the noise level based on the optimal\n     threshold for PCA\n\nUSAGE\n\n     dwidenoise [ options ] dwi out\n\n        dwi          the input diffusion-weighted image.\n\n        out          the output denoised DWI image.\n\n\nDESCRIPTION\n\n     DWI data denoising and noise map estimation by exploiting data redundancy\n     in the PCA domain using the prior knowledge that the eigenspectrum of\n     random covariance matrices is described by the universal Marchenko Pastur\n     distribution.\n\n     Important note: image denoising must be performed as the first step of the\n     image processing pipeline. The routine will fail if interpolation or\n     smoothing has been applied to the data prior to denoising.\n\n     Note that this function does not correct for non-Gaussian noise biases.\n\nOPTIONS\n\n  -mask image\n     only perform computation within the specified binary brain mask image.\n\n  -extent window\n     set the window size of the denoising filter. (default = 5,5,5)\n\n  -noise level\n     the output noise map.\n\nStandard options\n\n  -info\n     display information messages.\n\n  -quiet\n     do not display information messages or progress status. Alternatively,\n     this can be achieved by setting the MRTRIX_QUIET environment variable to a\n     non-empty string.\n\n  -debug\n     display debugging messages.\n\n  -force\n     force overwrite of output files. Caution: Using the same file as input and\n     output might cause unexpected behaviour.\n\n  -nthreads number\n     use this number of threads in multi-threaded applications (set to 0 to\n     disable multi-threading).\n\n  -help\n     display this information page and exit.\n\n  -version\n     display version information and exit.\n\nAUTHOR\n     Daan Christiaens (daan.christiaens@kcl.ac.uk) & Jelle Veraart\n     (jelle.veraart@nyumc.org) & J-Donald Tournier (jdtournier@gmail.com)\n\nCOPYRIGHT\n     Copyright (c) 2016 New York University, University of Antwerp, and the\n     MRtrix3 contributors\n\n     Permission is hereby granted, free of charge, to any non-commercial entity\n     ('Recipient') obtaining a copy of this software and associated\n     documentation files (the 'Software'), to the Software solely for\n     non-commercial research, including the rights to use, copy and modify the\n     Software, subject to the following conditions:\n\n       1. The above copyright notice and this permission notice shall be\n     included by Recipient in all copies or substantial portions of the\n     Software.\n\n       2. THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,\n     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIESOF\n     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n     NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BELIABLE FOR ANY CLAIM,\n     DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n     OTHERWISE, ARISING FROM, OUT OF ORIN CONNECTION WITH THE SOFTWARE OR THE\n     USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n       3. In no event shall NYU be liable for direct, indirect, special,\n     incidental or consequential damages in connection with the Software.\n     Recipient will defend, indemnify and hold NYU harmless from any claims or\n     liability resulting from the use of the Software by recipient.\n\n       4. Neither anything contained herein nor the delivery of the Software to\n     recipient shall be deemed to grant the Recipient any right or licenses\n     under any patents or patent application owned by NYU.\n\n       5. The Software may only be used for non-commercial research and may not\n     be used for clinical care.\n\n       6. Any publication by Recipient of research involving the Software shall\n     cite the references listed below.\n\nREFERENCES\n     Veraart, J.; Novikov, D.S.; Christiaens, D.; Ades-aron, B.; Sijbers, J. &\n     Fieremans, E. Denoising of diffusion MRI using random matrix theory.\n     NeuroImage, 2016, 142, 394-406, doi: 10.1016\/j.neuroimage.2016.08.016\n\n     Veraart, J.; Fieremans, E. & Novikov, D.S. Diffusion MRI noise mapping\n     using random matrix theory. Magn. Res. Med., 2016, 76(5), 1582-1593, doi:\n     10.1002\/mrm.26059\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "4D dwi",
+			"value-key": "[4D_DWI]",
+			"type": "File",
+			"optional": false,
+			"id": "4d_dwi",
+			"name": "4D dwi"
+		}
+	],
+	"output-files": [
+		{
+			"description": "4D denoised dwi",
+			"value-key": "[4D_DENOISED_DWI]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "4d_denoised_dwi",
+			"name": "4D denoised dwi"
+		}
+	],
+	"command-line": "dwidenoise -force [4D_DWI] [4D_DENOISED_DWI]"
+}

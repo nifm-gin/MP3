@@ -216,33 +216,33 @@ else
     index_ratiofinite= find(~isfinite(ratio));
     index_rationan= find(isnan(ratio));
     if ~isempty(index_ratiofinite)
-        ratio(index_ratiofinite) = 0;
+        ratio(index_ratiofinite) = NaN;
     end
     if ~isempty(index_rationan)
-        ratio(index_rationan)    = 0;
+        ratio(index_rationan)    = NaN;
     end
      index_neg= find(ratio<0);
     if ~isempty(index_neg)
-        ratio(index_neg)    = 0;
+        ratio(index_neg)    = NaN;
     end
     ratio = ratio.^1.5;
     VSImap(:,:,:,1) = 1.77^(-1.5) * sqrt(squeeze(ADC(:,:,:,1)) ./ (gamma * deltaxi * B0)) .* squeeze(ratio);
     % VSImap(:,:,:,1) = 1.77^(-1.5) * sqrt(squeeze(ADC) ./ (gamma * deltaxi * B0)) .* squeeze(ratio);
     
-    index_vsifinite=find(~isfinite(VSImap));
-    VSImap(index_vsifinite)= 0;
-    index_vsinan=find(isnan(VSImap));
-    VSImap(index_vsinan)= 0;
-    index_infzero=find(VSImap < 0);
-    VSImap(index_infzero)= 0;
+%     index_vsifinite=find(~isfinite(VSImap));
+%     VSImap(index_vsifinite)= 0;
+%     index_vsinan=find(isnan(VSImap));
+%     VSImap(index_vsinan)= 0;
+%     index_infzero=find(VSImap < 0);
+%     VSImap(index_infzero)= 0;
     
 end
 
 
 OutputImages = VSImap;
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 50) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 50) = NaN;
+%OutputImages(isnan(OutputImages)) = NaN;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end

@@ -1,0 +1,56 @@
+{
+	"tool-version": "1.0.0",
+	"name": "dwi2tensor",
+	"author": "TONIC",
+	"description": "MRtrix 3.0_RC3                     dwi2tensor                        May 22 2018\n\n     dwi2tensor: part of the MRtrix3 package\n\nSYNOPSIS\n     Diffusion (kurtosis) tensor estimation using iteratively reweighted linear\n     least squares estimator\n\nUSAGE\n\n     dwi2tensor [ options ] dwi dt\n\n        dwi          the input dwi image.\n\n        dt           the output dt image.\n\n\nDESCRIPTION\n\n     The tensor coefficients are stored in the output image as follows:\n     volumes 0-5: D11, D22, D33, D12, D13, D23 ;\n     If diffusion kurtosis is estimated using the -dkt option, these are stored\n     as follows:\n     volumes 0-2: W1111, W2222, W3333 ;\n     volumes 3-8: W1112, W1113, W1222, W1333, W2223, W2333 ;\n     volumes 9-11: W1122, W1133, W2233 ;\n     volumes 12-14: W1123, W1223, W1233 ;\n\nOPTIONS\n\n  -mask image\n     only perform computation within the specified binary brain mask image.\n\n  -b0 image\n     the output b0 image.\n\n  -dkt image\n     the output dkt image.\n\n  -iter integer\n     number of iterative reweightings (default: 2); set to 0 for ordinary\n     linear least squares.\n\n  -predicted_signal image\n     the predicted dwi image.\n\nDW gradient table import options\n\n  -grad file\n     Provide the diffusion-weighted gradient scheme used in the acquisition in\n     a text file. This should be supplied as a 4xN text file with each line is\n     in the format [ X Y Z b ], where [ X Y Z ] describe the direction of the\n     applied gradient, and b gives the b-value in units of s\/mm^2. If a\n     diffusion gradient scheme is present in the input image header, the data\n     provided with this option will be instead used.\n\n  -fslgrad bvecs bvals\n     Provide the diffusion-weighted gradient scheme used in the acquisition in\n     FSL bvecs\/bvals format files. If a diffusion gradient scheme is present in\n     the input image header, the data provided with this option will be instead\n     used.\n\n  -bvalue_scaling mode\n     specifies whether the b-values should be scaled by the square of the\n     corresponding DW gradient norm, as often required for multi-shell or DSI\n     DW acquisition schemes. The default action can also be set in the MRtrix\n     config file, under the BValueScaling entry. Valid choices are yes\/no,\n     true\/false, 0\/1 (default: true).\n\nStandard options\n\n  -info\n     display information messages.\n\n  -quiet\n     do not display information messages or progress status. Alternatively,\n     this can be achieved by setting the MRTRIX_QUIET environment variable to a\n     non-empty string.\n\n  -debug\n     display debugging messages.\n\n  -force\n     force overwrite of output files. Caution: Using the same file as input and\n     output might cause unexpected behaviour.\n\n  -nthreads number\n     use this number of threads in multi-threaded applications (set to 0 to\n     disable multi-threading).\n\n  -help\n     display this information page and exit.\n\n  -version\n     display version information and exit.\n\nAUTHOR\n     Ben Jeurissen (ben.jeurissen@uantwerpen.be)\n\nCOPYRIGHT\n     Copyright (c) 2008-2018 the MRtrix3 contributors.\n     This Source Code Form is subject to the terms of the Mozilla Public\n     License, v. 2.0. If a copy of the MPL was not distributed with this\n     file, you can obtain one at http:\/\/mozilla.org\/MPL\/2.0\/\n     MRtrix3 is distributed in the hope that it will be useful,\n     but WITHOUT ANY WARRANTY; without even the implied warranty\n     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n     For more details, see http:\/\/www.mrtrix.org\/\n\nREFERENCES\n     Veraart, J.; Sijbers, J.; Sunaert, S.; Leemans, A. & Jeurissen, B.\n     Weighted linear least squares estimation of diffusion MRI parameters:\n     strengths, limitations, and pitfalls. NeuroImage, 2013, 81, 335-346\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "4D dwi",
+			"value-key": "[4D_DWI]",
+			"type": "File",
+			"optional": false,
+			"id": "4d_dwi",
+			"name": "4D dwi"
+		},
+		{
+			"description": "bvecs file (in FSL format)",
+			"value-key": "[BVECS_FILE__IN_FSL_FORMAT_]",
+			"type": "File",
+			"optional": false,
+			"id": "bvecs_file__in_fsl_format_",
+			"name": "bvecs file (in FSL format)"
+		},
+		{
+			"description": "bvals file (in FSL format)",
+			"value-key": "[BVALS_FILE__IN_FSL_FORMAT_]",
+			"type": "File",
+			"optional": false,
+			"id": "bvals_file__in_fsl_format_",
+			"name": "bvals file (in FSL format)"
+		},
+		{
+			"description": "3D Mask",
+			"value-key": "[3D_MASK]",
+			"type": "File",
+			"optional": false,
+			"id": "3d_mask",
+			"name": "3D Mask"
+		}
+	],
+	"output-files": [
+		{
+			"description": "3D Diffusion Tensor",
+			"value-key": "[3D_DIFFUSION_TENSOR]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "3d_diffusion_tensor",
+			"name": "3D Diffusion Tensor"
+		}
+	],
+	"command-line": "dwi2tensor -fslgrad [BVECS_FILE__IN_FSL_FORMAT_] [BVALS_FILE__IN_FSL_FORMAT_] -mask [3D_MASK] [4D_DWI] [3D_DIFFUSION_TENSOR]"
+}

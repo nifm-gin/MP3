@@ -147,8 +147,8 @@ end
 
 
 OutputImages = BVf_map;
-% OutputImages(OutputImages < 0) = -1;
-% OutputImages(OutputImages > 5000) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 50) = NaN;
 % OutputImages(isnan(OutputImages)) = -1;
 
 % save the new files (.nii & .json)

@@ -1,0 +1,64 @@
+{
+	"tool-version": "1.0.0",
+	"name": "tensor2metric",
+	"author": "TONIC",
+	"description": "MRtrix 3.0_RC3-135-g2b8e7d0c      tensor2metric                      Mar  3 2019\n\n     tensor2metric: part of the MRtrix3 package\n\nSYNOPSIS\n     Generate maps of tensor-derived parameters\n\nUSAGE\n\n     tensor2metric [ options ] tensor\n\n        tensor       the input tensor image.\n\n\nOPTIONS\n\n  -adc image\n     compute the mean apparent diffusion coefficient (ADC) of the diffusion\n     tensor. (sometimes also referred to as the mean diffusivity (MD))\n\n  -fa image\n     compute the fractional anisotropy (FA) of the diffusion tensor.\n\n  -ad image\n     compute the axial diffusivity (AD) of the diffusion tensor. (equivalent to\n     the principal eigenvalue)\n\n  -rd image\n     compute the radial diffusivity (RD) of the diffusion tensor. (equivalent\n     to the mean of the two non-principal eigenvalues)\n\n  -cl image\n     compute the linearity metric of the diffusion tensor. (one of the three\n     Westin shape metrics)\n\n  -cp image\n     compute the planarity metric of the diffusion tensor. (one of the three\n     Westin shape metrics)\n\n  -cs image\n     compute the sphericity metric of the diffusion tensor. (one of the three\n     Westin shape metrics)\n\n  -value image\n     compute the selected eigenvalue(s) of the diffusion tensor.\n\n  -vector image\n     compute the selected eigenvector(s) of the diffusion tensor.\n\n  -num sequence\n     specify the desired eigenvalue\/eigenvector(s). Note that several\n     eigenvalues can be specified as a number sequence. For example, '1,3'\n     specifies the principal (1) and minor (3) eigenvalues\/eigenvectors\n     (default = 1).\n\n  -modulate choice\n     specify how to modulate the magnitude of the eigenvectors. Valid choices\n     are: none, FA, eigval (default = FA).\n\n  -mask image\n     only perform computation within the specified binary brain mask image.\n\nStandard options\n\n  -info\n     display information messages.\n\n  -quiet\n     do not display information messages or progress status. Alternatively,\n     this can be achieved by setting the MRTRIX_QUIET environment variable to a\n     non-empty string.\n\n  -debug\n     display debugging messages.\n\n  -force\n     force overwrite of output files. Caution: Using the same file as input and\n     output might cause unexpected behaviour.\n\n  -nthreads number\n     use this number of threads in multi-threaded applications (set to 0 to\n     disable multi-threading).\n\n  -help\n     display this information page and exit.\n\n  -version\n     display version information and exit.\n\nAUTHOR\n     Thijs Dhollander (thijs.dhollander@gmail.com) & Ben Jeurissen\n     (ben.jeurissen@uantwerpen.be) & J-Donald Tournier (jdtournier@gmail.com)\n\nCOPYRIGHT\n     Copyright (c) 2008-2018 the MRtrix3 contributors.\n     This Source Code Form is subject to the terms of the Mozilla Public\n     License, v. 2.0. If a copy of the MPL was not distributed with this\n     file, you can obtain one at http:\/\/mozilla.org\/MPL\/2.0\/\n     MRtrix3 is distributed in the hope that it will be useful,\n     but WITHOUT ANY WARRANTY; without even the implied warranty\n     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n     For more details, see http:\/\/www.mrtrix.org\/\n\nREFERENCES\n     Basser, P. J.; Mattiello, J. & Lebihan, D. MR diffusion tensor\n     spectroscopy and imaging. Biophysical Journal, 1994, 66, 259-267\n\n     Westin, C. F.; Peled, S.; Gudbjartsson, H.; Kikinis, R. & Jolesz, F. A.\n     Geometrical diffusion measures for MRI from tensor basis analysis. Proc\n     Intl Soc Mag Reson Med, 1997, 5, 1742\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "Tensor image",
+			"value-key": "[TENSOR_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "tensor_image",
+			"name": "Tensor image"
+		},
+		{
+			"description": "Mask",
+			"value-key": "[MASK]",
+			"type": "File",
+			"optional": false,
+			"id": "mask",
+			"name": "Mask"
+		}
+	],
+	"output-files": [
+		{
+			"description": "ADC image",
+			"value-key": "[ADC_IMAGE]",
+			"path-template": "adc.nii.gz",
+			"optional": false,
+			"id": "adc_image",
+			"name": "ADC image"
+		},
+		{
+			"description": "FA image",
+			"value-key": "[FA_IMAGE]",
+			"path-template": "fa.nii.gz",
+			"optional": false,
+			"id": "fa_image",
+			"name": "FA image"
+		},
+		{
+			"description": "AD image",
+			"value-key": "[AD_IMAGE]",
+			"path-template": "ad.nii.gz",
+			"optional": false,
+			"id": "ad_image",
+			"name": "AD image"
+		},
+		{
+			"description": "RD image",
+			"value-key": "[RD_IMAGE]",
+			"path-template": "rd.nii.gz",
+			"optional": false,
+			"id": "rd_image",
+			"name": "RD image"
+		}
+	],
+	"command-line": "tensor2metric [TENSOR_IMAGE] -mask [MASK] -adc [ADC_IMAGE] -fa [FA_IMAGE] -ad [AD_IMAGE] -rd [RD_IMAGE]"
+}

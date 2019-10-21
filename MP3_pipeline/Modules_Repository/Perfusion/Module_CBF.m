@@ -852,9 +852,9 @@ end
 
 
 OutputImages = output_data{1};
-OutputImages(OutputImages < 0) = -1;
-OutputImages(OutputImages > 10000) = -1;
-OutputImages(isnan(OutputImages)) = -1;
+OutputImages(OutputImages < 0) = NaN;
+OutputImages(OutputImages > 10000) = NaN;
+%OutputImages(isnan(OutputImages)) = NaN;
 if ~exist('OutputImages_reoriented', 'var')
     OutputImages_reoriented = write_volume(OutputImages, input(ref_scan).nifti_header);
 end

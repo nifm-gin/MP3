@@ -1,0 +1,73 @@
+{
+	"tool-version": "1.0.0",
+	"name": "SyN",
+	"author": "TONIC",
+	"description": "antsRegistration: Register two 3D volumes together\n\nPrefilled for elastic deformation (SyN)\n\nOPTIONS:\n     --version\n     -d, --dimensionality 2\/3\n     -o, --output outputTransformPrefix\n                  [outputTransformPrefix,<outputWarpedImage>,<outputInverseWarpedImage>]\n     -j, --save-state saveSateAsTransform\n     -k, --restore-state restoreStateAsATransform\n     -a, --write-composite-transform 1\/(0)\n     -p, --print-similarity-measure-interval <unsignedIntegerValue>\n     --write-interval-volumes <unsignedIntegerValue>\n     -z, --collapse-output-transforms (1)\/0\n     -i, --initialize-transforms-per-stage (1)\/0\n     -n, --interpolation Linear\n                         NearestNeighbor\n                         MultiLabel[<sigma=imageSpacing>,<alpha=4.0>]\n                         Gaussian[<sigma=imageSpacing>,<alpha=1.0>]\n                         BSpline[<order=3>]\n                         CosineWindowedSinc\n                         WelchWindowedSinc\n                         HammingWindowedSinc\n                         LanczosWindowedSinc\n                         GenericLabel[<interpolator=Linear>]\n     -g, --restrict-deformation PxQxR\n     -q, --initial-fixed-transform initialTransform\n                                   [initialTransform,<useInverse>]\n                                   [fixedImage,movingImage,initializationFeature]\n     -r, --initial-moving-transform initialTransform\n                                    [initialTransform,<useInverse>]\n                                    [fixedImage,movingImage,initializationFeature]\n     -m, --metric CC[fixedImage,movingImage,metricWeight,radius,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  MI[fixedImage,movingImage,metricWeight,numberOfBins,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  Mattes[fixedImage,movingImage,metricWeight,numberOfBins,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  MeanSquares[fixedImage,movingImage,metricWeight,radius=NA,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  Demons[fixedImage,movingImage,metricWeight,radius=NA,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  GC[fixedImage,movingImage,metricWeight,radius=NA,<samplingStrategy={None,Regular,Random}>,<samplingPercentage=[0,1]>]\n                  ICP[fixedPointSet,movingPointSet,metricWeight,<samplingPercentage=[0,1]>,<boundaryPointsOnly=0>]\n                  PSE[fixedPointSet,movingPointSet,metricWeight,<samplingPercentage=[0,1]>,<boundaryPointsOnly=0>,<pointSetSigma=1>,<kNeighborhood=50>]\n                  JHCT[fixedPointSet,movingPointSet,metricWeight,<samplingPercentage=[0,1]>,<boundaryPointsOnly=0>,<pointSetSigma=1>,<kNeighborhood=50>,<alpha=1.1>,<useAnisotropicCovariances=1>]\n                  IGDM[fixedImage,movingImage,metricWeight,fixedMask,movingMask,<neighborhoodRadius=0x0>,<intensitySigma=0>,<distanceSigma=0>,<kNeighborhood=1>,<gradientSigma=1>]\n     -t, --transform Rigid[gradientStep]\n                     Affine[gradientStep]\n                     CompositeAffine[gradientStep]\n                     Similarity[gradientStep]\n                     Translation[gradientStep]\n                     BSpline[gradientStep,meshSizeAtBaseLevel]\n                     GaussianDisplacementField[gradientStep,updateFieldVarianceInVoxelSpace,totalFieldVarianceInVoxelSpace]\n                     BSplineDisplacementField[gradientStep,updateFieldMeshSizeAtBaseLevel,totalFieldMeshSizeAtBaseLevel,<splineOrder=3>]\n                     TimeVaryingVelocityField[gradientStep,numberOfTimeIndices,updateFieldVarianceInVoxelSpace,updateFieldTimeVariance,totalFieldVarianceInVoxelSpace,totalFieldTimeVariance]\n                     TimeVaryingBSplineVelocityField[gradientStep,velocityFieldMeshSize,<numberOfTimePointSamples=4>,<splineOrder=3>]\n                     SyN[gradientStep,updateFieldVarianceInVoxelSpace,totalFieldVarianceInVoxelSpace]\n                     BSplineSyN[gradientStep,updateFieldMeshSizeAtBaseLevel,totalFieldMeshSizeAtBaseLevel,<splineOrder=3>]\n                     Exponential[gradientStep,updateFieldVarianceInVoxelSpace,velocityFieldVarianceInVoxelSpace,<numberOfIntegrationSteps>]\n                     BSplineExponential[gradientStep,updateFieldMeshSizeAtBaseLevel,velocityFieldMeshSizeAtBaseLevel,<numberOfIntegrationSteps>,<splineOrder=3>]\n     -c, --convergence MxNxO\n                       [MxNxO,<convergenceThreshold=1e-6>,<convergenceWindowSize=10>]\n     -s, --smoothing-sigmas MxNxO...\n     -f, --shrink-factors MxNxO...\n     -u, --use-histogram-matching\n     -l, --use-estimate-learning-rate-once\n     -w, --winsorize-image-intensities [lowerQuantile,upperQuantile]\n     -x, --masks [fixedImageMask,movingImageMask]\n     --float\n     --minc\n     -v, --verbose (0)\/1\n     -h\n     --help\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "Moving image",
+			"value-key": "[MOVING_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "moving_image",
+			"name": "Moving image"
+		},
+		{
+			"description": "Reference image",
+			"value-key": "[REFERENCE_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "reference_image",
+			"name": "Reference image"
+		},
+		{
+			"description": "Outputs prefix",
+			"default-value": "Mov2Ref",
+			"value-key": "[OUTPUTS_PREFIX]",
+			"type": "String",
+			"optional": false,
+			"id": "outputs_prefix",
+			"name": "Outputs prefix"
+		},
+		{
+			"description": "Outputs directory",
+			"value-key": "[OUTPUTS_DIRECTORY]",
+			"type": "String",
+			"optional": false,
+			"id": "outputs_directory",
+			"name": "Outputs directory"
+		}
+	],
+	"output-files": [
+		{
+			"description": "warping field",
+			"value-key": "[WARPING_FIELD]",
+			"path-template": "[OUTPUTS_DIRECTORY]\\[OUTPUTS_PREFIX]0Warp.nii.gz",
+			"optional": false,
+			"id": "warping_field",
+			"name": "warping field"
+		},
+		{
+			"description": "Inverse warping field",
+			"value-key": "[INVERSE_WARPING_FIELD]",
+			"path-template": "[OUTPUTS_DIRECTORY]\\[OUTPUTS_PREFIX]0InverseWarp.nii.gz",
+			"optional": false,
+			"id": "inverse_warping_field",
+			"name": "Inverse warping field"
+		},
+		{
+			"description": "wrapped image",
+			"value-key": "[WRAPPED_IMAGE]",
+			"path-template": "[OUTPUTS_DIRECTORY]\\[OUTPUTS_PREFIX].nii.gz",
+			"optional": false,
+			"id": "wrapped_image",
+			"name": "wrapped image"
+		}
+	],
+	"command-line": "antsRegistration   --dimensionality  3  --metric  MeanSquares[  [REFERENCE_IMAGE]  ,  [MOVING_IMAGE]  ,1,32]  --transform SyN[0.5,3,0]  -c 10x10 -f 10x5 -s 1x1vox --output  [ [OUTPUTS_DIRECTORY]\/[OUTPUTS_PREFIX] , [INVERSE_WARPING_FIELD] ]"
+}

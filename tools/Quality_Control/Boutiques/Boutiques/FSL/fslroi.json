@@ -1,0 +1,41 @@
+{
+	"tool-version": "1.0.0",
+	"name": "fslroi",
+	"author": "TONIC",
+	"description": "Crop images in space or time\n\nUsage: fslroi <input> <output> <xmin> <xsize> <ymin> <ysize> <zmin> <zsize>\n       fslroi <input> <output> <tmin> <tsize>\n\n       fslroi <input> <output> <xmin> <xsize> <ymin> <ysize> <zmin> <zsize> <tmin> <tsize>\nNote: indexing (in both time and space) starts with 0 not 1! Inputting -1 for a size will set it to the full image extent for that dimension.\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "Input Image",
+			"value-key": "[INPUT_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "input_image",
+			"name": "Input Image"
+		},
+		{
+			"description": "Xmin Xsize Ymin Ysize Zmin Zsize",
+			"default-value": "112 131 141 80 20 90",
+			"value-key": "[XMIN_XSIZE_YMIN_YSIZE_ZMIN_ZSIZE]",
+			"type": "String",
+			"optional": false,
+			"id": "xmin_xsize_ymin_ysize_zmin_zsize",
+			"name": "Xmin Xsize Ymin Ysize Zmin Zsize"
+		}
+	],
+	"output-files": [
+		{
+			"description": "Cropped image",
+			"value-key": "[CROPPED_IMAGE]",
+			"path-template": "C:\\Users\\TONIC\\Desktop",
+			"optional": false,
+			"id": "cropped_image",
+			"name": "Cropped image"
+		}
+	],
+	"command-line": "fslroi [INPUT_IMAGE] [CROPPED_IMAGE] [XMIN_XSIZE_YMIN_YSIZE_ZMIN_ZSIZE]"
+}

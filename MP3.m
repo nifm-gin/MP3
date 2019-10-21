@@ -749,11 +749,12 @@ else
         handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
         % update the path in the table
         %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
-        handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
-        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
-        
+        if ~isempty(handles.database)
+            handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
+            handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
+            handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
+            handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
+        end
         
         guidata(hObject, handles);
     end
@@ -823,7 +824,7 @@ for i=1:numel(idx_scan_to_rename)
     new_nii_filename = strrep(cellstr(handles.database.Filename(idx_scan_to_rename(i))), cellstr(handles.database.Tp(idx_scan_to_rename(i))), NewTp);
     
     % rename the scan file
-    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0
+    if  exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 0 && exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 0
         warning_text = sprintf('##$ This file no not exist\n##$ %s',...
             fullfilename(handles, idx_scan_to_rename(i), '.nii'));
         msgbox(warning_text, 'rename file warning') ;
@@ -831,7 +832,12 @@ for i=1:numel(idx_scan_to_rename)
         msgbox('The new .nii file exist already!!') ;
         
     else
-        movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii'), 'f')
+        end
+        if exist(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), 'file') == 2
+            movefile(fullfilename(handles, idx_scan_to_rename(i), '.nii.gz'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.nii.gz'), 'f')
+        end
         if exist(fullfilename(handles, idx_scan_to_rename(i), '.json'), 'file') == 2
             movefile(fullfilename(handles, idx_scan_to_rename(i), '.json'), strcat(char(handles.database.Path(idx_scan_to_rename(i))),new_nii_filename{:},'.json'), 'f');
         end
@@ -906,7 +912,7 @@ end
 new_nii_filename = strrep(cellstr(handles.database.Filename(data_selected)), cellstr(handles.database.SequenceName(data_selected)), newparameter);
 
 % rename the scan file
-if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0
+if  exist(fullfilename(handles, data_selected, '.nii'), 'file') == 0 && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 0
     warning_text = sprintf('##$ This file no not exist\n##$ %s',...
         fullfilename(handles, data_selected, '.nii'));
     msgbox(warning_text, 'rename file warning') ;
@@ -914,7 +920,12 @@ elseif exist(string(strcat(cellstr(handles.database.Path(data_selected)),new_nii
     msgbox('The new .nii file exist already!!') ;
     
 else
-    movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    if exist(fullfilename(handles, data_selected, '.nii'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii'), 'f')
+    end
+    if exist(fullfilename(handles, data_selected, '.nii.gz'), 'file') == 2
+        movefile(fullfilename(handles, data_selected, '.nii.gz'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.nii.gz'), 'f')
+    end
     % rename json file if needed
     if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
         movefile(fullfilename(handles, data_selected, '.json'), strcat(char(handles.database.Path(data_selected)),new_nii_filename{:},'.json'), 'f');
@@ -3556,7 +3567,7 @@ if ~isempty(ROI_idex)
     handles.data_loaded.info_data_loaded.Filename(ROI_data_loaded_idex) = file_name;
 else
     %% add new ROI data to the database
-    new_data = table(categorical(cellstr('Undefined')), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
+    new_data = table(categorical(handles.data_loaded.info_data_loaded.Group(which_image)), categorical(handles.data_loaded.info_data_loaded.Patient(which_image)),...
         categorical(handles.data_loaded.info_data_loaded.Tp(which_image)),...
         categorical(cellstr([handles.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep])), categorical(cellstr(file_name)),...
         categorical(cellstr('ROI')), categorical(0), categorical(newVOI_name),...
@@ -4788,6 +4799,9 @@ for i=1:size(database_to_import,1)
                 infolder = [dir, filesep, 'Derived_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
             end
+            if ~exist(outfolder, 'dir')
+                mkdir(outfolder);
+            end
             % Copy nifti file 
             extension = '.nii.gz';
             filename = [infolder, char(database_to_import.Filename(i)), extension];
@@ -4805,6 +4819,9 @@ for i=1:size(database_to_import,1)
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
+            if ~status1
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
 %                 status1 = copyfile(filename, outfolder);
 %             else
@@ -4827,13 +4844,18 @@ for i=1:size(database_to_import,1)
 %                 msgbox(text);
 %                 status2 = 0;
 %             end
-            
+            if ~status2
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 
             
         case {'ROI', 'Cluster'}
             extension = '.nii.gz';
             infolder = [dir, filesep, 'ROI_data', filesep];
             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
+            if ~exist(outfolder, 'dir')
+                mkdir(outfolder);
+            end
             filename = [infolder, char(database_to_import.Filename(i)), extension];
             if ~exist(filename, 'file')
                 extension = '.nii';
@@ -4849,7 +4871,10 @@ for i=1:size(database_to_import,1)
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
-           
+            if ~status1
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
+            status2 = 1;
             
     end
     if status1 && status2
@@ -4884,7 +4909,8 @@ set(handles.MP3_name_list, 'Value', 1);
 
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles);
-msgbox('Done', 'Message') ;
+
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
@@ -6066,6 +6092,7 @@ if slice_selected == 1 % if all slices a selected
                     colonnes = 9;
                 else
                     warndlg('You cannot display more than 72 slices')
+                    return
                 end
                 for k = 1:NbSlices
                     image_to_display =image_loaded(:,:,k,1,1);

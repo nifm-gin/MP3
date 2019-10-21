@@ -1,0 +1,32 @@
+{
+	"tool-version": "1.0.0",
+	"name": "cropBrain",
+	"author": "TONIC",
+	"description": "Automatically crop neck and lower brain\n\nPart of FSL (build 509)\nrobustfov\nCopyright(c) 2012, University of Oxford (Mark Jenkinson)\n\nReduce FOV of image to remove lower head and neck.\n\nUsage:\nrobustfov [options] -i <image> -r <outputimage>\nrobustfov [options] -i <image>\n\nCompulsory arguments (You MUST set one or more of):\n\t-i\tinput filename\n\nOptional arguments (You may optionally specify one or more of):\n\t-b\tsize of brain in z-dimension (default 170mm)\n\t-m\tmatrix output name (roi to full fov)\n\t-r\tROI volume output name\n\t--debug\tturn on debugging output\n\t-v,--verbose\tswitch on diagnostic messages\n\t-h,--help\tdisplay this message\n\n\n\n",
+	"schema-version": "0.5",
+	"container-image": {
+		"image": "bids\/mrtrix3_connectome",
+		"type": "docker"
+	},
+	"inputs": [
+		{
+			"description": "Brain anatomical image",
+			"value-key": "[BRAIN_ANATOMICAL_IMAGE]",
+			"type": "File",
+			"optional": false,
+			"id": "brain_anatomical_image",
+			"name": "Brain anatomical image"
+		}
+	],
+	"output-files": [
+		{
+			"description": "Cropped image",
+			"value-key": "[CROPPED_IMAGE]",
+			"path-template": ".\/",
+			"optional": false,
+			"id": "cropped_image",
+			"name": "Cropped image"
+		}
+	],
+	"command-line": "robustfov -i [BRAIN_ANATOMICAL_IMAGE] -r [CROPPED_IMAGE]"
+}
