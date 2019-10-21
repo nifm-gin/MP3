@@ -4795,6 +4795,9 @@ for i=1:size(database_to_import,1)
                 infolder = [dir, filesep, 'Derived_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
             end
+            if ~exist(outfolder, 'dir')
+                mkdir(outfolder);
+            end
             % Copy nifti file 
             extension = '.nii.gz';
             filename = [infolder, char(database_to_import.Filename(i)), extension];
@@ -4812,6 +4815,9 @@ for i=1:size(database_to_import,1)
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
+            if ~status1
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
 %                 status1 = copyfile(filename, outfolder);
 %             else
@@ -4834,7 +4840,9 @@ for i=1:size(database_to_import,1)
 %                 msgbox(text);
 %                 status2 = 0;
 %             end
-            
+            if ~status2
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 
             
         case {'ROI', 'Cluster'}
@@ -4897,7 +4905,8 @@ set(handles.MP3_name_list, 'Value', 1);
 
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles);
-msgbox('Done', 'Message') ;
+
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
