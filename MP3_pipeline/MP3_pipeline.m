@@ -2326,6 +2326,9 @@ for i=1:length(Jobs)
            if isempty(A) && isfield(J, 'files_clean')
                A.In1 = J.files_clean;
            end
+           if isempty(A)
+               continue
+           end
            Outputs = fieldnames(A);
            for j=1:length(Outputs)
                B = getfield(A, Outputs{j});
@@ -3656,6 +3659,9 @@ for i=1:length(JobNames)
         % 1, then an entry with a different filename (and other tags) will 
         % return a warning to the user (orange job)
         
+        
+        
+        
         if sum(Lia)==1 && sum(Lib)==1
         % Le job ecrit un fichier qui n'existe pas, la seule entree
         % retournee par intersect est l'entree temporaire du job en
@@ -3669,7 +3675,21 @@ for i=1:length(JobNames)
             %Folders = strsplit(char(Tmpdatab.Path(ib)),filesep);
             %Fold = Folsers(end-1);
             %if ~strcmp( Fold == 'Tmp')
-            Status(i) = 1;
+            
+            
+            %UPDATE : Depuis la prise en charge du module Delete_file, on peut
+            %se retrouver avec 2 entrées qui partagent tout sauf le Type. L'une
+            %aura le type Deleted, et l'autre l'un des autres types
+            %disponibles.
+            %Dans ce cas, on prefere que le job ne s'affiche pas en orange mais
+            %en vert.
+            ListEntries = Tmpdatab.Type(Lib,:) == categorical({'Deleted'});
+            
+            if length(ListEntries) == 2 && sum(ListEntries) == 1
+                Status(i) = 0;
+            else
+                Status(i) = 1;
+            end
         end        
     end
 end
