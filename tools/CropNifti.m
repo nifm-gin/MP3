@@ -17,8 +17,8 @@ for i=1:size(InputVol, 3)
     end
 end
 if isempty(NiftiSlice)
-   OutputVol = InputVol;
-   OutputMat = InputMat;
+    OutputVol = InputVol;
+    OutputMat = InputMat;
 else
     assert(min(NiftiSlice) == NiftiSlice(1));
     assert(max(NiftiSlice) == NiftiSlice(end));
@@ -30,9 +30,6 @@ else
     Movement = [0;0;FirstSlice-1;1];
     OutputMat(:,4) = InputMat * Movement;
     %OutputMat(3,4) = InputMat(3,4) + (FirstSlice-1)*InputMat(3,3);
-    
 end
-
-
 end
 

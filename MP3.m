@@ -749,11 +749,12 @@ else
         handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
         % update the path in the table
         %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
-        handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
-        handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
-        handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
-        
+        if ~isempty(handles.database)
+            handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
+            handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
+            handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
+            handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
+        end
         
         guidata(hObject, handles);
     end
