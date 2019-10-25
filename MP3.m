@@ -4798,6 +4798,9 @@ for i=1:size(database_to_import,1)
                     mkdir(outfolder);
                 end
             end
+            if ~exist(outfolder, 'dir')
+                mkdir(outfolder);
+            end
             % Copy nifti file 
             extension = '.nii.gz';
             filename = [infolder, char(database_to_import.Filename(i)), extension];
@@ -4815,6 +4818,9 @@ for i=1:size(database_to_import,1)
                 idx2=idx2+1;
             end
             status1 = copyfile(filename, outfilename);
+            if ~status1
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
 %                 status1 = copyfile(filename, outfolder);
 %             else
@@ -4837,7 +4843,9 @@ for i=1:size(database_to_import,1)
 %                 msgbox(text);
 %                 status2 = 0;
 %             end
-            
+            if ~status2
+                warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+            end
 
             
         case {'ROI', 'Cluster'}
@@ -4900,7 +4908,8 @@ set(handles.MP3_name_list, 'Value', 1);
 
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles);
-msgbox('Done', 'Message') ;
+
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
 
 
 
@@ -5925,8 +5934,8 @@ function Import_Manually_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-msgbox('This option is not completely finished, sorry, it will be available soon!')
-return
+% msgbox('This option is not completely finished, sorry, it will be available soon!')
+% return
 
 
 [file,path] = uigetfile('*.nii', 'Manual Import : select the nifti file to import');
@@ -5942,6 +5951,9 @@ Tags = handles.database.Properties.VariableNames;
 [~, IndPath] = max(strcmp(Tags, 'Path'));
 [~, IndIsRaw] = max(strcmp(Tags, 'IsRaw'));
 [~, IndType] = max(strcmp(Tags, 'Type'));
+[~, IndPatient] = max(strcmp(Tags, 'Patient'));
+[~, IndTp] = max(strcmp(Tags, 'Tp'));
+[~, IndSequenceName] = max(strcmp(Tags, 'SequenceName'));
 
 Init = cell(1, length(Tags));
 Init{IndFilename} = file(1:end-4);
@@ -5952,33 +5964,61 @@ Init{IndPath} = '';
 Editable = repmat([true], 1,length(Tags));
 Editable(IndFilename) = false;
 Editable(IndPath) = false;
-f = figure;
-t = uitable(f, 'Data', Init);
-t.Position = [20,20,100*length(Tags), 50];
+f = figure('Name', 'Add a file to the database');
+f.Position(3) = 100*length(Tags);
+f.Position(4) = 200;
+t = uitable(f, 'Data', Init, 'Tag', 'TableTags');
+t.Position = [0,0,100*length(Tags), 50];
 %t.Position(4) = 50;
 t.ColumnName = Tags;
 t.ColumnEditable = Editable;
-
-%uiwait(f);
-while ishandle(t) && ishandle(f)
-    Vec = t.Data;
-    pause(1)
+t.UserData = [];
+%myfunc = @() getfield(findobj('Tag', 'TableTags'), 'Data');
+uicontrol('Parent',f,'Style','pushbutton','String','Please fill wisely the tags (except Path and Filename) and click on me!','Units','normalized','Position',[0.2 0.5 0.6 0.2],'Visible','on', 'Callback', 'setfield(findobj(''Tag'', ''TableTags''), ''UserData'', getfield(findobj(''Tag'', ''TableTags''), ''Data''));uiresume(gcf);');
+uiwait(f)
+if isempty(findobj('Tag', 'TableTags'))
+    return
 end
+Vec = t.UserData;
+delete(f);
+%uiwait(f);
 
+
+filejson = mfilename('fullpath');
+filejson = strsplit(filejson, filesep);
+filejson{end} = 'tools';
+filejson = [strjoin(filejson, filesep), filesep, 'TemplateJSON.json'];
+
+if ~exist(filejson, 'file')
+   warndlg('The TemplateJSON.json file is missing. Have you deleted from MP3 source code?')
+   return
+end
 
 if strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '1')
     Vec{IndPath} = handles.database.Properties.UserData.MP3_Raw_data_path;
+    pathNii = [Vec{IndPath}, Vec{IndFilename}, '.nii'];
+    pathjson = [Vec{IndPath}, Vec{IndFilename}, '.json'];
     %%%CREATE A JSON
+    copyfile([path, file], pathNii);
+    copyfile(filejson,pathjson)
 elseif strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '0')
     Vec{IndPath} = handles.database.Properties.UserData.MP3_Derived_data_path;
+    pathNii = [Vec{IndPath}, Vec{IndFilename}, '.nii'];
+    pathjson = [Vec{IndPath}, Vec{IndFilename}, '.json'];
     %%%CREATE A JSON
+    copyfile([path, file], pathNii);
+    copyfile(filejson,pathjson)
 elseif strcmp(Vec(IndType), 'ROI')
     Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+    pathNii = [Vec{IndPath}, Vec{IndFilename}, '.nii'];
+    copyfile([path, file], pathNii);
 elseif strcmp(Vec(IndType), 'Cluster')
     Vec{IndPath} = handles.database.Properties.UserData.MP3_ROI_path;
+    pathNii = [Vec{IndPath}, Vec{IndFilename}, '.nii'];
+    copyfile([path, file], pathNii);
     %%%CREATE A MAT
 else
-    error('Type not supported');
+    error('Type not supported. Only types supported: Scan, ROI, Cluster');
 end
 
 
@@ -5993,9 +6033,23 @@ for i=1:length(Tags)
     A.(Tags{i}) = categorical(A.(Tags{i}));
 end
 
-
-handles.database = unique([handles.database; A]);
 %%% CHECK IF THERE IS NO ENTRY WITH THE SAME PATIENT/TP/SEQUENCENAME
+int = intersect(handles.database(:,[IndPatient, IndTp, IndSequenceName]), A(:,[IndPatient, IndTp, IndSequenceName]));
+
+if ~isempty(int)
+    warndlg('The file you tried to add to the database has an already used triplet Patient/Tp/SequenceName. Please try again with other tag values.');
+    if exist(pathNii, 'file')
+        delete(pathNii)
+    end
+    if exist(pathjson, 'file')
+        delete(pathjson)
+    end
+    return
+end
+
+%Add the entry to the database.
+handles.database = unique([handles.database; A]);
+
 
 
 guidata(hObject, handles)
