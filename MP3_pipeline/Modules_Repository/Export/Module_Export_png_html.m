@@ -34,6 +34,7 @@ if isempty(opt)
     module_parameters(:,7)   = {'AutomaticJobsCreation', 'No'};
     module_parameters(:,8)   = {'makeMain', 'No'};
     module_parameters(:,9)   = {'dispSlice', 2};
+    module_parameters(:,10)   = {'Cmap', 'gray'};
 
     %% System parameters : Do not modify without understanding the behaviour of the software.
     
@@ -135,7 +136,7 @@ if isempty(opt)
     user_parameter(:,10)   = {'    .Scans to compare','XScan','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,11)  = {'    .ROI for BBox','1ROI','','',{'SequenceName'}, 'Optional',''}; 
     user_parameter(:,12)  = {'    .Slice to show','numeric','','dispSlice','', 'Optional',''}; 
-   
+    user_parameter(:,13)  = {'    .Colormap','cell',{'gray', 'hot', 'phase', 'jet', 'cool', 'spring'},'Cmap','', 'Optional',''};
 
     % Concatenate these user_parameters, and store them in opt.table
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -192,7 +193,17 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Now the core of the module (the operations on the files) starts %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%Get required colormap
+switch strcmp(opt.Cmap, 'phase')
+    case 1
+        C1 = [0:1/255:1];
+        C2 = [0:0.5/128:0.5, 0.5-0.5/128:-0.5/127:0];
+        C3 = [1:-1/255:0];
+        Cmap = [C1', C2', C3'];
+    otherwise
+        Cmap = eval(sprintf([opt.Cmap '(256)']));
+end
+Q = [0, ones(1,255)];
 % Check if the files_in exist
 [Status, Message, Wrong_File] = Check_files(files_in);
 if ~Status
@@ -256,6 +267,8 @@ for i = 1:numel(Seq_listing)
 end
 
 localTable = table('Size', [numel(rowNames), numel(colNames)],'VariableTypes', varTypes, 'VariableNames', colNames, 'RowNames',rowNames);
+minTable = zeros(numel(rowNames), numel(colNames));
+maxTable = zeros(numel(rowNames), numel(colNames));
 colIndex = 0;
 % fill the table and generate .png files
 for x = 1:numel(Patient_listing)
@@ -268,7 +281,8 @@ for x = 1:numel(Patient_listing)
         scan_of_reference.header =   spm_vol([char(sub_database.Path(1)) char(sub_database.Filename(1)) '.nii']);
         scan_of_reference.data=  read_volume(scan_of_reference.header, scan_of_reference.header, 0, 'Axial');
         Slices = {scan_of_reference.header.dim};
-        midSlice = floor(Slices{1}(end)/2);
+        midSlice = opt.dispSlice;
+        %midSlice = floor(Slices{1}(end)/2);
         
         % get bounding box if asked
         if strcmp(opt.applyBbox, 'Yes')
@@ -279,19 +293,28 @@ for x = 1:numel(Patient_listing)
             Data(roiSlice ==0 ) = nan;
             BBox = regionprops(roiSlice, 'BoundingBox');
             %pngData = imcrop(scan_of_reference.data(:,:,midSlice,1), BBox.BoundingBox);
-            pngData = imcrop(Data, BBox.BoundingBox);
+            pngDataRaw = imcrop(Data, BBox.BoundingBox);
         else
-            pngData = scan_of_reference.data(:,:,midSlice,1);
+            pngDataRaw = scan_of_reference.data(:,:,midSlice,1);
         end
         
         % Scale data on [0,1] before png conversion
-        pngData = pngData - min(min(pngData));
-        pngData = pngData/max(max(pngData));
+            pngData = double(pngDataRaw - min(min(pngDataRaw)));
+            pngData = double(pngData./max(max(pngData)));  
+            pngData = im2uint8(pngData);
+            if x == 1 && y == 1
+                barWidth = floor(size(pngData,2)/20);
+            end
+%         pngData = pngData - min(min(pngData));
+%         pngData = pngData/max(max(pngData));
         
         % Remove 
-        
-        imwrite(pngData, [imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png'])
+        bar = linspace(255,0,size(pngData,1))';
+        toWrite = [pngData, repmat(bar,[1,barWidth])];
+        imwrite(toWrite, Cmap,[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png'], 'Transparency', Q);
         localTable(1, colIndex) = {[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png']};
+        minTable(1, colIndex) = min(min(pngDataRaw));
+        maxTable(1, colIndex) = max(max(pngDataRaw));
         % process following scans
         for i = 2:height(sub_database)
             scan.header =   spm_vol([char(sub_database.Path(i)) char(sub_database.Filename(i)) '.nii']);
@@ -311,10 +334,15 @@ for x = 1:numel(Patient_listing)
                 pngData = scan.data(:,:,midSlice,1);
             end
             % Scale data on [0,1] before png conversion
-            pngData = pngData - min(min(pngData));
-            pngData = pngData/max(max(pngData));
-            imwrite(pngData, [imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(i)) '.png'])
+            pngData = double(pngData - min(min(pngData)));
+            pngData = double(pngData./max(max(pngData)));
+            pngData = im2uint8(pngData);
+            bar = linspace(255,0,size(pngData,1))';
+            toWrite = [pngData, repmat(bar,[1,barWidth])];
+            imwrite(toWrite, Cmap,[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(i)) '.png'], 'Transparency', Q)
             localTable(i, colIndex) = {[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(i)) '.png']};
+            minTable(i, colIndex) = min(min(pngDataRaw));
+            maxTable(i, colIndex) = max(max(pngDataRaw));
         end
     end
 end
@@ -342,8 +370,8 @@ for l = 1:size(localTable, 1)
     fprintf(htmlFid, ['<td class="myLabel"> <p class="rotate">' localTable.Properties.RowNames{l} '</p> </td>\n']);
     for i = 1:size(localTable, 2)
         if ~ismissing(localTable(l,i).Variables)
-            fprintf(htmlFid, strcat('<td> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
-                '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);"/> </td>\n'));
+            fprintf(htmlFid, strcat('<td> ', num2str(maxTable(l,i)), '<br/> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
+                '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);" /> <br/>', num2str(minTable(l,i)), ' </td>\n'));
         else
             fprintf(htmlFid, strcat('<td> </td>\n'));
         end
@@ -388,6 +416,7 @@ if strcmp(opt.makeMain, 'Yes')
                 '</table\n>',...       
                 '<div id="includedContent"></div>\n',...
                 '<script src="Resources/Interaction.js"></script>\n',...
+                '<body style="background-color:black;">',...
                 '</body>\n',...
                 '</html>'));
 

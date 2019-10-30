@@ -1,0 +1,119 @@
+/* Three image containers (use 25% for four, and 50% for two, etc) */
+.selTable {
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.selTable select {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.selTable td {
+    vertical-align: middle;
+}
+
+.myLabel {
+	padding: 0px;
+	width: 10px;
+	text-align: center;
+	vertical-align: middle;
+    color: white;
+}
+
+table {
+	/*Defines some attributes for table environment*/
+	margin-left: 0px;
+	table-layout: fixed;
+}
+
+td {
+	/*Defines some attributes for containers*/
+	/*width: 100;*/
+	vertical-align: top;
+	padding-right: 15px;
+	padding-bottom: 15px;
+    color: white;
+    text-align: right;
+    font-size: 11px;
+}
+
+th {
+	/*Defines some attributes for headers*/
+	font-size: 15px;
+	margin: 0px;
+	padding: 0px;
+	padding-right: 15px;
+    color: white;
+}
+
+img { 
+	/*Defines some attributes for images*/
+  /*width: 100;*/
+  /*height: 129;
+  filter: contrast(50%);*/
+  display: none;
+}
+
+canvas {
+	width: 100px;
+	image-rendering: crisp-edges;
+}
+
+
+.rotate {
+	/*Defines the .rotate class that addresses the row labels*/
+	/*transform: rotate(-90.0deg);
+	-webkit-transform: rotate(-90.0deg);*/
+	font-weight: bold;
+	font-size: 15px;
+
+}
+
+.zoomed {
+	/* empty class to detect if image was zoomed or not */
+}
+
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;  
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+.slider::-webkit-slider-thumb {
+  opacity: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 23px;
+  height: 24px;
+  border: 0;
+  background: url('./Resources/contrasticon.png');
+  background-size: auto;
+  cursor: pointer;
+}
+
+#brightRange.slider::-moz-range-thumb {
+  opacity: 1;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: url('contrasticon.png');
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  cursor: pointer;
+}
+
