@@ -293,11 +293,13 @@ switch opt.combUsed
         % Reformat dico (not needed if MODEL is already computed)
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals{1},2)
+            if size(Xobs,3) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:)./Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                 end
+            else
+                tmp = Dico.MRSignals{2}./Dico.MRSignals{1};
             end
             Dico.MRSignals = tmp;
             Dico.Tacq   = Obs.EchoTime.value'*1e-3;
@@ -346,7 +348,7 @@ switch opt.combUsed
                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
             end; end; end
         end
-        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
+        timeDim         = 4;%find(size(XobsPre)==length(Obs.EchoTime.value));
         Xobs            = cat(timeDim, XobsPre, XobsPost);
         Xobs            = permute(Xobs, [1 2 4 3]);
         XobsPre         = permute(XobsPre, [1 2 4 3]);
@@ -355,7 +357,7 @@ switch opt.combUsed
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmpPre = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             tmpPost = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(XobsPre,length(size(XobsPre))-1) ~= size(Dico.MRSignals{1},2)
+            if size(XobsPre,3) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
@@ -545,7 +547,7 @@ end
         Values(Values*(1+opt.RelErr) < minDicoVal) = nan;
         Values(Values*(1-opt.RelErr) > maxDicoVal) = nan;
         if nnz(isnan(Values))
-            warning('%i voxels will not be evaluated as their T2 value falls outside the dictionary range', nnz(isnan(Values)))
+            warning('%i voxels will not be evaluated as their %s value falls outside the dictionary range', nnz(isnan(Values)), inPar)
         end
 %         [nanRow, nanCol, nanSl] = ind2sub(size(RestMap), find(RestMap < minDicoVal & RestMap > maxDicoVal)); % Get coordinates of points that will not fit the dico
         %% Dico Restriction

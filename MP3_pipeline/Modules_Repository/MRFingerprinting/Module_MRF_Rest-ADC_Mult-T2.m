@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_MRF_Rest_ADC_T2(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_MRF_Rest-ADC_Mult-T2(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -292,13 +292,11 @@ switch opt.combUsed
         % Reformat dico (not needed if MODEL is already computed)
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(Xobs,3) ~= size(Dico.MRSignals{1},2)
+            if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:)./Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                 end
-            else
-                tmp = Dico.MRSignals{2}./Dico.MRSignals{1};
             end
             Dico.MRSignals = tmp;
             Dico.Tacq   = Obs.EchoTime.value'*1e-3;
@@ -306,7 +304,7 @@ switch opt.combUsed
             nn = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-%             Tmp{1}      = Dico;
+            %             Tmp{1}      = Dico;
         end
         
         %         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
@@ -333,7 +331,7 @@ switch opt.combUsed
                         % Pre
                         signalPre = squeeze(XobsPre(x,y,z,:));
                         signalPre = filter(ones(1, p)/p, 1, [signalPre(1); signalPre; signalPre(end)]);
-                        XobsPre(x,y,z,:) = signalPre(2:end-1);MyPipeline
+                        XobsPre(x,y,z,:) = signalPre(2:end-1);
                         % Post
                         signalPost = squeeze(XobsPost(x,y,z,:));
                         signalPost = filter(ones(1, p)/p, 1, [signalPost(1); signalPost; signalPost(end)]);
@@ -347,7 +345,7 @@ switch opt.combUsed
                         XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
                     end; end; end
         end
-        timeDim         = 4;%find(size(XobsPre)==length(Obs.EchoTime.value));
+        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
         Xobs            = cat(timeDim, XobsPre, XobsPost);
         Xobs            = permute(Xobs, [1 2 4 3]);
         XobsPre         = permute(XobsPre, [1 2 4 3]);
@@ -356,31 +354,27 @@ switch opt.combUsed
         if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
             tmpPre = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             tmpPost = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(XobsPre,3) ~= size(Dico.MRSignals{1},2)
+            if size(XobsPre,length(size(XobsPre))) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
-                    end 
+                    end
                     tmpPost(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
                     end
                 end
-                tmp = cat(2, tmpPre, tmpPost);
-            else
-                tmp = cat(2, Dico.MRSignals{1}, Dico.MRSignals{2});
             end
-            
+            tmp                 = cat(2, tmpPre, tmpPost);
             Dico.MRSignals      = tmp;
-            clear tmp;
             Dico.Tacq           = Obs.EchoTime.value'*1e-3;
             %remove row containning nan values
             nn                  = ~any(isnan(Dico.MRSignals),2);
             Dico.MRSignals      = Dico.MRSignals(nn,:);
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-            %Tmp{1}              = Dico;
+            %             Tmp{1}              = Dico;
         end
         %end
         
@@ -417,7 +411,7 @@ switch opt.combUsed
                         XobsMSME(x,y,z,:) = XobsMSME(x,y,z,:)./(sqrt(sum(XobsMSME(x,y,z,:).^2)));
                     end; end; end
         end
-        timeDim         = 4;%find(size(XobsPre)==length(Obs.EchoTime.value));
+        timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
         Xobs            = cat(timeDim, XobsMSME, XobsPre, XobsPost);
         Xobs            = permute(Xobs, [1 2 4 3]);
         XobsPre         = permute(XobsPre, [1 2 4 3]);
@@ -513,33 +507,24 @@ end %end switch
 %% Iteration on T2 values
 T2Path              = files_in.In4;
 T2Map               = niftiread(T2Path{1});
-T2Map               = round(T2Map);
-%T2Values            = unique(T2Map(T2Map>0)); % get unique values (rounded to limit iterations)
-colT2               = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), 'T2'));
-minDicoT2           = min(Dico.Parameters.Par(:,colT2))*1e3; % min of the dico
-maxDicoT2           = max(Dico.Parameters.Par(:,colT2))*1e3; % max of the dico
-T2Map(T2Map*(1+opt.RelErr) < minDicoT2) = nan;
-T2Map(T2Map*(1-opt.RelErr) > maxDicoT2) = nan;
-T2Values            = unique(T2Map(T2Map>0)); % get unique values (rounded to limit iterations)
+T2Values            = unique(round(T2Map(T2Map>0))); % get unique values (rounded to limit iterations)
 
 ADCPath             = files_in.In5;
 ADCMap              = niftiread(ADCPath{1});
 ADCValues           = round(ADCMap); % units in µm2/s
-colADC              = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), 'DH2O'));
-minDicoADC          = min(Dico.Parameters.Par(:,colADC))*1e12; % min of the dico
-maxDicoADC          = max(Dico.Parameters.Par(:,colADC))*1e12; % max of the dico
+colNb               = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), 'DH2O'));
+minDicoADC              = min(Dico.Parameters.Par(:,colNb))*1e12; % min of the dico
+maxDicoADC              = max(Dico.Parameters.Par(:,colNb))*1e12; % max of the dico
+% minADCValues            = min(min(min(ADCValues)));
+% maxADCValues            = max(max(max(ADCValues)));
 ADCValues(ADCValues*(1+opt.RelErr) < minDicoADC) = nan;
 ADCValues(ADCValues*(1-opt.RelErr) > maxDicoADC) = nan;
-
-nanMap = isnan(ADCValues) | isnan(T2Map);
-
 % Remove values outside the dico (with error range)
 %[nanRow, nanCol, nanSl] = ind2sub(size(ADCValues), [find(ADCValues < minDicoADC* (1-opt.RelErr)); find(ADCValues > maxDicoADC *(1+opt.RelErr))]); % Get coordinates of points that will not fit the dico
 %ADCValues               = ADCValues(minADC * (1-opt.RelErr) <= ADCValues);
 %ADCValues               = ADCValues(ADCValues <= maxADC *(1+opt.RelErr));
-
-if nnz(isnan(nanMap))
-    warning('%i voxels will not be evaluated as their T2 or ADC value falls outside the dictionary range', nnz(isnan(nanMap)))
+if nnz(isnan(ADCValues))
+    warning('%i voxels will not be evaluated as their ADC value falls outside the dictionary range', nnz(isnan(ADCValues)))
     %ADCValues(nanRow, nanCol, nanSl) = NaN; %marche pas
 %     for i = 1:numel(nanRow)
 %         ADCValues(nanRow(i), nanCol(i), nanSl(i)) = NaN;
@@ -549,29 +534,16 @@ check=0;
 %% Dico Restriction
 for v=1:numel(T2Values)
     
-    if isnan(T2Values(v)) %If value at this iteration is nan, don't consider it
-        continue
-    end
-        
-    [row, col, sl] = ind2sub(size(T2Map), find(T2Map == T2Values(v))); % Get coordinates of voxels considered at this iteration
-    
-     % remove dico entries out of tolerated range
-    toRemoveInf     = Dico.Parameters.Par(:,colT2)*1e3 <= T2Values(v)*(1-opt.RelErr);
-    toRemoveSup     = Dico.Parameters.Par(:,colT2)*1e3 >= T2Values(v)*(1+opt.RelErr);
-    toKeep          = ~(toRemoveInf + toRemoveSup);
-
-    if isempty(toKeep)
-        warning('T2 value %i could not be evaluated as restricted dico is empty\n', T2Values(v))
-    end
-
-    % Copying the restricted dico
-    T2Rest.MRSignals = Dico.MRSignals(toKeep, :);
-    T2Rest.Parameters.Par = Dico.Parameters.Par(toKeep, :);
-    T2Rest.Parameters.Labels = Dico.Parameters.Labels;    
+    % Apply exponential with current T2 to whole Dico
+    ExpMat = repmat(exp(-Dico.Tacq / (T2Values(v)*1e-3) ), [size(Dico.MRSignals,1), size(Dico.MRSignals,2)/numel(Dico.Tacq)]);
+    MRSignalsExp = Dico.MRSignals .* ExpMat; % Dico updated with T2
+    %fprintf('Exp applied\n')    
+    [row, col, sl] = ind2sub(size(T2Map), find(round(T2Map) == T2Values(v))); % Get coordinates of voxels considered at this iteration
+    %fprintf('%i voxels with T2 = %i\n', numel(row), T2Values(v))
     
     %% Iteration on ADC values
     for Vox = 1:numel(row)
-        Tmp{1} = T2Rest;
+        Tmp{1}.MRSignals = MRSignalsExp;
         locADC = ADCValues(row(Vox), col(Vox), sl(Vox));
         if isnan(locADC)
             %fprintf('Local ADC was nan\n')
@@ -583,19 +555,15 @@ for v=1:numel(T2Values)
         %keptValuesInf  = find(Dico.Parameters.Par(:,colNb)*1e12 <= locADC*(1+opt.RelErr));
         %keptValuesSup  = find(locADC*(1-opt.RelErr) <= Dico.Parameters.Par(keptValuesInf,colNb)*1e12); 
         
-        toRemoveInf     = Tmp{1}.Parameters.Par(:,colADC)*1e12 <= locADC*(1-opt.RelErr);
-        toRemoveSup     = Tmp{1}.Parameters.Par(:,colADC)*1e12 >= locADC*(1+opt.RelErr);
+        toRemoveInf     = Dico.Parameters.Par(:,colNb)*1e12 <= locADC*(1-opt.RelErr);
+        toRemoveSup     = Dico.Parameters.Par(:,colNb)*1e12 >= locADC*(1+opt.RelErr);
         toKeep          = ~(toRemoveInf + toRemoveSup);
         
-        if isempty(toKeep)
-            warning('No Dico entry for double restriction T2 = %i and ADC = %i', T2Values(v),locADC)
-        end
-        
         Tmp{1}.MRSignals = Tmp{1}.MRSignals(toKeep, :);
-        Tmp{1}.Parameters.Par = Tmp{1}.Parameters.Par(toKeep, :);
+        Tmp{1}.Parameters.Par = Dico.Parameters.Par(toKeep, :);
 %         Tmp{1}.MRSignals = Tmp{1}.MRSignals(keptValuesSup, :);
 %         Tmp{1}.Parameters.Par = Dico.Parameters.Par(keptValuesSup, :);
-        Tmp{1}.Parameters.Labels = Tmp{1}.Parameters.Labels;
+        Tmp{1}.Parameters.Labels = Dico.Parameters.Labels;
         
         localXobs = Xobs(row(Vox), col(Vox),: , sl(Vox)); %Xobs : X, Y, Time, Z
         
@@ -701,7 +669,7 @@ end
 
 %% Put NaN where out of the dico
 for i = 1:numel(MapStruct)
-    MapStruct{i}(nanMap)= nan;
+    MapStruct{i}(isnan(ADCValues))= nan;
     %MapStruct{i}(ADCValues*(1+opt.RelErr) < minDicoADC) = nan;
     %MapStruct{i}(ADCValues*(1-opt.RelErr) > maxDicoADC) = nan;
 %     for j = i:numel(nanRow)

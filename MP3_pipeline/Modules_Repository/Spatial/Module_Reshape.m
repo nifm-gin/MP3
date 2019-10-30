@@ -167,12 +167,16 @@ info2.ImageSize = size(NewIm_reoriented);
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
+    
 
 niftiwrite(NewIm_reoriented, files_out.In1{1}, info2)
 
 if exist(jsonfile)
     J = ReadJson(jsonfile);
-    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
+    J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+    if axes == 4
+        J.EchoTime.value = J.EchoTime.value(index(1):index(end));
+    end
 
     [path, name, ~] = fileparts(files_out.In1{1});
     jsonfile = [path, '/', name, '.json'];
