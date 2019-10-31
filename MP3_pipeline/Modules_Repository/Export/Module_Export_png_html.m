@@ -275,7 +275,7 @@ for x = 1:numel(Patient_listing)
     for y = 1:numel(Tp_listing{x})
         colIndex = colIndex+1;
         % process reference scan
-        sub_database = opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'Scan', :);
+        sub_database = sortrows(opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'Scan', :), {'SequenceName'}, {'ascend'});
         roi_database = opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'ROI', :);
         % load the scan of reference
         scan_of_reference.header =   spm_vol([char(sub_database.Path(1)) char(sub_database.Filename(1)) '.nii']);
@@ -302,6 +302,7 @@ for x = 1:numel(Patient_listing)
             pngData = double(pngDataRaw - min(min(pngDataRaw)));
             pngData = double(pngData./max(max(pngData)));  
             pngData = im2uint8(pngData);
+            pngData(pngDataRaw==min(min(pngDataRaw(pngDataRaw~=0))))=1;
             if x == 1 && y == 1
                 barWidth = floor(size(pngData,2)/20);
             end
@@ -313,7 +314,7 @@ for x = 1:numel(Patient_listing)
         toWrite = [pngData, repmat(bar,[1,barWidth])];
         imwrite(toWrite, Cmap,[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png'], 'Transparency', Q);
         localTable(1, colIndex) = {[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png']};
-        minTable(1, colIndex) = min(min(pngDataRaw));
+        minTable(1, colIndex) = min(min(pngDataRaw(pngDataRaw~=0)));
         maxTable(1, colIndex) = max(max(pngDataRaw));
         % process following scans
         for i = 2:height(sub_database)
@@ -329,19 +330,20 @@ for x = 1:numel(Patient_listing)
                 Data(roiSlice ==0 ) = nan;
                 BBox = regionprops(roiSlice, 'BoundingBox');
                 %pngData = imcrop(scan.data(:,:,midSlice,1), BBox.BoundingBox);
-                pngData = imcrop(Data, BBox.BoundingBox);
+                pngDataRaw = imcrop(Data, BBox.BoundingBox);
             else
-                pngData = scan.data(:,:,midSlice,1);
+                pngDataRaw = scan.data(:,:,midSlice,1);
             end
             % Scale data on [0,1] before png conversion
-            pngData = double(pngData - min(min(pngData)));
+            pngData = double(pngDataRaw - min(min(pngDataRaw)));
             pngData = double(pngData./max(max(pngData)));
             pngData = im2uint8(pngData);
             bar = linspace(255,0,size(pngData,1))';
+            pngData(pngDataRaw==min(min(pngDataRaw(pngDataRaw~=0))))=1;
             toWrite = [pngData, repmat(bar,[1,barWidth])];
             imwrite(toWrite, Cmap,[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(i)) '.png'], 'Transparency', Q)
             localTable(i, colIndex) = {[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(i)) '.png']};
-            minTable(i, colIndex) = min(min(pngDataRaw));
+            minTable(i, colIndex) = min(min(pngDataRaw(pngDataRaw~=0)));
             maxTable(i, colIndex) = max(max(pngDataRaw));
         end
     end
@@ -382,7 +384,9 @@ fprintf(htmlFid, '</table>\n');
 fclose(htmlFid);
 
 if strcmp(opt.makeMain, 'Yes')
-    mainFid = fopen([studyDir 'Viewer.html'], 'a');
+    S = strsplit(studyDir,'/');
+    mainName = sprintf('%s.html', S{end-1});
+    mainFid = fopen([studyDir mainName], 'a');
     if mainFid < 0
         error('Unable to create html table')
     end
