@@ -118,6 +118,7 @@ if isempty(files_out)
     opt2.Table_out.Filename = categorical(cellstr([char(opt2.Table_out.Patient), '_', char(opt2.Table_out.Tp), '_', char(opt2.Table_out.SequenceName)]));
     f_out = [char(opt2.Table_out.Path), char(opt2.Table_out.Patient), '_', char(opt2.Table_out.Tp), '_', char(opt2.Table_out.SequenceName), '.nii'];
     files_out.In2{1} = f_out;
+    opt2.Table_out.Type = categorical({'Cluster'});
     
     opt.Table_out = [opt.Table_out; opt2.Table_out];
 end
@@ -147,7 +148,7 @@ s = s{1};
 prefix = [char(opt.Table_in(1,:).Filename), opt.suffix];
 
 % Execute the ANTs command line
-%compute transformations
+% compute transformations
 if any(contains(fields(files_in), 'In2')) %if a mask is given
     system(['bash ' s 'MP3_pipeline/Modules_Repository/ANTs/ANTs/sync_atlas.sh' ...
             ' -s ' opt.script_location ...
@@ -156,7 +157,7 @@ if any(contains(fields(files_in), 'In2')) %if a mask is given
             ' -d ' opt.dimension ...
             ' -t ' opt.transformation ...
             ' -o ' s 'data/atlas/' prefix '_transformation_' ...
-            ' -x ' files_in.In2{1} ...
+            ' -m ' files_in.In2{1} ...
             ]);
 else
     system(['bash ' s 'MP3_pipeline/Modules_Repository/ANTs/ANTs/sync_atlas.sh' ...
@@ -196,8 +197,7 @@ elseif ~isempty(transf0) && ~isempty(transf1)
         ]);
 end
 
-
-% Json processing
+% % Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
@@ -232,7 +232,6 @@ elseif ~isempty(transf0) && ~isempty(transf1)
             ]);
 end
 
-
 % Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
@@ -244,6 +243,9 @@ J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'o
 jsonfile = [path, '/', name, '.json'];
 WriteJson(J, jsonfile)
 
+% Dummy mat file needed for cluster obj
+dummy = [];
+save([path, '/', name, '.mat'], 'dummy');
 
 % remove temp files
 temp_files = dir([s './data/atlas/' prefix '_transformation_*']);

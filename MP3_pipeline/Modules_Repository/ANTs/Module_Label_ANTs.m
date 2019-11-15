@@ -41,7 +41,7 @@ if isempty(opt)
         '    https://github.com/ANTsX/ANTs'
         }'};
     
-    user_parameter(:,2)   = {'Select label map','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select label map','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select maps as input','XScan','','',{'SequenceName'}, 'Optionnal',''};
     user_parameter(:,4)   = {'Parameters','','','','', '', ''};
     user_parameter(:,5)   = {'   .ROIs','char','','rois','', 'Mandatory',...

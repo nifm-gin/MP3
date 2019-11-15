@@ -1741,7 +1741,7 @@ if isfield(handles, 'data_displayed')
                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
-                Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
+                Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, repmat(handles.colors_rgb,20, 1));
                 hold(handles.(current_data), 'on');
                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
                 hold(handles.(current_data), 'off');

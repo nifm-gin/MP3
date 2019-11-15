@@ -38,7 +38,7 @@ elseif exist(overlay,'file') && (strcmp(overlay(max(1,end-3):end),'.nii') || str
     end
     U = uniquetol(overlay_dat(round(linspace(1,end,min(end,1000)))),.1/max(1,nanmax(overlay_dat(:)))); % Unique values (with a tolerance) in a vector made of 1000 points on the image. Can be a bit few ...
     U = U(~isnan(U));
-    if length(U)<20 % this is a Mask
+    if length(U)<100 % this is a Mask
         ismask = true;
         segpng = makeimagestack(rot90(overlay_dat(:,:,z)),[],[],[floor(Nslices/div)+1 div],0);
     else % this is an image
