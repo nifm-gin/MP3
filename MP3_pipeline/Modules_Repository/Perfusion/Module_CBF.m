@@ -180,7 +180,7 @@ if isfield(files_in, 'In6')
     J_TransitMap = spm_jsonread(strrep(files_in.In6{1}, '.nii', '.json'));
 end
 
-if ~strcmp(str2double(opt.InvEffValue), 'NaN')
+if ~isnan(str2double(opt.InvEffValue))
     InvEffValue = str2double(opt.InvEffValue);
 else
     InvEffValue = opt.InvEffValue;
@@ -560,9 +560,9 @@ switch quantification_method
                 InvTimeM0 = LabelTime + PostLabelTime;
                 interSliceTimeM0 = interSliceTime;
                 %M0SatYN=char2logical(scan_acqp('##$PVM_FovSatOnOff=',ASL.texte,0));
-                M0SatYN = J_pCasl.FovSatOnOff.value{1};
+                M0SatYN = strcmp(J_pCasl.FovSatOnOff.value{1}, 'On');
                 %M0_TR = scan_acqp('##$PVM_RepetitionTime=',ASL.texte,1);
-                M0_TR = J_pCasl.RepetitionTime;
+                M0_TR = J_pCasl.RepetitionTime.value;
                 % M0 = map from a given scan (see which condition)
             elseif( ~isempty(M0Map) )
                 %methodM0 = scan_acqp('##$Method=',M0map.texte,0);
@@ -879,7 +879,7 @@ info2.Datatype = class(OutputImages_reoriented);
 % info2.ImageSize(1:length(size(OutputImages_reoriented))) = size(OutputImages_reoriented);
 info2.ImageSize = size(OutputImages_reoriented);
 info2.PixelDimensions = info.PixelDimensions(1:length(size(OutputImages_reoriented)));
-%info2.Description = [info.Description, 'Modified by the DeltaR2 Module'];
+
 
 % save the new .nii file
 niftiwrite(OutputImages_reoriented, files_out.In1{1}, info2);

@@ -38,6 +38,8 @@ In order to push your modifications to the community, please contact benjamin.le
 *  [Create a new module?](https://github.com/nifm-gin/MP3/wiki/User_guide_create_module)
 
 
+### Data test
+In order to test MP³, we provide some projects available at https://github.com/nifm-gin/Data_Test_MP3
 
 # Other
 [Brouillon Module Coreg](https://github.com/nifm-gin/MP3/wiki/Brouillon_module_coreg)
