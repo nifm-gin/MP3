@@ -38,11 +38,11 @@
 		<h2 id="viewer" class="style1">Viewer</h2>
 		<p class="style2"> This section explains how to use MRI File Manager</p>
 		<img alt="copiemri" align="center" src="./images/CaptureMRI3.PNG" style="width:70%;height:70%;border:0;"/>
-		<div class= "style3">
+		<div class= "style2">
 		<br>
 		<ul>
 		<li>
-		<p>Click on one of the buttons 'Bruker', 'Dicom', 'Philips' or 'Nifti' to choose the data folder 
+		<p>Click on one of the buttons 'Bruker', 'Dicom', 'Philips', 'Nifti' or 'Bids' to choose the data folder 
 		<a id="mouse" hover><span>
 		<img src="images/buttons.PNG" align="left" width="100%" height="100%" alt="import">
 		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
@@ -202,19 +202,20 @@
 		<p><b>file separation for parametric images from Bruker</b> ('File -> export -> Option export' menu and 'out dimension' tab)
 		<a id="mouse" hover><span>
 		<img src="images/OptionsBr.png" align="left" width="100%" height="100%" alt="optionBruker">
-		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p>
-				This option (for Bruker only) allows to export the parametric images to Nifti separately (example : signal intensity, T2 relaxation time, std dev of the fit, ....)
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		<p>This option (for Bruker only) allows to export the parametric images to Nifti separately (example : signal intensity, T2 relaxation time, std dev of the fit, ....)</p>
 		</li>
 		<li>
 		<p><b>creation of bvecs/bvals files for MrTrix </b> ('File -> export -> Option export' menu and 'other' tab).
 		<a id="mouse" hover><span>
 		<img src="images/OptionsBvec.png" align="left" width="100%" height="100%" alt="optionBvec">
-		</span> <em> <font color="green">  &nbsp;(preview)</font></em></a></p></p>
-				You can generate bvecs/bvals files for reading diffusion sequences with MrTrix (Bruker only).<br>
-				In this case, 2 files will be created (if the sequence contains the diffusion values) : <br><br>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- a bvecs/bvals file with a <b>'-bvecs-bvals-MRtrix' suffix</b> and a <b>'.txt' extension</b> <br>
+		</span> <em> <font color="green">  <b>&nbsp;(preview)</b></font></em></a></p>
+		<p>You can generate bvecs/bvals files for reading diffusion sequences with MrTrix and FSL (Bruker and Philips only).<br>
+				In this case, several files will be created (if the sequence contains the diffusion values) : <br><br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- a bvecs/bvals text file with a <b>'-bvecs-bvals-MRtrix' suffix</b> and a <b>'.txt' extension</b> (if this option is checked)<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- a bvecs text file and a text bvals file created separately (if this option is checked)<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- an additional Nifti file with a <b> '-MRtrix' suffix </b> and <b>his transformation matrix reset to zero<b><br><br>
-			
+			</p>	
 		<b>Your configuration is saved for the next use of the software</b>
 		</li>
 		</ul>
@@ -227,8 +228,7 @@
 		<i>(to be continued)</i>
 		</div>
 		
-		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-	
+		<br><br><br><br><br><br><br><br><br>
 		<script>document.write("This page was last modified on "+ DateModif())</script>
 	
 	</div>

@@ -66,7 +66,7 @@ dictionaryMRI:
   Angulation Image:
                   description: {info: "Angulation Image (Philips only)"}
   
-                  wherePhilips: {file: PAR ; Xml, keyName: image angulation ; Angulation AP (Image_Info), type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
+                  wherePhilips: {file: PAR ; Xml, keyName: image angulation ; Angulation AP (Image_Info), type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL for Xml
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -74,15 +74,17 @@ dictionaryMRI:
   Angulation Midslice:
                   description: {info: "Angulation Midslice (Philips only)"}
                   
-                  wherePhilips: {file: PAR ; Xml, keyName: Angulation midslice ; Angulation AP, type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL
+                  wherePhilips: {file: PAR ; Xml, keyName: Angulation midslice ; Angulation AP, type: float  ; float, format: ~, units: ~} # && Angulation FH && Angulation RL for Xml
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
   B-values effective:
-                   description: {info: ""}
+                   description: {info: "Bval for MRtrix and FSL"}
   
                    whereBruker:  {file: method, keyName: $PVM_DwEffBval=, type: int, format: ~, units: ~}
+                   wherePhilips: {file: PAR ; Xml, keyName: diffusion_b_factor ; Diffusion B Factor, type: float  ; float, format: ~, units: ~}
+                   whereDicom:   {file: ~, keyName: "0018,9087", type: float, format: ~, units: ~} 
                    
                    viewer: {category: Diffusion}
                    json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -153,9 +155,11 @@ dictionaryMRI:
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
   Direction Diffusion:
-                  description: {info: ""}
+                  description: {info: "Bvec for MRtrix and FSL"}
                     
                   whereBruker:  {file: method, keyName: $PVM_DwDir=, type: int, format: ~, units: ~}
+                  wherePhilips: {file: PAR ; Xml, keyName: diffusion ; Diffusion AP, type: float  ; float, format: ~, units: ~} # && Diffusion FH && Diffusion RL for Xml
+                  whereDicom:   {file: ~, keyName: "2005,10B0", type: float, format: ~, units: ~}
 
                   viewer: {category: Diffusion}
                   json:   {tagJson: DirectionDiffusion, type: int, format: ~, units: ~}

@@ -38,6 +38,7 @@
 		- Dicom from Bruker, Philips, Siemens.<br>
 		- Philips Achieva (Par/Rec & Xml/Rec v4.2).<br>
 		- Nifti-1 (with or without Json).<br>
+		- Bids - Brain Imaging Data Structure.
 		</p>
 		<p class="style3">It also allows for converting MRI images to Nifti-1: </p>
 		<p class="style2">
@@ -46,10 +47,11 @@
 		- an option of anonymization allows to hide sensitive informations about the patient (name, age, sex, weight).<br>
 		- adaptation of orientation information in Nifti headers (tested on SPM, FSL).<br>
 		- option of customizing the Nifti file names.<br>
+		- possibility to create text files containing bvecs & bvals for MRtrix and FSL (Bruker and Philips)
 		</p>
 		<br>
 		<p class="style6">
-		It can be launched in standalone mode or by script with options (from Matlab, Python, ....)<br>
+		It can be launched in standalone mode, by script with options (from Matlab, Python, ....) or by script in windowless mode.<br>
 		It contains 2 Yaml files that permit the extraction of MRI parameters in a personalized way (<a href="../Dictionaries/dictionaries.html">see 'MRI Dictionaries' page</a>).<br>
 		It's written in Java and is heavily based on the <a href="https://imagej.nih.gov/ij/index.html" target="_blanck">ImageJ </a> software.<br>
 		It can be run on Linux, MacOS and Windows.<br>
@@ -115,10 +117,12 @@
 		
 		<tr>
 			<td width="50%">
-			<img src="images/GalleryAn.PNG" alt="GalleryAnonym" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
-			Anonymization
+			<img src="images/GalleryBi.png" alt="GalleryBids" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Viewer tab (Bids)
 			</td>
 			<td width="50%">
+			<img src="images/GalleryAn.PNG" alt="GalleryAnonym" style="width:100%;height:30%;border:0;" align="center" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);">
+			Anonymization
 			</td>
 		</tr>
 		

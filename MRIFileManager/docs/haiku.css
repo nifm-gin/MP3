@@ -52,6 +52,14 @@ a:link {
     font-weight: bold;
     text-decoration: none;
     color: #dc3c01;
+	margin-left:0px;
+}
+
+a.style1:link  {
+	font-size:100%;
+	font-family:Georgia, serif;
+	font-weight: normal;
+    color: #000000;
 }
 
 a:visited {
@@ -311,6 +319,16 @@ code {
     background-color: #e2e2e2;
     font-size: 1.0em;
     font-family: monospace;
+}
+
+pre.console {
+    border-color: #0c3762;
+    border-style: dotted;
+    border-width: thin;
+    margin: 0 0 12px 0;
+    padding: 0.8em;
+	color: #eeeeee; 
+    background-color: #666666;
 }
 
 pre {
