@@ -1672,7 +1672,10 @@ if isfield(handles, 'data_displayed')
                 
             end
             
-            
+            if (size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1) == 1) || (size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2) == 1)
+               warndlg('The image you try to display is not a 2 dimension image. Try to change the orientation thanks to the 3 buttons "Axial", "Saggital", "Coronal".')
+               return
+            end
             
             
             % apply the colormap selected
