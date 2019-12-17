@@ -32,8 +32,8 @@ if isempty(opt)
         {
         'Copy the transform matrix of a scan to another scan.'
         }'};
-    user_parameter(:,2)   = {'Select the scan to copy the matrix from','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Select the scan to copy the matrix to','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select the scan to copy the matrix from','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,3)   = {'Select the scan to copy the matrix to','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,4)   = {'Parameters','','','','', '', ''};
     user_parameter(:,5)   = {'   .Output filename extension','char','_Smooth','output_filename_ext','', '',''};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -103,22 +103,19 @@ N_to = niftiread(files_in.In2{1});
 info_to = niftiinfo(files_in.In2{1});
 [path, name, ~] = fileparts(files_in.In2{1});
 jsonfile = [path, '/', name, '.json'];
-J_to = ReadJson(jsonfile);
-
-
+if exist(jsonfile, 'file')
+    J_to = ReadJson(jsonfile);
+    J_to = KeepModuleHistory(J_to, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
+    [path, name, ~] = fileparts(files_out.In1{1});
+    jsonfile = [path, '/', name, '.json'];
+    WriteJson(J_to, jsonfile)
+end
 info2 = info_to;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));
 %info2.Description = [info.Description, 'Modified by Smoothing Module'];
 info2.Transform.T = info_from.Transform.T;
-
-
-J_to = KeepModuleHistory(J_to, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
-
-
 niftiwrite(N_to, files_out.In1{1}, info2)
 
-[path, name, ~] = fileparts(files_out.In1{1});
-jsonfile = [path, '/', name, '.json'];
-WriteJson(J_to, jsonfile)
+
 

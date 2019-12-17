@@ -31,6 +31,7 @@ if ishandle(overlay)
 elseif exist(overlay,'file') && (strcmp(overlay(max(1,end-3):end),'.nii') || strcmp(overlay(max(1,end-6):end),'.nii.gz'))
     [overlay_dat, h] = nii_load(overlay,1);
     overlay_dat = overlay_dat{end};
+    overlay_dat = round(overlay_dat);
     overlay_dat = nanmean(overlay_dat,4);
     if ~exist('z','var')
         [~,~,z]=find3d(overlay_dat);
