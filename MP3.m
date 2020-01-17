@@ -3818,7 +3818,7 @@ function MP3_show_group_Callback(hObject, eventdata, handles)
 Scan_Selected = handles.database(finddata_selected(handles),:);
 Unique_group = unique(Scan_Selected.Group);
 
-group = ['group: ' char(Unique_group(1))];
+group = ['group:' char(Unique_group(1))];
 set(handles.MP3_name_list_groupname_box, 'String', group);
 
 
