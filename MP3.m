@@ -1537,7 +1537,6 @@ end
 
 function MP3_update_axes(hObject, eventdata, handles)
 %handles = guidata(hObject);
-
 if ~isfield(handles, 'data_loaded')
     return
 end
@@ -1550,9 +1549,7 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MP3_load_axes') && get(handles.MP3_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-        
         handles = MP3_update_image_displayed(hObject, eventdata, handles);
-        
         % Setup every siders, popupmenu when new dataset are loaded
         if strcmp(get(hObject, 'Tag'), 'MP3_load_axes') || strcmp(get(hObject, 'Tag'), 'MP3_Saggital_view_button')...
                 || strcmp(get(hObject, 'Tag'), 'MP3_Axial_view_button')  || ...
@@ -1563,7 +1560,6 @@ if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
         
         guidata(hObject, handles);
     end
-    
     % update the ROI matrix (new ROI, resized...)
     if isfield(handles.data_loaded, 'ROI')
         handles = MP3_update_VOI_displayed(hObject, eventdata, handles);
@@ -1628,7 +1624,6 @@ if isfield(handles.data_loaded, 'Cluster')
         return
     end
 end
-
 
 % display every data available (image, ROI, cluster...)
 if isfield(handles, 'data_displayed')
@@ -1760,7 +1755,8 @@ if isfield(handles, 'data_displayed')
         set(get(handles.(current_data), 'Children'), 'HitTest', 'off');
         set(handles.(current_data),'ButtonDownFcn', @MP3_clic_on_image);
         set(get(handles.(current_data), 'Children'), 'ButtonDownFcn', @MP3_clic_on_image);
-        
+        h = findobj('Tag','MP3_GUI');
+        set(h,'WindowScrollWheelFcn', @MP3_scroll_func);
         
     end
     
@@ -1775,15 +1771,35 @@ if exist('Informations', 'var')
     end
 end
 linkaxes(axe, 'xy');
-
 guidata(hObject, handles);
 
+
+function MP3_scroll_func(hObject, eventdata, handles)
+% hObject    handle to patient_graph1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+handles = guidata(hObject);
+
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount * eventdata.VerticalScrollAmount;
+if handles.MP3_slider_slice.Value <1
+    handles.MP3_slider_slice.Value = 1;
+elseif handles.MP3_slider_slice.Value > size(handles.data_displayed.image,3)
+    handles.MP3_slider_slice.Value = size(handles.data_displayed.image,3);
+else
+    MP3_update_axes(hObject, eventdata, handles);
+    guidata(hObject, handles);
+end
 
 
 
 
 function handles = MP3_update_image_displayed(hObject, eventdata, handles)
-
 scan_of_reference = get(handles.MP3_orientation_space_popupmenu, 'Value');
 
 if exist(handles.data_loaded.Scan(1).V(1).fname, 'file') == 0
@@ -1846,15 +1862,16 @@ switch get(hObject, 'Tag')
                 Types{i} = info.Datatype;
             end
             CommonType = FindCommonDatatype(Types);
-            handles.data_displayed.image = cast([], CommonType);
+            %handles.data_displayed.image = cast([], CommonType);
             for i=1:handles.data_loaded.number_of_scan
+                handles.data_displayed.image =zeros(handles.data_loaded.Scan(1).V.dim, CommonType);
+                %eval(['handles.data_displayed.image = ', CommonType, '(handles.data_loaded.Scan(1).V.dim);']);
+                %handles.data_displayed.image = nan(handles.data_loaded.Scan(1).V.dim);
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = round(get(handles.MP3_data' stri '_echo_slider, ''Value''));']);
                 eval(['data' stri '_expt_nbr = round(get(handles.MP3_data' stri '_expt_slider, ''Value''));']);
-                
-                eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
-                
-                handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
+                eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode, handles.MP3_slider_slice.Value, CommonType);']);
+                handles.data_displayed.image(:,:,handles.MP3_slider_slice.Value,i) = eval(['ima' num2str(i)]);
             end
             
         else
@@ -1896,8 +1913,6 @@ switch get(hObject, 'Tag')
         %             end
         %         end
 end
-
-
 guidata(hObject, handles);
 
 
@@ -1910,7 +1925,7 @@ if isfield(handles.data_loaded, 'ROI')
     for i = 1:numel(handles.data_loaded.ROI)
         switch get(hObject, 'Tag')
             case {'MP3_load_axes', 'MP3_Axial_view_button', 'MP3_Saggital_view_button', 'MP3_Coronal_view_button'}
-                handles.data_loaded.ROI(i).nii = read_volume(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
+                handles.data_loaded.ROI(i).nii = read_slice(handles.data_loaded.ROI(i).V, handles.data_loaded.Scan(scan_of_reference).V,'auto', handles.view_mode);
                 handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii>0.5) = 1;
                 handles.data_loaded.ROI(i).nii(handles.data_loaded.ROI(i).nii<0.5) = 0;
         end
@@ -1949,7 +1964,7 @@ if isfield(handles.data_loaded, 'Cluster')
             handles.data_displayed.Cluster.trans = trans;
             if nansum(nansum(handles.data_loaded.Cluster(i).nii(:,:,slice_nbr))) > 1
                 handles.data_displayed.Cluster.on_slice(i,slice_nbr) = 1;
-            else
+            elseMP3_scroll_func
                 handles.data_displayed.Cluster.on_slice(i,slice_nbr) = 0;
             end
         end
