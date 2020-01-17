@@ -443,7 +443,8 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
         parfor kk=1:ptsheurist*Number_of_replicate
             %La ligne suivante permet uniquement de suivre l'avancement du
             %calcul des modeles
-            disp(strcat('Modele_', num2str(loop_inputs(kk)), '_started'))
+            %disp(strcat('Modele_', num2str(loop_inputs(kk)), '_started'))
+            disp(strcat(datestr(datetime('now')),' - Modele_', num2str(loop_inputs(kk)), ' repetition_', num2str(floor(kk./ptsheurist)+1), ' started'))
             %L'option "Replicate,10" signifie que l'on va calculer 10 fois le
             %modele en modifiant l'initialisation. Le modele renvoye est celui
             %de plus grande vraisemblance.
@@ -453,7 +454,8 @@ if strcmp(opt.SlopeHeuristic, 'Yes')
             
             %La ligne suivante permet uniquement de suivre l'avancement du
             %calcul des modeles
-            disp(strcat('Modele_', num2str(loop_inputs(kk)), '_done'))
+            %disp(strcat('Modele_', num2str(loop_inputs(kk)), '_done'))
+            disp(strcat(datestr(datetime('now')),' - Modele_', num2str(loop_inputs(kk)), ' repetition_', num2str(floor(kk./ptsheurist)+1), ' finished'))
         end
         % find the largest loglikelihood between repetition in order to find
         % the best model per class ie the minimum of the abstolute value of the
