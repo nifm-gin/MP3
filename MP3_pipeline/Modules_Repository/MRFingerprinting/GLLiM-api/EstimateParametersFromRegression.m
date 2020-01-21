@@ -2,19 +2,19 @@ function [Yestim, Parameters, Cov, Kurt, Pik] = EstimateParametersFromRegression
 
 if ~exist('Parameters','var')
     Parameters.maxiter     = 200;
-    Parameters.cstr.Sigma  = 'i';
+    Parameters.cstr.Sigma  = 'd*';
     Parameters.cstr.Gammat = ''; 
     Parameters.cstr.Gammaw = '';
     
 elseif isempty(Parameters)
     Parameters.maxiter     = 200;
-    Parameters.cstr.Sigma  = 'i';
+    Parameters.cstr.Sigma  = 'd*';
     Parameters.cstr.Gammat = ''; 
     Parameters.cstr.Gammaw = '';
     
 else
     if ~any(contains(fields(Parameters), 'maxiter')),   Parameters.maxiter = 200; end
-    if ~any(contains(fields(Parameters), 'cstr')),      Parameters.cstr.Sigma  = 'i';
+    if ~any(contains(fields(Parameters), 'cstr')),      Parameters.cstr.Sigma  = 'd*';
                                                         Parameters.cstr.Gammat = '';
                                                         Parameters.cstr.Gammaw = ''; end
 end
