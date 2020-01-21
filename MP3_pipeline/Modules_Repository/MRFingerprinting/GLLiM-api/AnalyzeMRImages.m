@@ -1,16 +1,27 @@
-function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers)
+function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers,compute_ci_corr)
 
 if nargin < 3, error('Not enought input arguments'); end
-if ~exist('Method','var'),      Method = 'RegressionMRF'; end
+if ~exist('Method','var'),      Method = 'DBL'; end
 if ~exist('Parameters','var'),  Parameters = []; end
 if ~exist('References','var'),  References = []; end
 if ~exist('Outliers','var'),    Outliers = []; end
+if ~exist('compute_ci_corr','var'), compute_ci_corr = false; end
 
 % This parameters is only used to enable the parameter data normalisation
 normalization = 1;
 
-% Can be a problem, remove this line if necessary - 20/02/2019
-if isempty(Parameters), Parameters = struct(); end
+%This line is only required to stay compatible with old notation 
+switch Method
+    case 'ClassicMRF'
+        Method = 'DBM';
+    case 'RegressionMRF'
+        Method = 'DBL';
+end
+
+if isempty(Sequences), Sequences = Dico{1}.MRSignals; end
+% Can be a problem, remove following line if necessary - 20/02/2019
+if isempty(Parameters),	Parameters = struct(); end 
+if isstruct(Dico), Dico = {Dico}; end
 
 switch length(size(Sequences))
     case 4
@@ -34,7 +45,9 @@ end
 f = 1;
 switch Method
     
-    case 'ClassicMRF'
+    case 'DBM'
+        
+        tic
         for s = 1:slices
             %Estimation of parameters
             Estimation.GridSearch.Y(:,:,:,s) = ...
@@ -46,9 +59,11 @@ switch Method
                     EvaluateEstimation(reshape(References(:,:,:,s),s1*s2,size(References,3)), reshape(Estimation.GridSearch.Y(:,:,:,s),s1*s2,size(References,3)));
             end
         end
+        Estimation.GridSearch.quantification_time = toc; 
         
-    case 'RegressionMRF'
+    case 'DBL'
         
+        tic
         if ~any(strcmp(fieldnames(Parameters),'theta'))
             
             %Normalize trainning data
@@ -57,18 +72,11 @@ switch Method
                 Parameters.factors.Ystd     = nanstd(Dico{f}.Parameters.Par);
                 Dico{f}.Parameters.Par      = (Dico{f}.Parameters.Par - Parameters.factors.Ymean) ./ Parameters.factors.Ystd;
                 
-%                 Parameters.factors.Xmean	= nanmean(Dico{f}.MRSignals,1);
-%                 Parameters.factors.Xstd     = nanstd(Dico{f}.MRSignals);
-%                 Dico{f}.MRSignals           = (Dico{f}.MRSignals - Parameters.factors.Xmean) ./ Parameters.factors.Xstd;
-                
                 Parameters.factors.normalization = 1;
             else
                 Parameters.factors.Ymean	= 0;
                 Parameters.factors.Ystd     = 1;
-                
-%                 Parameters.factors.Xmean	= 0;
-%                 Parameters.factors.Xstd     = 1;
-                
+                                
                 Parameters.factors.normalization = 0;
             end
             
@@ -78,13 +86,10 @@ switch Method
             Dico{f}.MRSignals       = [];
             Dico{f}.Parameters.Par  = [];
         end
+        Estimation.Regression.learning_time = toc; 
         
+        tic
         for s = 1:slices
-            
-            %Normalize observations
-%             if any(strcmp(fieldnames(Parameters),'factors')) && normalization == 1
-%                 Sequences(:,:,:,s) = reshape((reshape(Sequences(:,:,:,s),s1*s2,t) - Parameters.factors.Xmean) ./ Parameters.factors.Xstd, s1,s2,[]);
-%             end
             
             %Estimation of parameters
             [Yestim,~,Cov,~,Pik] = ...
@@ -127,8 +132,35 @@ switch Method
                 [Estimation.Regression.Errors.Rmse(s,:), Estimation.Regression.Errors.Nrmse(s,:), Estimation.Regression.Errors.Mae(s,:), Estimation.Regression.Errors.Nmae(s,:)] = ...
                     EvaluateEstimation(reshape(References(:,:,:,s),s1*s2,size(References,3)), reshape(Estimation.Regression.Y(:,:,:,s),s1*s2,size(References,3)));
             end
+            
+            %CI coeff correction computation
+            if compute_ci_corr == 1
+                snr_test = logspace(1, 2.2, 20);
+                
+                idx = floor(size(Dico{1}.MRSignals,1) /11);
+                idx = 1:idx:idx*11;
+                
+                for i = 1:length(idx)-1
+                    for snr = 1:length(snr_test)
+                        Xtest_noisy = AddNoise(Dico{1}.MRSignals(idx(i):idx(i+1),:), snr_test(snr));
+                        Estim   = AnalyzeMRImages(Xtest_noisy, [], 'DBL', Parameters);
+
+                        std(snr,:,i) = nanmean(squeeze(Estim.Regression.Cov),1).^.5;
+                        err(snr,:,i) = EvaluateEstimation((Dico{1}.Parameters.Par(idx(i):idx(i+1),1:end-Parameters.Lw) .* Parameters.factors.Ystd) + Parameters.factors.Ymean, Estim.Regression.Y);
+                    end
+                end
+                
+                F = @(xdata,x)x(1)*exp(-x(2)./xdata) + x(3);
+                ff = mean(err./std,3);
+                for param = 1:size(Estim.Regression.Y,3)
+                    a(param,:) = levenbergmarquardt(F, snr_test, ff(:,param,:)', [max(ff(param,:)) -1 min(ff(param,:))]);
+                end
+                
+                Parameters.ci_correction.Func = F;
+                Parameters.ci_correction.Var = a;
+            end
         end
-        
+        Estimation.Regression.quantification_time = toc;
         
 end
 end
