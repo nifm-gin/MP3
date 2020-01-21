@@ -4,9 +4,9 @@ function Y = read_slice(Vi,Vref, echo_nbr, expt_nbr, view_mode)
 % Vref = reference image (voxel space)
 %-Loop over planes reading to Y
 interpolation = 0;
-			
 
 
+%tic
 
 Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
 
@@ -24,6 +24,26 @@ for p = 1:Vref(1).dim(3)
 %     Y(:,:,p) = reshape(d,xy);
     Y(:,:,p) = spm_slice_vol(Vi_index_3D_vol,M,xy,interpolation)/Vi_index_3D_vol.pinfo(1);
 end
+
+%t1=toc
+
+% ALTERNATIVE sans spm
+% tic
+% %N1 = read_volume(Vi, Vi, 0, 'Axial');
+% Ii = niftiinfo(Vi.fname);
+% Ni = niftiread(Ii);
+% Iref = niftiinfo(Vref.fname);
+% Mati = Ii.Transform.T;
+% Matref = Iref.Transform.T;
+% D = Mati/Matref;
+% %D = Mat2.'/Mat1.';
+% %D(:,4) = [0;0;0;1];
+% R = imref3d(size(Ni));
+% tform1 = affine3d(D);
+% [N1_new,ref1] = imwarp(Ni,tform1, 'OutputView', R, 'interp', 'nearest');
+% t2 = toc
+% %figure;imshow3D(Y);figure;imshow3D(permute(N1_new, [2,1,3]))
+% Y = N1_new;
 
 
 %% reorient the matrix (sag, cor, trans)
@@ -79,9 +99,10 @@ switch view_mode
         
 end
 
+% info = niftiinfo(Vi(1).fname);
+% Y = cast(Y, info.Datatype);
 
-info = niftiinfo(Vi(1).fname);
-Y = cast(Y, info.Datatype);
+
 
 
 function orient = get_orient(R)
