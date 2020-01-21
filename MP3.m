@@ -1067,7 +1067,15 @@ elseif get(handles.MP3_scan_VOIs_button, 'Value') && ~isfield(handles, 'data_loa
     warndlg('Please load a scan first','Warning');
     return
 end
+
+
+
+
+
 handles = MP3_clear_data(hObject, eventdata, handles);
+% display a waiting symbol
+set(handles.MP3_GUI, 'pointer', 'watch');
+
 
 % Load Scans
 if handles.mode == 1
@@ -1089,8 +1097,6 @@ else
     set(handles.MP3_PRM_slider_tp,'SliderStep',[1/(handles.data_loaded.number_of_scan-1) min(5/(handles.data_loaded.number_of_scan-1),1)]);
 end
 
-% display a waiting symbol
-set(handles.MP3_GUI, 'pointer', 'watch');
 drawnow;
 
 MP3_update_axes(hObject, eventdata, handles)
@@ -1653,7 +1659,7 @@ if isfield(handles, 'data_displayed')
             if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MP3_slider_slice') || ...
                     strcmp(get(hObject, 'Tag'), 'MP3_new_roi') || strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_tp') || ...
                     strcmp(get(hObject, 'Tag'), 'MP3_load_axes') || strcmp(get(hObject, 'Tag'), 'MP3_PRM_ref_popupmenu') || ...
-                     strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_trans'))
+                     strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_trans') || strcmp(eventdata.EventName, 'WindowScrollWheel'))
                 
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
                 set(handles.(current_data), 'Clim', current_contrast );
