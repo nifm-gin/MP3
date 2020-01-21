@@ -102,8 +102,10 @@ if strcmp(files_out, '')
                 DbRois = databROIs(databROIs.(Tag1) == UTag1(i),:);
                 DbRois = DbRois(DbRois.(Tag2) == UTag2(j),:);
                 if size(DbRois, 1) == 0
-                    continuet*Number_of_replicate);
-        loop_inputs = repmat(1:ptsheurist,
+%                     continuet*Number_of_replicate);
+%         loop_inputs = repmat(1:ptsheurist,
+                    warning('Please check the two commented lines as they may not be correct.')
+                    continue
                 end
 %                 datab = databScans(databScans.(Tag1) == UTag1(i),:);
 %                 datab = datab(datab.(Tag2) == UTag2(j),:);
@@ -165,8 +167,7 @@ for i=1:length(UTag1)
         
         if size(DbRois, 1) == 0
             continue
-        endt*Number_of_replicate);
-        loop_inputs = repmat(1:ptsheurist,
+        end
         roi = [char(DbRois.Path(1)), char(DbRois.Filename(1)), '.nii'];
         
         %datab = databScans(databScans.(Tag1) == UTag1(i),:);
