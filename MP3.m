@@ -1545,12 +1545,11 @@ end
 
 %save data displayed
 
-if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
+if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice') && ~strcmp(eventdata.EventName, 'WindowScrollWheel')
     % Update image_displayed matrix
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MP3_load_axes') && get(handles.MP3_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-        
         handles = MP3_update_image_displayed(hObject, eventdata, handles);
         
         % Setup every siders, popupmenu when new dataset are loaded
@@ -1760,6 +1759,8 @@ if isfield(handles, 'data_displayed')
         set(get(handles.(current_data), 'Children'), 'HitTest', 'off');
         set(handles.(current_data),'ButtonDownFcn', @MP3_clic_on_image);
         set(get(handles.(current_data), 'Children'), 'ButtonDownFcn', @MP3_clic_on_image);
+        h = findobj('Tag','MP3_GUI');
+        set(h,'WindowScrollWheelFcn', @MP3_scroll_func);
         
         
     end
@@ -1778,7 +1779,27 @@ linkaxes(axe, 'xy');
 
 guidata(hObject, handles);
 
+function MP3_scroll_func(hObject, eventdata, handles)
+% hObject    handle to patient_graph1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+
+handles = guidata(hObject);
+
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount * eventdata.VerticalScrollAmount;
+if handles.MP3_slider_slice.Value <1
+    handles.MP3_slider_slice.Value = 1;
+elseif handles.MP3_slider_slice.Value > size(handles.data_displayed.image,3)
+    handles.MP3_slider_slice.Value = size(handles.data_displayed.image,3);
+else
+    MP3_update_axes(hObject, eventdata, handles);
+    guidata(hObject, handles);
+end
 
 
 
@@ -1846,14 +1867,15 @@ switch get(hObject, 'Tag')
                 Types{i} = info.Datatype;
             end
             CommonType = FindCommonDatatype(Types);
-            handles.data_displayed.image = cast([], CommonType);
+            %cast([], CommonType);
             for i=1:handles.data_loaded.number_of_scan
+                %handles.data_displayed.image(:,:,:,i) =zeros(handles.data_loaded.Scan(scan_of_reference).V.dim, CommonType);
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = round(get(handles.MP3_data' stri '_echo_slider, ''Value''));']);
                 eval(['data' stri '_expt_nbr = round(get(handles.MP3_data' stri '_expt_slider, ''Value''));']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
-                
+                eval(['ima' stri '= cast(ima' stri ', CommonType);']);
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
             end
             
