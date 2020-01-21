@@ -317,8 +317,8 @@ switch opt.method
             Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
             
             TmpDico{1}.Parameters.Labels = labels;
+        
         else
-            
             count = 1;
             
             % Pick parameters of interest
@@ -349,14 +349,26 @@ switch opt.method
             Parameters.cstr.Gammaw  = '';
             Parameters.data_augmentation = opt.augment;
             
-            [Estimation, Parameters] = AnalyzeMRImages(Xobs, TmpDico, opt.method, Parameters);
+            [Estimation, Parameters] = AnalyzeMRImages(Xobs, TmpDico, opt.method, Parameters,[],[],1);
             
             labels      = TmpDico{1}.Parameters.Labels; 
             save(model_filename,'Parameters', 'labels')
         end
-                
+            
         Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
         Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
+        
+        % Perform confidence index correction, if coeff computed
+        if isfield(Parameters,'ci_correction')
+            backgroundROI = false(size(Xpost));
+            backgroundROI(1:ceil(size(Xpost,1)/10),1:ceil(size(Xpost,2)/10),:,:) = true;
+            SnrMap = 1./( 1./computeSNRmap(permute(Xpost,[1 2 4 3]), permute(backgroundROI,[1 2 4 3])) + 1./computeSNRmap(permute(Xpre,[1 2 4 3]), permute(backgroundROI,[1 2 4 3])) );
+            
+            for p = 1:length(opt.Params)
+                CorrMap(:,:,:,p) = reshape(Parameters.ci_correction.Func(reshape(SnrMap,1,[]), Parameters.ci_correction.Var(p,:)),size(Xpost,1),size(Xpost,2),1,size(Xpost,3));
+            end
+            Map.Std = Map.Std .* CorrMap; 
+        end
 end
 
 
