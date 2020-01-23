@@ -1792,6 +1792,14 @@ function MP3_scroll_func(hObject, eventdata, handles)
 
 
 handles = guidata(hObject);
+h = findobj('Tag','MP3_GUI');
+PointerPos = h.CurrentPoint;
+%ImagePos = handles.MP3_data1.Position;
+
+if PointerPos(1)> 0.53 || PointerPos(2)>0.81 % Approximatively the coordinates of an only one image displayed in MP3
+    return
+end
+    
 
 if ~isfield(handles, 'data_displayed')
     return
