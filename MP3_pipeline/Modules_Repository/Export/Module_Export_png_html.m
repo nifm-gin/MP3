@@ -34,8 +34,9 @@ if isempty(opt)
     module_parameters(:,7)   = {'AutomaticJobsCreation', 'No'};
     module_parameters(:,8)   = {'makeMain', 'No'};
     module_parameters(:,9)   = {'dispSlice', 2};
-    module_parameters(:,10)   = {'Cmap', 'gray'};
-
+    module_parameters(:,10)  = {'Cmap', 'gray'};
+    module_parameters(:,11)  = {'Clipped', 'No'};   
+    
     %% System parameters : Do not modify without understanding the behaviour of the software.
     
     system_parameters(:,1)   = {'RefInput',1};
@@ -134,15 +135,16 @@ if isempty(opt)
     user_parameter(:,8)   = {'Scans','','','','', '', ''};
     user_parameter(:,9)   = {'    .Reference scan','1Scan','','',{'SequenceName'}, 'Optional',''};
     user_parameter(:,10)   = {'    .Scans to compare','XScan','','',{'SequenceName'}, 'Optional',''};
-    user_parameter(:,11)  = {'    .ROI for BBox','1ROI','','',{'SequenceName'}, 'Optional',''}; 
-    user_parameter(:,12)  = {'    .Slice to show','numeric','','dispSlice','', 'Optional',''}; 
+    user_parameter(:,11)  = {'    .ROI for BBox','1ROI','','',{'SequenceName'}, 'Optional',''};
+    user_parameter(:,12)  = {'    .Slice to show','numeric','','dispSlice','', 'Optional',''};
     user_parameter(:,13)  = {'    .Colormap','cell',{'gray', 'hot', 'phase', 'jet', 'cool', 'spring'},'Cmap','', 'Optional',''};
-
+    user_parameter(:,14)  = {'    .Is Ref clipped?','cell', {'No', 'Yes'}, 'Clipped','', 'Optional',''};
+    
     % Concatenate these user_parameters, and store them in opt.table
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', ...
         user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
-    %%   
+    %%
     % Initialize to an empty string the names of the input and output
     % files.
     files_in.In1 = {''};
@@ -166,11 +168,11 @@ end
 %     elseif strcmp(opt.OutputSequenceName, 'Extension')
 %         opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
 %     end
-% 
+%
 %     opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
 %     f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
 %     files_out.In1{1} = f_out;
-% % 
+% %
 % end
 
 
@@ -248,6 +250,24 @@ for a=1:numel(Patient_listing)
 end
 
 Seq_listing = unique(opt.Table_in.SequenceName(opt.Table_in.Type == 'Scan'));
+
+[~, refName, ~] = fileparts(files_in.In1{1});
+refSeqName = opt.Table_in(opt.Table_in.Patient == Patient_listing(1) & opt.Table_in.Filename == refName, :).SequenceName;
+%sortingTable = opt.Table_in(opt.Table_in.Patient == Patient_listing(1) & opt.Table_in.Filename == refName, :);
+I = find(refSeqName == Seq_listing);
+
+switch I>1
+    case 1
+        if I ~= numel(Seq_listing) %If I is not the last element
+            sortingIdx = [I, 1:I-1, I+1:numel(Seq_listing)]';
+        else
+            sortingIdx = [I, 1:numel(Seq_listing)-1]';
+        end
+    otherwise
+        sortingIdx = [1:numel(Seq_listing)]';
+end
+Seq_listing=Seq_listing(sortingIdx);
+
 if strcmp(opt.applyBbox, 'Yes')
     BboxRoi = unique(opt.Table_in.SequenceName(opt.Table_in.Type == 'ROI'));
 end
@@ -262,7 +282,7 @@ for x = 1:numel(Patient_listing)
 end
 
 rowNames = {};
-for i = 1:numel(Seq_listing)   
+for i = 1:numel(Seq_listing)
     rowNames{end+1} = char(Seq_listing(i));
 end
 
@@ -275,7 +295,9 @@ for x = 1:numel(Patient_listing)
     for y = 1:numel(Tp_listing{x})
         colIndex = colIndex+1;
         % process reference scan
-        sub_database = sortrows(opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'Scan', :), {'SequenceName'}, {'ascend'});
+        %sub_database = sortrows(opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'Scan', :), {'SequenceName'}, {'ascend'});
+        sub_database = opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'Scan', :);
+        sub_database=sub_database(sortingIdx,:);
         roi_database = opt.Table_in(opt.Table_in.Patient == Patient_listing(x) & opt.Table_in.Tp == Tp_listing{x}(y) & opt.Table_in.Type == 'ROI', :);
         % load the scan of reference
         scan_of_reference.header =   spm_vol([char(sub_database.Path(1)) char(sub_database.Filename(1)) '.nii']);
@@ -288,8 +310,14 @@ for x = 1:numel(Patient_listing)
         if strcmp(opt.applyBbox, 'Yes')
             roi.header = spm_vol([char(roi_database.Path(1)) char(roi_database.Filename(1)) '.nii']);
             roi.data = read_volume(roi.header, scan_of_reference.header, 0, 'Axial');
-            roiSlice = roi.data(:,:,midSlice);
-            Data = scan_of_reference.data(:,:,midSlice,1);
+            switch scan_of_reference.header.dim(3) > 1
+                case 0
+                    roiSlice = roi.data;
+                    Data = scan_of_reference.data;
+                case 1
+                    roiSlice = roi.data(:,:,midSlice);
+                    Data = scan_of_reference.data(:,:,midSlice,1);
+            end
             Data(roiSlice ==0 ) = nan;
             BBox = regionprops(roiSlice, 'BoundingBox');
             %pngData = imcrop(scan_of_reference.data(:,:,midSlice,1), BBox.BoundingBox);
@@ -299,17 +327,17 @@ for x = 1:numel(Patient_listing)
         end
         
         % Scale data on [0,1] before png conversion
-            pngData = double(pngDataRaw - min(min(pngDataRaw)));
-            pngData = double(pngData./max(max(pngData)));  
-            pngData = im2uint8(pngData);
-            pngData(pngDataRaw==min(min(pngDataRaw(pngDataRaw~=0))))=1;
-            if x == 1 && y == 1
-                barWidth = floor(size(pngData,2)/20);
-            end
-%         pngData = pngData - min(min(pngData));
-%         pngData = pngData/max(max(pngData));
+        pngData = double(pngDataRaw - min(min(pngDataRaw)));
+        pngData = double(pngData./max(max(pngData)));
+        pngData = im2uint8(pngData);
+        pngData(pngDataRaw==min(min(pngDataRaw(pngDataRaw~=0))))=1;
+        if x == 1 && y == 1
+            barWidth = floor(size(pngData,2)/20);
+        end
+        %         pngData = pngData - min(min(pngData));
+        %         pngData = pngData/max(max(pngData));
         
-        % Remove 
+        % Remove
         bar = linspace(255,0,size(pngData,1))';
         toWrite = [pngData, repmat(bar,[1,barWidth])];
         imwrite(toWrite, Cmap,[imgDir char(Patient_listing(x)) '_' char(Tp_listing{x}(y)) '_' char(sub_database.SequenceName(1)) '.png'], 'Transparency', Q);
@@ -320,19 +348,27 @@ for x = 1:numel(Patient_listing)
         for i = 2:height(sub_database)
             scan.header =   spm_vol([char(sub_database.Path(i)) char(sub_database.Filename(i)) '.nii']);
             scan.data=  read_volume(scan.header, scan_of_reference.header, 0, 'Axial'); % opening in ref space
-%             Slices = {scan.header.dim};
-%             midSlice = floor(Slices{1}(end)/2);
+            %             Slices = {scan.header.dim};
+            %             midSlice = floor(Slices{1}(end)/2);
             
             % get bounding box if asked
             if strcmp(opt.applyBbox, 'Yes')
-                roiSlice = roi.data(:,:,midSlice);
-                Data = scan.data(:,:,midSlice,1);
+                roi.header = spm_vol([char(roi_database.Path(1)) char(roi_database.Filename(1)) '.nii']);
+                roi.data = read_volume(roi.header, scan_of_reference.header, 0, 'Axial');
+                switch scan_of_reference.header.dim(3) > 1
+                    case 0
+                        roiSlice = roi.data;
+                        Data = scan.data;
+                    case 1
+                        roiSlice = roi.data(:,:,midSlice);
+                        Data = scan.data(:,:,midSlice,1);
+                end
                 Data(roiSlice ==0 ) = nan;
                 BBox = regionprops(roiSlice, 'BoundingBox');
-                %pngData = imcrop(scan.data(:,:,midSlice,1), BBox.BoundingBox);
+                %pngData = imcrop(scan_of_reference.data(:,:,midSlice,1), BBox.BoundingBox);
                 pngDataRaw = imcrop(Data, BBox.BoundingBox);
             else
-                pngDataRaw = scan.data(:,:,midSlice,1);
+                pngDataRaw = scan_of_reference.data(:,:,midSlice,1);
             end
             % Scale data on [0,1] before png conversion
             pngData = double(pngDataRaw - min(min(pngDataRaw)));
@@ -372,8 +408,14 @@ for l = 1:size(localTable, 1)
     fprintf(htmlFid, ['<td class="myLabel"> <p class="rotate">' localTable.Properties.RowNames{l} '</p> </td>\n']);
     for i = 1:size(localTable, 2)
         if ~ismissing(localTable(l,i).Variables)
-            fprintf(htmlFid, strcat('<td> ', num2str(maxTable(l,i)), '<br/> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
-                '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);" /> <br/>', num2str(minTable(l,i)), ' </td>\n'));
+            switch (l==1 & strcmp(opt.Clipped, 'Yes'))
+                case 1
+                    fprintf(htmlFid, strcat('<td> ', strcat('>',num2str(maxTable(l,i))), '<br/> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
+                    '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);" /> <br/>', strcat('<',num2str(minTable(l,i))), ' </td>\n'));
+                case 0
+                    fprintf(htmlFid, strcat('<td> ', num2str(maxTable(l,i)), '<br/> <img src="', localTable(l,i).Variables, '" id="', localTable.Properties.VariableNames{i},...
+                    '_', localTable.Properties.RowNames{l}, '" onclick="singleClick(this);" /> <br/>', num2str(minTable(l,i)), ' </td>\n'));
+            end
         else
             fprintf(htmlFid, strcat('<td> </td>\n'));
         end
@@ -392,23 +434,23 @@ if strcmp(opt.makeMain, 'Yes')
     end
     fprintf(mainFid,...
         strcat('<html>\n',...
-                '<head>\n',...
-                '<title> Viewer </title>\n',...
-                '<meta charset="utf-8"></meta>\n',...
-                '<link rel="stylesheet" href="Resources/style.css" />\n', ...
-                '<script src="Resources/jquery-3-4-1.js"></script>\n', ...
-                '</head>'));
+        '<head>\n',...
+        '<title> Viewer </title>\n',...
+        '<meta charset="utf-8"></meta>\n',...
+        '<link rel="stylesheet" href="Resources/style.css" />\n', ...
+        '<script src="Resources/jquery-3-4-1.js"></script>\n', ...
+        '</head>'));
     fprintf(mainFid, ...
         strcat('<body>\n',...
-                '<table class="selTable">\n',...
-                '<td>Map to display:</td>\n',...
-                '<td> <select id="mapToDisplay">'));
+        '<table class="selTable">\n',...
+        '<td>Map to display:</td>\n',...
+        '<td> <select id="mapToDisplay">'));
     % Retrieve the names of the displayable tables
     html_files	= dir(htmlDir);
     html_files    = html_files(~[html_files.isdir]);
     [~, html_names, ~] = cellfun(@fileparts, {html_files.name}, 'UniformOutput', false);
     for k=1:numel(html_names)
-        [~, shortName, ~] = fileparts(html_names{k}); 
+        [~, shortName, ~] = fileparts(html_names{k});
         fprintf(mainFid, strcat('<option value="', shortName, '">', shortName, '</option>'));
     end
     fprintf(mainFid, '</select> </td>\n');
@@ -417,13 +459,13 @@ if strcmp(opt.makeMain, 'Yes')
     fprintf(mainFid, '<td><p id="demo"></p></td>');
     fprintf(mainFid, ...
         strcat('</table>\n', ...
-                '</table\n>',...       
-                '<div id="includedContent"></div>\n',...
-                '<script src="Resources/Interaction.js"></script>\n',...
-                '<body style="background-color:black;">',...
-                '</body>\n',...
-                '</html>'));
-
+        '</table\n>',...
+        '<div id="includedContent"></div>\n',...
+        '<script src="Resources/Interaction.js"></script>\n',...
+        '<body style="background-color:black;">',...
+        '</body>\n',...
+        '</html>'));
+    
 end
 
 %% It's already over !
