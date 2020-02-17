@@ -192,12 +192,15 @@ switch opt.Cost_Function
 end
 
 switch opt.Interpolation
-    case 'Trilinear'
-        Interpolation = 'trilinear';
     case 'Nearest neighbour'
         Interpolation = 'nearestneighbour';
+        SPM_Inter = 0;
+    case 'Trilinear'
+        Interpolation = 'trilinear';
+        SPM_Inter = 1;
     case 'Spline'
         Interpolation = 'interp spline';
+        SPM_Inter =2;
 end
 
 % set FSL environment
@@ -212,8 +215,8 @@ cmd = strcat('/usr/local/fsl/bin/flirt', {' -in '}, files_in.In2{:},...
     {' -bins 256'},...
     {' -cost '}, Cost_Function,...
     {' '}, search,...
-    {' -dof  '}, Registration_type, ...
-    {' -interp '}, Interpolation);
+    {' -dof '}, Registration_type, ...
+    {'  -interp '}, Interpolation);
 
 % execute the command
 system(cmd{:});
@@ -235,10 +238,6 @@ J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'o
 jsonfile = [path, '/', name, '.json'];
 WriteJson(J, jsonfile)
 
-
-%[Mov] = ExtractMovement('Patient1-J3-T2_EG_AXIAL_HEMO_20180504-163255801.nii','Patient1_J3_CoregADC.nii');
-%ApplyMovement('ADC_moved.nii',mat')      
-
  % if the User wants to apply the same transformation to other scans
 if isfield(files_in, 'In3')
     if ~exist('other', 'var')
@@ -258,53 +257,42 @@ if isfield(files_in, 'In3')
                 [path, name, ~] = fileparts(files_in.In3{i});
                 jsonfile = [path, '/', name, '.json'];
                 J = ReadJson(jsonfile);
-
                 J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
                 [path, name, ~] = fileparts(files_out.In3{i});
                 jsonfile = [path, '/', name, '.json'];
                 WriteJson(J, jsonfile)
                                 copyfile(strrep(files_in.In3{i},'.nii','.json'),  strrep(files_out.In3{i},'.nii','.json'))
             end
-            % first apply reslice the 'other scan' to the image moved
+%             % Then apply reslice the 'other scan' to the image moved
             P.which = 1; % spm_reslice's option
+            P.interp = SPM_Inter;
             spm_reslice({files_in.In2{:}, files_out.In3{i}}', P);
             % delete unusefull file
             delete(files_out.In3{i})
             
             % Then apply the transformation calculated during the FLIRT process
-            [filepath,name,ext] = fileparts(files_out.In3{i}); 
-            cmd_other = strcat('/usr/local/fsl/bin/flirt',...
-                {' -in '}, fullfile(filepath,['r', name, ext]),...   
-             ' -applyxfm',...
-             {' -init '}, strrep(files_out.In2{:}, '.nii', '.mat'),...
-             {' -out '}, files_out.In3{i},...
-             {' -paddingsize 0.0 -interp trilinear'},...
-             {' -ref '}, files_in.In1{:});
-         % execute the command
-         system(cmd_other{:});
-         
-         % delete unusefull file
-         delete(fullfile(filepath,['r', name, ext]))
-         
-         %unzip the ouput file
-         gunzip(strrep(files_out.In3{i}, '.nii', '.nii.gz'))
-         
-         
-         % image and the image moved
-         %ApplyMovement(files_out.In3{i},Mov)
-         
-         
-         
+            [filepath,name,ext] = fileparts(files_out.In3{i});
+            cmd_other= strcat('/usr/local/fsl/bin/flirt',...
+                {' -in '}, fullfile(filepath,['r', name, ext]),...
+                {' -ref '}, files_in.In1{:},...
+                {' -out '}, files_out.In3{i},...
+                ' -applyxfm',...
+                {' -init '}, strrep(files_out.In2{:}, '.nii', '.mat'),...
+                {' -interp '}, Interpolation);
             
-          %  ApplyMovement(files_out.In3{i},Mov)
-%           {'/usr/local/fsl/bin/flirt' ...
-%               '-in /Users/Lemasson/Data_non_synchro/2018_Collab_Nancy/MIA_data/Tmp/ADC_moved.nii'...
-%               '-applyxfm -init /Users/Lemasson/Data_non_synchro/2018_Collab_Nancy/MIA_data/Tmp/Patient1_J3_CoregADC.mat'...
-%               '-out /Users/Lemasson/Data_non_synchro/2018_Collab_Nancy/MIA_data/Tmp/toto.nii'...
-%               '-paddingsize 0.0 -interp trilinear'...
-%               '-ref /Users/Lemasson/Data_non_synchro/2018_Collab_Nancy/MIA_data/Tmp/Patient1-J3-T2_EG_AXIAL_HEMO_20180504-163255801.nii'}
-          
+            % execute the command
+            system(cmd_other{:});
+            
+            % delete unusefull file
+            delete(fullfile(filepath,['r', name, ext]))
+            
+            %unzip the ouput file
+            gunzip(strrep(files_out.In3{i}, '.nii', '.nii.gz'))
+            
+            
+            % image and the image moved
+            %ApplyMovement(files_out.In3{i},Mov)
+ 
         end
     end
 end
