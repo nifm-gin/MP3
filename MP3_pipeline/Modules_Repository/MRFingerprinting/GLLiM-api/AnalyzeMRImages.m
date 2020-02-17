@@ -1,11 +1,11 @@
-function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers,compute_ci_corr)
+function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers,SNRMap)
 
 if nargin < 3, error('Not enought input arguments'); end
-if ~exist('Method','var'),      Method = 'DBL'; end
-if ~exist('Parameters','var'),  Parameters = []; end
-if ~exist('References','var'),  References = []; end
-if ~exist('Outliers','var'),    Outliers = []; end
-if ~exist('compute_ci_corr','var'), compute_ci_corr = false; end
+if ~exist('Method','var'),      Method      = 'DBL'; end
+if ~exist('Parameters','var'),  Parameters  = []; end
+if ~exist('References','var'),  References  = []; end
+if ~exist('Outliers','var'),    Outliers    = []; end
+if ~exist('SNRMap','var'),      SNRMap      = []; end
 
 % This parameters is only used to enable the parameter data normalisation
 normalization = 1;
@@ -51,7 +51,7 @@ switch Method
         for s = 1:slices
             %Estimation of parameters
             Estimation.GridSearch.Y(:,:,:,s) = ...
-                reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par), s1,s2, []);
+                reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), Dico{f}.MRSignals, Dico{f}.Parameters.Par), s1,s2, []);
                         
             %Errors computation if a reference image is provided
             if ~isempty(References)
@@ -60,6 +60,7 @@ switch Method
             end
         end
         Estimation.GridSearch.quantification_time = toc; 
+        
         
     case 'DBL'
         
@@ -80,8 +81,9 @@ switch Method
                 Parameters.factors.normalization = 0;
             end
             
-            Xtrain = abs(Dico{f}.MRSignals);
+            Xtrain = Dico{f}.MRSignals;
             [~,Parameters] = EstimateParametersFromRegression(Xtrain, Xtrain, Dico{f}.Parameters.Par, Dico{f}.Parameters.Par, Parameters);
+        
         else
             Dico{f}.MRSignals       = [];
             Dico{f}.Parameters.Par  = [];
@@ -92,8 +94,50 @@ switch Method
         for s = 1:slices
             
             %Estimation of parameters
-            [Yestim,~,Cov,~,Pik] = ...
-                EstimateParametersFromRegression(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par, [], Parameters);
+            if ~isempty(SNRMap)
+                warning('off')
+                
+                %Recompute Sigma_k of the GLLiM model (if SNRMap given)
+                Yestim = nan(s1*s2,size(Parameters.theta.A,2));
+                Cov = nan(size(Parameters.theta.A,2),size(Parameters.theta.A,2),s1*s2);
+                Pik = nan(s1*s2,Parameters.K);
+                
+                Param_updated = Parameters;
+                SNRMap(SNRMap < 2) = 2;
+                SNRMap(SNRMap > 202) = 202;
+                var_noise = (max(Sequences(:,:,:,s),[],3) ./ SNRMap(:,:,s)).^2;
+                
+                Nb_model = 40;
+                var_bounds = sort(1 ./ [2:200/Nb_model:202 inf].^2);
+                for m = 1:length(var_bounds)-1
+                    if any(reshape( (var_noise >= var_bounds(m)) & (var_noise < var_bounds(m+1)) ,1,[]))
+                        var_noise_ = var_bounds(m) + (var_bounds(m+1) - var_bounds(m))/2;
+                        Param_updated.theta = updateSigma(Parameters.theta,var_noise_);
+
+                        Sequences_in = Sequences(:,:,:,s) .* ( (var_noise >= var_bounds(m)) & (var_noise < var_bounds(m+1)) ) ;
+                        Sequences_in(Sequences_in == 0) = nan;
+                        [Yestim_in,~,Cov_in,~,Pik_in] = ...
+                            EstimateParametersFromRegression(reshape(Sequences_in(:,:,:),s1*s2,t), Dico{f}.MRSignals, Dico{f}.Parameters.Par, [], Param_updated);
+
+                        Yestim = nansum(cat(3,Yestim,Yestim_in),3);
+                        Cov = nansum(cat(4,Cov,Cov_in),4);
+                        Pik = nansum(cat(3,Pik,Pik_in),3);
+                    end
+                end
+                warning('on')
+
+%                 for i = 1:s1
+%                     for j = 1:s2
+%                         Param_updated.theta = updateSigma(Parameters.theta,var_noise(i,j));
+% 
+%                         [Yestim((i-1)*s2+j,:),~,Cov(:,:,(i-1)*s2+j),~,Pik((i-1)*s2+j,:)] = ...
+%                             EstimateParametersFromRegression(reshape(Sequences(i,j,:,s),1,[]), Dico{f}.MRSignals, Dico{f}.Parameters.Par, [], Param_updated);
+%                     end
+%                 end
+            else
+                [Yestim,~,Cov,~,Pik] = ...
+                    EstimateParametersFromRegression(reshape(Sequences(:,:,:,s),s1*s2,t), Dico{f}.MRSignals, Dico{f}.Parameters.Par, [], Parameters);
+            end
             
             %Rescale
             if any(strcmp(fieldnames(Parameters),'factors')) && normalization == 1
@@ -134,35 +178,8 @@ switch Method
             end
         end
         
-        %CI coeff correction computation
-        if compute_ci_corr == 1
-            snr_test = logspace(1, 2.2, 20);
-
-            idx = floor(size(Dico{1}.MRSignals,1) /11);
-            idx = 1:idx:idx*11;
-
-            for i = 1:length(idx)-1
-                for snr = 1:length(snr_test)
-                    Xtest_noisy = AddNoise(Dico{1}.MRSignals(idx(i):idx(i+1),:), snr_test(snr));
-                    Estim   = AnalyzeMRImages(Xtest_noisy, [], 'DBL', Parameters);
-
-                    std(snr,:,i) = nanmean(squeeze(Estim.Regression.Cov),1).^.5;
-                    err(snr,:,i) = EvaluateEstimation((Dico{1}.Parameters.Par(idx(i):idx(i+1),1:end-Parameters.Lw) .* Parameters.factors.Ystd) + Parameters.factors.Ymean, Estim.Regression.Y);
-                end
-            end
-
-            F = @(xdata,x)x(1)*exp(-x(2)./xdata) + x(3);
-            ff = mean(err./std,3);
-            for param = 1:size(Estim.Regression.Y,3)
-                a(param,:) = levenbergmarquardt(F, snr_test, ff(:,param,:)', [max(ff(param,:)) -1 min(ff(param,:))]);
-            end
-
-            Parameters.ci_correction.Func = F;
-            Parameters.ci_correction.Var = a;
-        end
-            
         Estimation.Regression.quantification_time = toc;
-        
 end
-end
+
+end %function
         
