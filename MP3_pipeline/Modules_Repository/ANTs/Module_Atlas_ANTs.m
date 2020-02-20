@@ -151,10 +151,6 @@ s = s{1};
 
 prefix = [char(opt.Table_in(1,:).Filename), opt.suffix];
 
-%if 
-%   files_in.In2{1} = files_in.In1{1};
-%end
-
 % Execute the ANTs command line
 % compute transformations
 if any(contains(fields(files_in), 'In3')) %if a mask is given
@@ -245,8 +241,8 @@ h_r     = spm_vol(files_in.In1{1});
 h_d     = spm_vol(files_out.In1{1});
 h_d.mat = h_r.mat;
 
-Img = read_volume(h_d, h_r, 0, 'Axial');
-Img = write_volume(Img, h_r);
+Img     = read_volume(h_d, h_r, 0, 'Axial');
+Img     = write_volume(Img, h_r);
 
 info = niftiinfo(files_in.In1{1});
 info.Filename = files_out.In1{1};
@@ -260,15 +256,15 @@ h_r     = spm_vol(files_in.In1{1});
 h_d     = spm_vol(files_out.In2{1});
 h_d.mat = h_r.mat;
 
-Img = read_volume(h_d, h_r, 0, 'Axial');
-Img = write_volume(Img, h_r);
+Img     = read_volume(h_d, h_r, 0, 'Axial');
+Img     = write_volume(Img, h_r);
 
 info.Filename = files_out.In2{1};
 niftiwrite(Img, files_out.In2{1}, info);
 
 
 % Json processing
-[path, name, ~] = fileparts(files_in.In1{1});
+[path, name, ~] = fileparts(files_in.In2{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
 
