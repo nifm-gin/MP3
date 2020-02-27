@@ -9,7 +9,7 @@ if size(Xgrid,1) > 300000
     % normalization
     score = [];
     N = size(Xgrid,1);
-    chunk = 1e5;
+    chunk = 1e4;
     I = floor(N/chunk);
     best = zeros(size(Xobs,1),1);
     idx = ones(size(Xobs,1),1);
@@ -73,7 +73,7 @@ else
             score       = Xobs * Xgrid';
     end
 
-    [~, idx]    = max(score, [], 2);
+    [best, idx]    = max(score, [], 2);
 end
 
 
@@ -88,5 +88,6 @@ end
 % R2 = SSog.^2 ./ (SSoo * SSgg');
 % [~, idx]    = max(R2, [], 2);
 
+score = best;
 Yestim  = Ygrid(idx, :);
 Xestim  = Xgrid(idx, :);

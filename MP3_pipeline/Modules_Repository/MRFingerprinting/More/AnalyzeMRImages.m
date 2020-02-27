@@ -38,8 +38,11 @@ switch Method
     case 'ClassicMRF'
         for s = 1:slices
             %Estimation of parameters
-            Estimation.GridSearch.Y(:,:,:,s) = reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm), s1,s2, []);
-                        
+%             Estimation.GridSearch.Y(:,:,:,s) = reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm), s1,s2, []);
+            [estim, score, ~] = EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm);
+            Estimation.GridSearch.Y(:,:,:,s) = reshape(estim, s1,s2, []);
+            Estimation.scoreMap(:,:,s) = reshape(score, s1,s2, []);
+            
             %Errors computation if a reference image is provided
             if ~isempty(References)
                 [Estimation.GridSearch.Errors.Rmse(s,:), Estimation.GridSearch.Errors.Nrmse(s,:), Estimation.GridSearch.Errors.Mae(s,:), Estimation.GridSearch.Errors.Nmae(s,:)] = ...

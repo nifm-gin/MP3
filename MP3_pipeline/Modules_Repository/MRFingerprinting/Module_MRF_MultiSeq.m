@@ -29,6 +29,7 @@ if isempty(opt)
     module_option(:,16)  = {'Lw',               0};
     module_option(:,17)  = {'cstrS',            'd'};
     module_option(:,18)  = {'cstrG',            'd'};
+    module_option(:,19)  = {'mkScoreMap', 'Yes'};
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
     
@@ -71,8 +72,6 @@ if isempty(opt)
     
     user_parameter(:,9)   = {'   .Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix for your output maps'}};
-    user_parameter(:,17)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
-        {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
     user_parameter(:,10)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
@@ -107,6 +106,10 @@ if isempty(opt)
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
+    user_parameter(:,17)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+        {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
+    user_parameter(:,18)   = {'Make ScoreMap?','cell', {'Yes','No'}, 'mkScoreMap', '', '',...
+        {'Select ''Yes'' add score map in outputs  (recommanded ''Yes'')'}};
     %user_parameter(:,17)   = {'Select the scans to use for dico reduction','XScan','','',{'SequenceName'}, '',''};
     %user_parameter(:,18)   = {'Select the parameter(s) to pre-'}
 
@@ -155,6 +158,25 @@ if isempty(files_out)
 
             files_out.In2{i} = [char(opt.Table_out.Path(nb+i)), char(opt.Table_out.Filename(nb+i)) '.nii'];
         end
+    end
+    
+    if strcmp(opt.mkScoreMap, 'Yes')
+        scoreRow.Path = categorical(cellstr([opt.folder_out, filesep]));
+        if strcmp(opt.OutputSequenceName, 'AllName')
+            scoreRow.SequenceName = categorical(cellstr([char(opt.prefix), 'ScoreMap']));
+        elseif strcmp(opt.OutputSequenceName, 'Extension')
+            scoreRow.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), 'ScoreMap']));
+        end
+        scoreRow.Filename = categorical(cellstr([char(opt.Table_out.Patient(1)), '_', char(opt.Table_out.Tp(1)), '_', char(scoreRow.SequenceName)]));
+        scoreRow.IsRaw = categorical(cellstr('0'));
+        
+        scoreRow.Group = opt.Table_out.Group(1);
+        scoreRow.Patient = opt.Table_out.Patient(1);
+        scoreRow.Tp = opt.Table_out.Tp(1);
+        scoreRow.Type = opt.Table_out.Type(1);
+        opt.Table_out = [opt.Table_out; struct2table(scoreRow)];
+        
+        files_out.In1{end+1} = [char(opt.Table_out.Path(end)), char(opt.Table_out.Filename(end)) '.nii'];
     end
 end
 
@@ -570,6 +592,10 @@ for i = 1:length(Tmp{1}.Parameters.Labels)
     end
 end
 
+if strcmp(opt.mkScoreMap, 'Yes')
+    MapStruct{end+1} = Estimation.scoreMap;
+    Labels{end+1} = 'ScoreMap'; 
+end
     
 % Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
