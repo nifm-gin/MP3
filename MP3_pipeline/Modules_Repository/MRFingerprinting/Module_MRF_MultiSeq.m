@@ -356,16 +356,24 @@ switch opt.combUsed
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmpPre(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
-                    if strcmp(opt.indivNorm, 'Yes') % Normalize dico
-                        tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
-                    end 
+%                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
+%                         tmpPre(i,:) = tmpPre(i,:)./(sqrt(sum(tmpPre(i,:).^2)));
+%                     end 
                     tmpPost(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:), Obs.EchoTime.value'*1e-3);
-                    if strcmp(opt.indivNorm, 'Yes') % Normalize dico
-                        tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
-                    end
+%                     if strcmp(opt.indivNorm, 'Yes') % Normalize dico
+%                         tmpPost(i,:) = tmpPost(i,:)./(sqrt(sum(tmpPost(i,:).^2)));
+%                     end
+                end
+                if strcmp(opt.indivNorm, 'Yes') % Normalize dico
+                    tmpPre = tmpPre./vecnorm(tmpPre,2,2);
+                    tmpPost = tmpPost./vecnorm(tmpPost,2,2);
                 end
                 tmp = cat(2, tmpPre, tmpPost);
             else
+                if strcmp(opt.indivNorm, 'Yes') % Normalize dico
+                    Dico.MRSignals{1} = Dico.MRSignals{1}./vecnorm(Dico.MRSignals{1},2,2);
+                    Dico.MRSignals{2} = Dico.MRSignals{2}./vecnorm(Dico.MRSignals{2},2,2);
+                end
                 tmp = cat(2, Dico.MRSignals{1}, Dico.MRSignals{2});
             end
             
