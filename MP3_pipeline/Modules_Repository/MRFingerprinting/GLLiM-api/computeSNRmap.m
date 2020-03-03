@@ -4,4 +4,4 @@ function [snr_map] = computeSNRmap(Img, backgroundROI)
 
 tmp = Img .* backgroundROI;
 tmp(tmp == 0) = nan;
-snr_map = Img(:,:,1,:) ./ nanstd(tmp(:));
+snr_map = max(Img,[],3) ./ nanstd(tmp(:));

@@ -206,12 +206,16 @@ if strcmp(opt.method, 'DBL')
     for i = 1:length(list_models)
 
         load([opt.dictionary_folder_filename filesep list_models(i).name],'Parameters')
-
-        flag_valid(i) = strcmp(opt.cstrG, Parameters.cstr.Gammat);
-        flag_valid(i) = flag_valid(i) && strcmp(opt.cstrS, Parameters.cstr.Sigma);
-        flag_valid(i) = flag_valid(i) && opt.K == Parameters.K;
-        flag_valid(i) = flag_valid(i) && opt.Lw == Parameters.Lw;
-        flag_valid(i) = flag_valid(i) && opt.augment == Parameters.data_augmentation;
+        
+        try
+            flag_valid(i) = strcmp(opt.cstrG, Parameters.cstr.Gammat);
+            flag_valid(i) = flag_valid(i) && strcmp(opt.cstrS, Parameters.cstr.Sigma);
+            flag_valid(i) = flag_valid(i) && opt.K == Parameters.K;
+            flag_valid(i) = flag_valid(i) && opt.Lw == Parameters.Lw;
+            flag_valid(i) = flag_valid(i) && opt.augment == Parameters.data_augmentation;
+        catch
+            flag_valid(i) = 0;
+        end
     end
     flag_model_exist = flag_model_exist || any(flag_valid);
     if flag_model_exist
@@ -311,10 +315,19 @@ switch opt.method
         Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
         
     case 'DBL'
+        
+        backgroundROI = false(size(Xpre,1), size(Xpre,2));
+        x = ceil(size(Xpre,1) .* [0.02 0.17]);
+        y = ceil(size(Xpre,2) .* [0.02 0.17]);
+        backgroundROI(x(1):x(2),y(1):y(2)) = true;
+        
+        SNRmap = 1./ (1./computeSNRmap(squeeze(Xpost) ,backgroundROI) ...
+            + 1./ computeSNRmap(squeeze(Xpre),backgroundROI));
+        
         % Compute the learning only one time per dictionary
         if exist(model_filename,'file')
             load(model_filename,'Parameters','labels');
-            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
+            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters,[],[], SNRmap);
             
             TmpDico{1}.Parameters.Labels = labels;
         
@@ -342,14 +355,14 @@ switch opt.method
             clear Parameters
             if opt.K >= 0,  Parameters.K = opt.K; end
             if opt.Lw >= 0, Parameters.Lw = opt.Lw; end
-            if strcmp(opt.cstrS,' '), opt.cstrS = ''; end
+            if strcmp(opt.cstrS,' '), opt.cstrS = 'd*'; end
             if strcmp(opt.cstrG,' '), opt.cstrG = ''; end
             Parameters.cstr.Sigma   = opt.cstrS;
             Parameters.cstr.Gammat  = opt.cstrG;
             Parameters.cstr.Gammaw  = '';
             Parameters.data_augmentation = opt.augment;
             
-            [Estimation, Parameters] = AnalyzeMRImages(Xobs, TmpDico, opt.method, Parameters,[],[],1);
+            [Estimation, Parameters] = AnalyzeMRImages(Xobs, TmpDico, opt.method, Parameters,[],[], SNRmap);
             
             labels      = TmpDico{1}.Parameters.Labels; 
             save(model_filename,'Parameters', 'labels')
@@ -357,18 +370,6 @@ switch opt.method
             
         Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
         Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
-        
-        % Perform confidence index correction, if coeff computed
-        if isfield(Parameters,'ci_correction')
-            backgroundROI = false(size(Xpost));
-            backgroundROI(1:ceil(size(Xpost,1)/10),1:ceil(size(Xpost,2)/10),:,:) = true;
-            SnrMap = 1./( 1./computeSNRmap(permute(Xpost,[1 2 4 3]), permute(backgroundROI,[1 2 4 3])) + 1./computeSNRmap(permute(Xpre,[1 2 4 3]), permute(backgroundROI,[1 2 4 3])) );
-            
-            for p = 1:length(opt.Params)
-                CorrMap(:,:,:,p) = reshape(Parameters.ci_correction.Func(reshape(SnrMap,1,[]), Parameters.ci_correction.Var(p,:)),size(Xpost,1),size(Xpost,2),1,size(Xpost,3));
-            end
-            Map.Std = Map.Std .* CorrMap; 
-        end
 end
 
 
