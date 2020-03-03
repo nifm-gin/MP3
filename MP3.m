@@ -1067,7 +1067,15 @@ elseif get(handles.MP3_scan_VOIs_button, 'Value') && ~isfield(handles, 'data_loa
     warndlg('Please load a scan first','Warning');
     return
 end
+
+
+
+
+
 handles = MP3_clear_data(hObject, eventdata, handles);
+% display a waiting symbol
+set(handles.MP3_GUI, 'pointer', 'watch');
+
 
 % Load Scans
 if handles.mode == 1
@@ -1089,8 +1097,6 @@ else
     set(handles.MP3_PRM_slider_tp,'SliderStep',[1/(handles.data_loaded.number_of_scan-1) min(5/(handles.data_loaded.number_of_scan-1),1)]);
 end
 
-% display a waiting symbol
-set(handles.MP3_GUI, 'pointer', 'watch');
 drawnow;
 
 MP3_update_axes(hObject, eventdata, handles)
@@ -1545,12 +1551,11 @@ end
 
 %save data displayed
 
-if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice')
+if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice') && ~strcmp(eventdata.EventName, 'WindowScrollWheel')
     % Update image_displayed matrix
     
     if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MP3_load_axes') && get(handles.MP3_scan_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
-        
         handles = MP3_update_image_displayed(hObject, eventdata, handles);
         
         % Setup every siders, popupmenu when new dataset are loaded
@@ -1654,7 +1659,7 @@ if isfield(handles, 'data_displayed')
             if handles.display_option.manual_contrast == 1 && (strcmp(get(hObject, 'Tag'), 'MP3_slider_slice') || ...
                     strcmp(get(hObject, 'Tag'), 'MP3_new_roi') || strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_tp') || ...
                     strcmp(get(hObject, 'Tag'), 'MP3_load_axes') || strcmp(get(hObject, 'Tag'), 'MP3_PRM_ref_popupmenu') || ...
-                     strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_trans'))
+                     strcmp(get(hObject, 'Tag'), 'MP3_PRM_slider_trans') || strcmp(eventdata.EventName, 'WindowScrollWheel'))
                 
                 image(image_to_display,'CDataMapping','Scaled','Parent', handles.(current_data),'Tag',current_data);
                 set(handles.(current_data), 'Clim', current_contrast );
@@ -1672,7 +1677,10 @@ if isfield(handles, 'data_displayed')
                 
             end
             
-            
+            if (size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 1) == 1) || (size(squeeze(handles.data_displayed.image(:,:,slice_nbr,i,:)), 2) == 1)
+               warndlg('The image you try to display is not a 2 dimension image. Try to change the orientation thanks to the 3 buttons "Axial", "Saggital", "Coronal".')
+               return
+            end
             
             
             % apply the colormap selected
@@ -1741,7 +1749,7 @@ if isfield(handles, 'data_displayed')
                 Im_binary = handles.data_displayed.Cluster.data{slice_nbr} >0;
                 Im_binary = Im_binary * handles.data_displayed.Cluster.trans;
                 %Im_To_Display = zeros(size(handles.data_displayed.Cluster.data{slice_nbr},1), size(handles.data_displayed.Cluster.data{slice_nbr},2),3);
-                Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, handles.colors_rgb);
+                Im_To_Display = label2rgb(handles.data_displayed.Cluster.data{slice_nbr}, repmat(handles.colors_rgb,20, 1));
                 hold(handles.(current_data), 'on');
                 image(squeeze(Im_To_Display), 'CDataMapping','Scaled', 'parent',  handles.(current_data), 'AlphaData',Im_binary)%, 'Tag'', ''data' stri '_ROI_cluster')
                 hold(handles.(current_data), 'off');
@@ -1757,6 +1765,8 @@ if isfield(handles, 'data_displayed')
         set(get(handles.(current_data), 'Children'), 'HitTest', 'off');
         set(handles.(current_data),'ButtonDownFcn', @MP3_clic_on_image);
         set(get(handles.(current_data), 'Children'), 'ButtonDownFcn', @MP3_clic_on_image);
+        h = findobj('Tag','MP3_GUI');
+        set(h,'WindowScrollWheelFcn', @MP3_scroll_func);
         
         
     end
@@ -1775,7 +1785,35 @@ linkaxes(axe, 'xy');
 
 guidata(hObject, handles);
 
+function MP3_scroll_func(hObject, eventdata, handles)
+% hObject    handle to patient_graph1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+
+handles = guidata(hObject);
+h = findobj('Tag','MP3_GUI');
+PointerPos = h.CurrentPoint;
+%ImagePos = handles.MP3_data1.Position;
+
+if PointerPos(1)> 0.53 || PointerPos(2)>0.81 % Approximatively the coordinates of an only one image displayed in MP3
+    return
+end
+    
+
+if ~isfield(handles, 'data_displayed')
+    return
+end
+
+handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount * eventdata.VerticalScrollAmount;
+if handles.MP3_slider_slice.Value <1
+    handles.MP3_slider_slice.Value = 1;
+elseif handles.MP3_slider_slice.Value > size(handles.data_displayed.image,3)
+    handles.MP3_slider_slice.Value = size(handles.data_displayed.image,3);
+else
+    MP3_update_axes(hObject, eventdata, handles);
+    guidata(hObject, handles);
+end
 
 
 
@@ -1843,14 +1881,15 @@ switch get(hObject, 'Tag')
                 Types{i} = info.Datatype;
             end
             CommonType = FindCommonDatatype(Types);
-            handles.data_displayed.image = cast([], CommonType);
+            %cast([], CommonType);
             for i=1:handles.data_loaded.number_of_scan
+                %handles.data_displayed.image(:,:,:,i) =zeros(handles.data_loaded.Scan(scan_of_reference).V.dim, CommonType);
                 stri = num2str(i);
                 eval(['data' stri '_echo_nbr = round(get(handles.MP3_data' stri '_echo_slider, ''Value''));']);
                 eval(['data' stri '_expt_nbr = round(get(handles.MP3_data' stri '_expt_slider, ''Value''));']);
                 
                 eval(['ima' stri '= read_slice(handles.data_loaded.Scan(i).V, handles.data_loaded.Scan(scan_of_reference).V, data' stri '_echo_nbr, data' stri '_expt_nbr, handles.view_mode);']);
-                
+                eval(['ima' stri '= cast(ima' stri ', CommonType);']);
                 handles.data_displayed.image(:,:,:,i) = eval(['ima' num2str(i)]);
             end
             
@@ -2127,8 +2166,12 @@ for ii = 1:handles.data_loaded.number_of_ROI
                 VOI_data_y  = squeeze(handles.data_displayed.image(:,:,:,2)) .* ROI_binary;
                 VOI_data(:,2) = reshape(VOI_data_y, [size(VOI_data_y,1)*size(VOI_data_y,2)*size(VOI_data_y,3),1]);
                 
-                % keep only voxel which has x and y values
-                VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
+%                 % keep only voxel which has x and y values
+%                 VOI_data((VOI_data(:,1).*VOI_data(:,2)) == 0,:) =[];
+
+                 VOI_data((VOI_data(:,1)) == 0,1) = NaN;
+                 VOI_data((VOI_data(:,2)) == 0,2) = NaN;
+                
                 
                 scatter(handles.MP3_plot1, VOI_data(:,1), VOI_data(:,2), 'filled',...
                     'SizeData', 20,...
@@ -3811,7 +3854,7 @@ function MP3_show_group_Callback(hObject, eventdata, handles)
 Scan_Selected = handles.database(finddata_selected(handles),:);
 Unique_group = unique(Scan_Selected.Group);
 
-group = ['group: ' char(Unique_group(1))];
+group = ['group:' char(Unique_group(1))];
 set(handles.MP3_name_list_groupname_box, 'String', group);
 
 
@@ -4347,6 +4390,225 @@ guidata(hObject, handles)
 
 % Save database
 MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
+
+
+
+function MP3_copy_ScanVoi_to_other_session_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_copy_ScanVoi_to_other_tp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+data_selected = finddata_selected(handles);
+if numel(data_selected) > 1
+    warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
+    return
+end
+
+
+UPatients = unique(handles.database.Patient);
+data_listing = {};
+linked_table = {};
+for i=1:length(UPatients)
+    tmp_database = handles.database(handles.database.Patient == UPatients(i),:);
+    UTp = unique(tmp_database.Tp);
+    for j=1:length(UTp)
+        tmp2_database = table();
+        tmp2_database = tmp_database(tmp_database.Tp == UTp(j),:);
+        data_listing = [data_listing; {[char(tmp2_database.Group(1)), ' - ', char(UPatients(i)), ' - ', char(UTp(j))]}];
+        linked_table = [linked_table; {tmp2_database}];
+    end
+end
+
+
+
+
+[data_to_import, ok] = listdlg('PromptString','Select the destination sessions',...
+    'Name', 'Select a data',...
+    'ListSize', [400 300],...
+    'ListString',data_listing);
+
+if ok == 0
+    return
+end
+
+destination_db = table();
+for i = 1:length(data_to_import)
+    destination_db = [destination_db; linked_table{data_to_import(i)}(1,:)];
+end
+
+
+
+% for i=1:size(database_to_import,1)
+%     switch char(database_to_import.Type(i))
+%         case 'Scan'
+%             if char(database_to_import.IsRaw(i)) == '1'
+%                 infolder = [dir, filesep, 'Raw_data', filesep];
+%                 outfolder = handles.database.Properties.UserData.MP3_Raw_data_path;
+%                 
+%             else
+%                 infolder = [dir, filesep, 'Derived_data', filesep];
+%                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
+%             end
+%             if ~exist(outfolder, 'dir')
+%                 mkdir(outfolder);
+%             end
+%             % Copy nifti file 
+%             extension = '.nii.gz';
+%             filename = [infolder, char(database_to_import.Filename(i)), extension];
+%             if ~exist(filename, 'file')
+%                 extension = '.nii';
+%                 filename = [infolder, char(database_to_import.Filename(i)), extension];
+%             end
+%             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+%             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
+%             original_filename = char(database_to_import.Filename(i));
+%             idx2=2;
+%             while exist(outfilename)
+%                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+%                 outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
+%                 idx2=idx2+1;
+%             end
+%             status1 = copyfile(filename, outfilename);
+%             if ~status1
+%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+%             end
+% %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
+% %                 status1 = copyfile(filename, outfolder);
+% %             else
+% %                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+% %                 msgbox(text);
+% %                 status1 = 0;
+% %             end
+%             % Copy json file
+%             filename = strrep(filename, extension, '.json');
+%             outfilename = strrep(outfilename, extension, '.json');
+%             while exist(outfilename)
+%                 outfilename = [outfolder, char(database_to_import.Filename(i)), '.json'];
+%                 idx2=idx2+1;
+%             end
+%             status2 = copyfile(filename, outfilename);
+% %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
+% %                 status2 = copyfile(filename, outfolder);
+% %             else
+% %                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
+% %                 msgbox(text);
+% %                 status2 = 0;
+% %             end
+%             if ~status2
+%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+%             end
+% 
+%             
+%         case {'ROI', 'Cluster'}
+%             extension = '.nii.gz';
+%             infolder = [dir, filesep, 'ROI_data', filesep];
+%             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
+%             if ~exist(outfolder, 'dir')
+%                 mkdir(outfolder);
+%             end
+%             filename = [infolder, char(database_to_import.Filename(i)), extension];
+%             if ~exist(filename, 'file')
+%                 extension = '.nii';
+%                 filename = [infolder, char(database_to_import.Filename(i)), extension];
+%             end
+%             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
+%             original_filename = char(database_to_import.Filename(i));
+%             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
+%             idx2=2;
+%             while exist(outfilename)
+%                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
+%                 outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
+%                 idx2=idx2+1;
+%             end
+%             status1 = copyfile(filename, outfilename);
+%             if ~status1
+%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
+%             end
+%             status2 = 1;
+%             
+%     end
+%     if status1 && status2
+%         tags = database_to_import(i,:);
+%         tags.Path = categorical(cellstr(outfolder));
+%         flag = 1;
+%         idx = 2;
+%         if size(handles.database, 1) ~= 0
+%             while flag
+%                 tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
+%                 tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
+%                 %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
+%                 tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
+%                 if size(tmpdatab,1) == 0
+%                     flag = 0;
+%                 else
+%                     tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
+%                     idx = idx+1;
+%                 end
+%             end
+%         end
+%         handles.database = [handles.database; tags];
+%     end
+%     
+% end
+
+
+
+
+% Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
+% [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
+%     'Name', 'Question?',...
+%     'ListSize', [200 300],...
+%     'ListString', Tp_listing);
+% if ok == 0
+%     return
+% end
+
+
+for i=1:size(destination_db,1)
+    new_entry = handles.database(data_selected,:);
+    new_entry.Tp = destination_db.Tp(i);
+    new_entry.Patient = destination_db.Patient(i);
+    new_entry.Group = destination_db.Group(i);
+    new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
+    
+    % check if the scan already exist for this time point 
+    % but, since filename may varie we have to remove the 'Filename'
+    % column from the table before checking if the scan to copy exist
+    % already
+    VariableNames_vector =1:length(handles.database.Properties.VariableNames);
+    VariableNames_vector(strcmp(handles.database.Properties.VariableNames,'Filename')) = [];
+    if sum(ismember(handles.database(:,VariableNames_vector), new_entry(:,VariableNames_vector))) == 0
+        if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
+            gunzip(fullfilename(handles, data_selected, '.nii.gz'));
+            assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
+            delete(fullfilename(handles, data_selected, '.nii.gz'))
+        end
+        fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
+        if fid_nii>0
+            fclose(fid_nii);
+            % update the database
+            handles.database(size(handles.database,1)+1,:) = new_entry;
+            % create the new files
+            copyfile(fullfilename(handles, data_selected, '.nii'), fullfilename(handles, size(handles.database,1), '.nii'), 'f');
+            if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
+                copyfile(fullfilename(handles, data_selected, '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
+            end
+        else
+            warndlg(['something is wrong this the data : ' fullfilename(handles, data_selected, '.nii')],  'Warning');
+            return
+        end
+    else
+        warndlg(['This scan already exist : ' char(new_entry.Filename)],  'Warning');
+        return
+    end
+    
+end
+%update handes
+guidata(hObject, handles)
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
 
 
 function MP3_warning_duplicate_scan_fcn(handles, parameters,patient_nbr,time_point)

@@ -49,9 +49,13 @@ if isempty(opt)
         'Prerequisite: put your ''.nii'' or ''.nii.gz'' atlas and label files in the ''./data/atlas'' folder'
         }'};
     
-    user_parameter(:,2)   = {'Select one anatomical scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,3)   = {'Parameters','','','','', '', ''};
-    user_parameter(:,4)   = {'   .ANTs script location','char','','script_location','', '',...
+    user_parameter(:,2)   = {'Select the anatomical scan used to compute transformations','1Scan','','',{'SequenceName'}, 'Mandatory',...
+        {''}};
+    user_parameter(:,3)   = {'Select the anatomical scan to apply transformations','1Scan','','',{'SequenceName'}, 'Optional',...
+        {'Optional'}};
+    
+    user_parameter(:,4)   = {'Parameters','','','','', '', ''};
+    user_parameter(:,5)   = {'   .ANTs script location','char','','script_location','', '',...
         {'The ''bin'' ANTs path (.../antsbin/bin)'}};
     
     s               = split(mfilename('fullpath'),'MP3_pipeline',1);
@@ -59,13 +63,13 @@ if isempty(opt)
     if isempty(folder_files)
         folder_files(1).name = ' ';
     end
-    user_parameter(:,5)   = {'   .Atlas filename','cell', {folder_files.name}, 'atlas_filename','','',...
+    user_parameter(:,6)   = {'   .Atlas filename','cell', {folder_files.name}, 'atlas_filename','','',...
         {'Select your atlas file'}};
-    user_parameter(:,6)   = {'   .Label filename','cell', {folder_files.name}, 'label_filename','','',...
+    user_parameter(:,7)   = {'   .Label filename','cell', {folder_files.name}, 'label_filename','','',...
         {'Select your labels file'}};
-    user_parameter(:,7)   = {'   .Dimension','cell', {'2','3'},'dimension','', '',...
+    user_parameter(:,8)   = {'   .Dimension','cell', {'2','3'},'dimension','', '',...
         {'Select the dimension: 2 or 3 (for 2 or 3 dimensional registration of single volume)'}};
-    user_parameter(:,8)   = {'   .Transformation','cell', {'t','r','a','s','sr','so','b','br','bo'},'transformation','','',... 
+    user_parameter(:,9)   = {'   .Transformation','cell', {'t','r','a','s','sr','so','b','br','bo'},'transformation','','',... 
         {'Select the transform type (default = ''s''):'
         '    t: translation (1 stage)'
         '    r: rigid (1 stage)'
@@ -76,9 +80,9 @@ if isempty(opt)
         '    b: rigid + affine + deformable b-spline syn (3 stages)'
         '    br: rigid + deformable b-spline syn (2 stages)'
         '    bo: deformable b-spline syn only (1 stage)'}};    
-    user_parameter(:,9)   = {'   .Mask ROI','1ROI', '', '', {'SequenceName'}, 'Optional',...
+    user_parameter(:,10)   = {'   .Mask ROI','1ROI', '', '', {'SequenceName'}, 'Optional',...
         {'Select ROI (optional but recommanded)'}};
-    user_parameter(:,10)  = {'   .Filename suffix','char', '', 'suffix', '', 'Optional',...
+    user_parameter(:,11)  = {'   .Filename suffix','char', '', 'suffix', '', 'Optional',...
         {'Choose filename suffix'}};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -118,6 +122,7 @@ if isempty(files_out)
     opt2.Table_out.Filename = categorical(cellstr([char(opt2.Table_out.Patient), '_', char(opt2.Table_out.Tp), '_', char(opt2.Table_out.SequenceName)]));
     f_out = [char(opt2.Table_out.Path), char(opt2.Table_out.Patient), '_', char(opt2.Table_out.Tp), '_', char(opt2.Table_out.SequenceName), '.nii'];
     files_out.In2{1} = f_out;
+    opt2.Table_out.Type = categorical({'Cluster'});
     
     opt.Table_out = [opt.Table_out; opt2.Table_out];
 end
@@ -147,8 +152,8 @@ s = s{1};
 prefix = [char(opt.Table_in(1,:).Filename), opt.suffix];
 
 % Execute the ANTs command line
-%compute transformations
-if any(contains(fields(files_in), 'In2')) %if a mask is given
+% compute transformations
+if any(contains(fields(files_in), 'In3')) %if a mask is given
     system(['bash ' s 'MP3_pipeline/Modules_Repository/ANTs/ANTs/sync_atlas.sh' ...
             ' -s ' opt.script_location ...
             ' -a ' s 'data/atlas/' opt.atlas_filename ...
@@ -156,7 +161,7 @@ if any(contains(fields(files_in), 'In2')) %if a mask is given
             ' -d ' opt.dimension ...
             ' -t ' opt.transformation ...
             ' -o ' s 'data/atlas/' prefix '_transformation_' ...
-            ' -x ' files_in.In2{1} ...
+            ' -m ' files_in.In3{1} ...
             ]);
 else
     system(['bash ' s 'MP3_pipeline/Modules_Repository/ANTs/ANTs/sync_atlas.sh' ...
@@ -179,7 +184,7 @@ if ~isempty(transf0) && isempty(transf1)
             ' -s ' opt.script_location ...
             ' -d ' opt.dimension ...
             ' -t ' '"' '[' transf0.folder '/' transf0.name ',1]' '"'  ...
-            ' -i ' files_in.In1{1} ...
+            ' -i ' files_in.In2{1} ...
             ' -l ' s 'data/atlas/' opt.atlas_filename ...
             ' -o ' files_out.In1{1} ...
             ' -v ' '0'
@@ -187,24 +192,23 @@ if ~isempty(transf0) && isempty(transf1)
 elseif ~isempty(transf0) && ~isempty(transf1)
     system(['bash ' s 'MP3_pipeline/Modules_Repository/ANTs/ANTs/apply_transformation.sh' ...
         ' -s ' opt.script_location ...
-        ' -d ' opt.dimension ...
+        ' -d ' opt.dimension ...MyPipeline
         ' -t ' '"' transf1.folder '/' transf1.name ' [' transf0.folder '/' transf0.name ',1]' '"'  ...
-        ' -i ' files_in.In1{1} ...
+        ' -i ' files_in.In2{1} ...
         ' -l ' s 'data/atlas/' opt.atlas_filename ...
         ' -o ' files_out.In1{1} ...
         ' -v ' '0'
         ]);
 end
 
-
-% Json processing
+% % Json processing
 [path, name, ~] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
 
 J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
-[path, name, ~] = fileparts(files_out.In1{1});
+[path, name, ~] = fileparts(files_out.In2{1});
 jsonfile = [path, '/', name, '.json'];
 WriteJson(J, jsonfile)
 
@@ -232,9 +236,35 @@ elseif ~isempty(transf0) && ~isempty(transf1)
             ]);
 end
 
+%Due to difference between q and s form algo
+h_r     = spm_vol(files_in.In1{1});
+h_d     = spm_vol(files_out.In1{1});
+h_d.mat = h_r.mat;
+
+Img     = read_volume(h_d, h_r, 0, 'Axial');
+Img     = write_volume(Img, h_r);
+
+info = niftiinfo(files_in.In1{1});
+info.Filename = files_out.In1{1};
+info.ImageSize = size(Img);
+info.PixelDimensions = info.PixelDimensions(1:length(size(Img)));
+info.Datatype = class(Img);
+           
+niftiwrite(Img, files_out.In1{1}, info);
+
+h_r     = spm_vol(files_in.In1{1});
+h_d     = spm_vol(files_out.In2{1});
+h_d.mat = h_r.mat;
+
+Img     = read_volume(h_d, h_r, 0, 'Axial');
+Img     = write_volume(Img, h_r);
+
+info.Filename = files_out.In2{1};
+niftiwrite(Img, files_out.In2{1}, info);
+
 
 % Json processing
-[path, name, ~] = fileparts(files_in.In1{1});
+[path, name, ~] = fileparts(files_in.In2{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
 
@@ -244,6 +274,9 @@ J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'o
 jsonfile = [path, '/', name, '.json'];
 WriteJson(J, jsonfile)
 
+% Dummy mat file needed for cluster obj
+dummy = [];
+save([path, '/', name, '.mat'], 'dummy');
 
 % remove temp files
 temp_files = dir([s './data/atlas/' prefix '_transformation_*']);

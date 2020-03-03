@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+	<meta charset="utf-8"/>
+	<meta name = "author"			content = "Olivier MONTIGON">
+	<meta name = "description"	content = "logiciel de gestion de données IRM">
+
+	<title>MRI File Manager (IRMaGe)</title>
+
+  </head>
+  
+  <body link="#ff5500" bgcolor="#cccccc">
+  
+	<div>
+  
+		<h2 align="center" style="color:blue;">FORMATS COMPATIBILITY TABLE</h2>
+	  	<h3 align="center"> (page under construction)</h3>
+		<table border="0">
+
+			<thead align="left">
+				<tr>
+					<th style="background-color:#00FF00;">&nbsp</th>
+					<th>&nbsp&nbsp functional</th>
+				</tr>
+				<tr>
+					<th style="background-color:#FF9900;">&nbsp</th>
+					<th>&nbsp&nbsp functional in most cases</th>
+				</tr>
+				<tr>
+					<th style="background-color:#FF0000;">&nbsp</th>
+					<th>&nbsp&nbsp a lot of bugs</th>
+				</tr>
+				<tr>
+					<th>na : </th>
+					<th>&nbsp&nbsp not available</th>
+				</tr>
+				<tr>
+					<th>nt : </th>
+					<th>&nbsp&nbsp not tested</th>
+				</tr>
+			</thead>
+		</table>
+		<p></p>
+		<table border="1" width="80%">
+			<colgroup>
+			<col width="15%" />
+			<col width="10%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="3%" />
+			<col width="50%" />
+
+			</colgroup>
+			<thead style="font-size: 14px;">
+				<tr>
+					<th align="left">Format</th>
+					<th>Sequence</th>
+					<th>MRI sequences</th>
+					<th>Thumbnails</th>
+					<th>Preview</th>
+					<th>MRI parameters</th>
+					<th>Slices order</th>
+					<th>Export to Nifti</th>
+					<th>Generated JSON file</th>
+					<th>Qform/Sform</th>
+					<th>bvecs</th>
+					<th>bvals</th>
+					<th>Comments</th>
+				</tr>
+	<!------------------- Bruker compatibility table ---------------------->
+				<tr>
+					<th align="left">Bruker</th>
+					<th >DtiEpi</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >MGE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >MSME</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >RARE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+	<!------------------- end Bruker compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+	<!------------------- Philips compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Philips</th>
+					<th>DwiSE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >FEEPI</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >FFE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >SE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >T1TFE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >TFE</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+				<tr>
+					<th>&nbsp</th>
+					<th >TIR</th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th style="background-color:#00FF00;"></th>
+					<th>na</th>
+					<th>na</th>
+					<th>&nbsp</th>
+				</tr>
+	<!------------------- end Philips compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+				
+	<!------------------- Dicom Philips compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Dicom Philips</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+	<!------------------- end Dicom Philips compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+	<!------------------- Dicom Siemens compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Dicom Siemens</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+	<!------------------- end Dicom Siemens compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+				
+	<!------------------- Dicom GE compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Dicom GE</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+	<!------------------- end Dicom GE compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+				
+	<!------------------- Nifti compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Nifti</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+	<!------------------- end Nifit compatibility table ---------------------->
+				<tr>
+					<th>&nbsp</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+				
+	<!------------------- Bids compatibility table ---------------------->
+
+				<tr>
+					<th align="left">Bids</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+				</tr>
+
+	<!------------------- end Bids compatibility table ---------------------->
+
+			</thead>
+		</table>
+			
+	</div>
+  </body>
+</html>

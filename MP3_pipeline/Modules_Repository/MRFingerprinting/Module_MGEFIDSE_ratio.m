@@ -10,10 +10,11 @@ if isempty(opt)
 	% --> module_option(1,:) = field names
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'dictionary_folder_filename',  'Dictionary Folder'};
-    module_option(:,2)   = {'prefix',           'MRF_'};
-    module_option(:,3)   = {'method',           'ClassicMRF'};
+    module_option(:,2)   = {'prefix',           'DBM_'};
+    module_option(:,3)   = {'method',           'DBM'};
     module_option(:,4)   = {'filtered',         'No'};
     module_option(:,16)  = {'removed',          0};
+    module_option(:,17)  = {'augment',          60};
     
     module_option(:,5)   = {'RefInput',         1};
     module_option(:,6)   = {'InputToReshape',   1};
@@ -41,15 +42,15 @@ if isempty(opt)
     % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-        'The MRF method is based on the paper : Ma, Dan, et al. "Magnetic resonance fingerprinting." Nature (2013)'
-        'The regression method is based on the paper : Boux, Fabien, et al. [work in progress]'
+        'The dictionary-based matching (DBM) method is based on the paper : Ma, Dan, et al. "Magnetic resonance fingerprinting." Nature (2013)'
+        'The dictionary-based learning (DBL) method is based on the paper : Boux, Fabien, et al. [work in progress]'
         ''
         'Prerequisite:'
         '      - Put your ''PRE_*.json'' and ''POST_*.json'' dictionary files (pre and post simulated scans) in the ''data/dictionaries'' folder'
         '      - (or) Put your ''DICO.mat'' dictionary file ratio between the post and pre simulated scans in the ''data/dictionaries'' folder'
         '      - (or performing the regression method) Put your ''MODEL.mat'' model file'
         ''
-        'The dictionaries are designed with the Mrvox simulation tool'
+        'The dictionaries are designed with the Mrvox simulation tool, see [.]'
         }'};
     
     user_parameter(:,2)   = {'Select the MGEFIDSE Pre scan','1Scan','','',{'SequenceName'}, 'Mandatory',''};
@@ -66,26 +67,28 @@ if isempty(opt)
     user_parameter(:,5)   = {'   .Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix for your output maps'}};
     
-    user_parameter(:,13)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+    user_parameter(:,14)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
         {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
-    user_parameter(:,14)   = {'   .Remove last echoes?','numeric','', 'removed', '', '',...
+    user_parameter(:,15)   = {'   .Remove last echoes?','numeric','', 'removed', '', '',...
         {''}};
     
     user_parameter(:,6)   = {'   .Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
-        {'Select the parameters considered in the model (default ''Vf'')'
+        {'Select the parameters considered in the model'
         }'};
-    user_parameter(:,7)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
+    user_parameter(:,7)   = {'   .Method','cell', {'DBM', 'DBL'}, 'method', '', '',...
         { 'Choose:'
-        '	- ''ClassicMRF'' to use the Dan Ma method'
-        '	- ''RegressionMRF'' to use the regression method'
+        '	- ''DBM'' to use the Dan Ma dictionary-based matching method'
+        '	- ''DBL'' to use the Fabien Boux dictionary-based learning method'
         }'};
-    user_parameter(:,8)   = {'   .Model settings (if the regression method is chosen)','Text','','','','',...
+    user_parameter(:,8)   = {'   .Model settings (if the DBL method is chosen)','Text','','','','',...
         {'Recommanded:'
         'K = 50'
         'Lw = 0'
-        'cstr = ''d''.'
+        'cstr on Sigma = ''d*'''
+        'cstr on Gamma = '' '''
+        'Dictionary augmentation = 60'
         }'};
     user_parameter(:,9)   = {'       .Number of regions','numeric','','K','','',...
         {'Recommanded: K = 50'
@@ -105,6 +108,11 @@ if isempty(opt)
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
+    user_parameter(:,13)   = {'       .Dictionary augmentation?','numeric','', 'augment', '', '',...
+        {'Recommanded: = 60'
+         'This value represents the signal-to-noise ratio (SNR) between dictionary signals and noise added on these signals'
+         '0 and Inf values lead to no augmentation by noise addition'
+         }};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
@@ -140,7 +148,7 @@ if isempty(files_out)
         files_out.In1{i} = [char(opt.Table_out.Path(i)), char(opt.Table_out.Filename(i)) '.nii'];
     end
     
-    if strcmp(opt.method,'RegressionMRF')
+    if strcmp(opt.method,'DBL')
         nb = i;
         
         for i = 1:numel(opt.Params)
@@ -187,20 +195,51 @@ if ~isempty(opt.dictionary_post_filename)
     opt.dictionary_post_filename    = opt.dictionary_post_filename.name;
 end
 
-dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
-model_filename  = [opt.dictionary_folder_filename filesep 'MODEL.mat'];
+
+% Name the model using a random ID and check if this model already exist
+if strcmp(opt.method, 'DBL')
+    model_filename = [opt.dictionary_folder_filename filesep 'MODEL_' num2str(10^5+randi(10^6-10^5,1)) '.mat'];
+
+    list_models = d(contains({d.name}, 'MODEL_'));
+    flag_model_exist = exist(model_filename,'file');
+    flag_valid = false(size(list_models));
+    for i = 1:length(list_models)
+
+        load([opt.dictionary_folder_filename filesep list_models(i).name],'Parameters')
+        
+        try
+            flag_valid(i) = strcmp(opt.cstrG, Parameters.cstr.Gammat);
+            flag_valid(i) = flag_valid(i) && strcmp(opt.cstrS, Parameters.cstr.Sigma);
+            flag_valid(i) = flag_valid(i) && opt.K == Parameters.K;
+            flag_valid(i) = flag_valid(i) && opt.Lw == Parameters.Lw;
+            flag_valid(i) = flag_valid(i) && opt.augment == Parameters.data_augmentation;
+        catch
+            flag_valid(i) = 0;
+        end
+    end
+    flag_model_exist = flag_model_exist || any(flag_valid);
+    if flag_model_exist
+        l = find(flag_valid == true);
+        model_filename = [opt.dictionary_folder_filename filesep list_models(l(1)).name];
+    end
+end
 
 
-if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || strcmp(opt.method, 'ClassicMRF')
+% If no model has already be computed create or load dictionary
+if (strcmp(opt.method, 'DBL') && ~flag_model_exist) || strcmp(opt.method, 'DBM')
+    
+    % Dictionary filename
+    dico_filename = [opt.dictionary_folder_filename filesep 'DICO.mat'];
     
     % If, dico exists, load it, else, create it and save it
     if exist(dico_filename,'file')
         load(dico_filename)
+        
     else
         Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
         Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
 
-        Dico.MRSignals      = abs(Post.MRSignals ./ Pre.MRSignals); % Ratio post/pre signals 
+        Dico.MRSignals      = abs(Post.MRSignals) ./ abs(Pre.MRSignals); % Ratio post/pre signals 
         Dico.Tacq           = Pre.Sequence.Tacq;
         Dico.Parameters.Par = Pre.Parameters.Par; % Parameters used to simulate X signals
         Dico.Parameters.Labels = Pre.Parameters.Labels;
@@ -208,27 +247,30 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
         save(dico_filename,'Dico')
     end
 end
-        
+
+
+% Load and if necessary, smooth observations
+Xpost   = niftiread(files_in.In2{1});
+Xpre    = niftiread(files_in.In1{1});
 
 % Generate ratio signals from scans (and TODO: ROI if given)
-% TODO: what if In1 is the post and In2 the pre scan
-Xobs            = niftiread(files_in.In2{1}) ./ niftiread(files_in.In1{1});
-info            = niftiinfo(files_in.In2{1});
+Xobs            = Xpost ./ Xpre;
 json_filename   = split(files_in.In2{1},'.');
 json_filename{2} = '.json';
 Obs             = ReadJson([json_filename{1} json_filename{2}]);
 
-
-% If necessary smooth observations
+% Smooth
 if strcmp(opt.filtered, 'Yes') == 1
-    p = 2;
-    for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
-        signal = squeeze(Xobs(x,y,z,:));  
-        signal = filter(ones(1, p)/p, 1, [signal(1); signal; signal(end)]);
-%     	Xobs(x,y,z,:) = conv(signal, gaussian_window, 'valid');
-        Xobs(x,y,z,:) = signal(2:end-1);
-    end; end; end
+    sigma = .5;
+    
+    FilteredImages = nan(size(Xobs));
+    for z = 1:size(Xobs,3); for t = 1:size(Xobs,4)
+        FilteredImages(:,:,z,t) = imgaussfilt(Xobs(:,:,z,t), sigma, 'FilterSize',3);
+    end; end
+    Xobs = FilteredImages;
+    clear FilteredImages
 end
+
 
 % If necessary, remove echoes
 if opt.removed > 0
@@ -240,96 +282,101 @@ if opt.removed > 0
     Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
 end
 
-
-% If necessary, permute column 
-dim_time    = find(info.PixelDimensions == 0);
-if dim_time == 4
-    perm_vect = [1 2 4 3];
-elseif dim_time == 1 || dim_time == 2
-    error('Failed')
-else
-    perm_vect = [1 2 3 4];
-end
-Xobs        = permute(Xobs, perm_vect);
+% Permute
+Xobs(Xobs == inf) = nan;
+Xobs	= permute(Xobs, [1 2 4 3]);
 
 
 % Reformat dico (not needed if MODEL is already computed)
-if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
-    
+if strcmp(opt.method, 'DBM') || ~flag_model_exist
+    tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
     if size(Xobs,length(size(Xobs))) ~= size(Dico.MRSignals,2)
         warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
-        tmp = nan(size(Dico.MRSignals,1), length(Obs.EchoTime.value'));
         for i = 1:size(Dico.MRSignals,1)
-            try
-                tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3, 'method','extrap');
-            end
+            tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals,2)), Dico.MRSignals(i,:), Obs.EchoTime.value'*1e-3);
         end
-        Dico.MRSignals = tmp;
-        Dico.MRSignals = tmp;
-        Dico.Tacq   = Obs.EchoTime.value'*1e-3;
     end
-    
+    Dico.MRSignals = tmp;
+    Dico.Tacq   = Obs.EchoTime.value'*1e-3;
     %remove row containning nan values
     nn = ~any(isnan(Dico.MRSignals),2);
-    Dico.MRSignals = Dico.MRSignals(nn,:);
+    Dico.MRSignals  = Dico.MRSignals(nn,:);
     Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
-    Tmp{1}      = Dico;
+    TmpDico{1}      = Dico;
 end
 
 
-% Compute MRF/regression
+% Compute DBM/DBL method
 switch opt.method
     
-    case 'ClassicMRF'
-        Estimation  = AnalyzeMRImages(Xobs,Tmp,opt.method,[]);
-        Map.Y       = permute(Estimation.GridSearch.Y, perm_vect);
+    case 'DBM'
+        % TODO: find something nicer than this permute trick
+        Estimation  = AnalyzeMRImages(Xobs,TmpDico,opt.method,[]);
+        Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
         
-    case 'RegressionMRF'
+    case 'DBL'
         
-        %Compute the learing only one time per dictionar        
+        backgroundROI = false(size(Xpre,1), size(Xpre,2));
+        x = ceil(size(Xpre,1) .* [0.02 0.17]);
+        y = ceil(size(Xpre,2) .* [0.02 0.17]);
+        backgroundROI(x(1):x(2),y(1):y(2)) = true;
+        
+        SNRmap = 1./ (1./computeSNRmap(squeeze(Xpost) ,backgroundROI) ...
+            + 1./ computeSNRmap(squeeze(Xpre),backgroundROI));
+        
+        % Compute the learning only one time per dictionary
         if exist(model_filename,'file')
             load(model_filename,'Parameters','labels');
-            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters);
+            Estimation = AnalyzeMRImages(Xobs, [], opt.method, Parameters,[],[], SNRmap);
             
-            Tmp{1}.Parameters.Labels = labels;
+            TmpDico{1}.Parameters.Labels = labels;
+        
         else
             count = 1;
             
+            % Pick parameters of interest
             for i = 1:length(Dico.Parameters.Labels)
                 tmp = split(Dico.Parameters.Labels{i},'.',2);
                 if any(strcmp(tmp{end}, opt.Params))
-                    params.Par(:,count)     = Tmp{1}.Parameters.Par(:,i);
-                    params.Labels{count}    = Tmp{1}.Parameters.Labels{i};
+                    params.Par(:,count)     = TmpDico{1}.Parameters.Par(:,i);
+                    params.Labels{count}    = TmpDico{1}.Parameters.Labels{i};
                     count = count +1;
                 end
             end
-            Tmp{1}.Parameters = params;
+            TmpDico{1}.Parameters = params;
             
+            
+            if opt.augment ~= 0
+                TmpDico{1}.MRSignals = AddNoise(TmpDico{1}.MRSignals, opt.augment);
+            end
+            
+            % Train regression
             % Parameters of the regression
             clear Parameters
             if opt.K >= 0,  Parameters.K = opt.K; end
             if opt.Lw >= 0, Parameters.Lw = opt.Lw; end
-            if strcmp(opt.cstrS,' '), opt.cstrS = ''; end
+            if strcmp(opt.cstrS,' '), opt.cstrS = 'd*'; end
             if strcmp(opt.cstrG,' '), opt.cstrG = ''; end
             Parameters.cstr.Sigma   = opt.cstrS;
             Parameters.cstr.Gammat  = opt.cstrG;
             Parameters.cstr.Gammaw  = '';
+            Parameters.data_augmentation = opt.augment;
             
-            [Estimation, Parameters] = AnalyzeMRImages(Xobs, Tmp, opt.method, Parameters);
+            [Estimation, Parameters] = AnalyzeMRImages(Xobs, TmpDico, opt.method, Parameters,[],[], SNRmap);
             
-            labels      = Tmp{1}.Parameters.Labels; 
+            labels      = TmpDico{1}.Parameters.Labels; 
             save(model_filename,'Parameters', 'labels')
         end
-        
-        Map.Y   = permute(Estimation.Regression.Y, perm_vect);
-        Map.Std	= permute(Estimation.Regression.Cov, perm_vect).^.5;
+            
+        Map.Y   = permute(Estimation.Regression.Y, [1 2 4 3]);
+        Map.Std	= permute(Estimation.Regression.Cov, [1 2 4 3]).^.5;
 end
 
 
 % Extract maps (and modify unit if necessary)
 count = 1;
-for i = 1:length(Tmp{1}.Parameters.Labels)
-    tmp = split(Tmp{1}.Parameters.Labels{i},'.',2);
+for i = 1:length(TmpDico{1}.Parameters.Labels)
+    tmp = split(TmpDico{1}.Parameters.Labels{i},'.',2);
     if any(strcmp(tmp{end}, opt.Params))
         
         Labels{count} = tmp{end};
@@ -339,17 +386,17 @@ for i = 1:length(Tmp{1}.Parameters.Labels)
         %If the ression method is performed, extract also the confidence maps
             case {'Vf', 'SO2'} %convert to percent 
                 MapStruct{count}    = 100*Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
+                if strcmp(opt.method, 'DBL')
                     StdStruct{count}    = 100*Map.Std(:,:,:,i);
                 end
             case {'VSI', 'R'} % convert m to µm
                 MapStruct{count}    = 1e6*Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
+                if strcmp(opt.method, 'DBL')
                     StdStruct{count}	= 1e6*Map.Std(:,:,:,i);
                 end
             otherwise
                 MapStruct{count} 	= Map.Y(:,:,:,i);
-                if strcmp(opt.method, 'RegressionMRF')
+                if strcmp(opt.method, 'DBL')
                     StdStruct{count}    = 100*Map.Std(:,:,:,i);
                 end
         end
@@ -386,7 +433,7 @@ for i = 1:length(files_out.In1)
             niftiwrite(MapStruct{j}, files_out.In1{i}, info);
 
 
-            if strcmp(opt.method, 'RegressionMRF')
+            if strcmp(opt.method, 'DBL')
                 [path, name, ~] = fileparts(files_out.In2{i});
                 WriteJson(J, [path, '/', name, '.json'])
                 

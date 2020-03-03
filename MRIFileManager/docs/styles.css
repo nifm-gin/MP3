@@ -1,3 +1,7 @@
+/*body {
+  background-color: #ffffff;
+}*/
+
 div#bandeau {
 	position:absolute;
 	top: 0px; 
@@ -66,12 +70,6 @@ div#onglet{
 	line-height: 30px;
 	width: 900px;
 	}
-a#onglet{
-	color: #E91D21;
-	font-family: fantasy; 
-	line-height: 40px;
-	}
-
 
 div#ci {
 	float:right;
@@ -80,6 +78,12 @@ div#ci {
 	background-repeat:repeat;
 	text-align:left;
 	margin-top : 5px;
+	}
+
+a#onglet{
+	color: #E91D21;
+	font-family: fantasy; 
+	line-height: 40px;
 	}
 
 li {

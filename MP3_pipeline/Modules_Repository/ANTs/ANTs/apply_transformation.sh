@@ -36,6 +36,9 @@ if [ "$SCRIPT_LOC" == "" ] || [ "$LABEL_IMG" == "" ] || [ "$IMAGE" == "" ];
 fi
 
 
+export ANTSPATH=$ANTSPATH
+
+
 # ----- Script -----
 
 # Apply transformations

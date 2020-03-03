@@ -16,6 +16,7 @@ function [x_exp, cov, alpha] = gllim_inverse_map_and_cov(y,theta,verb)
 % - verb {0,1,2}          % Verbosity (def 1)
 %%%% Output %%%%
 % - x_exp (LxN)           % Posterior mean estimates E[xn|yn;theta]
+% - cov   (LxLxN)         % Posterior covariance matrix Var[xn|yn;theta]
 % - alpha (NxK)           % Weights of the posterior GMMs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [D,N]=size(y);
@@ -24,6 +25,7 @@ function [x_exp, cov, alpha] = gllim_inverse_map_and_cov(y,theta,verb)
 if(verb>=1);fprintf(1,'Compute K projections to X space and weights\n');end;
 % Parameters to estimate:
 proj=NaN(L,N,K);     % K projections to X space
+cov_term=NaN(L,L,N,K);
 logalpha=zeros(N,K); % Conditional log-weights log(p(Z=k|y;theta))
 for k=1:K
     if(verb>=2), fprintf(1,'  k=%d ',k); end
@@ -45,7 +47,8 @@ for k=1:K
     Sigmaks=invSigmaks2\Gammak;
 
     if(verb>=2), fprintf(1,'Aks '); end
-    Aks=Sigmaks*Ak'/Sigmak;     
+    %Aks=invSigmaks2\Gammak*Ak'/Sigmak;  
+    Aks=Sigmaks*Ak'/Sigmak;    
 
     if(verb>=2), fprintf(1,'bks '); end
     bks=invSigmaks2\(ck-Gammak*Ak'/Sigmak*bk);   
@@ -59,9 +62,10 @@ for k=1:K
 
     if(verb>=2), fprintf(1,'\n'); end 
     
-    for n = 1:N
-        first_term(:,:,k,n) = Sigmaks + proj(:,n,k) * proj(:,n,k)';
-    end
+    %First term of the covariance matrix of the GMM
+    cov_term(:,:,:,k) = bsxfun(@plus, Sigmaks,...
+                           bsxfun(@times, reshape(proj(:,:,k),[1,L,N]),...
+                              reshape(proj(:,:,k),[L 1 N])));
 end
 den=logsumexp(logalpha,2); % Nx1
 logalpha=bsxfun(@minus,logalpha,den); % NxK Normalization
@@ -69,12 +73,8 @@ alpha=exp(logalpha); % NxK
 
 x_exp = reshape(sum(bsxfun(@times,reshape(alpha,[1,N,K]),proj),3),L,N); %LxN
 
-for n = 1:N
-    clear tmp
-    for k = 1:K
-        first_term_weighted(:,:,k) = alpha(n,k) * first_term(:,:,k,n);
-    end
-    cov(:,:,n) = sum(first_term_weighted,3) - x_exp(:,n) * x_exp(:,n)';
-end
-
+%Weighted first term of the covariance matrix of the GMM and the cov matrix
+cov_term = bsxfun(@times, reshape(alpha,[1,1,N,K]), cov_term);
+cov = bsxfun(@minus, reshape(sum(cov_term,4),[L,L,N]),...
+         bsxfun(@times, reshape(x_exp,[1,L,N]), reshape(x_exp,[L,1,N])));
 end

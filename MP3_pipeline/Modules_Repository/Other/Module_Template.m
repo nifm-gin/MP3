@@ -201,7 +201,7 @@ jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
 
 
-%% Process your data
+%% Process your data. Here its a filtering but write your operations here.
 
 Informations = whos('N');
 FilteredImages = zeros(size(N), Informations.class);

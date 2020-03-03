@@ -41,7 +41,7 @@ if isempty(opt)
         '    https://github.com/ANTsX/ANTs'
         }'};
     
-    user_parameter(:,2)   = {'Select label map','1Scan','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select label map','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Select maps as input','XScan','','',{'SequenceName'}, 'Optionnal',''};
     user_parameter(:,4)   = {'Parameters','','','','', '', ''};
     user_parameter(:,5)   = {'   .ROIs','char','','rois','', 'Mandatory',...
@@ -50,6 +50,8 @@ if isempty(opt)
         {'Give the output extension'}};
     user_parameter(:,7)   = {'   .Rotation angle','char','','rotate_angle','', '',...
         {'Give the rotation angle if needed'}};
+    user_parameter(:,8)   = {'   .Mask','1ROI','','',{'SequenceName'}, '',...
+        {'Additional mask to remove a specific areas'}};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -86,16 +88,20 @@ end
 
 
 % Load label map
-label_map   = niftiread(files_in.In1{1});
+label_vol   = spm_vol(files_in.In1{1});
+label_map   = read_volume(label_vol,label_vol,0);
 label_list	= unique(label_map(:));
 label_list  = label_list(label_list ~= 0);
-
-% Is needed, rotate label map
-label_map = imrotate3(label_map,opt.rotate_angle,[0 0 1]);
 
 % Extract parameters
 nb_maps     = length(files_in.In2);
 nb_rois     = length(label_list);
+
+% Load mask map
+if isfield(files_in,'In3')
+    mask_vol    = spm_vol(files_in.In3{1});
+    mask_map    = read_volume(mask_vol,label_vol,0); % 0 for nearest neighbour
+end
 
 % Create and init struct
 Report    	= struct();
@@ -121,10 +127,13 @@ for map = 1:nb_maps
     if exist(files_in.In2{map},'file')
         
         % Load map
-        complete_map = niftiread(files_in.In2{map});
-        %TODO: improve this rescale
-        complete_map = imresize3(complete_map, size(label_map)); 
-                
+        map_vol = spm_vol(files_in.In2{map});
+        complete_map = read_volume(map_vol, label_vol, 0); % 1 for trilinear 
+        if isfield(files_in,'In3')
+            complete_map(logical(mask_map)) = nan;
+        end
+        
+        
         for lab = 1:nb_rois
             
             % Hist

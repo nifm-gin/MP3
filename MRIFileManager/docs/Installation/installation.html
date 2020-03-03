@@ -12,8 +12,7 @@
 	<script src="../datemodif.js"></script>
 	<script src="../buttontop.js"></script>
   </head>
-  
-  <body link="#ff5500">
+
   <button onclick="topFunction()" id="myBtn" title="Go to top">Top</button>
   
 	<div>
@@ -53,11 +52,13 @@
 
 
 		<h2 id="launching" class="style1"> Launching of the software </h2>
-		<p class="style2"> This section explains how to launch MRI File Manager in <u>standalone mode</u> or by <u>script</u>.</p>
+		<p class="style2"> This section explains how to launch MRI File Manager in <a class="style1" href="#standalone"><u><b>standalone mode (with GUI)</b></u></a>, by <a class="style1" href="#scriptwithGUI"><u><b>script (with GUI)</b></u></a> 
+			or by <a class="style1" href="#scriptwithoutGUI"><u><b>script in windowless mode (without GUI)</b></u></a>.</p><br>
+		
 		<div class= "style5">
 		<ul>
 		<li>
-		<p><u>In standalone mode:</u><br><br>
+		<u id="standalone"><b>In standalone mode:</b></u><br><br>
 		You can double-click directly on the <i>MRIManager.jar </i> file.<br><br>
 		But it's better to use batch file (<i> MRIManager.bat</i> for Windows) or shell (<i>MRIManager.sh</i> for Linux and MacOS), the reasons are :<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;- to show error messages in the terminal<br>
@@ -65,31 +66,31 @@
 		&nbsp;&nbsp;&nbsp;&nbsp;- you can allocate memory for classes of Java<br>
 		<br><br>
 		Edit the MRIManager.bat or MRIManager.sh file according to your operating system (with a simple text editor):<br>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">java -Xms512m -Xmx4096m -jar MRIManager.jar</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n">java -Xms512m -Xmx4096m -jar MRIManager.jar</span></pre></div></div>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Xms specifies the initial memory allocation pool for a Java virtual machine (JVM) (keep the default value 512m) <br>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Xmx specifies the maximum memory allocation pool, set the value 1/2 of the total RAM memory of your machine (for example 4096m for 8Go of RAM)
 		<br><br>
 		Launch the batch or shell file in a terminal:<br>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">C:\Program Files\MFM_Irmage\MRIFileManager>MRIManager.bat 		(Windows)</span></pre></div></div>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">wiki@ubuntu:~/MRIFileManager$ ./MRIManager.sh 		(Linux, Mac)</span></pre></div></div>
-		</p>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"><font color=#00bbff>C:\Program Files\MFM_Irmage\MRIFileManager></font> MRIManager.bat 		(Windows)</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"><font color=#00bbff>wiki@ubuntu:~/MRIFileManager$</font> ./MRIManager.sh 		(Linux, Mac)</span></pre></div></div>
+
 		</li>
 		</ul>
 		<br>
 
 		<ul>
 		<li>		
-		<p><u>By script with options:</u><br><br>
+		<u id="scriptwithGUI"><b>By script (with GUI):</b></u><br><br>
 		You can launch MRI File Manager through another application by script with some options. In this instance, <u>some functions are deactivated.</u><br><br>
-		<b>usage :</b>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar [options]  </span></pre></div></div>		
+		<b>usage :</b><br><br>
+		<pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar [options]  </span></pre><br>
 
 		<b>options :</b><br>
 		
 		<table style="margin-left:50px">
 		<tr>
 		<td>'[ExportNifti] &lt;repertory&gt;'</td>
-		<td> (1) </td>
+		<td>(1) </td>
 		</tr>
 		<tr>
 		<td>'[ExportToMP3] &lt;string&gt;'</td>
@@ -129,70 +130,134 @@
 		</tr> -->
 		<tr>
 		<td><br> (1) </td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportNifti] C:\\Users\\Documents\\DataIRM\\NifTI'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportNifti] C:\\Users\\Documents\\DataIRM\\NifTI'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(2)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportToMP3] PatientName-StudyName-CreationDate-<br>SeqNumber-Protocol-SequenceName-AcquisitionTime'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportToMP3] PatientName-StudyName-CreationDate-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SeqNumber-Protocol-SequenceName-AcquisitionTime'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(3)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'CloseAfterExport'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'CloseAfterExport'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(4)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoLogExport'  </span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoLogExport'  </span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(5)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[LookAndFeel] com.sun.java.swing.plaf.windows.WindowsLookAndFeel'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[LookAndFeel] com.sun.java.swing.plaf.windows.WindowsLookAndFeel'</span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(6)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoExitSystem'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar 'NoExitSystem'</span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(7)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportOptions] 000'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ExportOptions] 00000'</span></pre></div></div>
 		</td>
 		</tr>
 		<tr>
 		<td><br>(8)</td>
-		<td> </td>
 		<td>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ProjectsDir] //home//user//Documents'</span></pre></div></div>
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> java -Xms512m -Xmx4096m -jar MRIManager.jar '[ProjectsDir] //home//user//Documents'</span></pre></div></div>
 		</td>
 		</tr>
 		</table>
 		<br>
 		<b>examples :</b><br>
 		<p class="style3"> Python</p>
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"> import <b>subprocess</b><br> <b>subprocess</b>.call(['java','-Xms512M','-Xmx4096M','-jar','MRIManager.jar',options])</span></pre></div></div>
-		
+		<div class="highlight-default notranslate"><div class="highlight"><pre class="console"><span class="n"> import <b>subprocess</b><br> <b>subprocess</b>.call(['java','-Xms512M','-Xmx4096M','-jar','MRIManager.jar',options])</span></pre></div></div>
+
 		</li>
 		</ul>
-		</div>
-		</p>
+		<br>
+			
+		<ul>
+		<li>
+		<u id="scriptwithoutGUI"><b>By script in windowless mode (without GUI):</b></u><br><br>
+		You can launch MRI File Manager by script without opening its GUI. In the command line, arguments are the list of files to convert, the conversion directory and the naming. An export option must also be added.<br><br>
+		<b>usage : </b><font color="red">(The current version of the software allows for the moment only the conversion Bruker and Philips files in windowless mode)</font><br><br>
+		<pre class="console"><span class="n"> <b>java -classpath MRIManager.jar BrukerToNifti</b> "<i>file1;file2;...</i>" "<i>export directory</i>" "<i>nifti files naming</i>" [<i>options</i>]</span></pre>
+		<pre class="console"><span class="n"> <b>java -classpath MRIManager.jar PhilipsToNifti</b> "<i>file1;file2;...</i>" "<i>export directory</i>" "<i>nifti files naming</i>" [<i>options</i>]</span></pre>
+		<pre class="console"><span class="n"> <b>java -classpath MRIManager.jar BidsToNifti</b> "<i>file1;file2;...</i>" "<i>export directory</i>" "<i>nifti files naming</i>" [<i>options</i>]</span></pre> <br>
+		<b>list of files to convert :</b> list of files or directories separated by the character '<b>;</b>'.<br>			
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										Bruker : <i>2dseq</i> files (file by file) or <i>subject</i> files (all sequences).<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										Philips : <i>*.REC</i> files (file by file) or <i>directory</i> containing all the PAR/REC or XML/REC files.<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										Bids : directory containing <i>'dataset_description.json'</i> file.
+
+		<br><br>
+
+		<b>export directory :</b> directory where the exported files should be saved <br><br>
+		<b>nifti files naming  :</b> only the following terms can be used : 'PatientName', 'StudyName', 'CreationDate', 'SeqNumber', 'Protocol', 'SequenceName', 'AcquisitionTime'. 
+			Use slash (/) to indicate the directory and a separating charactere in the name of file ('-' or '_' character advised)<br><br>
+		<b>[options]</b>  : [ExportOptions] 00000 (put 00013 if you want generate bvecs/bvals files for diffusion sequences)<br><br>
+
+		<table border="0">
+			<thead>
+        		<tr>
+            		<th colspan="3">Examples <i>(Click on the image to enlarge)</i></th>
+        		</tr>
+    		</thead>
+    		<tbody>
+        		<tr>
+            		<td bgcolor="#39E547">Bruker </td>
+					<td>&nbsp;</td>
+            		<td bgcolor="#E5C039">Philips </td>
+        		</tr>
+        		<tr>
+            		<td bgcolor="#39E547" align="center"><br>
+						with <i>subject</i> files <i></i><br>
+						<img alt="script_windowless" align="center" src="./images/example_script_windowless.png" style="width:90%;height:100%;border:0;" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"/> <br><br>
+						with <i>2dseq</i> files <i></i><br>
+						<img alt="script_windowless" align="center" src="./images/example_script_windowless_2.png" style="width:90%;height:100%;border:0;" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"/>
+						<br><br>
+					</td>
+					<td> </td>
+            		<td bgcolor="#E5C039" align="center"><br>
+						with directory containing all the PAR/REC or XML/REC files <i></i><br>
+						<img alt="script_windowless" align="center" src="./images/example_script_windowlessPhilips.png" style="width:90%;height:100%;border:0;" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"/> <br><br>
+						<br>
+						with <i>*.REC</i> files <i></i><br>
+						<img alt="script_windowless" align="center" src="./images/example_script_windowlessPhilips_2.png" style="width:90%;height:100%;border:0;" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"/>
+		
+					</td>
+        		</tr>
+				<tr>
+					<td><br></td>
+				</tr>
+				<tr>
+		        		<td bgcolor="#6666E5">Bids </td>
+				</tr>
+				<tr>
+		        		<td bgcolor="#6666E5" align="center"><br>
+						<img alt="script_windowless" align="center" src="./images/example_script_windowlessBids.png" style="width:90%;height:100%;border:0;" onclick="window.open(this.src,'_parent','toolbar=0, location=0, directories=0, status=0, scrollbars=0, resizable=0, copyhistory=0, menuBar=0, width='+this.width+', height='+this.height);"/> <br><br>
+				</tr>
+    		</tbody>
+		</table>
+
+			
+		</li>
+		</ul>
+		<br>
+
+		</div>	
 		<br>
 		<h2 id="pluginImagej" class="style1"> ImageJ plugins </h2>
 		<p class="style2"> For ImageJ users, it's possible to install his plugins in the <i>'dist'</i> folder of MRI File Manager  <br><br>
@@ -203,39 +268,99 @@
 		<p class="style2">
 <!-- 		You can retrieve an older version of MRI File Manager. They just need to download (click on 'get this MRIManager.jar version') and to replace MRIManager.jar in its directory.
  -->
- 		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>06/06/2019 : Version 19.3.0a
+			
+		<div class= "style5">
+			
+		<pre><span><b>19/11/2019 : Version 19.6.2a
+	Features added:
+	  - Export options : 2 fields are added for the naming option of Nifti files : SerialNumber and AcquisitionDate.
+	  - Bids : possibility to launch MRI File Manager by script in windowless mode (see section 'Launching of the software' in this page).
+	  - Bruker: images with multi-orientation (axial, coronal,sagittal) can now be exported as Nifti.</b></span></pre>	
+			
+		<pre><span><b>06/09/2019 : Version 19.6.1a
+	Features added:
+	  - Philips : possibility to launch MRI File Manager by script in windowless mode (see section 'Launching of the software' in this page).
+	Bug fixed:
+	  - Philips: image order problem in some sequences 5D fixed.</b></span></pre>	
+			
+		<pre><span><b>29/08/2019 : Version 19.6.0a
+	Features added:
+	  - Bruker : possibility to launch MRI File Manager by script in windowless mode (see section 'Launching of the software' in this page).
+	  - Bids : menus "see 'dataset_description.json' file" and "see 'participants.tsv' file" added in popup menu.
+	Bug fixed:
+	  - Dicom Philips: image order problem in some sequences 5D fixed.</b></span></pre>
+
+		<pre><span><b>09/08/2019 : Version 19.5.6a
+	Bug fixed:
+	  - Bids : some bugs who crashed Populse_mia fixed.</b></span></pre>			
+			
+		<pre><span><b>09/08/2019 : Version 19.5.5a
+	Others:
+	  - Bids : following the Bids development, now possibility to export Bids structures to Nifti .</b></span></pre>
+			
+		<pre><span><b>09/07/2019 : Version 19.5.4b
+	Features added:
+	  - Bids : following the Bids development(still in trial version).</b></span></pre>
+			
+		<pre><span><b>05/07/2019 : Version 19.5.3b
+	Features added:
+	  - Bids <a href="https://bids.neuroimaging.io/" target="_blank">(Brain Imaging Data Structure)</a>: new IRM file format introduced in the software (still in trial version).</b></span></pre>
+			
+		<pre><span><b>02/07/2019 : Version 19.4.3b
+	Bug fixed:
+	  - DICOM: problem reading some Dicom files.</b></span></pre>
+			
+		<pre><span><b>02/07/2019 : Version 19.4.3a
+	Features added :
+	  - DICOM (Philips): possibility to generate bvecs/bvals files for reading of diffusion in MRtrix or FSL.
+	Others:
+	  - best display of JSON text in log
+	  - best display of no-isotropic images in thumbnail list</b></span></pre>
+			
+		<pre><span><b>25/06/2019 : Version 19.3.3a
+	Bugs fixed:
+	  - Bruker : affine transformation problem of some Bruker sequences fixed.
+	  - NIFTI : problem reading some Nifti files (64 bits float) fixed.
+	  - Philips : problem reading when sequences had same number serial, protocol, acquisition time ... fixed.</b></span></pre>
+			
+		<pre><span><b>21/06/2019 : Version 19.3.2a
+	Bugs fixed:
+	  - NIFTI : problem reading some Nifti files (16 bits unsigned) fixed.
+	  - Philips : problem reading when files had lowercase extensions (*.rec, *.par) fixed.
+	Features added :
+	  - Philips : possibility to generate bvecs/bvals files for reading of diffusion in MRtrix.</b></span></pre>
+
+		<pre><span><b>12/06/2019 : Version 19.3.1a
+	Bugs fixed:
+	  - DICOM : problem reading Dicom files without rescale slope and intercept.</b></span></pre>
+
+		<pre><span><b>06/06/2019 : Version 19.3.0a
 	Bugs fixed:
 	  - DICOM : dimension reversed for some Dicom.
 	  - problem of the dialogue window 'Loading thumbnail ...' that did not always close resolved
 	Features added :
-	  - Bruker : possibility to generate bvecs/bvals files for reading of diffusion by MrTrix 
+	  - Bruker : possibility to generate bvecs/bvals files for reading of diffusion by MRtrix 
 		(see page 'Documentation', section 'Set options')
 	  - add option [ProjectsDir] for the script (see page 'Installation', section 'Launching of the software')
 	Others:
 	  - Json Irmage : now, all parameters that have floating or integer values (same single) are presented as an array (list of list)
 	  - better management of items in the basket
-	  - exit code = 100 (for populse_mia project only)
-		
-	</b></span></pre></div></div></div>
+	  - exit code = 100 (for populse_mia project only)</b></span></pre>
 
- 		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>04/04/2019 : Version 19.2.3a
+		<pre><span><b>04/04/2019 : Version 19.2.3a
 	Bugs fixed:
 	  - DICOM : for some Dicomdir files, anonymization did not work.
 	  - Nifti : anonymization did not work
-	  - Bruker : "Sequence Name" tag more complete for parametric images</b></span></pre></div></div></div>
+	  - Bruker : "Sequence Name" tag more complete for parametric images</b></span></pre>
  
- 		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>03/04/2019 : Version 19.2.2a
+		<pre><span><b>03/04/2019 : Version 19.2.2a
 	Bugs fixed:
 	  - DICOM : for some Dicom files, anonymization did not work.
 	  - DICOM : after the ImageJ upgrade to 1.52n, some DICOM images were not displayed in the 'thumbnails' area.
 	Others:
-	  - ImageJ update to 1.52n </b></span></pre></div></div></div>
+	  - ImageJ update to 1.52n </b></span></pre>
  
-		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>04/03/2019 : Version 19.2.1a
+		<pre><span><b>04/03/2019 : Version 19.2.1a
 	Bugs fixed:
 	  - DICOM : problems opening Dicom files which included the same serial number.
 	  - PHILIPS : problem opening DwiSE images.
@@ -243,38 +368,34 @@
 	  - DICOM : add in "Preference" menu the option "simplified view for DICOMDIR" for faster reading. 
 	Others:
 	  - a new column 'Note' added in the 'Data browser' table.
-	  - a new column 'Serial Number' added in the 'MRI sequence' table.	</b></span></pre></div></div></div>
+	  - a new column 'Serial Number' added in the 'MRI sequence' table.	</b></span></pre>
 		
-		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>22/01/2019 : Version 19.0.0a
+		<pre><span><b>22/01/2019 : Version 19.0.0a
 	Bugs fixed:
-	  - DICOM : problem opening Dicom files which are located in a root directory of a disk.</b></span></pre></div></div></div>
+	  - DICOM : problem opening Dicom files which are located in a root directory of a disk.</b></span></pre>
 		
-		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>11/12/2018 : Version 18.2.9a
+		<pre><span><b>11/12/2018 : Version 18.2.9a
 	Bugs fixed:
 	  - PHILIPS : under Linux, display problem for Xml/Rec files.
 	Others:
-	  - 'DataAnonymized' tag modified in json file (add 'Description, 'format', ...).</b></span></pre></div></div></div>
+	  - 'DataAnonymized' tag modified in json file (add 'Description, 'format', ...).</b></span></pre>
 		
-		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>11/12/2018 : Version 18.2.8a
+		<pre><span><b>11/12/2018 : Version 18.2.8a
 	Bugs fixed:
 	  - better research of Nifti files.
 	Features added :
 	  - options to anonymize MRI datas ->  'DataAnonymized' tag added in json file (value = no or yes).
-	  - BRUKER : possibility to export the parametric images separatly (see 'File'-> export -> Option export' menu).</b></span></pre></div></div></div>
+	  - BRUKER : possibility to export the parametric images separatly (see 'File'-> export -> Option export' menu).</b></span></pre>
 		
-		<div class= "style5">
-		<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n"><b>04/12/2018 : Version 18.1.8a
+		<pre><span><b>04/12/2018 : Version 18.1.8a
 	Bugs fixed:
 	  - problem with export to Nifti (Populse_MIA)
 	  - problem with defaut directory for the exported data.
 	Others:
 	  - the software version is displayed at the top of the sofwtare window.
 	  - DictionaryMRI_System.yml is modified ('Patient Weight', type = string instead float)
-	  - PHILIPS: 'Patient Sex', 'Patient Weight', 'Patient BirthDate' tags added.</b></span></pre></div></div></div>
-		</p>
+	  - PHILIPS: 'Patient Sex', 'Patient Weight', 'Patient BirthDate' tags added.</b></span></pre>
+		</div>
 
 		<br><br>
 		<script>document.write("This page was last modified on "+ DateModif())</script>
