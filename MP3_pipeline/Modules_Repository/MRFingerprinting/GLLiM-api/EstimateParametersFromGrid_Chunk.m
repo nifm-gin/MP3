@@ -1,5 +1,9 @@
 function [Yestim, score, Xestim] = EstimateParametersFromGrid(Xobs, Xgrid, Ygrid, verb, flagNorm)
 
+% MRF matching with norm options and chunking of the dictionary to
+% avoid RAM overload
+
+
 narginchk(3, 5)
 if nargin == 4, flagNorm = 1; end
 if nargin == 3, verb = 0; flagNorm = 1; end

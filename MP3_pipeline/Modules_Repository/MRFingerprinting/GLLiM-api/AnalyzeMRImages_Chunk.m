@@ -1,5 +1,8 @@
 function [Estimation, Parameters] = AnalyzeMRImages(Sequences,Dico,Method,Parameters,References,Outliers, flagNorm)
 
+% Applying MRF matching with norm options and chunking of the dictionary to
+% avoid RAM overload
+
 if nargin < 3, error('Not enought input arguments'); end
 if ~exist('Method','var'),      Method = 'RegressionMRF'; end
 if ~exist('Parameters','var'),  Parameters = []; end
@@ -39,7 +42,7 @@ switch Method
         for s = 1:slices
             %Estimation of parameters
 %             Estimation.GridSearch.Y(:,:,:,s) = reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm), s1,s2, []);
-            [estim, score, ~] = EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm);
+            [estim, score, ~] = EstimateParametersFromGrid_Chunk(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm);
             Estimation.GridSearch.Y(:,:,:,s) = reshape(estim, s1,s2, []);
             Estimation.scoreMap(:,:,s) = reshape(score, s1,s2, []);
             

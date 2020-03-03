@@ -601,7 +601,7 @@ for v=1:numel(Values)
     switch opt.method
         case 'ClassicMRF'
             % TODO: find something nicer than this permute trick
-            Estimation  = AnalyzeMRImages(localXobs,Tmp,opt.method, [], [], [], opt.finalNorm);
+            Estimation  = AnalyzeMRImages_Chunk(localXobs,Tmp,opt.method, [], [], [], opt.finalNorm);
             Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
             
         case 'RegressionMRF'
