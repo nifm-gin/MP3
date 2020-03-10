@@ -174,7 +174,7 @@ niftiwrite(NewIm_reoriented, files_out.In1{1}, info2)
 if exist(jsonfile)
     J = ReadJson(jsonfile);
     J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename);
-    if axes == 4 && ~contains(J.ProtocolName.value, 'ADC')
+    if axes == 4 && ~contains(J.ProtocolName.value, 'ADC') && numel(J.EchoTime.value) > numel(index(1):index(end))
         J.EchoTime.value = J.EchoTime.value(index(1):index(end));
     end
 
