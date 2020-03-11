@@ -2410,7 +2410,9 @@ for i=1:length(Jobs)
                            [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
                            statusMat = 1;
                        elseif strcmp(char(outdb.Type), 'Cluster')
-                           [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           if exist(strrep(B{k},'.nii','.mat'), 'file')
+                               [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           end
                            statusJson = 1;
                        else
                            statusJson = 1;
