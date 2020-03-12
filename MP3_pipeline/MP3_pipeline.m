@@ -1574,7 +1574,7 @@ for i=1:length(handles.module_parameters_fields)
             ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
         elseif any(contains(handles.new_module.opt.table.Type{i}, 'check'))
             ActualValues{i} = char('');
-        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI'))
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI')) || any(contains(handles.new_module.opt.table.Type{i}, 'Cluster'))
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
             else
