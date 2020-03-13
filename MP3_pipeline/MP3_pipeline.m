@@ -894,7 +894,7 @@ function [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Call
 
 
 if isfield(handles, 'MP3_pipeline_ParamsModules')
-    if ~strcmp(eventdata.Source.Tag, {'MP3_pipeline_Save_Module', 'MP3_pipeline_load_pipeline', 'MP3_pipeline_DeleteModule'})
+    if ~strcmp(eventdata.Source.Tag, {'MP3_pipeline_Save_Module', 'MP3_pipeline_load_pipeline', 'MP3_pipeline_DeleteModule', 'MP3_pipeline_execute_button'})
         answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
         if strcmp(answer, 'No')
             return
@@ -2016,6 +2016,12 @@ function MP3_pipeline_execute_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+[hObject, eventdata, handles] = Update_MP3_database_After_pipeline_Crash(hObject, eventdata, handles);
+if handles.FlagExecutePipe % If the function above did something to the database, dont execute the rest of the function (pipeline execution).
+    return
+end
+
 % for now we clean all PSOM files  (old execution) in order to decrease
 % potential bugs
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'PSOM'], 'dir') == 7
@@ -2135,6 +2141,8 @@ for i=1:length(Names_Mod)
     %handles.MP3_pipeline_TmpDatabase = unique([handles.MP3_pipeline_TmpDatabase; Mod.OutputDatabase]);
 end
 
+
+
 %The files_out of the deleted jobs can be files_in for other jobs. So, if
 %the files_out of the deleted jobs exist in the database, we will change
 %the path of the relevant files_in from the Tmp folder to the Derived_data,
@@ -2247,6 +2255,17 @@ end
 %         return
 %     end
 % end
+
+
+% Store a database with all the output entries of the pipeline
+Output_Table = setdiff(handles.MP3_pipeline_TmpDatabase,handles.MP3_data.database);
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp/Table_out'], 'dir') ~= 7
+    mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp/Table_out']);
+end
+filename_table_out = [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp/Table_out/Table_out.mat'];
+save(filename_table_out,'Output_Table')
+
+
 
 
 % %% execute the pipeline
@@ -2453,6 +2472,12 @@ if update
     MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
 end
+
+rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, 'Table_out'], 's');
+
+
+
+
 
 
 function [hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles)
@@ -3851,3 +3876,71 @@ function Select_Number_Workers_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+function [hObject, eventdata, handles] = Update_MP3_database_After_pipeline_Crash(hObject, eventdata, handles)
+fname = [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, 'Table_out', filesep, 'Table_out.mat'];
+handles.FlagExecutePipe = 1;
+if ~exist(fname)
+    handles.FlagExecutePipe = 0;
+    return
+else
+    answer = questdlg('It seems that some files from a previous pipeline execution have not been added to your project database. Want to do it now?', ...
+	'Did your previous pipeline crashed?', ...
+	'Yes!','No','Cancel','Cancel');
+    if strcmp(answer, 'Yes!')
+        if isfield(handles, 'MP3_pipeline_pipeline_listbox') && ~isempty(handles.MP3_pipeline_pipeline_listbox.String)
+            answer2 = questdlg('This manipulation will erase your current pipeline. Do you want to save it before?', ...
+            'It''s now or never', ...
+            'Yes!','No','Cancel','Cancel');
+            if strcmp(answer2, 'Yes!')
+                MP3_pipeline_save_pipeline_Callback(hObject, eventdata, handles);
+            end
+        end
+    else
+        handles.FlagExecutePipe = 0;
+        return
+    end
+end
+load(fname)
+PreviousDB = handles.MP3_data.database;
+for i=1:size(Output_Table,1)
+    Entry = Output_Table(i,:);
+    filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
+    if ~exist(filename)
+        continue
+    end
+    switch char(Entry.Type)
+        case 'Scan'
+            movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
+            jsonfilename = strrep(filename, '.nii', '.json');
+            movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
+            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_Derived_data_path));
+        case 'ROI'
+            movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
+            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
+        case 'Cluster'
+            movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
+            matfilename = strrep(filename, '.nii', '.mat');
+            movefile(matfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
+            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
+    end
+    handles.MP3_data.database = [handles.MP3_data.database; Entry];
+    
+end
+
+if ~isempty(setdiff(sortrows(handles.MP3_data.database), sortrows(PreviousDB)))
+    handles2 = guidata(handles.MP3_data.MP3_GUI);
+    handles2.database = handles.MP3_data.database;
+    guidata(handles.MP3_data.MP3_GUI, handles2);
+
+    MP3('MP3_update_database_display', hObject, eventdata,handles.MP3_data)
+    MP3('MP3_menu_save_database_Callback', hObject, eventdata,handles.MP3_data)
+    rmdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, 'Table_out'], 's');
+    [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
+else
+    handles.FlagExecutePipe = 0;
+end
+
+
+
