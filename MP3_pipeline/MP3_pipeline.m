@@ -1574,7 +1574,7 @@ for i=1:length(handles.module_parameters_fields)
             ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
         elseif any(contains(handles.new_module.opt.table.Type{i}, 'check'))
             ActualValues{i} = char('');
-        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI'))
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI')) || any(contains(handles.new_module.opt.table.Type{i}, 'Cluster'))
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
             else
@@ -2410,7 +2410,9 @@ for i=1:length(Jobs)
                            [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
                            statusMat = 1;
                        elseif strcmp(char(outdb.Type), 'Cluster')
-                           [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           if exist(strrep(B{k},'.nii','.mat'), 'file')
+                               [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           end
                            statusJson = 1;
                        else
                            statusJson = 1;

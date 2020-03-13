@@ -41,7 +41,7 @@ if isempty(opt)
     user_parameter(:,4)   = {'   .Output filename extension','char','_Clipped','output_filename_ext','', '',''};
     user_parameter(:,5)   = {'   .Clip Min','numeric',0,'Clim_Min','', '',''};
     user_parameter(:,6)   = {'   .Clip Max','numeric',100,'Clim_Max','', '',''};
-    user_parameter(:,7)   = {'   .Replace by?','cell',{'NaN', '0'}, 'Remplace_by','','', 'Please select the clipping method: do you want clipped voxels replaced by NaN or 0 value?'};
+    user_parameter(:,7)   = {'   .Replace by?','cell',{'NaN', '0', 'MinMax'}, 'Remplace_by','','', 'Please select the clipping method: do you want clipped voxels replaced by NaN or 0 value?'};
 
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -113,10 +113,17 @@ info = niftiinfo(files_in.In1{1});
 [path, name, ext] = fileparts(files_in.In1{1});
 jsonfile = [path, '/', name, '.json'];
 J = ReadJson(jsonfile);
- 
-data(data<opt.Clim_Min) = str2double(opt.Remplace_by);
-data(data>opt.Clim_Max) = str2double(opt.Remplace_by);
 
+switch strcmp(opt.Remplace_by, 'MinMax')
+
+    case 1
+        data(data<opt.Clim_Min) = opt.Clim_Min;
+        data(data>opt.Clim_Max) = opt.Clim_Max;
+    case 0
+        data(data<opt.Clim_Min) = str2double(opt.Remplace_by);
+        data(data>opt.Clim_Max) = str2double(opt.Remplace_by);
+
+end
 info2 = info;
 info2.Filename = files_out.In1{1};
 info2.Filemoddate = char(datetime('now'));

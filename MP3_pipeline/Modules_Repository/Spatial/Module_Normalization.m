@@ -18,7 +18,8 @@ if isempty(opt)
     module_option(:,7)   = {'Table_out', table()};
    % module_option(:,8)   = {'Operation', 'Addition'};
     module_option(:,8)   = {'Output_filename_ext','_Norm'};
-    module_option(:,9)  = {'Value_of_normalization',1};
+    module_option(:,9)   = {'Value_of_normalization',1};
+    module_option(:,10)  = {'norm_type', 'Mean'};
 
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -36,10 +37,12 @@ if isempty(opt)
     user_parameter(:,2)   = {'Select the scan to normalize','1Scan','','',{'SequenceName'}, 'Mandatory',''};
  %   user_parameter(:,3)   = {'Select the operation you would like to apply','cell', {'Addition', 'Subtraction', 'Multiplication', 'Division', 'Percentage'},'Operation','', '',''};
     user_parameter(:,3)   = {'Select one ROI','1ROI','','',{'SequenceName'}, 'Mandatory',''};
-    user_parameter(:,4)   = {'   .Output filename extension','char','_Norm','Output_filename_ext','','',...
+    norm_options          = {'Mean','Sqrt of square sum'};
+    user_parameter(:,4)   = {'   .Normalize by','cell', norm_options, 'norm_type', '', '', {'Normalization to apply'}};  
+    user_parameter(:,5)   = {'   .Output filename extension','char','_Norm','Output_filename_ext','','',...
         {'Specify the string to be added to the first filename.'
         'Default filename extension is ''_Norm''.'}'};
-    user_parameter(:,5)   = {'   .Value of normalization','numeric',1,'Value_of_normalization','','',...
+    user_parameter(:,6)   = {'   .Value of normalization','numeric',1,'Value_of_normalization','','',...
         {'Specify the value used to normalize the scan'}'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -110,9 +113,14 @@ end
 %% code to perform the normalization of the scan by the ROI and using the value gave by the user
 ROI(ROI == 0) = NaN;
 tmp = scan.*ROI;
-scan = scan/nanmean(tmp(:));
-scan =  scan .* opt.Value_of_normalization;
-
+if strcmp(opt.norm_type, 'Mean')
+    scan = scan/nanmean(tmp(:));
+    scan =  scan .* opt.Value_of_normalization;
+elseif strcmp(opt.norm_type, 'Sqrt of square sum')
+    scan = scan./sqrt(sum(scan.^2,4));    
+else
+    error('Unknown mean normalization type :%s\n', opt.norm_type)
+end
 
 %%
 

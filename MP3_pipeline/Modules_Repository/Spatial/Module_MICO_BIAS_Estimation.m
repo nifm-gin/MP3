@@ -19,7 +19,7 @@ if isempty(opt)
     module_option(:,5)   = {'iterCM',2};
     module_option(:,6)   = {'iter_b',1};
     module_option(:,7)   = {'q',1.5};
-    module_option(:,8)   = {'th_bg',5};
+    module_option(:,8)   = {'th_bg',0};
     module_option(:,9)   = {'N_regions',3};
     module_option(:,10)   = {'tissueLabel','1 2 3'};
     module_option(:,11)   = {'output_filename_ext_Field','_BiasField'};
@@ -60,7 +60,7 @@ if isempty(opt)
     user_parameter(:,7)  = {'   .Fuzzifier','numeric','','q','','',...
         'Fuzzifier'};
     user_parameter(:,8)  = {'   .Threshold to remove background','numeric','','th_bg','','',...
-        'Threshold to remove background'};
+        'Threshold to remove background. My default the threshold = 0 --> no threashold. But you can increase this number such as 5 to remove background voxels'};
     user_parameter(:,9)  = {'   .Number of regions used to perform the segmentation','numeric','','N_regions','','',...
         'Number of regions used to perform the segmentation'};
     user_parameter(:,10)  = {'   .Labels of the resulting segmentation','char','','tissueLabel','','',...
@@ -183,7 +183,7 @@ for nn = 1:N_scan
     %hist = data.hdr.hist;
     Img=data.img;
     Img = double(Img);      
-    save temp_info.mat data;
+    save(strcat(opt.folder_out, filesep, 'temp_info.mat'), 'data');
     clear data;    
     
     [x1, x2, y1, y2, z1, z2] = cropImg(Img, th_bg);   %% crop image
@@ -218,7 +218,7 @@ for nn = 1:N_scan
     
     totaltime = 0;
     M_old = M; chg=10000;
-    save M_old M_old
+    save(strcat(opt.folder_out, filesep, 'M_old.mat'), 'M_old');
     clear M_old;
    
     C_old =C;
@@ -254,75 +254,62 @@ for nn = 1:N_scan
     end   
    
   
-    %[U, C]=sortMemC(M, C);  
-    U=maxMembership(M);
-    clear M;
-    Membership = zeros(DimX1, DimY1, DimZ1,N_region);    
-    Membership(x1:x2,y1:y2,z1:z2,:)=U;  
-    for k=1:N_region
-        PC3d(:,:,:)=PC3d(:,:,:)+tissueLabel(k)*Membership(:,:,:,k);
-    end
-    pc3d=make_nii(PC3d);
-    if strcmp(opt.Segmentation, 'Yes')
-        save_nii(pc3d,files_out.In3{nn});   % save the segmentation result
+    %[U, C]=sortMemC(M, C);
+    % save the segmentation result if needed
+    if strcmp(opt.Segmentation, 'Yes')    
+        U=maxMembership(M);
+        clear M;
+        Membership = zeros(DimX1, DimY1, DimZ1,N_region);
+        Membership(x1:x2,y1:y2,z1:z2,:)=U;
+        for k=1:N_region
+            PC3d(:,:,:)=PC3d(:,:,:)+tissueLabel(k)*Membership(:,:,:,k);
+        end
+        % save the nii file
+        info = niftiinfo(files_in.In1{1}); % use the head of files_in.In1
+        info.Filename = files_out.In3{nn};
+        info.Filemoddate = char(datetime('now'));
+        niftiwrite(single(PC3d), files_out.In3{nn},  info)
+        
+       % save_nii(pc3d,files_out.In3{nn});
     end
     img_bc = zeros(DimX1, DimY1, DimZ1);
     img_bc(x1:x2,y1:y2,z1:z2)=Img3D./b;
     B_field = zeros(size(img_bc));
     B_field(x1:x2, y1:y2, z1:z2) = b;
-    N_initial = niftiinfo(str);
-    TransfMat = N_initial.Transform.T;
-    BC = make_nii(B_field);
-%     BC.hdr.hist.quatern_b = hist.quatern_b;
-%     BC.hdr.hist.quatern_c = hist.quatern_c;
-%     BC.hdr.hist.quatern_d = hist.quatern_d;
-%     BC.hdr.hist.qoffset_x = hist.qoffset_x;
-%     BC.hdr.hist.qoffset_y = hist.qoffset_y;
-%     BC.hdr.hist.qoffset_z = hist.qoffset_z;
-%     BC.hdr.hist.srow_x = hist.srow_x;
-%     BC.hdr.hist.srow_y = hist.srow_y;
-%     BC.hdr.hist.srow_z = hist.srow_z;
-    save_nii(BC,files_out.In1{nn});
-    N_bc = niftiinfo(files_out.In1{nn});
-    N_bc.Transform.T = TransfMat;
-    niftiwrite(niftiread(files_out.In1{nn}), files_out.In1{nn},N_bc);
+   
+    % save the B_field nifti file
+    info = niftiinfo(files_in.In1{1});
+    info.Filename = files_out.In1{1};
+    info.Filemoddate = char(datetime('now'));
+    niftiwrite(single(B_field), files_out.In1{nn},  info)
+    
+    % save the B_field Json file
     %% Json Processing
     [path, name, ~] = fileparts(files_in.In1{nn});
     jsonfile = [path, '/', name, '.json'];
     J = ReadJson(jsonfile);
-
     J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
 
     [path, name, ~] = fileparts(files_out.In1{nn});
     jsonfile = [path, '/', name, '.json'];
     WriteJson(J, jsonfile)
-    %CreateJsonFromNifti(files_out.In1{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Field])), opt.Table_in.Tp(nn))
+
     clear b Img3D;
-    Img_bc=make_nii(img_bc);
-%     Img_bc.hdr.hist.quatern_b = hist.quatern_b;
-%     Img_bc.hdr.hist.quatern_c = hist.quatern_c;
-%     Img_bc.hdr.hist.quatern_d = hist.quatern_d;
-%     Img_bc.hdr.hist.qoffset_x = hist.qoffset_x;
-%     Img_bc.hdr.hist.qoffset_y = hist.qoffset_y;
-%     Img_bc.hdr.hist.qoffset_z = hist.qoffset_z;
-%     Img_bc.hdr.hist.srow_x = hist.srow_x;
-%     Img_bc.hdr.hist.srow_y = hist.srow_y;
-%     Img_bc.hdr.hist.srow_z = hist.srow_z;
-    save_nii(Img_bc,files_out.In2{nn});  % save bias field corrected image
-    N_Ibc = niftiinfo(files_out.In2{nn});
-    N_Ibc.Transform.T = TransfMat;
-    niftiwrite(niftiread(files_out.In2{nn}), files_out.In2{nn},N_Ibc);
+    
+     % save the Image_corrected nifti file
+    info.Filename = files_out.In1{1};
+    info.Filemoddate = char(datetime('now'));
+    niftiwrite(single(img_bc), files_out.In2{nn},  info)
+    
+    % save the Image_corrected Json file
     %% Json Processing
     [path, name, ~] = fileparts(files_in.In1{nn});
     jsonfile = [path, '/', name, '.json'];
     J = ReadJson(jsonfile);
-
     J = KeepModuleHistory(J, struct('files_in', files_in, 'files_out', files_out, 'opt', opt, 'ExecutionDate', datestr(datetime('now'))), mfilename); 
-
     [path, name, ~] = fileparts(files_out.In2{nn});
     jsonfile = [path, '/', name, '.json'];
     WriteJson(J, jsonfile)
-    %CreateJsonFromNifti(files_out.In2{nn}, categorical(cellstr([char(opt.Table_in.SequenceName(nn)), opt.output_filename_ext_Scan])), opt.Table_in.Tp(nn))
     
     clear Membership Bias U image_bc;
     
@@ -330,10 +317,10 @@ for nn = 1:N_scan
         filename = [Fold, 'basis_',num2str(basis_index),'.mat'];
         delete(filename);
     end  
-    delete M_old.mat temp_info.mat;
+    delete(strcat(opt.folder_out, filesep, 'M_old.mat'));
+    delete(strcat(opt.folder_out, filesep, 'temp_info.mat'));
     
 end
-rmdir(Fold);
 
 
 % sort the constants c1, c2, ..., and change the order of the membership

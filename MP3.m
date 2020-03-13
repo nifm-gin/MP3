@@ -5056,6 +5056,9 @@ for i=1:size(database_to_import,1)
             else
                 infolder = [dir, filesep, 'Derived_data', filesep];
                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
+                if ~exist(outfolder, 'dir')
+                    mkdir(outfolder);
+                end
             end
             if ~exist(outfolder, 'dir')
                 mkdir(outfolder);
