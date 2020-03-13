@@ -121,7 +121,8 @@ switch Method
 
                         Yestim = nansum(cat(3,Yestim,Yestim_in),3);
                         Cov = nansum(cat(4,Cov,Cov_in),4);
-                        Pik = nansum(cat(3,Pik,Pik_in),3);
+                        %Pik = nansum(cat(3,Pik,Pik_in),3);
+                        Pik = [];
                     end
                 end
                 warning('on')

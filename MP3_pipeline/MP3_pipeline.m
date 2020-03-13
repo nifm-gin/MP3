@@ -3419,31 +3419,36 @@ end
 
 
 if ~isempty(handles.MP3_pipeline_ParamsModules)
-    prompt = 'Name of the pipeline ?';
-    title = 'Saving';
-    dims = [1 35];
-    definput = {'MyPipeline'};
-    answer1 = inputdlg(prompt,title,dims,definput);
     listing = what([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Saved_Pipelines']);
-    if isempty(answer1)
+    pipeline_listing = [listing.mat', 'Other']';
+    % Enter the ROI's name
+    [pipeline_number,ok] = listdlg('Name', 'Name of the pipeline ?', 'SelectionMode', 'single', 'ListString',  cellstr(pipeline_listing),'ListSize', [200 150],...
+        'PromptString', 'Select the name of the pipeline');
+    if ok == 0
         return
     end
-    FinalAnswer = answer1{1};
+    
+    if strcmp('Other', char(pipeline_listing(pipeline_number))) == 1
+        FinalAnswer = inputdlg('Name of the new pipeline ', 'Question?', 1, {''});
+        if isempty(FinalAnswer)
+            return
+        end
+        FinalAnswer = {[FinalAnswer{:}, '.mat']};
+    else
+        FinalAnswer = cellstr(pipeline_listing(pipeline_number));
+    end
+    FinalAnswer = FinalAnswer{1};
+    
+    % evaluate if the pipeline name exist already
+    % if yes there are 2 options, overwrite or cancel
     Flag = true;
-    while any(contains([FinalAnswer, '.mat'], listing.mat)) && Flag
-        quest = 'This name is already used, do you want to overwrite it ?';
+    while any(contains(FinalAnswer, listing.mat)) && Flag
+        quest = [FinalAnswer, ' is already used, do you want to overwrite it ?'];
         answer2 = questdlg(quest);
         switch answer2
             case 'Yes'
-                FinalAnswer = answer1{1};
                 Flag = false;
-            case 'No'
-                prompt = 'Name of the pipeline ?';
-                title = 'Saving';
-                dims = [1 35];
-                answer3 = inputdlg(prompt,title,dims);
-                FinalAnswer = answer3{1};
-            case 'Cancel'
+            case {'Cancel', 'No'}
                 return
         end
     end
