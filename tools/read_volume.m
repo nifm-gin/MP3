@@ -110,6 +110,7 @@ switch view_mode
 end
 
 
+%info = niftiinfo_mod(Vi(1).fname);
 info = niftiinfo(Vi(1).fname);
 Y = cast(Y, info.Datatype);
 
