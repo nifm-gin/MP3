@@ -34,11 +34,10 @@ switch length(size(Sequences))
         error('Invalid Sequences argument size')
 end
 
-
 f = 1;
 switch Method
     
-    case 'ClassicMRF'
+    case 'DBM'
         for s = 1:slices
             %Estimation of parameters
 %             Estimation.GridSearch.Y(:,:,:,s) = reshape(EstimateParametersFromGrid(reshape(Sequences(:,:,:,s),s1*s2,t), abs(Dico{f}.MRSignals), Dico{f}.Parameters.Par,0, flagNorm), s1,s2, []);
@@ -53,7 +52,7 @@ switch Method
             end
         end
         
-    case 'RegressionMRF'
+    case 'DBL'
         
         if ~any(strcmp(fieldnames(Parameters),'theta'))
             

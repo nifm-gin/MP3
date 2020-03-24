@@ -1,4 +1,4 @@
-function [files_in,files_out,opt] = Module_MRF_Rest_1D(files_in,files_out,opt)
+function [files_in,files_out,opt] = Module_vMRF_Rest_1D(files_in,files_out,opt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization and syntax checks %%
@@ -12,10 +12,10 @@ if isempty(opt)
     % --> module_option(2,:) = defaults values
     module_option(:,1)   = {'dictionary_folder_filename',  'Dictionary Folder'};
     module_option(:,2)   = {'combUsed', 'Post/Pre'};
-    module_option(:,3)   = {'indivNorm', 'Yes'};
+    module_option(:,3)   = {'indivNorm', 'No'};
     module_option(:,4)   = {'finalNorm', 'Yes'};
     module_option(:,5)   = {'prefix',           'MRF_Rest_'};
-    module_option(:,6)   = {'method',           'ClassicMRF'};
+    module_option(:,6)   = {'method',           'DBM'};
     module_option(:,7)   = {'filtered',         'No'};
     
     module_option(:,8)   = {'RefInput',         1};
@@ -32,6 +32,8 @@ if isempty(opt)
     module_option(:,19)  = {'RelErr', 0.05};
     module_option(:,20)   = {'RestType', 'T2'};
     module_option(:,21)  = {'mkScoreMap', 'Yes'};
+    module_option(:,22)  = {'removed',          0};
+    module_option(:,23)  = {'augment',          60};
     opt.Module_settings  = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
     
@@ -46,8 +48,13 @@ if isempty(opt)
     % will be display to help the user)
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-        'The MRF method is based on the paper : Ma, Dan, et al. "Magnetic resonance fingerprinting." Nature (2013)'
-        'The regression method is based on the paper : Boux, Fabien, et al. [work in progress]'
+        'This module allows to perform vascular MRF with different signals (MGEFIDSE, MSME), combined as different patterns (ratio or concatenations)'
+        'A quantitative map of either ADC or T2 is fed to the module to help the dictionary matching'
+        ''
+        'The dictionary-based matching (DBM) method is based on the paper: Ma, Dan, et al. "Magnetic resonance fingerprinting." Nature (2013)'
+        ['This specific vascular MRF method is based on : Christen T. et al. "MR vascular fingerprinting: ' ...
+            'A new approach to compute cerebral blood volume, mean vessel radius, and oxygenation maps in the human brain" NeuroImage (2014)']
+        'The dictionary-based learning (DBL) method is based on the paper: Boux, Fabien, et al. [work in progress]'
         ''
         'Prerequisite:'
         '      - Put your dictionary files (pre and post simulated scans and/or MSME) in the ''data/dictionaries'' folder'
@@ -62,63 +69,70 @@ if isempty(opt)
     user_parameter(:,4)   = {'Select the MSME scan','1Scan','','',{'SequenceName'}, '',''};
     user_parameter(:,5)   = {'Select the sequence combination to use', 'cell', {'Post/Pre','Pre-Post','MSME-Post/Pre','MSME-Pre-Post'}, 'combUsed', '','Mandatory', 'Combination of signals to use'};
     user_parameter(:,6)   = {'Normalize each signals', 'cell', {'Yes', 'No'}, 'indivNorm', '','Optional', 'Do you want to normalize (N2) each signal before concatenation? NB: MGEFIDSE are not normalized in case of Ratio'};
-    user_parameter(:,7)   = {'Normalize final signal', 'cell', {'Yes', 'No'}, 'finalNorm', '','Optional', 'Do you want to normalize (N2) the final concatenation before MRF?'};
+    user_parameter(:,7)   = {'Normalize final signal', 'cell', {'Yes', 'No'}, 'finalNorm', '','Optional', 'Do you want to normalize (N2) the final combination before MRF?'};
     
     s               = split(mfilename('fullpath'),'MP3_pipeline',1);
     folder_files	= dir(fullfile(s{1}, 'data/dictionaries/'));
     folder_files    = folder_files([folder_files.isdir]);
     opt.Module_settings.folder = fullfile(s{1}, 'data/dictionaries/');
     if isempty(folder_files), folder_files(1).name = ' '; end
-    user_parameter(:,8)   = {'   .Dictionary folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
+    user_parameter(:,8)   = {'Dictionary folder','cell', {folder_files.name}, 'dictionary_folder_filename','','Mandatory',...
         {'Select the folder containing dico files (.json), ratio dico file (.mat) and/or model file (.mat)'}};
     
-    user_parameter(:,9)   = {'   .Prefix','char', '', 'prefix', '', '',...
+    user_parameter(:,9)   = {'Prefix','char', '', 'prefix', '', '',...
         {'Choose a prefix for your output maps'}};
-    user_parameter(:,17)   = {'   .Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
-        {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
-    user_parameter(:,10)   = {'   .Parameters','check', ...
+    user_parameter(:,10)   = {'Parameters','check', ...
         {'Vf', 'VSI', 'R', 'SO2', 'DH2O', 'B0theta', 'khi', 'Hct', 'T2'},...
         'Params', '', '',...
         {'Select the parameters considered in the model (default ''Vf'')'
         }'};
-    user_parameter(:,11)   = {'   .Method','cell', {'ClassicMRF', 'RegressionMRF'}, 'method', '', '',...
+    user_parameter(:,11)   = {'Remove last echoes?','numeric','', 'removed', '', '',...
+        {'WARNING: Only applies to MGEFIDSE signals'}};
+    user_parameter(:,12)   = {'Smooth?','cell', {'Yes','No'}, 'filtered', '', '',...
+        {'Select ''Yes'' to smooth the signals  (recommanded ''No'')'}};
+    user_parameter(:,13)   = {'Make ScoreMap?','cell', {'Yes','No'}, 'mkScoreMap', '', '',...
+        {'Select ''Yes'' add score map in outputs  (recommanded ''Yes'')'; 'WARNING: does not work with DBL'}'};
+    user_parameter(:,14)   = {'Select the scans to use for restriction','1Scan','','',{'SequenceName'}, '','A T2 map should be in ms, ADC map in mm²/s'};
+    user_parameter(:,15)   = {'Indicate the type of restriction','cell', {'T2', 'DH2O'}, 'RestType', '', '',...
+        {}'};
+    user_parameter(:,16)   = {'Relative error tolerated on prior input value','numeric','','RelErr','','',''};
+    user_parameter(:,17)   = {'Method','cell', {'DBM', 'DBL'}, 'method', '', '',...
         { 'Choose:'
-        '	- ''ClassicMRF'' to use the Dan Ma method'
-        '	- ''RegressionMRF'' to use the regression method'
+        '	- ''DBM'' to use the Dan Ma method'
+        '	- ''DBL'' to use the regression method'
         }'};
-    user_parameter(:,12)   = {'   .Model settings (if the regression method is chosen)','Text','','','','',...
+    user_parameter(:,18)   = {'   .Model settings (if the DBL method is chosen)','Text','','','','',...
         {'Recommanded:'
         'K = 50'
         'Lw = 0'
-        'cstr = ''d''.'
+        'cstr on Sigma = ''d*'''
+        'cstr on Gamma = '' '''
+        'Dictionary augmentation = 60'
         }'};
-    user_parameter(:,13)   = {'       .Number of regions','numeric','','K','','',...
+    user_parameter(:,19)   = {'       .Number of regions','numeric','','K','','',...
         {'Recommanded: K = 50'
         'If K is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
         }'};
-    user_parameter(:,14)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
+    user_parameter(:,20)  = {'       .Number of additional unsupervised parameter','numeric','','Lw','','',...
         {'Recommanded: Kw = 0'
         'If Lw is -1, an automatic tuning of the parameter is performed using BIC (time-consuming)'
         }'};
-    user_parameter(:,15)  = {'       .Model constraint on Sigma','cell',{'i*','i','d*','d',' '},'cstrS','','',...
+    user_parameter(:,21)  = {'       .Model constraint on Sigma','cell',{'i*','i','d*','d',' '},'cstrS','','',...
         {'''d'' = diagonal'
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
-    user_parameter(:,16)  = {'       .Model constraint on Gamma','cell',{'i*','i','d*','d',' '},'cstrG','','',...
+    user_parameter(:,22)  = {'       .Model constraint on Gamma','cell',{'i*','i','d*','d',' '},'cstrG','','',...
         {'''d'' = diagonal'
         '''i'' = isotropic'
         '''*'' = equal for all K regions'
         }'};
-    user_parameter(:,17)   = {'Select the scans to use for restriction','1Scan','','',{'SequenceName'}, '',''};
-    user_parameter(:,18)   = {'Indicate the type of restriction','cell', {'T2', 'DH2O'}, 'RestType', '', '',...
-        { 'Choose:'
-        '	- ''ClassicMRF'' to use the Dan Ma method'
-        '	- ''RegressionMRF'' to use the regression method'
-        }'};
-    user_parameter(:,19)   = {'Relative error tolerated on prior input value','numeric','','RelErr','','',''};
-    user_parameter(:,20)   = {'Make ScoreMap?','cell', {'Yes','No'}, 'mkScoreMap', '', '',...
-        {'Select ''Yes'' add score map in outputs  (recommanded ''Yes'')'}};
+    user_parameter(:,23)   = {'       .Dictionary augmentation?','numeric','', 'augment', '', '',...
+        {'Recommanded: = 60'
+         'This value represents the signal-to-noise ratio (SNR) between dictionary signals and noise added on these signals'
+         '0 and Inf values lead to no augmentation by noise addition'
+         }};    
+    
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)', 'VariableNames', VariableNames);
     %%
@@ -151,7 +165,7 @@ if isempty(files_out)
         files_out.In1{i} = [char(opt.Table_out.Path(i)), char(opt.Table_out.Filename(i)) '.nii'];
     end
     
-    if strcmp(opt.method,'RegressionMRF')
+    if strcmp(opt.method,'DBL')
         nb = i;
         
         for i = 1:numel(opt.Params)
@@ -225,11 +239,39 @@ if contains(opt.combUsed, 'MSME')
         opt.dictionary_MSME_filename    = opt.dictionary_MSME_filename.name;
     end
 end
-dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
-model_filename  = [opt.dictionary_folder_filename filesep 'MODEL.mat'];
 
+% Name the model using a random ID and check if this model already exist
+if strcmp(opt.method, 'DBL')
+    model_filename = [opt.dictionary_folder_filename filesep 'MODEL_' num2str(10^5+randi(10^6-10^5,1)) '.mat'];
 
-if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || strcmp(opt.method, 'ClassicMRF')
+    list_models = d(contains({d.name}, 'MODEL_'));
+    flag_model_exist = exist(model_filename,'file');
+    flag_valid = false(size(list_models));
+    for i = 1:length(list_models)
+
+        load([opt.dictionary_folder_filename filesep list_models(i).name],'Parameters')
+        
+        try
+            flag_valid(i) = strcmp(opt.cstrG, Parameters.cstr.Gammat);
+            flag_valid(i) = flag_valid(i) && strcmp(opt.cstrS, Parameters.cstr.Sigma);
+            flag_valid(i) = flag_valid(i) && opt.K == Parameters.K;
+            flag_valid(i) = flag_valid(i) && opt.Lw == Parameters.Lw;
+            flag_valid(i) = flag_valid(i) && opt.augment == Parameters.data_augmentation;
+        catch
+            flag_valid(i) = 0;
+        end
+    end
+    flag_model_exist = flag_model_exist || any(flag_valid);
+    if flag_model_exist
+        l = find(flag_valid == true);
+        model_filename = [opt.dictionary_folder_filename filesep list_models(l(1)).name];
+    end
+end
+
+if (strcmp(opt.method, 'DBL') && ~exist(model_filename,'file')) || strcmp(opt.method, 'DBM')
+    
+    % Dictionary filename
+    dico_filename   = [opt.dictionary_folder_filename filesep 'DICO.mat'];
     
     % If, dico exists, load it, else, create it and save it
     if exist(dico_filename,'file')
@@ -237,48 +279,50 @@ if (strcmp(opt.method, 'RegressionMRF') && ~exist(model_filename,'file')) || str
     else
         switch opt.combUsed
             case {'Post/Pre', 'Pre-Post'}
-                %                 Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                %                 Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
                 
-                Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
-                    [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
-                
-                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
-                Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
-                    [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
+%                 Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
+%                     [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
+%                 
+%                 Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+%                 Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
+%                     [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
                 
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.Tacq               = Pre.Sequence.Tacq;
-                Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par); % Parameters used to simulate X signals
+                Dico.Parameters.Par     = Pre.Parameters.Par; % Parameters used to simulate X signals
+%                 Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par);
                 Dico.Parameters.Labels  = Pre.Parameters.Labels;
                 clear Pre Post
                 save(dico_filename,'Dico')
             case {'MSME-Post/Pre','MSME-Pre-Post'}
-                %                 Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                %                 Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
+                Pre     = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+                Post    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_post_filename]);
                 
-                Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
-                    [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
+%                 Pre     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 Pre.MRSignals = reshape(Pre.MRSignals.x_ArrayData_(:,1) + 1i*Pre.MRSignals.x_ArrayData_(:,2),...
+%                     [Pre.MRSignals.x_ArraySize_(1), Pre.MRSignals.x_ArraySize_(2)]);
+%                 
+%                 Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
+%                     [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
                 
-                Post     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                Post.MRSignals = reshape(Post.MRSignals.x_ArrayData_(:,1) + 1i*Post.MRSignals.x_ArrayData_(:,2),...
-                    [Post.MRSignals.x_ArraySize_(1), Post.MRSignals.x_ArraySize_(2)]);
+                MSME    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_MSME_filename]);
                 
-                %                 MSME    = loadjson([opt.dictionary_folder_filename filesep opt.dictionary_MSME_filename]);
-                
-                MSME     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
-                MSME.MRSignals = reshape(MSME.MRSignals.x_ArrayData_(:,1) + 1i*MSME.MRSignals.x_ArrayData_(:,2),...
-                    [MSME.MRSignals.x_ArraySize_(1), MSME.MRSignals.x_ArraySize_(2)]);
+%                 MSME     = ReadJson([opt.dictionary_folder_filename filesep opt.dictionary_pre_filename]);
+%                 MSME.MRSignals = reshape(MSME.MRSignals.x_ArrayData_(:,1) + 1i*MSME.MRSignals.x_ArrayData_(:,2),...
+%                     [MSME.MRSignals.x_ArraySize_(1), MSME.MRSignals.x_ArraySize_(2)]);
                 
                 Dico.MRSignals{1}       = abs(Pre.MRSignals);
                 Dico.MRSignals{2}       = abs(Post.MRSignals);
                 Dico.MRSignals{3}       = abs(MSME.MRSignals);
                 Dico.Tacq{1}            = Pre.Sequence.Tacq;
                 Dico.Tacq{2}            = MSME.Sequence.Tacq;
-                Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par); % Parameters used to simulate X signals
+                Dico.Parameters.Par     = Pre.Parameters.Par; % Parameters used to simulate X signals
+%                 Dico.Parameters.Par     = ReplaceNaNCell(Pre.Parameters.Par);
                 Dico.Parameters.Labels  = Pre.Parameters.Labels;
                 clear Pre Post MSME
                 save(dico_filename,'Dico')
@@ -308,10 +352,21 @@ switch opt.combUsed
                         Xobs(x,y,z,:) = signal(2:end-1);
                     end; end; end
         end
+        
+        % If necessary, remove echoes
+        if opt.removed > 0
+            clear tmp
+            for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
+                tmp(x,y,z,:) = Xobs(x,y,z,1:end-opt.removed);
+            end; end; end
+            Xobs    = tmp;
+            Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
+        end
+        
         Xobs        = permute(Xobs, [1 2 4 3]);
         
         % Reformat dico (not needed if MODEL is already computed)
-        if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+        if strcmp(opt.method, 'DBM') || ~exist(model_filename,'file')
             tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             if size(Xobs,3) ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
@@ -329,17 +384,7 @@ switch opt.combUsed
             Dico.Parameters.Par = Dico.Parameters.Par(nn,:);
             %             Tmp{1}      = Dico;
         end
-        
-        %         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
-        %             for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
-        %                 XobsPre(x,y,z,:) = XobsPre(x,y,z,:)./(sqrt(sum(XobsPre(x,y,z,:).^2)));
-        %                 XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
-        %             end; end; end
-        %         end
-        %         timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
-        %         Xobs            = cat(timeDim, XobsPre, XobsPost);
-        %         Xobs            = permute(Xobs, [1 2 4 3]);
-        
+               
     case 'Pre-Post'
         XobsPre             = niftiread(files_in.In1{1});
         XobsPost            = niftiread(files_in.In2{1});
@@ -368,13 +413,26 @@ switch opt.combUsed
                         XobsPost(x,y,z,:) = XobsPost(x,y,z,:)./(sqrt(sum(XobsPost(x,y,z,:).^2)));
                     end; end; end
         end
+        
+        % If necessary, remove echoes
+        if opt.removed > 0
+            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+                clear tmpPre tmpPost
+                tmpPre(x,y,z,:) = XobsPre(x,y,z,1:end-opt.removed);
+                tmpPost(x,y,z,:) = XobsPost(x,y,z,1:end-opt.removed);
+            end; end; end
+            XobsPre    = tmpPre;
+            XobsPost    = tmpPost;
+            Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
+        end
+        
         timeDim         = 4;%find(size(XobsPre)==length(Obs.EchoTime.value));
         Xobs            = cat(timeDim, XobsPre, XobsPost);
         Xobs            = permute(Xobs, [1 2 4 3]);
         XobsPre         = permute(XobsPre, [1 2 4 3]);
         
         % Reformat dico (not needed if MODEL is already computed)
-        if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+        if strcmp(opt.method, 'DBM') || ~exist(model_filename,'file')
             tmpPre = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             tmpPost = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             if size(XobsPre,3) ~= size(Dico.MRSignals{1},2)
@@ -446,13 +504,28 @@ switch opt.combUsed
                         XobsMSME(x,y,z,:) = XobsMSME(x,y,z,:)./(sqrt(sum(XobsMSME(x,y,z,:).^2)));
                     end; end; end
         end
+        
+        % If necessary, remove echoes
+        if opt.removed > 0
+            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+                clear tmpPre tmpPost
+                tmpPre(x,y,z,:) = XobsPre(x,y,z,1:end-opt.removed);
+                tmpPost(x,y,z,:) = XobsPost(x,y,z,1:end-opt.removed);
+%                 tmpMSME(x,y,z,:) = XobsMSME(x,y,z,1:end-opt.removed);
+            end; end; end
+            XobsPre     = tmpPre;
+            XobsPost    = tmpPost;
+%             XobsMSME    = tmpMSME;
+            Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
+        end
+        
         timeDim         = find(size(XobsPre)==length(Obs.EchoTime.value));
         Xobs            = cat(timeDim, XobsMSME, XobsPre, XobsPost);
         Xobs            = permute(Xobs, [1 2 4 3]);
         XobsPre         = permute(XobsPre, [1 2 4 3]);
         
         % Reformat dico (not needed if MODEL is already computed)
-        if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+        if strcmp(opt.method, 'DBM') || ~exist(model_filename,'file')
             tmpPre = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             tmpPost = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
             
@@ -503,20 +576,32 @@ switch opt.combUsed
         end
         
         if strcmp(opt.indivNorm, 'Yes') % Normalize nifti signals
-            for x = 1:size(XobsPre,1); for y = 1:size(XobsPre,2); for z = 1:size(XobsPre,3)
+            for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
                         XobsMSME(x,y,z,:) = XobsMSME(x,y,z,:)./(sqrt(sum(XobsMSME(x,y,z,:).^2)));
                     end; end; end
         end
+        
+         % If necessary, remove echoes
+        if opt.removed > 0
+            clear tmp
+            for x = 1:size(Xobs,1); for y = 1:size(Xobs,2); for z = 1:size(Xobs,3)
+                tmp(x,y,z,:) = Xobs(x,y,z,1:end-opt.removed);
+            end; end; end
+            Xobs    = tmp;
+            Obs.EchoTime.value = Obs.EchoTime.value(1:end-opt.removed);
+        end
+        
         timeDim         = find(size(Xobs)==length(Obs.EchoTime.value));
-        XobsRatio       = Xobs; % create copy for dimension
+        sizeLastDim     = size(Xobs,length(size(XobsRatio)));
+%         XobsRatio       = Xobs; % create copy for dimension
         Xobs            = cat(timeDim, XobsMSME, Xobs);
         Xobs            = permute(Xobs, [1 2 4 3]);
         
         
         % Reformat dico (not needed if MODEL is already computed)
-        if strcmp(opt.method, 'ClassicMRF') || ~exist(model_filename,'file')
+        if strcmp(opt.method, 'DBM') || ~exist(model_filename,'file')
             tmp = nan(size(Dico.MRSignals{1},1), length(Obs.EchoTime.value'));
-            if size(XobsPre,length(size(XobsRatio))) ~= size(Dico.MRSignals{1},2)
+            if sizeLastDim ~= size(Dico.MRSignals{1},2)
                 warning('Sizes of scans and dictionary MR signals are differents: dictionary MR signals reshaped')
                 for i = 1:size(Dico.MRSignals{1},1)
                     tmp(i,:) = interp1(Dico.Tacq(1:size(Dico.MRSignals{1},2)), Dico.MRSignals{2}(i,:)./Dico.MRSignals{1}(i,:), Obs.EchoTime.value'*1e-3);
@@ -562,16 +647,14 @@ end
 % for i =1:numel(inMaps)
 %     if inMaps(i)
 %% Reduce the number of search
-colNb           = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), inPar));
+colNb               = find(contains(cellfun(@char, Dico.Parameters.Labels, 'UniformOutput', 0), inPar));
 %inNumber        = sprintf('In%i', 4);
-MapPath         = files_in.In4;
-RestMap         = niftiread(MapPath{1});
-RestMap         = round(RestMap); % round T2 values to reduce the amount of restrictions to perform
-Values          = unique(RestMap); % get unique values
+MapPath             = files_in.In4;
+RestMap             = niftiread(MapPath{1});
+RestMap             = round(RestMap); % round T2 values to reduce the amount of restrictions to perform
+Values              = unique(RestMap); % get unique values
 minDicoVal          = min(Dico.Parameters.Par(:,colNb))*Fact; % min of the dico
 maxDicoVal          = max(Dico.Parameters.Par(:,colNb))*Fact; % max of the dico
-%         Values          = Values(minDicoVal <= Values);
-%         Values          = Values(Values <= maxDicoVal);
 Values(Values*(1+opt.RelErr) < minDicoVal) = nan;
 Values(Values*(1-opt.RelErr) > maxDicoVal) = nan;
 if nnz(isnan(Values))
@@ -587,14 +670,15 @@ for v=1:numel(Values)
     end
     % if not nan, get coordinates of corresponding voxels
     [row, col, sl] = ind2sub(size(RestMap), find(RestMap == Values(v))); % Get coordinates of voxels considered at this iteration
-    
+
     % remove dico entries out of tolerated range
     toRemoveInf     = Dico.Parameters.Par(:,colNb)*Fact < Values(v)*(1-opt.RelErr);
     toRemoveSup     = Dico.Parameters.Par(:,colNb)*Fact > Values(v)*(1+opt.RelErr);
     toKeep          = ~(toRemoveInf + toRemoveSup);
     
-    if isempty(toKeep)
-        warning('Value %i could not be evaluated as restricted dico is empty\n', Values(v))
+    if nnz(toKeep) == 0
+        warning('Value %i could not be evaluated as restricted dico is empty, %i voxels concerned\n', Values(v), numel(row))
+        continue
     end
     
     % Copying the restricted dico
@@ -602,17 +686,18 @@ for v=1:numel(Values)
     Tmp{1}.Parameters.Par = Dico.Parameters.Par(toKeep, :);
     Tmp{1}.Parameters.Labels = Dico.Parameters.Labels;
     
+    localXobs = zeros(numel(row), size(Xobs, 3));
     for k=1:numel(row)
         localXobs(k,:) = Xobs(row(k), col(k), :, sl(k)); % Keep only the corresponding voxels in the observation
     end
     %% Compute MRF/regression
     switch opt.method
-        case 'ClassicMRF'
+        case 'DBM'
             % TODO: find something nicer than this permute trick
             Estimation  = AnalyzeMRImages_Chunk(localXobs,Tmp,opt.method, [], [], [], opt.finalNorm);
             Map.Y       = permute(Estimation.GridSearch.Y, [1 2 4 3]);
             
-        case 'RegressionMRF'
+        case 'DBL'
             %Compute the learing only one time per dictionar
             if exist(model_filename,'file')
                 load(model_filename,'Parameters','labels');
@@ -664,28 +749,28 @@ for v=1:numel(Values)
                 case {'Vf', 'SO2'} %convert to percent
                     for j = 1:numel(row)
                         MapStruct{count}(row(j), col(j), sl(j))     = 100*Map.Y(j,:,:,k);
-                        if strcmp(opt.method, 'RegressionMRF')
+                        if strcmp(opt.method, 'DBL')
                             StdStruct{count}(row(j), col(j), sl(j)) = 100*Map.Std(j,:,:,k);
                         end
                     end
                 case {'VSI', 'R'} % convert m to µm
                     for j = 1:numel(row)
                         MapStruct{count}(row(j), col(j), sl(j))     = 1e6*Map.Y(j,:,:,k);
-                        if strcmp(opt.method, 'RegressionMRF')
+                        if strcmp(opt.method, 'DBL')
                             StdStruct{count}(row(j), col(j), sl(j))	= 1e6*Map.Std(j,:,:,k);
                         end
                     end
                 case 'T2' % convert s to ms
                     for j = 1:numel(row)
                         MapStruct{count}(row(j), col(j), sl(j))     = 1e3*Map.Y(j,:,:,k);
-                        if strcmp(opt.method, 'RegressionMRF')
+                        if strcmp(opt.method, 'DBL')
                             StdStruct{count}(row(j), col(j), sl(j))	= 1e6*Map.Std(j,:,:,k);
                         end
                     end
                 otherwise
                     for j = 1:numel(row)
                         MapStruct{count}(row(j), col(j), sl(j)) 	= Map.Y(j,:,:,k);
-                        if strcmp(opt.method, 'RegressionMRF')
+                        if strcmp(opt.method, 'DBL')
                             StdStruct{count}(row(j), col(j), sl(j)) = 100*Map.Std(j,:,:,k);
                         end
                     end
@@ -747,7 +832,7 @@ for i = 1:length(files_out.In1)
             niftiwrite(MapStruct{j}, files_out.In1{i}, info);
             
             
-            if strcmp(opt.method, 'RegressionMRF')
+            if strcmp(opt.method, 'DBL')
                 [path, name, ~] = fileparts(files_out.In2{i});
                 WriteJson(J, [path, '/', name, '.json'])
                 
