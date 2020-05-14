@@ -42,7 +42,7 @@ if size(Xgrid,1) > 300000
         %keep best result for this chunk
 %         [localBest, localIdx] = max(score, [], 2);
         [localBest, localIdx] = max(Xobs*Xgrid(i*chunk +1 : end,:)', [], 2);
-        idx(best<localBest) = localIdx(best<localBest)+(I-1)*chunk;
+        idx(best<localBest) = localIdx(best<localBest)+(I)*chunk;
         best(best<localBest)=localBest(best<localBest);
         
     end
