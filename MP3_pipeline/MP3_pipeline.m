@@ -22,7 +22,7 @@ function varargout = MP3_pipeline(varargin)
 
 % Edit the above text to modify the response to help MP3_pipeline
 
-% Last Modified by GUIDE v2.5 30-Apr-2019 12:05:27
+% Last Modified by GUIDE v2.5 19-May-2020 15:05:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -894,7 +894,8 @@ function [hObject, eventdata, handles] = MP3_pipeline_clear_pipeline_button_Call
 
 
 if isfield(handles, 'MP3_pipeline_ParamsModules')
-    if ~strcmp(eventdata.Source.Tag, {'MP3_pipeline_Save_Module', 'MP3_pipeline_load_pipeline', 'MP3_pipeline_DeleteModule', 'MP3_pipeline_execute_button'})
+    if ~strcmp(eventdata.Source.Tag, {'MP3_pipeline_Save_Module', 'MP3_pipeline_load_pipeline', 'MP3_pipeline_DeleteModule',...
+            'MP3_pipeline_execute_button','MP3_pipeline_Module_UP', 'MP3_pipeline_Module_DOWN', 'MP3_pipeline_update_pipeline'})
         answer = questdlg('Are you sure you want to remove it?','Clean Pipeline', 'Yes', 'No', 'No');
         if strcmp(answer, 'No')
             return
@@ -3948,4 +3949,86 @@ else
 end
 
 
+% --- Executes on button press in MP3_pipeline_Module_UP.
+function MP3_pipeline_Module_UP_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Module_UP (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+module_selected = get(handles.MP3_pipeline_pipeline_listbox, 'Value');
+module_names = fieldnames(handles.MP3_pipeline_ParamsModules);
+% the first module cannot be moving up
+if module_selected == 1
+    return
+end
+
+module_list = 1:numel(module_names);
+module_list(module_selected-1) =module_selected;
+module_list(module_selected) =module_selected-1;
+
+handles.MP3_pipeline_ParamsModules = orderfields(handles.MP3_pipeline_ParamsModules,module_list);
+guidata(hObject, handles);
+MP3_pipeline_update_pipeline_Callback(hObject, eventdata, handles)
+
+% --- Executes on button press in MP3_pipeline_Module_DOWN.
+function MP3_pipeline_Module_DOWN_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_pipeline_Module_DOWN (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+module_selected = get(handles.MP3_pipeline_pipeline_listbox, 'Value');
+module_names = fieldnames(handles.MP3_pipeline_ParamsModules);
+% the last module cannot be moving down
+if module_selected == numel(module_names)
+    return
+end
+module_list = 1:numel(module_names);
+module_list(module_selected+1) =module_selected;
+module_list(module_selected) =module_selected+1;
+
+handles.MP3_pipeline_ParamsModules = orderfields(handles.MP3_pipeline_ParamsModules,module_list);
+%save the new order
+guidata(hObject, handles);
+% update the pipeline
+MP3_pipeline_update_pipeline_Callback(hObject, eventdata, handles)
+
+function MP3_pipeline_update_pipeline_Callback(hObject, eventdata, handles)
+
+if ~isequal(handles.MP3_pipeline_TmpDatabase, handles.MP3_pipeline_Filtered_Table)
+    Tmpdatab = handles.MP3_pipeline_Filtered_Table;
+else
+    Tmpdatab = handles.MP3_pipeline_TmpDatabase;
+end
+
+StoredDatab = handles.MP3_pipeline_TmpDatabase;
+handles.MP3_pipeline_TmpDatabase = Tmpdatab;
+[hObject, eventdata, handles] = MP3_pipeline_UpdatePipelineJobs(hObject, eventdata, handles);
+handles.MP3_pipeline_TmpDatabase = StoredDatab;
+
+[hObject, eventdata, handles] = UpdateTmpDatabase(hObject, eventdata, handles);
+[hObject, eventdata, handles] = MP3_pipeline_UpdateTables(hObject, eventdata, handles);
+
+guidata(hObject, handles);
+
+
+
+% --- Executes on selection change in listbox9.
+function listbox9_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox9 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox9
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox9_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
