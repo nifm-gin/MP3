@@ -193,7 +193,11 @@ for i=1:size(databScans,1)
     niftiwrite(C, [Path_nii, 'T2.nii'], info);
     qcdir = Path_html;
     inputdate = datestr(datetime('now'));
-    subject = [char(databScans.Patient(i)), '-', char(databScans.Tp(i)), '-', char(databScans.SequenceName(i))];
+    if ~isempty(databROIs)
+        subject = [char(databScans.Patient(i)), '-', char(databScans.Tp(i)), '-', char(databScans.SequenceName(i)),'-roi_', char(databRo.SequenceName)];
+    else
+        subject = [char(databScans.Patient(i)), '-', char(databScans.Tp(i)), '-', char(databScans.SequenceName(i))];
+    end
     subject_name = [char(databScans.Patient(i)), '-', char(databScans.Tp(i))];
     img = [Path_nii, 'T2.nii'];
     contrast = char(databScans.SequenceName(i));
@@ -209,7 +213,7 @@ for i=1:size(databScans,1)
                 z = z(1:str2num(opt.NumSlices)); %#ok<ST2NM>
             end
         end
-    elseif strcmp(opt.NumSlices, 'All')
+    elseif strcmpi(opt.NumSlices, 'All')
         z = 1:NSlicesTot;
     elseif length(str2num(opt.NumSlices))>1 %#ok<ST2NM> % If z is a vector, select the slices with the indexes of z.
         z = str2num(opt.NumSlices); %#ok<ST2NM>
