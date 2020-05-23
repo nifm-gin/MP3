@@ -540,6 +540,9 @@ if ok1 == 0
 end
 if strcmp('Other',name_option(new_Patient_name)) == 1
     NewPatient = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+    if isempty(NewPatient)
+        return
+    end
 else
     NewPatient =name_option(new_Patient_name);
 end
