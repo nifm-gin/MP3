@@ -3919,7 +3919,9 @@ for i=1:size(Output_Table,1)
         case 'Scan'
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
             jsonfilename = strrep(filename, '.nii', '.json');
+            if exist(jsonfilename, 'file')
             movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
+            end
             Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_Derived_data_path));
         case 'ROI'
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
@@ -3927,8 +3929,10 @@ for i=1:size(Output_Table,1)
         case 'Cluster'
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
             matfilename = strrep(filename, '.nii', '.mat');
-            movefile(matfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
+            if exist(matfilename, 'file')
+             movefile(matfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
             Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
+            end
     end
     handles.MP3_data.database = [handles.MP3_data.database; Entry];
     
