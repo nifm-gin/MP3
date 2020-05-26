@@ -540,6 +540,9 @@ if ok1 == 0
 end
 if strcmp('Other',name_option(new_Patient_name)) == 1
     NewPatient = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+    if isempty(NewPatient)
+        return
+    end
 else
     NewPatient =name_option(new_Patient_name);
 end
@@ -6246,14 +6249,24 @@ delete(f);
 %uiwait(f);
 
 
-filejson = mfilename('fullpath');
-filejson = strsplit(filejson, filesep);
-filejson{end} = 'tools';
-filejson = [strjoin(filejson, filesep), filesep, 'TemplateJSON.json'];
-
-if ~exist(filejson, 'file')
-   warndlg('The TemplateJSON.json file is missing. Have you deleted from MP3 source code?')
-   return
+% Need to test if a Json already exists
+% Create name for potential json file in order to check if it exists
+niiIdx = strfind(file, '.nii');
+testJson = strcat(file(1:niiIdx-1), '.json');
+% Test fi this file exists
+if exist(testJson, 'file')
+    % If it does, it will be copied
+    filejson = testJson;
+else
+    % Else the template json will be copied
+    filejson = mfilename('fullpath');
+    filejson = strsplit(filejson, filesep);
+    filejson{end} = 'tools';
+    filejson = [strjoin(filejson, filesep), filesep, 'TemplateJSON.json'];
+    if ~exist(filejson, 'file')
+       warndlg('The TemplateJSON.json file is missing. Have you deleted from MP3 source code?')
+       return
+    end
 end
 
 if strcmp(Vec(IndType), 'Scan') && strcmp(Vec(IndIsRaw), '1')
