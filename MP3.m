@@ -2111,7 +2111,7 @@ end
 function handles = MP3_update_plot1_single(hObject, handles)
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
-    legend(handles.MP3_plot1,'off');
+    legend(handles.MP3_plot1,'off', 'Interpreter', 'none');
     hold(handles.MP3_plot1, 'off');
 end
 %coordonates = handles.data_ploted.coordonates;
@@ -2269,7 +2269,7 @@ if handles.data_loaded(1).number_of_scan == 1
 else
     set(get(handles.MP3_plot1, 'YLabel'), 'String', get(handles.MP3_data2_title, 'String'));
 end
-legend(handles.MP3_plot1,legende_txt, 'Location','NorthEast');
+legend(handles.MP3_plot1,legende_txt, 'Location','NorthEast', 'Interpreter', 'none');
 set(get(handles.MP3_plot1, 'XLabel'), 'String', get(handles.MP3_data1_title, 'String'));
 
 set(get(handles.MP3_plot1, 'ZLabel'), 'String', get(handles.MP3_data3_title, 'String'));
@@ -2485,7 +2485,7 @@ end
 % clean old plot (if needed)
 if ~isempty(get(handles.MP3_plot1, 'Children'))
     delete(get(handles.MP3_plot1, 'Children'));
-    legend(handles.MP3_plot1,'off');
+    legend(handles.MP3_plot1,'off', 'Interpreter', 'none');
     hold(handles.MP3_plot1, 'off');
 end
 % display a waiting symbol
@@ -2508,7 +2508,7 @@ for i = 1:numel(fourD_data)
 end
 % add the legend
 if ~isempty(legende_txt)
-    legend(handles.MP3_plot1, legende_txt, 'Location','NorthEast');
+    legend(handles.MP3_plot1, legende_txt, 'Location','NorthEast', 'Interpreter', 'none');
 end
 
 %% Code pour extraire les courbes de bolus d'un pixel de perf.
@@ -6251,9 +6251,9 @@ delete(f);
 niiIdx = strfind(file, '.nii');
 testJson = strcat(file(1:niiIdx-1), '.json');
 % Test fi this file exists
-if exist(testJson, 'file')
+if exist(fullfile(path, testJson), 'file')
     % If it does, it will be copied
-    filejson = testJson;
+    filejson = fullfile(path, testJson);
 else
     % Else the template json will be copied
     filejson = mfilename('fullpath');
