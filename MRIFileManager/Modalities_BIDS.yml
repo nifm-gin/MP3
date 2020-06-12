@@ -45,7 +45,7 @@ listProtocols:
          Dicom : []
          Nifti : []
       FLASH:
-         Bruker : ['*T1_FLASH*', '*Localizer*', '*Tripilot*']
+         Bruker : ['*FLASH*', '*Localizer*', '*Tripilot*']
          Philips : []
          Dicom : []
          Nifti : []

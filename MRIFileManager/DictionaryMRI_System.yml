@@ -48,6 +48,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / HH:mm:ss ; yyyy.MM.dd", units: ~}
                   whereDicom:   {file: ~, keyName: Series Date, type: string, format: "yyyyMMdd", units: ~}
                   whereNifti:   {file: json, keyName: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
+                  whereBids:    {file: ~, keyName: AcquisitionDate, type: string, format: ~, units: ~}
                   
                   viewer: {category: Equipment}
                   json:   {tagJson: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
@@ -195,7 +196,15 @@ dictionaryMRI:
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: FOV, type: float, format: ~, units: mm}
-       
+                  
+  Gradient Orientation Number:
+                  description: {info: ""}
+                  
+                  whereDicom: {file: ~, keyName: "2005,1413", type: int, format: ~, units: ~}
+                  
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                         
   Images In Acquisition:
                   description: {info: "Number of images that resulted from this acquisition of data"}
   
