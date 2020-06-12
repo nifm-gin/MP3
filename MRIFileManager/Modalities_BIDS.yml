@@ -1,0 +1,113 @@
+# BIDS v 1.2.1
+# protocol name : 
+#   Bruker : PV5, PV6
+#   Philips : PAR/REC v4.2, xml/REC
+#   DICOM : Philips, Siemens, GE
+#   Nifti : Nifti-1 with JSON_IRMaGe
+
+
+listProtocols:
+
+   anat :
+      T1w:
+         Bruker : ['*T1_RARE*', '*DCE*']
+         Philips : ['*T1W*', '*DCE*']
+         Dicom : []
+         Nifti : []
+      T2w:
+         Bruker : ['*T2_TurboRARE*', '*DSC*', '*T2w*']
+         Philips : ['*DSC*']
+         Dicom : []
+         Nifti : []
+      T1rho:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      T1map:
+         Bruker : ['*T1map*']
+         Philips : []
+         Dicom : []
+         Nifti : []
+      T2map:
+         Bruker : ['*T2map*']
+         Philips : ['*MSME*']
+         Dicom : []
+         Nifti : []
+      T2star:
+         Bruker : []
+         Philips : ['*3D_FFE*']
+         Dicom : []
+         Nifti : []
+      FLAIR:
+         Bruker : []
+         Philips : ['*FLAIR*']
+         Dicom : []
+         Nifti : []
+      FLASH:
+         Bruker : ['*FLASH*', '*Localizer*', '*Tripilot*']
+         Philips : []
+         Dicom : []
+         Nifti : []
+      PD:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []               
+      PDmap:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      PDT2:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      inplaneT1:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      inplaneT2:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      angio:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []      
+
+   dwi:
+      dwi:
+         Bruker : ['*:DtiStandard']
+         Philips : ['*DWI*']
+         Dicom : []
+         Nifti : []
+
+   func:
+      bold:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      cbv:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+      phase:
+         Bruker : []
+         Philips : []
+         Dicom : []
+         Nifti : []
+
+   fmap:
+      fielmap:
+         Bruker : ['*FieldMap*']
+         Philips : []
+         Dicom : []
+         Nifti : []
+         
