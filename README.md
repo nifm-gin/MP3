@@ -43,6 +43,9 @@ In order to push your modifications to the community, please contact benjamin.le
 ### Data test
 In order to test MP³, we provide some projects available at https://github.com/nifm-gin/Data_Test_MP3
 
+### Modules repository
+We provide some modules available at https://github.com/nifm-gin/MP3_Modules_Repository
+
 # Other
 [Brouillon Module Coreg](https://github.com/nifm-gin/MP3/wiki/Brouillon_module_coreg)
 
