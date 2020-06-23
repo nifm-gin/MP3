@@ -49,6 +49,3 @@ We provide some modules available at https://github.com/nifm-gin/MP3_Modules_Rep
 # Other
 [Brouillon Module Coreg](https://github.com/nifm-gin/MP3/wiki/Brouillon_module_coreg)
 
-[Fonctions à développer](https://github.com/nifm-gin/MP3/wiki/futur_features)
-
-[Dev: nouveau module](https://github.com/nifm-gin/MP3/wiki/dev_new_module)
