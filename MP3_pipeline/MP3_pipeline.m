@@ -1632,7 +1632,7 @@ function [pipeline, output_database] = MP3_pipeline_generate_psom_modules(New_mo
 % handles    structure with handles and user data (see GUIDATA)
 pipeline = struct();
 Types = New_module.opt.table.Type;
-ScanInputs = find(contains(Types, {'Scan', 'ROI'}));
+ScanInputs = find(contains(Types, {'Scan', 'ROI', '1Cluster'}));
 NbScanInput = length(ScanInputs);
 %%% NOTE : Il serait peut-être plus judicieux de boucler sur tous les temps
 %%% et patients de la databse de sortie du filtre grosses mailles, ce qui
