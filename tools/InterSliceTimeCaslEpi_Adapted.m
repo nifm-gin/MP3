@@ -19,8 +19,7 @@ PVM_TriggerModule = Json.TriggerModule.value{1};
 % PVM_TriggerOutOnOff=scan_acqp('##$PVM_TriggerOutOnOff=',Map.texte,0);
 PVM_TriggerOutOnOff = Json.TriggerOutOnOff.value{1};
 
-% PVM_MagTransModuleTime=scan_acqp('##$PVM_MagTransModuleTime=',Map.texte,1);
-PVM_MagTransModuleTime = Json.MagTransModuleTime.value;
+
 % PVM_FovSatModuleTime=scan_acqp('##$PVM_FovSatModuleTime=',Map.texte,1);   % a remettre si saturation remis a sa place par defaut (apres labeling)
 PVM_FovSatModuleTime = Json.FovSatModuleTime.value;
 % PVM_FatSupModuleTime=scan_acqp('##$PVM_FatSupModuleTime=',Map.texte,1);
@@ -100,6 +99,8 @@ ExcPulse_RephaseFactorNum = strfind(ExcPulseTemp,',');
 ExcPulse_RephaseFactor = str2double(ExcPulseTemp(ExcPulse_RephaseFactorNum(end-1)-3:ExcPulse_RephaseFactorNum(end-1)-1));
 
 if ~strcmp(PVM_MagTransOnOff,'On')
+    % PVM_MagTransModuleTime=scan_acqp('##$PVM_MagTransModuleTime=',Map.texte,1);
+    PVM_MagTransModuleTime = Json.MagTransModuleTime.value;
     PVM_MagTransModuleTime = 0;
 end
 if(~strcmp(PVM_FovSatOnOff,'On'))                 % a remettre si saturation remis a sa place par defaut (apres labeling)
