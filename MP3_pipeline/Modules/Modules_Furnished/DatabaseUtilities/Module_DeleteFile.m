@@ -115,9 +115,9 @@ if isempty(opt)
     
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-        'Delete file'
+        'This module allows to delete a file. One can use it in a pipeline and then avoid the multiplication of files in the database.'
         }'};
-    user_parameter(:,2)   = {'Select one scan as input','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select one scan or ROI as input','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
     
     % Concatenate these user_parameters, and store them in opt.table
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
