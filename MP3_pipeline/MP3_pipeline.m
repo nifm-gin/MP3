@@ -80,7 +80,7 @@ for i=3:length(list_mod)
             %Mod_listing = [Mod_listing, list_mod(i).name];
             SubMod = dir([list_bis(l).folder, filesep, list_bis(l).name, filesep, 'Module_*.m']);
             for j=1:length(SubMod)
-                Mod_listing = [Mod_listing, ['      --', SubMod(j).name]];
+                Mod_listing = [Mod_listing, ['      ..', SubMod(j).name]];
             end
         end
     end
@@ -1520,9 +1520,9 @@ elseif contains(Mod, '(') || contains(Mod, ')')
     module_parameters_string = '';
     set(handles.MP3_pipeline_parameter_setup_text, 'String', 'Please don''t use {''('', '')''} characters in the module file name.');
 else
-    if startsWith(Mod, '   .')
+    if startsWith(Mod, '      ..')
         %Remove '   .'
-        Mod = Mod(5:end);
+        Mod = Mod(9:end);
     end
     %Remove '.m'
     Mod = Mod(1:end-2);
