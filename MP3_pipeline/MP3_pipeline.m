@@ -63,11 +63,15 @@ Spl = strsplit(mfilename('fullpath'), filesep);
 %Spl{end} = ['Modules_Repository', filesep, '**', filesep, 'Module_*.m'];
 Spl{end} = 'MP3_Modules_Repository';
 list_mod = dir(strjoin(Spl, filesep));
+if length(list_mod)<3
+    Spl{end} = 'Basic_Modules_Furnished';
+    list_mod = dir(strjoin(Spl, filesep));
+end
 Mod_listing = {};
 for i=3:length(list_mod)
     %name = '';
     [~, nam, ext] = fileparts(list_mod(i).name);
-    if (~list_mod(i).isdir && ~strcmp(ext, '.m')) || (~list_mod(i).isdir && ~startsWith(nam, 'Module_'))% exist([list_mod(i).folder, filesep, list_mod(i).name])==
+    if (~list_mod(i).isdir && ~strcmp(ext, '.m')) || (~list_mod(i).isdir && ~startsWith(nam, 'Module_')) || isempty(nam)% exist([list_mod(i).folder, filesep, list_mod(i).name])==
         continue
     end
     Mod_listing = [Mod_listing, list_mod(i).name];
