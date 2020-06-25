@@ -64,7 +64,7 @@ Spl = strsplit(mfilename('fullpath'), filesep);
 Spl{end} = 'MP3_Modules_Repository';
 list_mod = dir(strjoin(Spl, filesep));
 if length(list_mod)<3
-    Spl{end} = 'Basic_Modules_Furnished';
+    Spl{end} = 'Modules_Furnished';
     list_mod = dir(strjoin(Spl, filesep));
 end
 Mod_listing = {};
