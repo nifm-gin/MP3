@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 09-May-2019 17:04:31
+% Last Modified by GUIDE v2.5 29-Jun-2020 12:40:44
 
 
 
@@ -85,6 +85,7 @@ handles.table1.cluster = [];
 handles.table1.cluster_row = [];
 handles.mode = 1;
 handles.view_mode = 'Axial';
+set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
 
 handles.display_option.view_pixel_on_map = 0;
 handles.display_option.view_pixel_on_plot = 0;
@@ -264,7 +265,7 @@ function MP3_scans_list_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns MP3_scans_list contents as cell array
+% Hints: contents = cellstr(get(hObject,'String')) returns s_list contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from MP3_scans_list
 
 if ~isfield(handles, 'database')
@@ -475,13 +476,18 @@ if numel(patient) > 1 || numel(timepoint) >1
     return
 end
 
-value = get(handles.MP3_scan_VOIs_button, 'Value');
+set(handles.MP3_scan_VOIs_button, 'Value', 0)
+set(handles.MP3_VOIs_button, 'Value', 1)
+set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
+set(handles.MP3_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
+
+%value = get(handles.MP3_scan_VOIs_button, 'Value');
 set(handles.MP3_scans_list, 'Value', 1);
-if value == 0
-    set(handles.MP3_scan_VOIs_button, 'String', 'Scans');
-else
-    set(handles.MP3_scan_VOIs_button, 'String', 'VOIs');
-end
+% if value == 0
+%     set(handles.MP3_scan_VOIs_button, 'String', 'Scans');
+% else
+%     set(handles.MP3_scan_VOIs_button, 'String', 'VOIs');
+% end
 MP3_update_database_display(hObject, eventdata, handles);
 
 
@@ -6485,3 +6491,36 @@ function Menu_Export_Callback(hObject, eventdata, handles)
 % hObject    handle to Menu_Export (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in MP3_VOIs_button.
+function MP3_VOIs_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_VOIs_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of MP3_VOIs_button
+handles = guidata(hObject);
+if ~isfield(handles, 'database')
+    return
+end
+patient = get(handles.MP3_name_list, 'Value');
+timepoint = get(handles.MP3_time_points_list, 'Value');
+if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
+    set(handles.MP3_scan_VOIs_button, 'Value', 0)
+    return
+end
+
+set(handles.MP3_scan_VOIs_button, 'Value', 1)
+set(handles.MP3_VOIs_button, 'BackgroundColor', [1 0 0])
+set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
+
+%value = get(handles.MP3_scan_VOIs_button, 'Value');
+set(handles.MP3_scans_list, 'Value', 1);
+% if value == 0
+%     set(handles.MP3_scan_VOIs_button, 'String', 'Scans');
+% else
+%     set(handles.MP3_scan_VOIs_button, 'String', 'VOIs');
+% end
+MP3_update_database_display(hObject, eventdata, handles);
