@@ -330,6 +330,8 @@ end
 time_point = get(handles.MP3_time_points_list, 'Value');
 
 if get(handles.MP3_scan_VOIs_button, 'Value') == 0 %display parameters list
+    set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
+    set(handles.MP3_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
     is_scan =  handles.database.Type == 'Scan';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
@@ -353,6 +355,8 @@ if get(handles.MP3_scan_VOIs_button, 'Value') == 0 %display parameters list
     
 else %display VOIs list
     %is_ROI=  handles.database.Type == 'ROI';
+    set(handles.MP3_VOIs_button, 'BackgroundColor', [1 0 0])
+    set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
     is_ROI = handles.database.Type == 'ROI' | handles.database.Type == 'Cluster';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_ROI);
@@ -742,6 +746,7 @@ else
         set(handles.MP3_time_points_list, 'Value', 1);
         set(handles.MP3_scan_VOIs_button, 'Value', 0);
         set(handles.MP3_scans_list, 'Value', 1);
+
         
         database = load(filename);
         handles.database = database.database;
@@ -4816,7 +4821,11 @@ for i = 1:numel(unique(log_file.StudyName))
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         
                     end
-                    new_data = table(categorical(cellstr('Undefined')), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MP3_Raw_data_path)), categorical(cellstr(file_name)),...
+                    Groups = unique(handles.database.Group(handles.database.Patient==name_selected & handles.database.Tp==tp_selected,:));
+                    if isempty(Groups)
+                        Groups = categorical(cellstr('Undefined'));
+                    end
+                    new_data = table(Groups(1), categorical(cellstr(name_selected)), categorical(cellstr(tp_selected)), categorical(cellstr(handles.database.Properties.UserData.MP3_Raw_data_path)), categorical(cellstr(file_name)),...
                         categorical(cellstr('Scan')), categorical(1), categorical(cellstr(seq_name)),...
                         'VariableNames', {'Group','Patient', 'Tp', 'Path', 'Filename', 'Type', 'IsRaw', 'SequenceName'});
                     

@@ -323,10 +323,12 @@ function MP3_pipeline_add_module_button_Callback(hObject, eventdata, handles)
 
 set(handles.MP3_pipeline_manager_GUI, 'pointer', 'watch');
 drawnow;
-if ~isfield(handles, 'new_module')
+if ~isfield(handles, 'new_module') 
+    set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
     return
 end
 if ~isfield(handles.new_module, 'opt')
+    set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
     return
 end
 [new_pipeline, output_database] = MP3_pipeline_generate_psom_modules(handles.new_module, handles.FilterParameters, handles.MP3_pipeline_TmpDatabase, handles.MP3_data.database.Properties.UserData.MP3_data_path, 1);
@@ -458,7 +460,7 @@ function MP3_pipeline_module_parameters_Callback(hObject, eventdata, handles)
 
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 % display the help associated to the parameter selected
-if isempty(parameter_selected)
+if isempty(parameter_selected) || ~isfield(handles, 'new_module')
     return
 end
 set(handles.MP3_pipeline_parameter_setup_text, 'String', handles.new_module.opt.table.Help{parameter_selected});
@@ -2630,6 +2632,7 @@ handles.Source_selected = handles.Add_list{1};
 handles.Remove_selected = handles.Remove_list{1};
 MP3_pipeline_add_tag_popupmenu_Callback(hObject, eventdata, handles)
 set(handles.MP3_pipeline_remove_tag_popupmenu,'String',handles.Remove_list);
+set(handles.MP3_pipeline_remove_tag_popupmenu, 'Value', 1);
 
 guidata(hObject, handles);
 
@@ -3965,6 +3968,10 @@ function MP3_pipeline_Module_UP_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
+    return
+end
+
 module_selected = get(handles.MP3_pipeline_pipeline_listbox, 'Value');
 module_names = fieldnames(handles.MP3_pipeline_ParamsModules);
 % the first module cannot be moving up
@@ -3985,6 +3992,11 @@ function MP3_pipeline_Module_DOWN_Callback(hObject, eventdata, handles)
 % hObject    handle to MP3_pipeline_Module_DOWN (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
+    return
+end
+
 module_selected = get(handles.MP3_pipeline_pipeline_listbox, 'Value');
 module_names = fieldnames(handles.MP3_pipeline_ParamsModules);
 % the last module cannot be moving down
@@ -4002,6 +4014,10 @@ guidata(hObject, handles);
 MP3_pipeline_update_pipeline_Callback(hObject, eventdata, handles)
 
 function MP3_pipeline_update_pipeline_Callback(hObject, eventdata, handles)
+
+if ~isfield(handles, 'MP3_pipeline_ParamsModules')
+    return
+end
 
 if ~isequal(handles.MP3_pipeline_TmpDatabase, handles.MP3_pipeline_Filtered_Table)
     Tmpdatab = handles.MP3_pipeline_Filtered_Table;
