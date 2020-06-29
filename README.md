@@ -1,7 +1,13 @@
 # MP3
 Medical software for Processing multi-Parametric images Pipelines
 
-**MP³** is an open source software aimed to support preclinical and clinical researchers for image processing studies. This Matlab toolbox offers a graphical interface that helps to import (e.g. DICOM, NIFTI, Bruker, …), visualize (2D to 5D data), process (e.g. registration, model fit, filters, …) and analyze (e.g. ROIs, scatterplots, …) medical images. Standard processes from SPM or FSL can be called as well as custom fonctions. Complex postprocessing pipelines can be created and applied to mutiparametric (e.g. MRI T1w + MRI T2w,…), multidimensional (e.g. spatial +temporal+echoes,…) or multimodal (e.g. MRI +CT, …) data. Once defined in a single patient, these processes can be stored and applied to a larger database using parallel architectures. MP³ was initially created in the Grenoble Institute of Neurosciences (France) to process multiparametric MRI protocols (anatomy+relaxometry+perfusion) in cohorts of +500 animals.
+**MP³** is an open source software aimed to support preclinical and clinical researchers for image processing studies. This Matlab toolbox offers a graphical interface that helps to process medical images. Here are the most important tools included in MP³ :
+- Import medical images (e.g. DICOM, NIFTI, Bruker, …) and convert them to nifti/json format
+- Visualize images (2D to 5D data)
+- Process (e.g. registration, model fit, filters, …)
+- Analyze (e.g. ROIs, scatterplots, …) medical images. 
+
+Standard processes from SPM or FSL can be called as well as custom fonctions. Complex postprocessing pipelines can be created and applied to mutiparametric (e.g. MRI T1w + MRI T2w,…), multidimensional (e.g. spatial +temporal+echoes,…) or multimodal (e.g. MRI +CT, …) data. Once defined in a single patient, these processes can be stored and applied to a larger database using parallel architectures. MP³ was initially created in the Grenoble Institute of Neurosciences (France) to process multiparametric MRI protocols (anatomy+relaxometry+perfusion) in cohorts of +500 animals.
 
 SUMMARY Poster ([ENGLISH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3_English.pdf)) ([FRENCH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3.pdf)): poster presented at the 4th Congress of the SFRMBM (Strasbourg).
 
@@ -37,13 +43,15 @@ In order to push your modifications to the community, please contact benjamin.le
 
 *  [Create a new module?](https://github.com/nifm-gin/MP3/wiki/User_guide_create_module)
 
+*  [Download modules?](https://github.com/nifm-gin/MP3/wiki/User_guide_download_modules)
+
 
 ### Data test
 In order to test MP³, we provide some projects available at https://github.com/nifm-gin/Data_Test_MP3
 
+### Modules repository
+We provide some modules available at https://github.com/nifm-gin/MP3_Modules_Repository
+
 # Other
 [Brouillon Module Coreg](https://github.com/nifm-gin/MP3/wiki/Brouillon_module_coreg)
 
-[Fonctions à développer](https://github.com/nifm-gin/MP3/wiki/futur_features)
-
-[Dev: nouveau module](https://github.com/nifm-gin/MP3/wiki/dev_new_module)

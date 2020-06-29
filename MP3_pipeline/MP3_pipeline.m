@@ -61,21 +61,27 @@ handles.output = hObject;
 handles.MP3_data = varargin{3};
 Spl = strsplit(mfilename('fullpath'), filesep);
 %Spl{end} = ['Modules_Repository', filesep, '**', filesep, 'Module_*.m'];
-Spl{end} = 'MP3_Modules_Repository';
-list_mod = dir(strjoin(Spl, filesep));
+Spl{end} = 'Modules';
+path_modules = strjoin(Spl, filesep);
+list_mod = dir(path_modules);
+
 Mod_listing = {};
 for i=3:length(list_mod)
-    %name = '';
-    [~, nam, ext] = fileparts(list_mod(i).name);
-    if (~list_mod(i).isdir && ~strcmp(ext, '.m')) || (~list_mod(i).isdir && ~startsWith(nam, 'Module_'))% exist([list_mod(i).folder, filesep, list_mod(i).name])==
-        continue
-    end
     Mod_listing = [Mod_listing, list_mod(i).name];
-    if list_mod(i).isdir
-        %Mod_listing = [Mod_listing, list_mod(i).name];
-        SubMod = dir([list_mod(i).folder, filesep, list_mod(i).name, filesep, 'Module_*.m']);
-        for j=1:length(SubMod)
-            Mod_listing = [Mod_listing, ['   .', SubMod(j).name]];
+    list_bis = dir([path_modules, filesep, list_mod(i).name, filesep]);
+
+    for l=3:length(list_bis)
+        [~, nam, ext] = fileparts(list_bis(l).name);
+        if (~list_bis(l).isdir && ~strcmp(ext, '.m')) || (~list_bis(l).isdir && ~startsWith(nam, 'Module_')) || isempty(nam)% exist([list_mod(i).folder, filesep, list_mod(i).name])==
+            continue
+        end
+        Mod_listing = [Mod_listing, ['   .', list_bis(l).name]];
+        if list_bis(l).isdir
+            %Mod_listing = [Mod_listing, list_mod(i).name];
+            SubMod = dir([list_bis(l).folder, filesep, list_bis(l).name, filesep, 'Module_*.m']);
+            for j=1:length(SubMod)
+                Mod_listing = [Mod_listing, ['      ..', SubMod(j).name]];
+            end
         end
     end
 end
@@ -1514,9 +1520,9 @@ elseif contains(Mod, '(') || contains(Mod, ')')
     module_parameters_string = '';
     set(handles.MP3_pipeline_parameter_setup_text, 'String', 'Please don''t use {''('', '')''} characters in the module file name.');
 else
-    if startsWith(Mod, '   .')
+    if startsWith(Mod, '      ..')
         %Remove '   .'
-        Mod = Mod(5:end);
+        Mod = Mod(9:end);
     end
     %Remove '.m'
     Mod = Mod(1:end-2);

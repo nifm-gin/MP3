@@ -118,11 +118,7 @@ if isempty(opt)
     
     user_parameter(:,1)   = {'Description','Text','','','','',...
         {
-        'This module is usefull if you would like to smooth an image'
-        ''
-        'User has to choose one method of smoothing and the sigma'
-        '    --> 2D'
-        '    --> 3D'
+        'This text should explain the behaviour of the module, and its specificities.'
         }'};
     user_parameter(:,2)   = {'Select one scan as input','1Scan','','',{'SequenceName'}, 'Mandatory',''};
     user_parameter(:,3)   = {'Parameters','','','','', '', ''};
