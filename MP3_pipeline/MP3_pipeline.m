@@ -1819,7 +1819,14 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
     RefDatab = DatabaseInput{RefInput};
     RefMat = MatricesInputs{RefInput};
     
-    UTag1 = unique(getfield(RefDatab, Tag1));
+    % Pour creer le tableau Tag1*Tag2 sur l'union des 2 databases plutot
+    % que sur la database de reference :
+%     In_to_reshape = New_module.opt.Module_settings.InputToReshape; % added
+%     Datab_Reshap = DatabaseInput{In_to_reshape}; % added
+%     UTag1 = unique(getfield([Datab_Reshap;RefDatab], Tag1)); % added
+%     UTag2 = unique(getfield([Datab_Reshap;RefDatab], Tag2)); % added
+    
+    UTag1 = unique(getfield(RefDatab, Tag1)); 
     UTag2 = unique(getfield(RefDatab, Tag2));
     
     
@@ -1887,7 +1894,19 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
         % empeche du coup celle d'un module Coreg dont l'entrée 1 est
         % un fichier unique (1 Scan + 1 TP + 1 Patient selectionné)... A
         % investiguer. 
-        InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+        
+        %Commenter la ligne suivante permet d'executer des pipelines
+        %lorsque l'input de reference manque dans l'un des TP alors que
+        %l'input to reshape y est presente. Ex : aucun scan de ref à D0
+        %pour tous les patients, alors que le scan a reshape en possede un.
+        %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+        
+        %Pour régler ce probleme, on sépare les deux cas :
+        InToReshape_bis = InToReshape;
+        InToReshape_bis(find(all(cellfun(@isempty,InToReshape_bis),2)),:) = [];
+        if size(InToReshape_bis) == [1,1]
+            InToReshape = InToReshape_bis;
+        end
         
         %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
         if EmptyParams{InputToReshape} == 0
