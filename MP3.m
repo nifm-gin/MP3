@@ -4821,7 +4821,11 @@ for i = 1:numel(unique(log_file.StudyName))
                         file_name = strcat(name_selected , '-', tp_selected,'-',seq_name,'_',datestr(now,'yyyymmdd-HHMMSSFFF'));
                         
                     end
-                    Groups = unique(handles.database.Group(handles.database.Patient==name_selected & handles.database.Tp==tp_selected,:));
+                    if isempty(handles.database)
+                        Groups = categorical(cellstr('Undefined'));
+                    else
+                        Groups = unique(handles.database.Group(handles.database.Patient==name_selected & handles.database.Tp==tp_selected,:));
+                    end
                     if isempty(Groups)
                         Groups = categorical(cellstr('Undefined'));
                     end
