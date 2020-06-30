@@ -160,7 +160,11 @@ for i=1:size(databScans,1)
     %file_vol(file_vol<0.06) = 0;
     
     %file_vol = imadjustn(file_vol);
-    file_vol = imadjustn(file_vol, stretchlim(file_vol(:), str2num(opt.Contrast)));%, [MIN; MAX]);%, [0,128]);
+    if isa(file_vol, 'int32')
+        file_vol = imadjustn(single(file_vol), stretchlim(single(file_vol(:)), str2num(opt.Contrast)));%, [MIN; MAX]);%, [0,128]);
+    else
+        file_vol = imadjustn(file_vol, stretchlim(file_vol(:), str2num(opt.Contrast)));%, [MIN; MAX]);%, [0,128]);
+    end
     %file_vol = imadjustn(file_vol, [MIN MAX], []);
     %file_vol = histeq(file_vol, 2048);
 % %     if ind==0
