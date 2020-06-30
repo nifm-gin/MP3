@@ -1064,9 +1064,9 @@ scan = get(handles.MP3_scans_list, 'Value');
 % Load VOIs
 if handles.mode == 2 && numel(scan) > 1
     if get(handles.MP3_scan_VOIs_button, 'Value') == 1
-        warndlg('Please select only 1 VOI when using the PRM mode','Warning');
+        warndlg('Please select only 1 VOI when using the longitudinal view mode','Warning');
     else
-        warndlg('Please select only 1 Scan when using the PRM mode','Warning');
+        warndlg('Please select only 1 Scan when using the longitudinal view mode','Warning');
     end
     return
 end
@@ -1271,7 +1271,7 @@ function handles = MP3_load_axes_PRM(hObject, ~, handles)
 
 data_selected = finddata_selected(handles);
 if numel(data_selected) ~= 1
-    warndlg('In PRM mode you can open only on scan!!', 'Warning');
+    warndlg('In longitudinal view mode you can open only on scan!!', 'Warning');
     return
 end
 
@@ -1283,7 +1283,7 @@ data_to_load = find(handles.database.Patient == handles.database.Patient(data_se
 [~, idx] =sort(handles.database.Tp(data_to_load));
 data_to_load = data_to_load(idx);
 if numel(data_to_load) <2
-    warndlg(strcat({'Need more than one '},  char(handles.database.SequenceName(data_selected)), ' scan to run the PRM mode') ,'Warning');
+    warndlg(strcat({'Need more than one '},  char(handles.database.SequenceName(data_selected)), ' scan to run the longitudinal view mode') ,'Warning');
     return
 end
 
