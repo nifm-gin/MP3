@@ -104,9 +104,7 @@ for i=1:size(databScans,1)
     
     file1 = [char(databScans.Path(i)), char(databScans.Filename(i)), '.nii'];
     file_h = spm_vol(file1);
-    %databR = databROIs(databROIs.Patient == databScans.Patient(i), :);
     databR = databROIs(strcmp(cellstr(databROIs.Patient), cellstr(databScans.Patient(i))),:);
-    %databRo = databR(databR.Tp == databScans.Tp(i), :);
     databRo = databR(strcmp(cellstr(databROIs.Tp), cellstr(databScans.Tp(i))),:);
     roi = [char(databRo.Path), char(databRo.Filename), '.nii'];
     if ~isempty(databROIs) && isempty(databRo)
