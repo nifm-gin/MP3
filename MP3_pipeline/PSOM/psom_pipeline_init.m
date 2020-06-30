@@ -766,7 +766,9 @@ for num_j = 1:length(list_jobs)
     %    %% Conversion in cell array and then table
         Table_in_Names = pipeline.(job_name).opt.Table_in.Properties.VariableNames;
         Table_in_Values = cellstr(table2array(pipeline.(job_name).opt.Table_in));
+        Usrdata = pipeline.(job_name).opt.Table_in.Properties.UserData;
         pipeline.(job_name).opt.Table_in = cell2table(Table_in_Values, 'VariableNames', Table_in_Names);
+        pipeline.(job_name).opt.Table_in.Properties.UserData = Usrdata;
         Table_out_Names = pipeline.(job_name).opt.Table_out.Properties.VariableNames;
         if ~isempty(pipeline.(job_name).opt.Table_out) 
             Table_out_Values = cellstr(table2array(pipeline.(job_name).opt.Table_out));
