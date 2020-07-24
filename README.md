@@ -49,7 +49,7 @@ In order to push your modifications to the community, please contact benjamin.le
 ### Data test
 The documentation found in the wiki page is based on this dataset : https://github.com/nifm-gin/Data_Test_MP3 (MP3 project)
 
-The documentation on video is based on a dataset downloadable her : https://drive.google.com/drive/folders/1xWsNJf3e4auL_WWknvvGbk0UqjcfAY7A?usp=sharing (Raw MRI data)
+The documentation on video is based on a dataset downloadable her : https://drive.google.com/drive/folders/1xWsNJf3e4auL_WWknvvGbk0UqjcfAY7A?usp=sharing (as Raw MRI data) or here https://drive.google.com/drive/folders/1MImE1AkOOKhOIXreA_jrIcJJloEXFJu1?usp=sharing (as a MP3 Project)
 
 ### Modules repository
 We provide some modules available at https://github.com/nifm-gin/MP3_Modules_Repository
