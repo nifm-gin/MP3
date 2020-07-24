@@ -95,9 +95,12 @@ elseif wantnorm==-2
   mn = 0;
   mx = 1;
 elseif wantnorm==-3
-  m = normalizerange(m,0,1,min(m(:)),max(m(:)));
-  mn = 0;
-  mx = 1;
+    if min(m(:)) ~= max(m(:)) % skip if empty volume
+        m = normalizerange(m,0,1,min(m(:)),max(m(:)));
+    end
+    mn = 0;
+    mx = 1;
+
 else
   rng = prctile(m(:),[wantnorm 100-wantnorm]);
   if rng(2)==rng(1)
