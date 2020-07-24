@@ -474,10 +474,16 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.data = '';
         table.columnName = '';
         table.editable = false;
-    case '1Scan1TPXP'
-        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
-        TP_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Tp(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
-        Patients_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Patient(handles.MP3_pipeline_Filtered_Table.Type == 'Scan')));
+    case {'1Scan1TPXP', '1ROI1TPXP'}
+        if strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
+            Type = 'Scan';
+        elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI1TPXP')
+            Type = 'ROI';
+        end
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == Type)));
+        TP_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Tp(handles.MP3_pipeline_Filtered_Table.Type == Type)));
+        Patients_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.Patient(handles.MP3_pipeline_Filtered_Table.Type == Type)));
+            
         if isempty(handles.new_module.opt.table.Default{parameter_selected})
             table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
             table.data(1:numel(SequenceType_listing),2) = {false};
@@ -608,7 +614,33 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
+    case '1mat'
+        SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type == 'Mfile')));
+        if isempty(handles.new_module.opt.table.Default{parameter_selected})
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+        else
+            table.data(1:numel(SequenceType_listing),1) = cellstr(SequenceType_listing);
+            table.data(1:numel(SequenceType_listing),2) = {false};
+            Def = handles.new_module.opt.table.Default{parameter_selected};
+            NamesSelected = {Def{cell2mat(Def(:,2)),1}};
+            if isempty(NamesSelected)
+                NamesSelected = '';
+            end
+            %NamesSelected = {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}};
+            IndSelected = find(ismember(SequenceType_listing, NamesSelected)) ;
+            for i=1:length(IndSelected)
+               table.data(IndSelected(i),2) = {true};
+            end
+            %table.data = handles.new_module.opt.table.Default{parameter_selected};
+        end
+        %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
         
+        
+        table.columnName = {'SequenceName', 'Select Input'};
+        table.editable = [false true];
+        table.ColumnFormat = {'char'};
+            
     case {'1ScanOr1ROI', 'XScanOrXROI'}
         SequenceType_listing = cellstr(unique(handles.MP3_pipeline_Filtered_Table.SequenceName(handles.MP3_pipeline_Filtered_Table.Type ~= 'Deleted')));
         handles.MP3_pipeline_Filtered_Table = handles.MP3_pipeline_Filtered_Table(handles.MP3_pipeline_Filtered_Table.Type ~= 'Deleted', :);
@@ -1004,10 +1036,13 @@ function MP3_pipeline_parameter_setup_table_CellEditCallback(hObject, eventdata,
 parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
-if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') 
+if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') ||...
+        strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') 
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROIOr1Cluster') 
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || ...
+        strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Cluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROIOr1Cluster') ...
+        || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1mat')
     if sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 1 || sum(cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2))) == 0
         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
         %handles.new_module.opt.table.Default{parameter_selected} = [handles.MP3_pipeline_parameter_setup_table.ColumnName(1); {handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1}}];
@@ -1019,7 +1054,7 @@ elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') ||
 %         
 %     end
     
-elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP')
+elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan1TPXP') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI1TPXP')
 %     if isempty(handles.new_module.opt.table.Default{parameter_selected})
 %         handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 %     else
@@ -1583,7 +1618,8 @@ for i=1:length(handles.module_parameters_fields)
             ActualValues{i} = num2str(handles.new_module.opt.Module_settings.(handles.module_parameters_fields{i}));
         elseif any(contains(handles.new_module.opt.table.Type{i}, 'check'))
             ActualValues{i} = char('');
-        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI')) || any(contains(handles.new_module.opt.table.Type{i}, 'Cluster'))
+        elseif any(contains(handles.new_module.opt.table.Type{i}, 'Scan')) || any(contains(handles.new_module.opt.table.Type{i}, 'ROI')) || ...
+                any(contains(handles.new_module.opt.table.Type{i}, 'Cluster')) || any(contains(handles.new_module.opt.table.Type{i}, 'mat'))
             if isempty(handles.new_module.opt.table.Default{i})
                 Scan = [];
             else
@@ -1640,7 +1676,7 @@ function [pipeline, output_database] = MP3_pipeline_generate_psom_modules(New_mo
 % handles    structure with handles and user data (see GUIDATA)
 pipeline = struct();
 Types = New_module.opt.table.Type;
-ScanInputs = find(contains(Types, {'Scan', 'ROI', '1Cluster'}));
+ScanInputs = find(contains(Types, {'Scan', 'ROI', '1Cluster', 'mat'}));
 NbScanInput = length(ScanInputs);
 %%% NOTE : Il serait peut-être plus judicieux de boucler sur tous les temps
 %%% et patients de la databse de sortie du filtre grosses mailles, ce qui
@@ -1860,7 +1896,11 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
                         end
                     end
                         for l=1:size(Databtmp3,1)
-                            Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+                            if Databtmp3.Type == "Mfile"
+                                Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.mat'];
+                            else
+                                Mattmp{j,k,l} = [char(Databtmp3.Path(l)) char(Databtmp3.Filename(l)) '.nii'];
+                            end
                         end
                     else
                         Mattmp{j,k} = '';
@@ -1882,67 +1922,70 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
     
     
     % Which input must we adapt ?
-    InputToReshape = New_module.opt.Module_settings.InputToReshape;
-    if InputToReshape ~= RefInput
-        InToReshape = FinalMat{InputToReshape};
-        %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
-        InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
-        
-        % Ligne suivante commentee pour debeuger le pipeline de Ludovic . .. . .  YO
-        % NO SE :/
-        % Cette ligne commentee permet l'execution du pipeline de Ludovic mais
-        % empeche du coup celle d'un module Coreg dont l'entrée 1 est
-        % un fichier unique (1 Scan + 1 TP + 1 Patient selectionné)... A
-        % investiguer. 
-        
-        %Commenter la ligne suivante permet d'executer des pipelines
-        %lorsque l'input de reference manque dans l'un des TP alors que
-        %l'input to reshape y est presente. Ex : aucun scan de ref à D0
-        %pour tous les patients, alors que le scan a reshape en possede un.
-        %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
-        
-        %Pour régler ce probleme, on sépare les deux cas :
-        InToReshape_bis = InToReshape;
-        InToReshape_bis(find(all(cellfun(@isempty,InToReshape_bis),2)),:) = [];
-        if size(InToReshape_bis) == [1,1]
-            InToReshape = InToReshape_bis;
-        end
-        
-        %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
-        if EmptyParams{InputToReshape} == 0
-            NewIn = repmat(InToReshape, size(RefMat));
-            assert(size(NewIn,1) == size(RefMat,1));
-            assert(size(NewIn,2) == size(RefMat,2));
-            assert(size(NewIn,3) == size(RefMat,3));
-            FinalMat{InputToReshape} = NewIn;
-        elseif size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
-            string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
-            choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
-            switch choice
-                case 'Continue'
-                    NewIn = repmat(InToReshape, size(RefMat));
-                    assert(size(NewIn,1) == size(RefMat,1));
-                    assert(size(NewIn,2) == size(RefMat,2));
-                    assert(size(NewIn,3) == size(RefMat,3));
-                    FinalMat{InputToReshape} = NewIn;
-                case 'Return'
-                    output_database = table();
-                    pipeline = struct();
-                    %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
-                    return
+    InputsToReshape = New_module.opt.Module_settings.InputToReshape;
+    for ii = 1: numel(InputsToReshape)
+        InputToReshape = InputsToReshape(ii);
+        if InputToReshape ~= RefInput
+            InToReshape = FinalMat{InputToReshape};
+            %InToReshape = InToReshape(~cellfun('isempty',InToReshape));
+            InToReshape(:,find(all(cellfun(@isempty,InToReshape),1))) = [];
+            
+            % Ligne suivante commentee pour debeuger le pipeline de Ludovic . .. . .  YO
+            % NO SE :/
+            % Cette ligne commentee permet l'execution du pipeline de Ludovic mais
+            % empeche du coup celle d'un module Coreg dont l'entrée 1 est
+            % un fichier unique (1 Scan + 1 TP + 1 Patient selectionné)... A
+            % investiguer.
+            
+            %Commenter la ligne suivante permet d'executer des pipelines
+            %lorsque l'input de reference manque dans l'un des TP alors que
+            %l'input to reshape y est presente. Ex : aucun scan de ref à D0
+            %pour tous les patients, alors que le scan a reshape en possede un.
+            %InToReshape(find(all(cellfun(@isempty,InToReshape),2)),:) = [];
+            
+            %Pour régler ce probleme, on sépare les deux cas :
+            InToReshape_bis = InToReshape;
+            InToReshape_bis(find(all(cellfun(@isempty,InToReshape_bis),2)),:) = [];
+            if size(InToReshape_bis) == [1,1]
+                InToReshape = InToReshape_bis;
             end
-        elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
-            NewIn = repmat(InToReshape, size(RefMat,1), 1);
-            assert(size(NewIn,1) == size(RefMat,1));
-            assert(size(NewIn,2) == size(RefMat,2));
-            assert(size(NewIn,3) == size(RefMat,3));
-            FinalMat{InputToReshape} = NewIn;
-        elseif size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
-            NewIn = repmat(InToReshape, 1, size(RefMat,2));
-            assert(size(NewIn,1) == size(RefMat,1));
-            assert(size(NewIn,2) == size(RefMat,2));
-            assert(size(NewIn,3) == size(RefMat,3));
-            FinalMat{InputToReshape} = NewIn;
+            
+            %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
+            if EmptyParams{InputToReshape} == 0
+                NewIn = repmat(InToReshape, size(RefMat));
+                assert(size(NewIn,1) == size(RefMat,1));
+                assert(size(NewIn,2) == size(RefMat,2));
+                assert(size(NewIn,3) == size(RefMat,3));
+                FinalMat{InputToReshape} = NewIn;
+            elseif size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
+                string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
+                choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
+                switch choice
+                    case 'Continue'
+                        NewIn = repmat(InToReshape, size(RefMat));
+                        assert(size(NewIn,1) == size(RefMat,1));
+                        assert(size(NewIn,2) == size(RefMat,2));
+                        assert(size(NewIn,3) == size(RefMat,3));
+                        FinalMat{InputToReshape} = NewIn;
+                    case 'Return'
+                        output_database = table();
+                        pipeline = struct();
+                        %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
+                        return
+                end
+            elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
+                NewIn = repmat(InToReshape, size(RefMat,1), 1);
+                assert(size(NewIn,1) == size(RefMat,1));
+                assert(size(NewIn,2) == size(RefMat,2));
+                assert(size(NewIn,3) == size(RefMat,3));
+                FinalMat{InputToReshape} = NewIn;
+            elseif size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
+                NewIn = repmat(InToReshape, 1, size(RefMat,2));
+                assert(size(NewIn,1) == size(RefMat,1));
+                assert(size(NewIn,2) == size(RefMat,2));
+                assert(size(NewIn,3) == size(RefMat,3));
+                FinalMat{InputToReshape} = NewIn;
+            end
         end
     end
     
@@ -2083,6 +2126,13 @@ if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data
     end
 end
 
+if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Others_data'],'dir') ~= 7
+    [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Others_data']);
+    if status == false
+        error('Cannot create the Others_data folder to save the results of the computed maps.')
+    end
+end
+
 if exist([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp'],'dir') ~= 7
     [status, ~, ~] = mkdir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp']);
     if status == false
@@ -2193,6 +2243,8 @@ if ~isempty(Table_JobDeleted) % ie if some jobs are deleted
                 Spl = strsplit(char(Mod.opt.Table_in.Path(Ia(l))), filesep);
                 if Mod.opt.Table_in.Type(Ia(l)) == 'ROI' || Mod.opt.Table_in.Type(Ia(l)) == 'Cluster'
                     Spl{end-1} = 'ROI_data';
+                elseif Mod.opt.Table_in.Type(Ia(l)) == 'Mfile'
+                    Spl{end-1} = 'Others_data';
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '0'
                     Spl{end-1} = 'Derived_data';
                 elseif Mod.opt.Table_in.Type(Ia(l)) == 'Scan' &&  Mod.opt.Table_in.IsRaw(Ia(l)) == '1'
@@ -2445,13 +2497,23 @@ for i=1:length(Jobs)
                        switch char(outdb.Type)
                            case 'Scan'
                                Folders{end-1} = 'Derived_data';
+                               NewPath = strjoin(Folders, filesep);
+                               [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                            case 'ROI'
                                Folders{end-1} = 'ROI_data';
+                               NewPath = strjoin(Folders, filesep);
+                               [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
                            case 'Cluster'
                                Folders{end-1} = 'ROI_data';
+                               NewPath = strjoin(Folders, filesep);
+                               [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
+                           case 'Mfile'
+                               Folders{end-1} = 'Others_data';
+                                NewPath = strjoin(Folders, filesep);
+                               [statusMat,~] = movefile(B{k}, [NewPath, name_out, '.mat']);
+                               statusNii = 1;
                        end
-                       NewPath = strjoin(Folders, filesep);
-                       [statusNii,~] = movefile(B{k}, [NewPath, name_out, '.nii']);
+                       
 
                        if strcmp(char(outdb.Type), 'Scan')
                            [statusJson,~] = movefile(strrep(B{k},'.nii','.json'), [NewPath, name_out, '.json']);
@@ -2461,6 +2523,12 @@ for i=1:length(Jobs)
                                [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
                            end
                            statusJson = 1;
+                       elseif strcmp(char(outdb.Type), 'Mfile')
+                           if exist(strrep(B{k},'.mat','.json'), 'file')
+                               [statusJson,~] = movefile(strrep(B{k},'.mat','.json'), [NewPath, name_out, '.json']);
+                           else
+                              statusJson = 1; 
+                           end
                        else
                            statusJson = 1;
                            statusMat = 1;
@@ -2581,7 +2649,7 @@ end
 
 if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2629,7 +2697,7 @@ end
 
 if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2694,7 +2762,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2754,7 +2822,7 @@ end
 %% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2789,7 +2857,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -3940,22 +4008,41 @@ load(fname)
 PreviousDB = handles.MP3_data.database;
 for i=1:size(Output_Table,1)
     Entry = Output_Table(i,:);
-    filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
-    if ~exist(filename)
-        continue
-    end
     switch char(Entry.Type)
         case 'Scan'
+            filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
+            if ~isfile(filename)
+                continue
+            end
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
             jsonfilename = strrep(filename, '.nii', '.json');
             if exist(jsonfilename, 'file')
-            movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
+                movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
             end
             Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_Derived_data_path));
         case 'ROI'
+            filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
+            if ~isfile(filename)
+                continue
+            end
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
             Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
+        case 'Mfile'
+            filename = [char(Entry.Path), char(Entry.Filename), '.mat'];
+            if ~isfile(filename)
+                continue
+            end
+            movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Others_data', filesep]));
+            jsonfilename = strrep(filename, '.mat', '.json');
+            if exist(jsonfilename, 'file')
+                movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
+            end
+            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
         case 'Cluster'
+            filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
+            if ~isfile(filename)
+                continue
+            end
             movefile(filename, strrep(filename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'ROI_data', filesep]));
             matfilename = strrep(filename, '.nii', '.mat');
             if exist(matfilename, 'file')
