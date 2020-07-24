@@ -732,7 +732,7 @@ else
         handles = MP3_clear_data(hObject, eventdata, handles);
         set(handles.MP3_name_list, 'Value', 1);
         set(handles.MP3_time_points_list, 'Value', 1);
-        set(handles.MP3_scans_button, 'Value', 0);
+        set(handles.MP3_scans_button, 'Value', 1);
         set(handles.MP3_scans_list, 'Value', 1);
 
         
@@ -748,6 +748,7 @@ else
         handles.database.Properties.UserData.MP3_Raw_data_path = [new_patient_directory, 'Raw_data', filesep];
         handles.database.Properties.UserData.MP3_ROI_path = [new_patient_directory, 'ROI_data', filesep];
         handles.database.Properties.UserData.MP3_Derived_data_path = [new_patient_directory, 'Derived_data', filesep];
+        handles.database.Properties.UserData.MP3_Others_data_path = [new_patient_directory, 'Others_data', filesep];
         handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
         % update the path in the table
         %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MP3_Raw_data_path;
@@ -4672,6 +4673,7 @@ else
     handles.database.Properties.UserData.MP3_Raw_data_path = [MP3_data_path, 'Raw_data', filesep];
     handles.database.Properties.UserData.MP3_Derived_data_path = [MP3_data_path, 'Derived_data', filesep];
     handles.database.Properties.UserData.MP3_ROI_path = [MP3_data_path, 'ROI_data', filesep];
+    handles.database.Properties.UserData.MP3_Others_path = [MP3_data_path, 'Others_data', filesep];
     handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
 end
@@ -5957,6 +5959,7 @@ else
     handles.database.Properties.UserData.MP3_Raw_data_path = [MP3_data_path, 'Raw_data', filesep];
     handles.database.Properties.UserData.MP3_Derived_data_path = [MP3_data_path, 'Derived_data', filesep];
     handles.database.Properties.UserData.MP3_ROI_path = [MP3_data_path, 'ROI_data', filesep];
+    handles.database.Properties.UserData.MP3_Others_data_path = [MP3_data_path, 'Others_data', filesep];
     handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
     
 end
@@ -6170,6 +6173,7 @@ handles.database.Properties.UserData.MP3_data_path = MP3_data_path;
 handles.database.Properties.UserData.MP3_Raw_data_path = [MP3_data_path, 'Raw_data', filesep];
 handles.database.Properties.UserData.MP3_Derived_data_path = [MP3_data_path, 'Derived_data', filesep];
 handles.database.Properties.UserData.MP3_ROI_path = [MP3_data_path, 'ROI_data', filesep];
+handles.database.Properties.UserData.MP3_Others_data_path = [MP3_data_path, 'Others_data', filesep];
 handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','ascend'};
 handles.database.Properties.UserData.db_filename = 'MP3_database.mat';
 
