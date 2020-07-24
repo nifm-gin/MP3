@@ -1419,9 +1419,12 @@ if handles.mode == 1
                 set(eval(['handles.MP3_data', stri, '_expt_slider']), 'Value', 1);
                 
             elseif handles.data_loaded.number_of_scan > i-1 && length(handles.data_loaded.Scan(i).V(1).private.dat.dim) == 5 % 5D data
+                if  mat_size(4) == 1
+                      set(eval(['handles.MP3_data', stri, '_echo_slider']), 'Visible', 'off', 'Value', 1, 'Min', 1, 'Max', 1);
+                else
                 set(eval(['handles.MP3_data', stri, '_echo_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max',  mat_size(4),...
                     'SliderStep',[1/(mat_size(4)-1) min(5/(mat_size(4)-1),1)]);
-                
+                end
                 set(eval(['handles.MP3_data', stri, '_expt_slider']), 'Visible', 'on', 'Value', 1, 'Min', 1, 'Max', mat_size(5),...
                     'SliderStep',[1/(mat_size(5)-1) min(5/(mat_size(5)-1),1)]);
             end
