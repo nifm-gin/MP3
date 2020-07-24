@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 29-Jun-2020 12:40:44
+% Last Modified by GUIDE v2.5 09-Jul-2020 14:16:12
 
 
 
@@ -85,7 +85,8 @@ handles.table1.cluster = [];
 handles.table1.cluster_row = [];
 handles.mode = 1;
 handles.view_mode = 'Axial';
-set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
+set(handles.MP3_scans_button, 'ForegroundColor', [1 0 0])
+set(handles.MP3_scans_button, 'Value', 1)
 
 handles.display_option.view_pixel_on_map = 0;
 handles.display_option.view_pixel_on_plot = 0;
@@ -329,9 +330,8 @@ else
 end
 time_point = get(handles.MP3_time_points_list, 'Value');
 
-if get(handles.MP3_scan_VOIs_button, 'Value') == 0 %display parameters list
-    set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
-    set(handles.MP3_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
+if get(handles.MP3_scans_button, 'Value') == 1 %display parameters list
+
     is_scan =  handles.database.Type == 'Scan';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
@@ -353,10 +353,7 @@ if get(handles.MP3_scan_VOIs_button, 'Value') == 0 %display parameters list
     end
     set(handles.MP3_file_list, 'String', file_text);
     
-else %display VOIs list
-    %is_ROI=  handles.database.Type == 'ROI';
-    set(handles.MP3_VOIs_button, 'BackgroundColor', [1 0 0])
-    set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
+elseif get(handles.MP3_VOIs_button, 'Value') == 1 %display VOIs list
     is_ROI = handles.database.Type == 'ROI' | handles.database.Type == 'Cluster';
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_ROI);
@@ -370,9 +367,9 @@ else %display VOIs list
     for i=1:numel(sequence_listing(scan))
         sequence_filter =  handles.database.SequenceName== sequence_listing(scan(i));
         if sum(Patient_filter & tp_filter & sequence_filter & is_ROI) == 1
-        file_text(i) = cellstr(handles.database.Filename(Patient_filter & tp_filter & sequence_filter & is_ROI));
+            file_text(i) = cellstr(handles.database.Filename(Patient_filter & tp_filter & sequence_filter & is_ROI));
         else
-            % in case there are more than two entries in the database --> delete the extra one(s) 
+            % in case there are more than two entries in the database --> delete the extra one(s)
             indexes = find(Patient_filter & tp_filter & sequence_filter & is_ROI);
             handles.database(indexes(2:end),:)=[];
             guidata(hObject, handles)
@@ -380,7 +377,33 @@ else %display VOIs list
         end
     end
     set(handles.MP3_file_list, 'String', file_text);
+elseif get(handles.MP3_Others_button, 'Value') == 1 %display VOIs list
+   % warndlg('not coded yet', 'Warning');
+    List_of_types = unique(handles.database.Type);
+    List_of_types =  List_of_types( ~sum(List_of_types == {'Scan', 'ROI'}, 2));
+    is_scan =  sum(handles.database.Type == List_of_types',2);
+    tp_filter = handles.database.Tp== tp_listing(time_point);
+    sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
+    if isempty(sequence_listing)
+        set(handles.MP3_scans_list, 'String', '');
+        return
+    end
+    % check if the sequence listing is not shorter than the old one. If
+    % so update MP3_scans_list 'Value'
+    if numel(sequence_listing) < get(handles.MP3_scans_list, 'Value')
+        set(handles.MP3_scans_list, 'String', char(sequence_listing), 'Value', numel(sequence_listing));
+    else
+        set(handles.MP3_scans_list, 'String', char(sequence_listing));
+    end
+    scan = get(handles.MP3_scans_list, 'Value');
     
+    file_text= cell(1, numel(sequence_listing(scan)));
+    for i=1:numel(sequence_listing(scan))
+        sequence_filter =  handles.database.SequenceName== sequence_listing(scan(i));
+        file_text(i) = cellstr(handles.database.Filename(Patient_filter & tp_filter & sequence_filter & is_scan));
+        
+    end
+    set(handles.MP3_file_list, 'String', file_text);
     
 end
 
@@ -458,41 +481,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-% --- Executes on button press in MP3_scan_VOIs_button.
-function MP3_scan_VOIs_button_Callback(hObject, eventdata, ~)
-% hObject    handle to MP3_scan_VOIs_button (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of MP3_scan_VOIs_button
-
-handles = guidata(hObject);
-if ~isfield(handles, 'database')
-    return
-end
-patient = get(handles.MP3_name_list, 'Value');
-timepoint = get(handles.MP3_time_points_list, 'Value');
-if numel(patient) > 1 || numel(timepoint) >1
-    warndlg('Please select only 1 patient before hitting this button','Warning');
-    set(handles.MP3_scan_VOIs_button, 'Value', 0)
-    return
-end
-
-set(handles.MP3_scan_VOIs_button, 'Value', 0)
-set(handles.MP3_VOIs_button, 'Value', 1)
-set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [1 0 0])
-set(handles.MP3_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
-
-%value = get(handles.MP3_scan_VOIs_button, 'Value');
-set(handles.MP3_scans_list, 'Value', 1);
-% if value == 0
-%     set(handles.MP3_scan_VOIs_button, 'String', 'Scans');
-% else
-%     set(handles.MP3_scan_VOIs_button, 'String', 'VOIs');
-% end
-MP3_update_database_display(hObject, eventdata, handles);
 
 
 
@@ -744,7 +732,7 @@ else
         handles = MP3_clear_data(hObject, eventdata, handles);
         set(handles.MP3_name_list, 'Value', 1);
         set(handles.MP3_time_points_list, 'Value', 1);
-        set(handles.MP3_scan_VOIs_button, 'Value', 0);
+        set(handles.MP3_scans_button, 'Value', 0);
         set(handles.MP3_scans_list, 'Value', 1);
 
         
@@ -889,7 +877,7 @@ if numel(data_selected) >1
     return
 end
 
-if get(handles.MP3_scan_VOIs_button, 'Value')
+if get(handles.MP3_scans_button, 'Value')
     name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
 else
     name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
@@ -1048,6 +1036,10 @@ guidata(handles.MP3_GUI, handles);
 
 
 function MP3_load_axes_Callback(hObject, eventdata, handles)
+if get(handles.MP3_Others_button, 'Value') == 1
+        warndlg('Such files cannot be display in MP3','Warning');
+        return
+end
 % by default this slider is hidded
 set(handles.MP3_PRM_slider_trans, 'Visible', 'off');
 
@@ -1059,25 +1051,23 @@ if numel(get(handles.MP3_name_list, 'Value')) > 1
      warndlg('Please select only 1 patient before loading scan(s)','Warning');
     return
 end
-%tstart = tic;
 scan = get(handles.MP3_scans_list, 'Value');
 % Load VOIs
 if handles.mode == 2 && numel(scan) > 1
-    if get(handles.MP3_scan_VOIs_button, 'Value') == 1
-        warndlg('Please select only 1 VOI when using the longitudinal view mode','Warning');
-    else
+    if get(handles.MP3_scans_button, 'Value') == 1
         warndlg('Please select only 1 Scan when using the longitudinal view mode','Warning');
+    elseif get(handles.MP3_VOIs_button, 'Value') == 1
+        warndlg('Please select only 1 VOI when using the longitudinal view mode','Warning');
     end
     return
 end
-if get(handles.MP3_scan_VOIs_button, 'Value') && isfield(handles, 'data_loaded') || ...
-        get(handles.MP3_scan_VOIs_button, 'Value') && isfield(handles, 'data_selected_for_PRM')
+if get(handles.MP3_VOIs_button, 'Value') && isfield(handles, 'data_loaded') || ...
+        get(handles.MP3_scans_button, 'Value') && isfield(handles, 'data_selected_for_PRM')
     
     handles = MP3_load_VOIs(hObject, eventdata, handles);
     MP3_update_axes(hObject, eventdata, handles)
-    %toc(tstart)
     return
-elseif get(handles.MP3_scan_VOIs_button, 'Value') && ~isfield(handles, 'data_loaded')
+elseif get(handles.MP3_VOIs_button, 'Value') && ~isfield(handles, 'data_loaded')
     warndlg('Please load a scan first','Warning');
     return
 end
@@ -1568,7 +1558,7 @@ end
 if ~strcmp(get(hObject, 'Tag'), 'MP3_slider_slice') && ~strcmp(eventdata.EventName, 'WindowScrollWheel')
     % Update image_displayed matrix
     
-    if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MP3_load_axes') && get(handles.MP3_scan_VOIs_button, 'Value'))) && ...
+    if (isfield(handles, 'data_loaded') && ~(strcmp(get(hObject, 'Tag'), 'MP3_load_axes') && get(handles.MP3_VOIs_button, 'Value'))) && ...
             ~strcmp(get(hObject, 'Tag'), 'MP3_new_roi')
         handles = MP3_update_image_displayed(hObject, eventdata, handles);
         
@@ -5328,16 +5318,16 @@ end
 %
 %
 %         % set and open scan
-%         set(handles.MP3_scan_VOIs_button, 'Value', 0)
-%         MP3_scan_VOIs_button_Callback(hObject, eventdata, handles);
+%         set(handles.MP3_scans_button, 'Value', 0)
+%         _CallbackMP3_scans_button_Callback(hObject, eventdata, handles);
 %         set(handles.MP3_scans_list, 'Value', find(strcmp(handles.database(i).day(j).parameters', {'09_MGEFIDSEpre-60ms'}) | ...
 %             strcmp(handles.database(i).day(j).parameters', {'12_MGEFIDSEpost-60ms'}) > 0))
 %         MP3_load_axes_Callback(hObject, eventdata, handles)
 %
 %
 %         % set and open VOI
-%         set(handles.MP3_scan_VOIs_button, 'Value', 1)
-%         MP3_scan_VOIs_button_Callback(hObject, eventdata, handles);
+%         set(handles.MP3_scans_button, 'Value', 1)
+%         _CallbackMP3_scans_button_Callback(hObject, eventdata, handles);
 %
 %         set(handles.MP3_scans_list, 'Value', find(strcmp(handles.database(i).day(j).VOIs', {'Tumor'}) | ...
 %             strcmp(handles.database(i).day(j).VOIs', {'Striat'}) > 0))
@@ -5837,15 +5827,17 @@ end
 if path == 0
     return
 end
+warndlg('Since Scans/VOIs/Others buttons changes, this function needs to be updated!', 'Warning');
 
 Index = get_data_selected(handles);
-Button = get(handles.MP3_scan_VOIs_button, 'Value');
+Button = get(handles.MP3_scans_button, 'Value');
+
 if isempty(Index)
-    set(handles.MP3_scan_VOIs_button, 'Value',0);
+    set(handles.MP3_scans_button, 'Value',0);
     Index = get_data_selected(handles);
-    set(handles.MP3_scan_VOIs_button, 'Value',Button);
+    set(handles.MP3_scans_button, 'Value',Button);
 end
-%set(handles.MP3_scan_VOIs_button, 'Value',1);
+%set(handles.MP3_scans_button, 'Value',1);
 Entry_Selected = handles.database(Index,:);
 
 if size(Entry_Selected,1)>1
@@ -6505,6 +6497,41 @@ function Menu_Export_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% --- Executes on button press in MP3_scans_button.
+function MP3_scans_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_scans_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of MP3_scans_button
+
+handles = guidata(hObject);
+if ~isfield(handles, 'database')
+    set(handles.MP3_scans_button, 'Value', 0)
+    guidata(hObject, handles)
+    return
+end
+patient = get(handles.MP3_name_list, 'Value');
+timepoint = get(handles.MP3_time_points_list, 'Value');
+if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
+    set(handles.MP3_scans_button, 'Value', 0)
+    return
+end
+
+
+% change the state of other buttons
+set(handles.MP3_VOIs_button, 'Value', 0)
+set(handles.MP3_VOIs_button, 'ForegroundColor', [0 0 0])
+set(handles.MP3_Others_button, 'Value', 0)
+set(handles.MP3_Others_button, 'ForegroundColor', [0 0 0])
+
+set(handles.MP3_scans_button, 'ForegroundColor', [1 0 0])
+set(handles.MP3_scans_button, 'Value', 1)
+
+set(handles.MP3_scans_list, 'Value', 1);
+
+MP3_update_database_display(hObject, eventdata, handles);
 
 % --- Executes on button press in MP3_VOIs_button.
 function MP3_VOIs_button_Callback(hObject, eventdata, handles)
@@ -6513,27 +6540,66 @@ function MP3_VOIs_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of MP3_VOIs_button
+
 handles = guidata(hObject);
 if ~isfield(handles, 'database')
+    set(handles. MP3_VOIs_button, 'Value', 0)
+    guidata(hObject, handles)
+    return
+end
+
+patient = get(handles.MP3_name_list, 'Value');
+timepoint = get(handles.MP3_time_points_list, 'Value');
+if numel(patient) > 1 || numel(timepoint) >1
+    warndlg('Please select only 1 patient before hitting this button','Warning');
+    set(handles.MP3_scans_button, 'Value', 0)
+    guidata(hObject, handles)
+    return
+end
+% change the state of other buttons
+set(handles.MP3_scans_button, 'Value', 0)
+set(handles.MP3_scans_button, 'ForegroundColor', [0 0 0])
+set(handles.MP3_Others_button, 'Value', 0)
+set(handles.MP3_Others_button, 'ForegroundColor', [0 0 0])
+
+set(handles.MP3_VOIs_button, 'ForegroundColor', [1 0 0])
+set(handles.MP3_VOIs_button, 'Value', 1)
+
+set(handles.MP3_scans_list, 'Value', 1);
+
+MP3_update_database_display(hObject, eventdata, handles);
+
+
+% --- Executes on button press in MP3_Others_button.
+function MP3_Others_button_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_Others_button (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of MP3_Others_button
+
+handles = guidata(hObject);
+if ~isfield(handles, 'database')
+    set(handles.MP3_Others_button, 'Value', 0)
+    guidata(hObject, handles)
     return
 end
 patient = get(handles.MP3_name_list, 'Value');
 timepoint = get(handles.MP3_time_points_list, 'Value');
 if numel(patient) > 1 || numel(timepoint) >1
     warndlg('Please select only 1 patient before hitting this button','Warning');
-    set(handles.MP3_scan_VOIs_button, 'Value', 0)
+    set(handles.MP3_scans_button, 'Value', 0)
     return
 end
+% change the state of other buttons
+set(handles.MP3_scans_button, 'Value', 0)
+set(handles.MP3_scans_button, 'ForegroundColor', [0 0 0])
+set(handles.MP3_VOIs_button, 'Value', 0)
+set(handles.MP3_VOIs_button, 'ForegroundColor', [0 0 0])
 
-set(handles.MP3_scan_VOIs_button, 'Value', 1)
-set(handles.MP3_VOIs_button, 'BackgroundColor', [1 0 0])
-set(handles.MP3_scan_VOIs_button, 'BackgroundColor', [0.9294, 0.9294, 0.9294])
+set(handles.MP3_Others_button, 'ForegroundColor', [1 0 0])
+set(handles.MP3_Others_button, 'Value', 1)
 
-%value = get(handles.MP3_scan_VOIs_button, 'Value');
 set(handles.MP3_scans_list, 'Value', 1);
-% if value == 0
-%     set(handles.MP3_scan_VOIs_button, 'String', 'Scans');
-% else
-%     set(handles.MP3_scan_VOIs_button, 'String', 'VOIs');
-% end
+
 MP3_update_database_display(hObject, eventdata, handles);
