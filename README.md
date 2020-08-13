@@ -32,6 +32,7 @@ In order to push your modifications to the community, please contact benjamin.le
 
 
 ### User Guide: How to...
+Please have a look at our tutorials available on our youtube channel : https://www.youtube.com/playlist?list=PL-Tj6Wc9aE9x7i6s-RLetvNE0isnEsFm7
 
 *  [Import my data?](https://github.com/nifm-gin/MP3/wiki/User_guide_import_data)
 
