@@ -957,6 +957,13 @@ end
 %set(handles.MP3_pipeline_JobsList, 'String', {''});
 set(handles.MP3_pipeline_pipeline_listbox, 'String', {''});
 set(handles.MP3_pipeline_pipeline_listbox, 'Value', 1);
+set(handles.MP3_pipeline_JobsList, 'Value', 1);
+set(handles.MP3_pipeline_JobsList, 'String', {''});
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'Value', 1);
+set(handles.MP3_pipeline_JobsParametersFieldsList, 'String', {''});
+set(handles.MP3_pipeline_JobsParametersValues, 'Value', 1);
+set(handles.MP3_pipeline_JobsParametersValues, 'String', {''});
+
 [hObject, eventdata, handles] = MP3_pipeline_pipeline_listbox_Callback(hObject, eventdata, handles);
 guidata(hObject, handles);
 
@@ -2561,15 +2568,20 @@ end
 
 % update MP3 database if needed
 if update
+    %reorder the database as the original's one
+    handles.MP3_data.database = MP3('sortcategorical_rows', handles.MP3_data.database, {'Patient', 'Tp', 'SequenceName'}, handles.MP3_data.database.Properties.UserData.Order_data_display);
+  
+    % update the MP3 database
     handles2 = guidata(handles.MP3_data.MP3_GUI);
     handles2.database = handles.MP3_data.database;
     guidata(handles.MP3_data.MP3_GUI, handles2);
 
+    % update the MP3 display
     MP3('MP3_update_database_display', hObject, eventdata,handles.MP3_data)
+    % save the new database
     MP3('MP3_menu_save_database_Callback', hObject, eventdata,handles.MP3_data)
-    %msgbox('Done', 'Information') ;
 
-    handles.database = handles.MP3_data.database;
+    %handles.database = handles.MP3_data.database;
     handles = rmfield(handles, 'MP3_pipeline_ParamsModules');
     MP3_pipeline_clear_pipeline_button_Callback(hObject, eventdata, handles);
     
@@ -2826,7 +2838,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
 end
 
 %% Delete a potential scan selected when building a module.
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
