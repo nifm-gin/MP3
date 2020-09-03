@@ -125,7 +125,7 @@ for x = 1:numel(Patient_listing)
                         GroupName{numel(GroupName)+1}  = char(sub_databaseScanofRef.Group);
                         PatientName{numel(PatientName)+1}  = char(sub_databaseScanofRef.Patient);
                         TimePoint{numel(TimePoint)+1}  = char(sub_databaseScanofRef.Tp);
-                        ScanOfRef{numel(Scan_name)+1} = char(char(sub_databaseScanofRef.SequenceName));
+                        ScanOfRef{numel(Parameters_name)+1} = char(char(sub_databaseScanofRef.SequenceName));
                         Parameters_name{numel(Parameters_name)+1} = strcat(char(sub_databaseScanofRef.SequenceName), '_4thDim', num2str(i), '_5thDim', num2str(j), '_mean');   
                         Parameters_name{numel(Parameters_name)+1} = strcat(char(sub_databaseScanofRef.SequenceName), '_4thDim', num2str(i), '_5thDim', num2str(j), '_SD');   
                     end
@@ -196,7 +196,7 @@ for x = 1:numel(Patient_listing)
                 end
                 %calcuate the ROI volume
                 ROI_info = niftiinfo([char(sub_databaseROI.Path(i)) char(sub_databaseROI.Filename(i)) '.nii']);
-                voxel_volume = abs(prod(diag(scan_of_reference.header.mat(1:3,1:3))));
+                voxel_volume = abs(prod(diag(scan_of_reference.header(1).mat(1:3,1:3))));
                 %voxel_volume = prod(ROI_info.raw.pixdim(2:4));
                 current_cvs_table.ROI_volume_mm3 = sum(ROI.data(:))*voxel_volume;
                 current_cvs_table(:,7:end) = num2cell(computed_values);
