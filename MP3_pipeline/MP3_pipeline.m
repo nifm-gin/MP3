@@ -2285,7 +2285,8 @@ end
 handles.psom.pipeline = Pipeline;
 
 % display the pipeline
-if exist('biograph') == 2
+%if exist('biograph') == 2
+if license('test', 'Bioinformatics_Toolbox')
     
     [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
     bg = biograph(graph_deps,list_jobs);
