@@ -377,7 +377,7 @@ elseif get(handles.MP3_VOIs_button, 'Value') == 1 %display VOIs list
         end
     end
     set(handles.MP3_file_list, 'String', file_text);
-elseif get(handles.MP3_Others_button, 'Value') == 1 %display VOIs list
+elseif get(handles.MP3_Others_button, 'Value') == 1 %display the "Other" tag list
    % warndlg('not coded yet', 'Warning');
     List_of_types = unique(handles.database.Type);
     List_of_types =  List_of_types( ~sum(List_of_types == {'Scan', 'ROI'}, 2));
@@ -869,7 +869,7 @@ function MP3_rename_scan_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-if ~isfield(handles, 'database')
+if ~isfield(handles, 'database') || isempty(get(handles.MP3_scans_list, 'String'))
     return
 end
 data_selected = finddata_selected(handles);
@@ -879,11 +879,15 @@ if numel(data_selected) >1
 end
 
 if get(handles.MP3_scans_button, 'Value')
+    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';  
+elseif get(handles.MP3_VOIs_button, 'Value')
     name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
-else
-    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
+elseif get(handles.MP3_Others_button_button, 'Value')
+    name_option = [cellstr(unique(handles.database.SequenceName(handles.database.Type ~= 'Scan' & handles.database.Type ~= 'ROI')))' 'Other']';
 end
 
+
+ 
 [new_scan_name, ok1] = listdlg('PromptString','Select the new scan name:',...
     'Name', 'Select a Name',...
     'SelectionMode','single',...
@@ -5801,6 +5805,10 @@ function MP3_Import_ROI_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+if get(handles.MP3_VOIs_button, 'Value')  ~= 1
+    warndlg('Please click on the VOIs button', 'Warning');
+    return
+end
 
 ROI_listing = [unique(handles.database.SequenceName(handles.database.Type == 'ROI'))', 'Other']';
 % Enter the ROI's name
@@ -5832,7 +5840,6 @@ end
 if path == 0
     return
 end
-warndlg('Since Scans/VOIs/Others buttons changes, this function needs to be updated!', 'Warning');
 
 Index = get_data_selected(handles);
 Button = get(handles.MP3_scans_button, 'Value');
