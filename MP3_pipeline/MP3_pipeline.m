@@ -1852,11 +1852,17 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
         %                         text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
         %                         warndlg(text)
         %                         return
+                            dat = Databtmp3;
                             Path = Databtmp3.Path(1);
                             Path = strsplit(char(Path), filesep);
                             Path{end-1} = 'Tmp';
                             Path = strjoin(Path, filesep);
                             Databtmp3 = Databtmp3(Databtmp3.Path == Path,:);
+                            %Now that we only selected the virtual scans,
+                            %lets select the real scans that dont have a
+                            %similar virtual scan.
+                            [~, ind_diff] = setdiff(RestrictedDatab, Databtmp3(:,~strcmp(FNames(1:end-3), 'Path')));
+                            Databtmp3 = [Databtmp3; dat(ind_diff,:)];
                         end
                     end
                         for l=1:size(Databtmp3,1)
@@ -1916,21 +1922,21 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
             assert(size(NewIn,3) == size(RefMat,3));
             FinalMat{InputToReshape} = NewIn;
         elseif size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 1
-            string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
-            choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
-            switch choice
-                case 'Continue'
+%             string = ['Your ' Tag1 ' selection or your ' Tag2 ' selection is empty, but this multiple Tag is useless because it leads to a unique file. So, all the files from the input 2 will be coregistered on this unique file.'];
+%             choice = questdlg(string, 'Unique file detected','Continue', 'Return', 'Return');
+%             switch choice
+%                 case 'Continue'
                     NewIn = repmat(InToReshape, size(RefMat));
                     assert(size(NewIn,1) == size(RefMat,1));
                     assert(size(NewIn,2) == size(RefMat,2));
                     assert(size(NewIn,3) == size(RefMat,3));
                     FinalMat{InputToReshape} = NewIn;
-                case 'Return'
-                    output_database = table();
-                    pipeline = struct();
-                    %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
-                    return
-            end
+%                 case 'Return'
+%                     output_database = table();
+%                     pipeline = struct();
+%                     %set(handles.MP3_pipeline_manager_GUI, 'pointer', 'arrow');
+%                     return
+%             end
         elseif size(InToReshape,1) == 1 && EmptyParams{InputToReshape} == 1
             NewIn = repmat(InToReshape, size(RefMat,1), 1);
             assert(size(NewIn,1) == size(RefMat,1));
@@ -2220,25 +2226,26 @@ end
 handles.psom.pipeline = Pipeline;
 
 % display the pipeline
-if exist('biograph') == 2
-    
-    [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
-    bg = biograph(graph_deps,list_jobs);
-    
-    
-    % dolayout(bg);
-    %% add editable functions to interact with the biograph
-    set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
-    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
-    view(bg) %, which will bring up the display in a different window.
-    set(0, 'ShowHiddenHandles', 'on')
-    
-    handles.psom.biograph_fig = gcf;
-    %set(handles.psom.biograph_ob, 'Name', 'MP3 pipeline manager');
-    guidata(hObject, handles);
-    %return
-    
-end
+%if exist('biograph') == 2
+% if license('test', 'Bioinformatics_Toolbox')
+%     
+%     [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
+%     bg = biograph(graph_deps,list_jobs);
+%     
+%     
+%     % dolayout(bg);
+%     %% add editable functions to interact with the biograph
+%     set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
+%     set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
+%     view(bg) %, which will bring up the display in a different window.
+%     set(0, 'ShowHiddenHandles', 'on')
+%     
+%     handles.psom.biograph_fig = gcf;
+%     %set(handles.psom.biograph_ob, 'Name', 'MP3 pipeline manager');
+%     guidata(hObject, handles);
+%     %return
+%     
+% end
 
 %% Check if some existing files will be rewrited
 % 
@@ -2752,7 +2759,7 @@ if isfield(handles, 'module_parameters_fields') && isfield(handles, 'module_para
 end
 
 %% Delete a potential scan selected when building a module.
-if isfield(handles, 'new_module')
+if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
         if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster'}))
             handles.new_module.opt.table.Default{i} = [];
