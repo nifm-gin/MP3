@@ -2227,25 +2227,25 @@ handles.psom.pipeline = Pipeline;
 
 % display the pipeline
 %if exist('biograph') == 2
-if license('test', 'Bioinformatics_Toolbox')
-    
-    [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
-    bg = biograph(graph_deps,list_jobs);
-    
-    
-    % dolayout(bg);
-    %% add editable functions to interact with the biograph
-    set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
-    set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
-    view(bg) %, which will bring up the display in a different window.
-    set(0, 'ShowHiddenHandles', 'on')
-    
-    handles.psom.biograph_fig = gcf;
-    %set(handles.psom.biograph_ob, 'Name', 'MP3 pipeline manager');
-    guidata(hObject, handles);
-    %return
-    
-end
+% if license('test', 'Bioinformatics_Toolbox')
+%     
+%     [graph_deps,list_jobs,files_in,files_out,files_clean] = psom_build_dependencies(handles.psom.pipeline);
+%     bg = biograph(graph_deps,list_jobs);
+%     
+%     
+%     % dolayout(bg);
+%     %% add editable functions to interact with the biograph
+%     set(bg, 'NodeCallbacks', @(hObject,eventdata)MP3_pipeline('node_callbacks',hObject));
+%     set(bg, 'EdgeCallbacks', @(hObject,eventdata)MP3_pipeline('edge_callbacks',hObject));
+%     view(bg) %, which will bring up the display in a different window.
+%     set(0, 'ShowHiddenHandles', 'on')
+%     
+%     handles.psom.biograph_fig = gcf;
+%     %set(handles.psom.biograph_ob, 'Name', 'MP3 pipeline manager');
+%     guidata(hObject, handles);
+%     %return
+%     
+% end
 
 %% Check if some existing files will be rewrited
 % 
