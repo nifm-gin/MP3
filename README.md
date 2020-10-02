@@ -11,6 +11,8 @@ Standard processes from SPM or FSL can be called as well as custom fonctions. Co
 
 SUMMARY Poster ([ENGLISH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3_English.pdf)) ([FRENCH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3.pdf)): poster presented at the 4th Congress of the SFRMBM (Strasbourg).
 
+An submitted article describing MP3 is available at https://hal.archives-ouvertes.fr/hal-02937866.
+ 
 ### Requirements
 In order to fully enjoy MP³, you have to meet the following requirements:
 * Matlab 2017b or higher
