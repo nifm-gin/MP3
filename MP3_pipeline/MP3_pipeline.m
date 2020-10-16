@@ -1814,23 +1814,26 @@ for i=1:NbScanInput
                     if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
                         
                         % We select the virtual scan when an input exist twice (real one and virtual one).
-                        Datab3_tmp = table;
+                        Datab3_inputsOK = table;
+                        Datab3_inputsInDouble = table;
                         for ii = 1: size(RestrictedDatab,1)
                             % is the input is unique --> no needs to select
                             % the virtual scan
                             if sum(ismember(RestrictedDatab, RestrictedDatab(ii,:))) == 1
-                                Datab3_tmp =  [Datab3_tmp; Datab3(ii,:)]; %#ok<AGROW>
+                                Datab3_inputsOK =  [Datab3_inputsOK; Datab3(ii,:)]; %#ok<AGROW>
+                            else
+                               Datab3_inputsInDouble  =  [Datab3_inputsInDouble; Datab3(ii,:)]; %#ok<AGROW>
                             end
                         end
                         
-                        Path = Datab3.Path(1);
+                        Path = Datab3_inputsInDouble.Path(1);
                         Path = strsplit(char(Path), filesep);
                         Path{end-1} = 'Tmp';
                         Path = strjoin(Path, filesep);
-                        Datab3 = Datab3(Datab3.Path == Path,:);
+                        Datab3_inputsInDouble = Datab3_inputsInDouble(Datab3_inputsInDouble.Path == Path,:);
                         % here we concatanate the unique inputs with the
                         % inputs where we selected the virtual scans
-                        Datab3 = [Datab3; Datab3_tmp]; %#ok<AGROW>
+                        Datab3 = [Datab3_inputsInDouble; Datab3_inputsOK]; %#ok<AGROW>
                     end
                 end
                 for o=1:size(Datab3,1)
@@ -3757,7 +3760,6 @@ for i=1:length(Modules)
 %     % This allow us to apply on a filtered database an already filtered designed pipeline. 
 %     Module.Filters = {};
 %     %%
-    Modules(i)
     [pipeline_module, output_database_module] = MP3_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MP3_data.database.Properties.UserData.MP3_data_path, 0);
     pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
