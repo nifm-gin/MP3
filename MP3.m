@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 09-Jul-2020 14:16:12
+% Last Modified by GUIDE v2.5 12-Oct-2020 10:02:10
 
 
 
@@ -73,8 +73,8 @@ handles.colors ={'b', 'g', 'm', 'c', 'r', 'k', 'y', 'navy',...
     'u1','turquoise','slateblue',	'springgreen',	'maroon',...
     'purple',	'u2',	'olive',	'u3','chartreuse',	'u4',	'sky',...
     'u5',	'orange',	'u6',	'u7',	'u8',	'gray'};
-%handles.colors_rgb = [0 0 1; 0 1 0; 1 1 0; 1 0 1; 0 1 1; 1 0 0; 0 0 0; 1 1 1];
-load(which('rgb_color_table.mat'), 'num');
+
+ load(which('rgb_color_table.mat'), 'num');
 handles.colors_rgb = num;
 handles.colormap = get(handles.MP3_colormap_popupmenu,'String');
 handles.markers ={'o','s', 'd', 'p', 'h', '+', '*', 'x'};
@@ -380,7 +380,7 @@ elseif get(handles.MP3_VOIs_button, 'Value') == 1 %display VOIs list
 elseif get(handles.MP3_Others_button, 'Value') == 1 %display the "Other" tag list
    % warndlg('not coded yet', 'Warning');
     List_of_types = unique(handles.database.Type);
-    List_of_types =  List_of_types( ~sum(List_of_types == {'Scan', 'ROI'}, 2));
+    List_of_types =  List_of_types( ~sum(List_of_types == {'Scan', 'ROI', 'Cluster'}, 2));
     is_scan =  sum(handles.database.Type == List_of_types',2);
     tp_filter = handles.database.Tp== tp_listing(time_point);
     sequence_listing = handles.database.SequenceName(Patient_filter & tp_filter & is_scan);
@@ -755,6 +755,7 @@ else
         if ~isempty(handles.database)
             handles.database.Path(handles.database.IsRaw == '0' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Derived_data_path ;
             handles.database.Path(handles.database.IsRaw == '1' & handles.database.Type == 'Scan',:) = handles.database.Properties.UserData.MP3_Raw_data_path;
+            handles.database.Path(handles.database.Type == 'Mfile',:) = handles.database.Properties.UserData.MP3_Others_data_path;
             handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
             handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
         end
@@ -3773,6 +3774,78 @@ for i=1:size(X,1)
 end
 
 
+% --------------------------------------------------------------------
+function MP3_clone_patient_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_clone_patient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if ~isfield(handles, 'database')
+    return
+end
+
+%data_selected = finddata_selected(handles);
+patient_seleted = get(handles.MP3_name_list, 'String');
+patient_name = patient_seleted(get(handles.MP3_name_list, 'Value'),:);
+%patient_name = unique(handles.database.Patient(data_selected));
+user_response = questdlg(['Do you want to clone every data of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+    return
+end
+
+
+nii_index = [];
+for i=1:size(patient_name,1)
+    nii_index = [];
+    nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))))']';
+    new_patient_name = strcat(char(handles.database.Patient(nii_index(1))), '-cloned');
+    for j = 1 : numel(nii_index)
+        if handles.database.Type(nii_index(j)) == "Mfile"
+           ext = '.mat';
+        else
+           ext = '.nii';
+        end
+        
+        if ~exist(fullfilename(handles, nii_index(j), ext), 'file') && exist(fullfilename(handles, nii_index(j), '.nii.gz'), 'file')
+            gunzip(fullfilename(handles, nii_index(j), ext, '.gz'));
+            assert(exist(fullfilename(handles, nii_index(j), ext), 'file')==2)
+            delete(fullfilename(handles, nii_index(j), ext, '.gz'))
+        end
+        
+        fid_nii=fopen(fullfilename(handles,  nii_index(j), ext),'r');
+        if fid_nii>0
+            fclose(fid_nii);
+            % update the database
+            new_scan = handles.database(nii_index(j),:);
+            new_scan.Patient = new_patient_name;
+            %new_scan.Filename =  strrep(char(new_scan.Filename), char(handles.database.SequenceName( nii_index(j))), new_parameter_name);
+            new_scan.Filename = strcat(char(new_scan.Patient), '_', char(handles.database.Tp(nii_index(j))), '_',  char(new_scan.SequenceName));
+            handles.database(size(handles.database,1)+1,:) = new_scan;
+            % create the new files
+            copyfile(fullfilename(handles,  nii_index(j), ext), fullfilename(handles, size(handles.database,1), ext), 'f');
+            if exist(fullfilename(handles,  nii_index(j), '.json'), 'file') == 2
+                copyfile(fullfilename(handles,  nii_index(j), '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
+            end
+        else
+            warndlg('something is wrong this the data',  'Warning');
+        end
+        
+        
+    end
+    
+    
+end
+
+
+
+
+% save handles and update display
+guidata(hObject, handles)
+MP3_update_database_display(hObject, eventdata, handles)
+
+% Save database
+MP3_menu_save_database_Callback(hObject, eventdata, handles)
+
 
 % --------------------------------------------------------------------
 function MP3_cloneScanVoi_Callback(hObject, eventdata, handles)
@@ -4922,6 +4995,19 @@ for i=1:height(handles.database)
                 InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
             end
         end
+    elseif handles.database(i,:).Type == 'Mfile'
+        
+        Mat_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.mat'];
+        if  exist(Mat_file, 'file') == 2
+            ValidEntries = [ValidEntries, i];
+            ValidMatFiles = [ValidMatFiles, {Mat_file}];
+        else
+            InvalidEntries = [InvalidEntries, i];
+            if exist(Mat_file, 'file')~=2
+                InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
+            end
+        end
+        
         
     else
         warning('Types allowed so far : Scan, ROI, Cluster. We found an unknown type : %s', handles.database(i,:).Type)
@@ -6617,3 +6703,4 @@ set(handles.MP3_Others_button, 'Value', 1)
 set(handles.MP3_scans_list, 'Value', 1);
 
 MP3_update_database_display(hObject, eventdata, handles);
+
