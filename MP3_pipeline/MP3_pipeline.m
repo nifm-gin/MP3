@@ -2535,6 +2535,8 @@ for i=1:length(Jobs)
                        elseif strcmp(char(outdb.Type), 'Cluster')
                            if exist(strrep(B{k},'.nii','.mat'), 'file')
                                [statusMat,~] = movefile(strrep(B{k},'.nii','.mat'), [NewPath, name_out, '.mat']);
+                           else
+                               statusMat = 1;
                            end
                            statusJson = 1;
                        elseif strcmp(char(outdb.Type), 'Mfile')
@@ -2668,7 +2670,7 @@ end
 
 if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrXROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2716,7 +2718,7 @@ end
 
 if isfield(handles, 'new_module') && ~isempty(fieldnames(handles.new_module))
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOrROI', 'XScanOrXROI', '1ROI', 'XROI', '1Cluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2781,7 +2783,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrXROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2841,7 +2843,7 @@ end
 %% Delete a potential scan selected when building a module.
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrXROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
@@ -2876,7 +2878,7 @@ end
 
 if isfield(handles, 'new_module') && isfield(handles.new_module, 'opt')
     for i=1:length(handles.new_module.opt.table.Default)
-        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
+        if any(strcmp(handles.new_module.opt.table.Type{i}, {'1Scan', 'XScan', '1ScanOr1ROI', 'XScanOrXROI', '1ROI', 'XROI', '1Cluster', '1ROIOr1Cluster', 'XROIOrXCluster', '1mat'}))
             handles.new_module.opt.table.Default{i} = [];
         end
     end
