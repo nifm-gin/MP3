@@ -1807,24 +1807,30 @@ for i=1:NbScanInput
                 % Check if this database contains some entries which shares
                 % all the fields but the Path one (One might be in the Tmp
                 % folder). It means that the automatic generation doesn't
-                % know which file take. The one already existing or the
-                % virtual (temporary) one ? We currently don't deal with
-                % this issue.
+                % know which file take. 
                 if size(Datab3, 1) > 1
                     FNames = fieldnames(Datab3);
                     RestrictedDatab = Datab3(:,~strcmp(FNames(1:end-3), 'Path'));
                     if size(RestrictedDatab,1) ~= size(unique(RestrictedDatab), 1)
-                        %UPDATE : We select the virtual one.
-%                         output_database = table();
-%                         pipeline = struct();
-%                         text = 'It seems that you are trying to create a module which takes as input a scan that exists both virtually and concretely. It it not clear which one you want to use. Please delete the concretely one from your database, filter your database, or modify the module that creates the virtualy one.';
-%                         warndlg(text)
-%                         return
+                        
+                        % We select the virtual scan when an input exist twice (real one and virtual one).
+                        Datab3_tmp = table;
+                        for ii = 1: size(RestrictedDatab,1)
+                            % is the input is unique --> no needs to select
+                            % the virtual scan
+                            if sum(ismember(RestrictedDatab, RestrictedDatab(ii,:))) == 1
+                                Datab3_tmp =  [Datab3_tmp; Datab3(ii,:)]; %#ok<AGROW>
+                            end
+                        end
+                        
                         Path = Datab3.Path(1);
                         Path = strsplit(char(Path), filesep);
                         Path{end-1} = 'Tmp';
                         Path = strjoin(Path, filesep);
                         Datab3 = Datab3(Datab3.Path == Path,:);
+                        % here we concatanate the unique inputs with the
+                        % inputs where we selected the virtual scans
+                        Datab3 = [Datab3; Datab3_tmp]; %#ok<AGROW>
                     end
                 end
                 for o=1:size(Datab3,1)
@@ -3751,6 +3757,7 @@ for i=1:length(Modules)
 %     % This allow us to apply on a filtered database an already filtered designed pipeline. 
 %     Module.Filters = {};
 %     %%
+    Modules(i)
     [pipeline_module, output_database_module] = MP3_pipeline_generate_psom_modules(Module.ModuleParams, Module.Filters, Tmpdatab, handles.MP3_data.database.Properties.UserData.MP3_data_path, 0);
     pipeline.(Modules{i}).Filters = Module.Filters;
     pipeline.(Modules{i}).Jobs = pipeline_module;
