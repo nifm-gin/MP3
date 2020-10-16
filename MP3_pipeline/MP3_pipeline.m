@@ -1797,8 +1797,8 @@ for i=1:NbScanInput
     end
     DatabaseInput{i} = Databtmp;
     if ~isempty(Datab)
-        UTag2 = unique(getfield(Datab, Tag2));
-        UTag1 = unique(getfield(Datab, Tag1));
+        UTag2 = unique(getfield(TmpDatabase, Tag2)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
+        UTag1 = unique(getfield(TmpDatabase, Tag1)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
         Mat = cell(length(UTag2), length(UTag1));
         for m=1:length(UTag2)
             Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
@@ -1873,13 +1873,13 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
     
     % Pour creer le tableau Tag1*Tag2 sur l'union des 2 databases plutot
     % que sur la database de reference :
-%     In_to_reshape = New_module.opt.Module_settings.InputToReshape; % added
-%     Datab_Reshap = DatabaseInput{In_to_reshape}; % added
-%     UTag1 = unique(getfield([Datab_Reshap;RefDatab], Tag1)); % added
-%     UTag2 = unique(getfield([Datab_Reshap;RefDatab], Tag2)); % added
+    In_to_reshape = New_module.opt.Module_settings.InputToReshape; % added
+    Datab_Reshap = DatabaseInput{In_to_reshape}; % added
+    UTag1 = unique(getfield([Datab_Reshap;RefDatab], Tag1)); % added
+    UTag2 = unique(getfield([Datab_Reshap;RefDatab], Tag2)); % added
     
-    UTag1 = unique(getfield(RefDatab, Tag1)); 
-    UTag2 = unique(getfield(RefDatab, Tag2));
+%     UTag1 = unique(getfield(RefDatab, Tag1)); % removed
+%     UTag2 = unique(getfield(RefDatab, Tag2)); % removed
     
     
     FinalMat = cell(NbScanInput,1);
