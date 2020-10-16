@@ -4485,10 +4485,10 @@ function MP3_copy_ScanVoi_to_other_session_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 data_selected = finddata_selected(handles);
-if numel(data_selected) > 1
-    warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
-    return
-end
+% if numel(data_selected) > 1
+%     warndlg('This function works only if 1 scan (or VOI) is selected',  'Warning');
+%     return
+% end
 
 
 UPatients = unique(handles.database.Patient);
@@ -4523,171 +4523,45 @@ for i = 1:length(data_to_import)
 end
 
 
-
-% for i=1:size(database_to_import,1)
-%     switch char(database_to_import.Type(i))
-%         case 'Scan'
-%             if char(database_to_import.IsRaw(i)) == '1'
-%                 infolder = [dir, filesep, 'Raw_data', filesep];
-%                 outfolder = handles.database.Properties.UserData.MP3_Raw_data_path;
-%                 
-%             else
-%                 infolder = [dir, filesep, 'Derived_data', filesep];
-%                 outfolder = handles.database.Properties.UserData.MP3_Derived_data_path;
-%             end
-%             if ~exist(outfolder, 'dir')
-%                 mkdir(outfolder);
-%             end
-%             % Copy nifti file 
-%             extension = '.nii.gz';
-%             filename = [infolder, char(database_to_import.Filename(i)), extension];
-%             if ~exist(filename, 'file')
-%                 extension = '.nii';
-%                 filename = [infolder, char(database_to_import.Filename(i)), extension];
-%             end
-%             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
-%             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
-%             original_filename = char(database_to_import.Filename(i));
-%             idx2=2;
-%             while exist(outfilename)
-%                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
-%                 outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
-%                 idx2=idx2+1;
-%             end
-%             status1 = copyfile(filename, outfilename);
-%             if ~status1
-%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
-%             end
-% %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.nii'])
-% %                 status1 = copyfile(filename, outfolder);
-% %             else
-% %                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
-% %                 msgbox(text);
-% %                 status1 = 0;
-% %             end
-%             % Copy json file
-%             filename = strrep(filename, extension, '.json');
-%             outfilename = strrep(outfilename, extension, '.json');
-%             while exist(outfilename)
-%                 outfilename = [outfolder, char(database_to_import.Filename(i)), '.json'];
-%                 idx2=idx2+1;
-%             end
-%             status2 = copyfile(filename, outfilename);
-% %             if ~exist([outfolder, char(database_to_import.Filename(i)), '.json'])
-% %                 status2 = copyfile(filename, outfolder);
-% %             else
-% %                 text = ['The file: ', filename, ' hasn''t been imported because there is another file with the same name in the folder: ', outfolder];
-% %                 msgbox(text);
-% %                 status2 = 0;
-% %             end
-%             if ~status2
-%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
-%             end
-% 
-%             
-%         case {'ROI', 'Cluster'}
-%             extension = '.nii.gz';
-%             infolder = [dir, filesep, 'ROI_data', filesep];
-%             outfolder = handles.database.Properties.UserData.MP3_ROI_path;
-%             if ~exist(outfolder, 'dir')
-%                 mkdir(outfolder);
-%             end
-%             filename = [infolder, char(database_to_import.Filename(i)), extension];
-%             if ~exist(filename, 'file')
-%                 extension = '.nii';
-%                 filename = [infolder, char(database_to_import.Filename(i)), extension];
-%             end
-%             database_to_import.Filename(i) = categorical(cellstr([char(database_to_import.Patient(i)), '_', char(database_to_import.Tp(i)), '_', char(database_to_import.SequenceName(i))]));
-%             original_filename = char(database_to_import.Filename(i));
-%             outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
-%             idx2=2;
-%             while exist(outfilename)
-%                 database_to_import.Filename(i) = categorical(cellstr([original_filename, '_', num2str(idx2)]));
-%                 outfilename = [outfolder, char(database_to_import.Filename(i)), extension];
-%                 idx2=idx2+1;
-%             end
-%             status1 = copyfile(filename, outfilename);
-%             if ~status1
-%                 warning(['Something went horribly wrong while copying the file ', filename, ' in ', outfilename])
-%             end
-%             status2 = 1;
-%             
-%     end
-%     if status1 && status2
-%         tags = database_to_import(i,:);
-%         tags.Path = categorical(cellstr(outfolder));
-%         flag = 1;
-%         idx = 2;
-%         if size(handles.database, 1) ~= 0
-%             while flag
-%                 tmpdatab = handles.database(handles.database.Patient == tags.Patient,:);
-%                 tmpdatab = tmpdatab(tmpdatab.Tp == tags.Tp, :);
-%                 %tmpdatab = tmpdatab(tmpdatab.Type == tags.Type, :); % ???????
-%                 tmpdatab = tmpdatab(tmpdatab.SequenceName == tags.SequenceName, :);
-%                 if size(tmpdatab,1) == 0
-%                     flag = 0;
-%                 else
-%                     tags.SequenceName = [char(tags.SequenceName), '_', num2str(idx)];
-%                     idx = idx+1;
-%                 end
-%             end
-%         end
-%         handles.database = [handles.database; tags];
-%     end
-%     
-% end
-
-
-
-
-% Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
-% [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
-%     'Name', 'Question?',...
-%     'ListSize', [200 300],...
-%     'ListString', Tp_listing);
-% if ok == 0
-%     return
-% end
-
-
 for i=1:size(destination_db,1)
     new_entry = handles.database(data_selected,:);
-    new_entry.Tp = destination_db.Tp(i);
-    new_entry.Patient = destination_db.Patient(i);
-    new_entry.Group = destination_db.Group(i);
-    new_entry.Filename  = categorical(cellstr(strcat(char(new_entry.Patient), '-', char(new_entry.Tp),'-', char(new_entry.SequenceName))));
-    
-    % check if the scan already exist for this time point 
+    new_entry.Tp =  repmat(destination_db.Tp(i), [length(data_selected), 1]); % destination_db.Tp(i);
+    new_entry.Patient = repmat(destination_db.Patient(i), [length(data_selected), 1]); % destination_db.Patient(i);
+    new_entry.Group = repmat(destination_db.Group(i), [length(data_selected), 1]); %  destination_db.Group(i);
+    for j = 1: length(data_selected)
+        new_entry.Filename(j)  = categorical(cellstr(strcat(char(new_entry.Patient(j)), '-', char(new_entry.Tp(j)),'-', char(new_entry.SequenceName(j)))));
+    end
+    % check if the scan already exist for this time point
     % but, since filename may varie we have to remove the 'Filename'
     % column from the table before checking if the scan to copy exist
     % already
     VariableNames_vector =1:length(handles.database.Properties.VariableNames);
     VariableNames_vector(strcmp(handles.database.Properties.VariableNames,'Filename')) = [];
-    if sum(ismember(handles.database(:,VariableNames_vector), new_entry(:,VariableNames_vector))) == 0
-        if ~exist(fullfilename(handles, data_selected, '.nii'), 'file') && exist(fullfilename(handles, data_selected, '.nii.gz'), 'file')
-            gunzip(fullfilename(handles, data_selected, '.nii.gz'));
-            assert(exist(fullfilename(handles, data_selected, '.nii'), 'file')==2)
-            delete(fullfilename(handles, data_selected, '.nii.gz'))
-        end
-        fid_nii=fopen(fullfilename(handles, data_selected, '.nii'),'r');
-        if fid_nii>0
-            fclose(fid_nii);
-            % update the database
-            handles.database(size(handles.database,1)+1,:) = new_entry;
-            % create the new files
-            copyfile(fullfilename(handles, data_selected, '.nii'), fullfilename(handles, size(handles.database,1), '.nii'), 'f');
-            if exist(fullfilename(handles, data_selected, '.json'), 'file') == 2
-                copyfile(fullfilename(handles, data_selected, '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
+    for j = 1:length(data_selected)
+        if sum(ismember(handles.database(:,VariableNames_vector), new_entry(j,VariableNames_vector))) == 0
+            
+            if ~exist(fullfilename(handles, data_selected(j), '.nii'), 'file') && exist(fullfilename(handles, data_selected(j), '.nii.gz'), 'file')
+                gunzip(fullfilename(handles, data_selected(j), '.nii.gz'));
+                assert(exist(fullfilename(handles, data_selected(j), '.nii'), 'file')==2)
+                delete(fullfilename(handles, data_selected(j), '.nii.gz'))
             end
+            fid_nii=fopen(fullfilename(handles, data_selected(j), '.nii'),'r');
+            if fid_nii>0
+                fclose(fid_nii);
+                % update the database
+                handles.database(size(handles.database,1)+1,:) = new_entry(j,:);
+                % create the new files
+                copyfile(fullfilename(handles, data_selected(j), '.nii'), fullfilename(handles, size(handles.database,1), '.nii'), 'f');
+                if exist(fullfilename(handles, data_selected(j), '.json'), 'file') == 2
+                    copyfile(fullfilename(handles, data_selected(j), '.json'), fullfilename(handles, size(handles.database,1), '.json'), 'f');
+                end
+            else
+                warndlg(['something is wrong this the data : ' fullfilename(handles, data_selected(j), '.nii')],  'Warning');               
+            end   
         else
-            warndlg(['something is wrong this the data : ' fullfilename(handles, data_selected, '.nii')],  'Warning');
-            return
+            warndlg(['This scan already exist : ' char(new_entry.SequenceName(j)) ' for patient : ' strcat(char(destination_db.Patient(i)),'_', char(destination_db.Tp(i)))],  'Warning');
         end
-    else
-        warndlg(['This scan already exist : ' char(new_entry.Filename)],  'Warning');
-        return
     end
-    
 end
 %update handes
 guidata(hObject, handles)
