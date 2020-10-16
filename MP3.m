@@ -1818,7 +1818,8 @@ if ~isfield(handles, 'data_displayed')
     return
 end
 
-handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount * eventdata.VerticalScrollAmount;
+%handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount * eventdata.VerticalScrollAmount; %défilement 3 slices par 3
+handles.MP3_slider_slice.Value = handles.MP3_slider_slice.Value + eventdata.VerticalScrollCount; % Défilement 1 slice par 1
 if handles.MP3_slider_slice.Value <1
     handles.MP3_slider_slice.Value = 1;
 elseif handles.MP3_slider_slice.Value > size(handles.data_displayed.image,3)
@@ -4787,12 +4788,15 @@ eventdatab=eventdata;
 handlesb=handles;
 
 namExport =  '[ExportToMP3]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
+%MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 00012'}) %add lookAndFeel option and ExportOption
 MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 100'}) %add lookAndFeel option and ExportOption
 %MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 000'})
 % [ExportOption] 000 : When Brucker merge calculated scans in an only one
 % file, leave the scans merged
 % [ExportOption] 100 : When Brucker merge calculated scans in an only one
 % file, split the merged file into several files.
+% [ExportOption] 00012 : When converting diffusion data, create bvec and
+% bval related files
 %
 % system(char(strcat([MRIFileManager_path 'jre/bin/java -jar '], [' ' MRIFileManager_path],...
 %     'MRIManager.jar [ExportNifti] ', MP3_tmp_folder_for_java, {' '}, namExport)));

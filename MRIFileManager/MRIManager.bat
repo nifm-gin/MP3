@@ -1,1 +1,1 @@
-java -Xmx4096m -jar MRIManager.jar
+java -Xms512m -Xmx4096m -jar MRIManager.jar
