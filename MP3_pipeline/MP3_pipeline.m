@@ -1945,7 +1945,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
     
     % Which input must we adapt ?
     InputsToReshape = New_module.opt.Module_settings.InputToReshape;
-    for ii = 1: numel(InputsToReshape)
+    for ii = 1: length(InputsToReshape)
         InputToReshape = InputsToReshape(ii);
         if InputToReshape ~= RefInput
             InToReshape = FinalMat{InputToReshape};
@@ -1975,6 +1975,9 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
             %if size(InToReshape,1) == 1 && size(InToReshape,2) == 1 && EmptyParams{InputToReshape} == 0
             if EmptyParams{InputToReshape} == 0
                 NewIn = repmat(InToReshape, size(RefMat));
+                if isempty(NewIn)
+                    NewIn = FinalMat{InputToReshape};
+                end
                 assert(size(NewIn,1) == size(RefMat,1));
                 assert(size(NewIn,2) == size(RefMat,2));
                 assert(size(NewIn,3) == size(RefMat,3));
