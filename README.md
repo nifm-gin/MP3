@@ -29,10 +29,6 @@ You can download MP³ from our GIT repository. Then just add the downloaded file
 In order to push your modifications to the community, please contact benjamin.lemasson@univ-grenoble-alpes.fr to get the developer status. Please create on your own branch from the dev one and then ask to merge it in the dev branch.
 
 
-### Quickstart guide
-*  [If you cannot wait !](https://github.com/nifm-gin/MP3/wiki/Quickstart_guide)
-
-
 ### User Guide: How to...
 Please have a look at our tutorials available on our youtube channel : https://www.youtube.com/playlist?list=PL-Tj6Wc9aE9x7i6s-RLetvNE0isnEsFm7
 
