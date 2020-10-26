@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 12-Oct-2020 10:02:10
+% Last Modified by GUIDE v2.5 26-Oct-2020 16:34:01
 
 
 
@@ -4012,7 +4012,7 @@ end
 
 selection = questdlg('What do you want to delete?',...
     'Warning',...
-    'Parameters','VOIs', 'Cluster', 'Parameters');
+    'Parameters','VOIs/Cluster', 'Others', 'Parameters');
 if isempty(selection)
     return
 end
@@ -4025,18 +4025,19 @@ switch selection
             warndlg('There are no Scan in the database', 'Warning');
             return
         end
-    case 'VOIs'
-        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
+    case 'VOIs/Cluster'
+        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI' | handles.database.Type == 'Cluster')));
         if isempty(name_option)
             warndlg('There are no ROI in the database', 'Warning');
             return
         end
-    case 'Cluster'
-        name_option = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Cluster')));
+    case 'Others'
+        name_option = cellstr(unique(handles.database.SequenceName(~(handles.database.Type == 'ROI' | handles.database.Type == 'Cluster' | handles.database.Type == 'Scan'))));
         if isempty(name_option)
-            warndlg('There are no Cluster in the database', 'Warning');
+            warndlg('There are no "Others" files in the database', 'Warning');
             return
         end
+            
     case 'Cancel'
         return
 end
@@ -4269,7 +4270,7 @@ if ~isfield(handles, 'database')
 end
 selection = questdlg('What do you want to rename?',...
     'Warning',...
-    'Parameters','VOIs', 'Cancel', 'Cancel');
+    'Parameters','VOIs/Cluster', 'Others', 'Cancel');
 
 if isempty(selection)
     return
@@ -4279,21 +4280,22 @@ switch selection
     case 'Parameters'
         old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')));
         new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'Scan')))' 'Other']';
-    case 'VOIs'
-        old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')));
-        new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI')))' 'Other']';
-    case 'Cancel'
+    case 'VOIs/Cluster'
+        old_name_listing = cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI' | handles.database.Type == 'Cluster')));
+        new_name_listing = [cellstr(unique(handles.database.SequenceName(handles.database.Type == 'ROI' | handles.database.Type == 'Cluster')))' 'Other']';
+    case 'Others'
+        warndlg('not coded yet', 'Warning');
         return
 end
 [old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','single','ListSize', [500 500],...
-    'PromptString', 'Select the parameters/VOIs you want to rename');
+    'PromptString', 'Select the data you want to rename');
 if ok == 0 || isempty(old_scan_name)
     return
 end
 old_scan_name = categorical(old_name_listing(old_scan_name));
 
 
-[new_scan_name, ok1] = listdlg('PromptString','Select the new scan name:',...
+[new_scan_name, ok1] = listdlg('PromptString','Select the new name:',...
     'Name', 'Select a Name',...
     'SelectionMode','single',...
     'ListSize', [400 300],...
@@ -4303,7 +4305,7 @@ if ok1 == 0
     return
 end
 if strcmp('Other',new_name_listing(new_scan_name)) == 1
-    newparameter_name = inputdlg('Name of the new Scan ', 'Question?', 1, {''});
+    newparameter_name = inputdlg('Name of the new data ', 'Question?', 1, {''});
     newparameter_name = clean_variable_name(newparameter_name, '');
     newparameter_name =categorical(newparameter_name);
 else
@@ -6581,4 +6583,3 @@ set(handles.MP3_Others_button, 'Value', 1)
 set(handles.MP3_scans_list, 'Value', 1);
 
 MP3_update_database_display(hObject, eventdata, handles);
-
