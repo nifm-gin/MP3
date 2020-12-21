@@ -25,10 +25,10 @@ for i=1:length(Fields)
             Wrong_File = file;
             return
         end
-        [~,~,ext_nii] = fileparts(file);
-        if ~strcmp(ext_nii, '.nii')
+        [~,~,ext] = fileparts(file);
+        if sum(strcmp(ext, {'.nii', '.mat'})) ~= 1
             Status = 0;
-            Message = 'Files need to be .nii or .nii.gz';
+            Message = 'Files need to be .nii, .nii.gz or .mat';
             Wrong_File = file;
             return
         end
