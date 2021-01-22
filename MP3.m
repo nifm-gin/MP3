@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 26-Oct-2020 16:34:01
+% Last Modified by GUIDE v2.5 22-Jan-2021 10:04:42
 
 
 
@@ -6583,3 +6583,126 @@ set(handles.MP3_Others_button, 'Value', 1)
 set(handles.MP3_scans_list, 'Value', 1);
 
 MP3_update_database_display(hObject, eventdata, handles);
+
+
+% --------------------------------------------------------------------
+function MP3_delete_derived_data_of_a_patient_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_delete_derived_data_of_a_patient (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'database')
+    return
+end
+
+patient_seleted = get(handles.MP3_name_list, 'String');
+patient_name = patient_seleted(get(handles.MP3_name_list, 'Value'),:);
+
+switch get(hObject, 'Tag')
+    
+    case 'MP3_delete_all_derived_data_of_a_patient'
+        user_response = questdlg(['Do you want to delete every Derived data of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = [];
+        for i=1:size(patient_name,1)
+            nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))) & ...
+                handles.database.IsRaw == categorical(0))' ]';
+        end
+        
+    case 'MP3_delete_derived_scans_of_a_patient'
+        user_response = questdlg(['Do you want to delete every Derived scans of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = [];
+        for i=1:size(patient_name,1)
+            nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))) & ...
+                handles.database.IsRaw == categorical(0) & ...
+                handles.database.Type == categorical(cellstr('Scan')) )' ]';
+        end
+    case 'MP3_delete_derived_cluster_of_a_patient'
+        user_response = questdlg(['Do you want to delete every Cluster of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = [];
+        for i=1:size(patient_name,1)
+            nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))) & ...
+                handles.database.IsRaw == categorical(0) & ...
+                handles.database.Type == categorical(cellstr('Cluster')) )' ]';
+        end
+    case 'MP3_delete_derived_ROI_of_a_patient'
+        user_response = questdlg(['Do you want to delete every ROIs of ' cellstr(patient_name)']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = [];
+        for i=1:size(patient_name,1)
+            nii_index = [nii_index' find(handles.database.Patient == categorical(cellstr(patient_name(i,:))) & ...
+                handles.database.IsRaw == categorical(0) & ...
+                handles.database.Type == categorical(cellstr('ROI')) )' ]';
+        end
+end
+
+MP3_remove_scan(hObject, eventdata, handles, nii_index)
+
+
+% --------------------------------------------------------------------
+function MP3_delete_derived_data_of_this_time_point_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_delete_derived_data_of_this_time_point (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if ~isfield(handles, 'database')
+    return
+end
+
+%patient_seleted = get(handles.MP3_name_list, 'String');
+%patient_name = patient_seleted(get(handles.MP3_name_list, 'Value'),:);
+data_selected = finddata_selected(handles);
+Time_point_selected = unique(handles.database.Tp(data_selected));
+patient_seleted = unique(handles.database.Patient(data_selected));
+
+switch get(hObject, 'Tag')
+    
+    case 'MP3_delete_all_derived_data_of_this_time_point'
+        user_response = questdlg(['Do you want to delete every Derived data of ' strcat(cellstr(patient_seleted), '-', cellstr(Time_point_selected))']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = find(handles.database.Patient == categorical(cellstr(patient_seleted)) & ...
+            handles.database.Tp == categorical(cellstr(Time_point_selected)) & ...
+            handles.database.IsRaw == categorical(0)) ;        
+        
+    case 'MP3_delete_derived_scans_of_this_time_point'
+        user_response = questdlg(['Do you want to delete every Derived scans of ' strcat(cellstr(patient_seleted), '-', cellstr(Time_point_selected))']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = find(handles.database.Patient == categorical(cellstr(patient_seleted)) & ...
+            handles.database.IsRaw == categorical(0) & ...
+            handles.database.Tp == categorical(cellstr(Time_point_selected)) & ...
+            handles.database.Type == categorical(cellstr('Scan')) );
+        
+    case 'MP3_delete_derived_cluster_of_this_time_point'
+        user_response = questdlg(['Do you want to delete every Cluster of ' strcat(cellstr(patient_seleted), '-', cellstr(Time_point_selected))']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = find(handles.database.Patient == categorical(cellstr(patient_seleted)) & ...
+            handles.database.IsRaw == categorical(0) & ...
+            handles.database.Tp == categorical(cellstr(Time_point_selected)) & ...
+            handles.database.Type == categorical(cellstr('Cluster')) );
+        
+    case 'MP3_delete_derived_ROI_of_this_time_point'
+        user_response = questdlg(['Do you want to delete every ROIs of ' strcat(cellstr(patient_seleted), '-', cellstr(Time_point_selected))']', 'Warning', 'Yes', 'No', 'Cancel', 'Cancel');
+        if strcmp(user_response, 'Cancel') || strcmp(user_response, 'No') || isempty(user_response)
+            return
+        end
+        nii_index = find(handles.database.Patient == categorical(cellstr(patient_seleted)) & ...
+            handles.database.IsRaw == categorical(0) & ...
+            handles.database.Tp == categorical(cellstr(Time_point_selected)) & ...
+            handles.database.Type == categorical(cellstr('ROI')) );
+end
+
+MP3_remove_scan(hObject, eventdata, handles, nii_index)
