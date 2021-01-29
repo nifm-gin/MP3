@@ -53,6 +53,7 @@ if isempty(opt)
     user_parameter(:,7)   = {'   .Output filename pc_enhanc','char','pc_enhanc','output_filename_pc_enhanc','','',''};
     user_parameter(:,8)   = {'   .Output filename TTP','char','TTP','output_filename_TTP','','',''};
     user_parameter(:,9)   = {'   .Last dyn before bolus','char','Auto','Last_dyn_before_bolus','','',{'If auto is selected, the algorithm will automatically detect the contrast agent arrival.',...
+        'WARNING: the auto mode needs at lease 3 images for the baseline',...
         'Otherwise, the user can specify manually the dynamic the number of the contrast agent arrival (for example, if the baseline is constituted of 4 images and then the contrast agent is injected you can enter 4'}};
     user_parameter(:,10)   = {'   .End of the analysis (in sec)','numeric','','End_analysis','','','User can specify the windows of signal analyzed'};
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
