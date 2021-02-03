@@ -12,7 +12,9 @@ Standard processes from SPM or FSL can be called as well as custom fonctions. Co
 SUMMARY Poster ([ENGLISH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3_English.pdf)) ([FRENCH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3.pdf)): poster presented at the 4th Congress of the SFRMBM (Strasbourg).
 
 You can find the article linked to MP3 here: https://www.frontiersin.org/articles/10.3389/fninf.2020.594799/full
+
 Do not forget to cite our article if you used MP3 :)
+
    Brossard, C., Montigon, O., Boux, F., Delphin, A., Christen, T., Barbier, E. L., & Lemasson, B.
    MP3: Medical software for Processing multi-Parametric images Pipelines
    Frontiers in Neuroinformatics, 2020, 14, 53.
