@@ -4070,7 +4070,7 @@ for i=1:size(Output_Table,1)
             if exist(jsonfilename, 'file')
                 movefile(jsonfilename, strrep(jsonfilename,[handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep], [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Derived_data', filesep]));
             end
-            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_ROI_path));
+            Entry.Path = categorical(cellstr(handles.MP3_data.database.Properties.UserData.MP3_Others_data_path));
         case 'Cluster'
             filename = [char(Entry.Path), char(Entry.Filename), '.nii'];
             if ~isfile(filename)
