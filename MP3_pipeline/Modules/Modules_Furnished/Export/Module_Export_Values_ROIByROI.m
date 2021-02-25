@@ -183,6 +183,7 @@ for x = 1:numel(Patient_listing)
                 % then create a cvs_table_template
                 current_cvs_table(1,1:size([{'GroupName'}, {'PatientName'}, {'TimePoint'}, {'ScanOfRef'},  {'ROI_name'},  {'ROI_volume_mm3'},  Parameters_name(:)'  ],2)) = ...
                     [GroupName(1), PatientName(1), TimePoint(1), ScanOfRef(1),  cellstr(sub_databaseROI.SequenceName(i)), num2cell(NaN(1, size(Parameters_name,2)+1))]; % +1 for the ROI volume
+                Parameters_name = clean_variable_name(Parameters_name,1);
                 current_cvs_table.Properties.VariableNames = [{'GroupName'}, {'PatientName'}, {'TimePoint'}, {'ScanOfRef'},  {'ROI_name'},  {'ROI_volume_mm3'},  Parameters_name(:)'  ];
                 
                 
