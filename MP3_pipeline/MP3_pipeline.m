@@ -1797,8 +1797,8 @@ for i=1:NbScanInput
     end
     DatabaseInput{i} = Databtmp;
     if ~isempty(Datab)
-        UTag2 = unique(getfield(TmpDatabase, Tag2)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
-        UTag1 = unique(getfield(TmpDatabase, Tag1)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
+        UTag2 = unique(getfield(Datab, Tag2)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
+        UTag1 = unique(getfield(Datab, Tag1)); % J'ai remplacé Datab par TmpDatabase pour corriger le bug historique
         Mat = cell(length(UTag2), length(UTag1));
         for m=1:length(UTag2)
             Datab2 = Datab(getfield(Datab, Tag2) == UTag2(m),:);
@@ -2013,7 +2013,7 @@ if ~isfield(New_module.opt.Module_settings, 'AutomaticJobsCreation')  || ...
             end
         end
     end
-    
+    %New_module.module_name
     NbModules = size(RefMat,1)*size(RefMat,2);
     for i=1:NbScanInput
         FinalMat{i} = reshape(FinalMat{i}, [NbModules,size(FinalMat{i},3)]);
