@@ -105,7 +105,7 @@ for i=1:size(databScans,1)
     file1 = [char(databScans.Path(i)), char(databScans.Filename(i)), '.nii'];
     file_h = spm_vol(file1);
     databR = databROIs(strcmp(cellstr(databROIs.Patient), cellstr(databScans.Patient(i))),:);
-    databRo = databR(strcmp(cellstr(databROIs.Tp), cellstr(databScans.Tp(i))),:);
+    databRo = databR(strcmp(cellstr(databR.Tp), cellstr(databScans.Tp(i))),:);
     roi = [char(databRo.Path), char(databRo.Filename), '.nii'];
     if ~isempty(databROIs) && isempty(databRo)
         continue
@@ -230,7 +230,7 @@ for i=1:size(databScans,1)
         load(which('rgb_color_table.mat'), 'num');
         cmap = num;
     end
-    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, repmat(cmap,20,1), subject_name)
+    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, cmap, subject_name)
 
 end
 

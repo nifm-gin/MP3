@@ -5957,6 +5957,8 @@ end
 guidata(hObject, handles);
 MP3_update_database_display(hObject, eventdata, handles)
 
+msgbox('Data imported from BIDS', 'Information') ;
+
 
 % --------------------------------------------------------------------
 function MP3_menu_Compress_database_Callback(hObject, eventdata, handles)
