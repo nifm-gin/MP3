@@ -6154,7 +6154,7 @@ handles.database.Properties.UserData.Order_data_display = {'ascend','ascend','as
 handles.database.Properties.UserData.db_filename = 'MP3_database.mat';
 
 %% create the tmp folder
-MP3_tmp_folder = [MP3_data_path, 'tmp'];
+MP3_tmp_folder = [MP3_data_path, 'Tmp'];
 if exist(MP3_tmp_folder, 'dir') ~= 7
     status = mkdir(MP3_tmp_folder);
     if status == 0
