@@ -132,8 +132,9 @@ for i=1:size(databScans,1)
     if ~exist(Path_html, 'dir') || ~exist(Path_nii, 'dir')
         mkdir(Path_nii);
     end
-    
-    
+    if isinteger(file_vol)
+        file_vol = single(file_vol);
+    end
     file_vol(isnan(file_vol)) = 0;
 %     %file_vol = histeq(file_vol, 1024);
 %     
