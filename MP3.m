@@ -4915,15 +4915,17 @@ for i=1:height(handles.database)
         Nifti_file_compressed = strrep(Nifti_file, '.nii', '.nii.gz');
         Mat_file = [char(handles.database(i,:).Path), char(handles.database(i,:).Filename), '.mat'];
         
-        if (exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2) && exist(Mat_file, 'file') == 2
+        if (exist(Nifti_file, 'file')==2 || exist(Nifti_file_compressed, 'file')==2) %&& exist(Mat_file, 'file') == 2
             ValidEntries = [ValidEntries, i];
             ValidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
-            ValidMatFiles = [ValidMatFiles, {Mat_file}];
+            if exist(Mat_file, 'file') == 2
+                ValidMatFiles = [ValidMatFiles, {Mat_file}];
+            end
         else
             InvalidEntries = [InvalidEntries, i];
             if exist(Nifti_file, 'file')~=2 || exist(Nifti_file_compressed, 'file')~=2
                 InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
-            elseif exist(Json_file, 'file')~=2
+            elseif exist(Mat_file, 'file')~=2
                 InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
             end
         end
