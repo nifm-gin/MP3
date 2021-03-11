@@ -4016,18 +4016,19 @@ end
 function [hObject, eventdata, handles] = Update_MP3_database_After_pipeline_Crash(hObject, eventdata, handles)
 fname = [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, 'Table_out', filesep, 'Table_out.mat'];
 handles.FlagExecutePipe = 1;
-if ~exist(fname)
-    handles.FlagExecutePipe = 0;
-    return
-else
+if exist(fname, 'file') && ...
+        ~(isempty(dir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, '*.nii'])) || ...
+        isempty(dir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, '*.mat'])) || ...
+        isempty(dir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, '*.json'])))
+    
     answer = questdlg('It seems that some files from a previous pipeline execution have not been added to your project database. Want to do it now?', ...
-	'Did your previous pipeline crashed?', ...
-	'Yes!','No','Cancel','Cancel');
+        'Did your previous pipeline crashed?', ...
+        'Yes!','No','Cancel','Cancel');
     if strcmp(answer, 'Yes!')
         if isfield(handles, 'MP3_pipeline_pipeline_listbox') && ~isempty(handles.MP3_pipeline_pipeline_listbox.String)
             answer2 = questdlg('This manipulation will erase your current pipeline. Do you want to save it before?', ...
-            'It''s now or never', ...
-            'Yes!','No','Cancel','Cancel');
+                'It''s now or never', ...
+                'Yes!','No','Cancel','Cancel');
             if strcmp(answer2, 'Yes!')
                 MP3_pipeline_save_pipeline_Callback(hObject, eventdata, handles);
             end
@@ -4036,7 +4037,11 @@ else
         handles.FlagExecutePipe = 0;
         return
     end
+else
+    handles.FlagExecutePipe = 0;
+    return
 end
+
 load(fname)
 PreviousDB = handles.MP3_data.database;
 for i=1:size(Output_Table,1)
