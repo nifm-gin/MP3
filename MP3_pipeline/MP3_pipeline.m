@@ -4016,6 +4016,9 @@ end
 function [hObject, eventdata, handles] = Update_MP3_database_After_pipeline_Crash(hObject, eventdata, handles)
 fname = [handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, 'Table_out', filesep, 'Table_out.mat'];
 handles.FlagExecutePipe = 1;
+% check if the 'Table_out.mat' file exist and if there is any file (nii, or
+% mat or json) in the tmp folder.
+
 if exist(fname, 'file') && ...
         ~(isempty(dir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, '*.nii'])) || ...
         isempty(dir([handles.MP3_data.database.Properties.UserData.MP3_data_path, 'Tmp', filesep, '*.mat'])) || ...
