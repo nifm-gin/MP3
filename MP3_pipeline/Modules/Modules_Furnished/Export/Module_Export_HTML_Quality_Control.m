@@ -111,8 +111,8 @@ for i=1:size(databScans,1)
         continue
     elseif ~isempty(databROIs)
         roi_h = spm_vol(roi);
-        roi_vol = read_volume(roi_h, roi_h, 0, 'Axial');
-        file_vol = read_volume(file_h, roi_h, 0, 'Axial');
+        roi_vol = read_volume(roi_h, file_h, 0, 'Axial');
+        file_vol = read_volume(file_h, file_h, 0, 'Axial');
         if flag_rot
             roi_vol = flip(roi_vol, 1);
             file_vol = flip(file_vol, 1);
@@ -132,8 +132,9 @@ for i=1:size(databScans,1)
     if ~exist(Path_html, 'dir') || ~exist(Path_nii, 'dir')
         mkdir(Path_nii);
     end
-    
-    
+    if isinteger(file_vol)
+        file_vol = single(file_vol);
+    end
     file_vol(isnan(file_vol)) = 0;
 %     %file_vol = histeq(file_vol, 1024);
 %     
@@ -181,12 +182,15 @@ for i=1:size(databScans,1)
     command = '';
     cmap = [];
     if ~isempty(files_in.In2)
-        info = niftiinfo(roi);
-        B = write_volume(cast(roi_vol, info.Datatype), roi_h, 'Axial');
+        %info = niftiinfo(roi);
+        %B = write_volume(cast(roi_vol, info.Datatype), roi_h, 'Axial');
+        info = niftiinfo(file1);
+        B = write_volume(cast(roi_vol, info.Datatype), file_h, 'Axial');
         niftiwrite(B, [Path_nii, 'ROI.nii'], info);
         overlay = [Path_nii, 'ROI.nii'];
         command = char(databROIs.SequenceName(1));
-        C = write_volume(file_vol, roi_h, 'Axial');
+        %C = write_volume(file_vol, roi_h, 'Axial');
+        C = write_volume(file_vol, file_h, 'Axial');
         NSlicesTot = size(B,3);
     else
         info = niftiinfo(file1);

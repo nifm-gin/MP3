@@ -63,7 +63,7 @@ elseif exist(overlay,'file') && (strcmp(overlay(max(1,end-3):end),'.nii') || str
         else
             cmap = circshift(cmap,1,1);
         end
-        segpngrgb = ind2rgb(uint8(segpng),cmap);
+        segpngrgb = ind2rgb(uint16(segpng),cmap);
         imwrite(segpngrgb,fullfile(qcdir,subject,'overlay_img.png'),'Alpha',double(segpng>0))
     else
         imwrite(segpng,fullfile(qcdir,subject,'overlay_img.png'))

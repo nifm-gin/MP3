@@ -11,6 +11,14 @@ Standard processes from SPM or FSL can be called as well as custom fonctions. Co
 
 SUMMARY Poster ([ENGLISH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3_English.pdf)) ([FRENCH](https://github.com/nifm-gin/MP3/blob/master/tools/Pictures/Poster_SFRMBM_Brossard_MP3.pdf)): poster presented at the 4th Congress of the SFRMBM (Strasbourg).
 
+You can find the article linked to MP3 here: https://www.frontiersin.org/articles/10.3389/fninf.2020.594799/full
+
+Do not forget to cite our article if you used MP3 :)
+
+   Brossard, C., Montigon, O., Boux, F., Delphin, A., Christen, T., Barbier, E. L., & Lemasson, B.
+   MP3: Medical software for Processing multi-Parametric images Pipelines
+   Frontiers in Neuroinformatics, 2020, 14, 53.
+ 
 ### Requirements
 In order to fully enjoy MP³, you have to meet the following requirements:
 * Matlab 2017b or higher
@@ -27,11 +35,8 @@ You can download MP³ from our GIT repository. Then just add the downloaded file
 In order to push your modifications to the community, please contact benjamin.lemasson@univ-grenoble-alpes.fr to get the developer status. Please create on your own branch from the dev one and then ask to merge it in the dev branch.
 
 
-### Quickstart guide
-*  [If you cannot wait !](https://github.com/nifm-gin/MP3/wiki/Quickstart_guide)
-
-
 ### User Guide: How to...
+Please have a look at our tutorials available on our youtube channel : https://www.youtube.com/playlist?list=PL-Tj6Wc9aE9x7i6s-RLetvNE0isnEsFm7
 
 *  [Import my data?](https://github.com/nifm-gin/MP3/wiki/User_guide_import_data)
 
@@ -49,7 +54,7 @@ In order to push your modifications to the community, please contact benjamin.le
 ### Data test
 The documentation found in the wiki page is based on this dataset : https://github.com/nifm-gin/Data_Test_MP3 (MP3 project)
 
-The documentation on video is based on a dataset downloadable her : https://drive.google.com/drive/folders/1xWsNJf3e4auL_WWknvvGbk0UqjcfAY7A?usp=sharing (Raw MRI data)
+The documentation on video is based on a dataset downloadable her : https://drive.google.com/drive/folders/1xWsNJf3e4auL_WWknvvGbk0UqjcfAY7A?usp=sharing (as Raw MRI data) or here https://drive.google.com/drive/folders/1MImE1AkOOKhOIXreA_jrIcJJloEXFJu1?usp=sharing (as a MP3 Project)
 
 ### Modules repository
 We provide some modules available at https://github.com/nifm-gin/MP3_Modules_Repository
