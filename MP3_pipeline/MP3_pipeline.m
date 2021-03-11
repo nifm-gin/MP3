@@ -2376,9 +2376,14 @@ save(filename_table_out,'Output_Table')
 
 % %% execute the pipeline
 
-if isnan(str2double(handles.Select_Number_Workers.String))
-    myCluster = parcluster('local');
-    opt_pipe.max_queued = myCluster.NumWorkers;
+if isnan(str2double(handles.Select_Number_Workers.String))    
+    try
+        myCluster = parcluster('local');
+        opt_pipe.max_queued = myCluster.NumWorkers;
+    catch
+        disp('no parallel-computing toolbox installed. Number of worker = 1')
+        opt_pipe.max_queued = 1;
+    end
 else
     opt_pipe.max_queued = str2double(handles.Select_Number_Workers.String);
 end
