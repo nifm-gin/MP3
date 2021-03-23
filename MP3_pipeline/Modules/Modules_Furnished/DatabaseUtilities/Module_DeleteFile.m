@@ -117,7 +117,7 @@ if isempty(opt)
         {
         'This module allows to delete a file. One can use it in a pipeline and then avoid the multiplication of files in the database.'
         }'};
-    user_parameter(:,2)   = {'Select one scan or ROI as input','1ScanOr1ROI','','',{'SequenceName'}, 'Mandatory',''};
+    user_parameter(:,2)   = {'Select one (or several) scan(s) or ROI(s) to delete','XScanOrXROI','','',{'SequenceName'}, 'Mandatory',''};
     
     % Concatenate these user_parameters, and store them in opt.table
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
@@ -140,7 +140,7 @@ end
 % Please modify it to automatically generate the name of each output file.
 if isempty(files_out)
     opt.Table_out = opt.Table_in;
-    opt.Table_out.IsRaw = categorical(0);
+    opt.Table_out.IsRaw = repmat(categorical(0), size(opt.Table_out.IsRaw));
     %opt.Table_out.Path = categorical(cellstr([opt.folder_out, filesep]));
 %     if strcmp(opt.OutputSequenceName, 'AllName')
 %         opt.Table_out.SequenceName = categorical(cellstr(opt.output_filename_ext));
@@ -148,9 +148,10 @@ if isempty(files_out)
 %         opt.Table_out.SequenceName = categorical(cellstr([char(opt.Table_out.SequenceName), opt.output_filename_ext]));
 %     end
     %opt.Table_out.Filename = categorical(cellstr([char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName)]));
-    opt.Table_out.Type = categorical(cellstr('Deleted'));
+    opt.Table_out.Type = repmat(categorical(cellstr('Deleted')), size(opt.Table_out.IsRaw));
     %f_out = [char(opt.Table_out.Path), char(opt.Table_out.Patient), '_', char(opt.Table_out.Tp), '_', char(opt.Table_out.SequenceName), '.nii'];
-    files_out.In1{1} = files_in.In1{1};
+    %files_out.In1{1} = files_in.In1{1};
+    files_out.In1 = files_in.In1;
 end
 
 
@@ -158,7 +159,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Smoothing:module','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('DeleteFile:module','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 
