@@ -18,7 +18,8 @@ if isempty(opt)
     module_option(:,7)   = {'Table_in', table()};
     module_option(:,8)   = {'Table_out', table()};
     module_option(:,9)   = {'output_filename_ext','_Masked'};
-    module_option(:,10)  = {'Output_orientation','First input'};
+    module_option(:,10)  = {'Output_orientation','Scan'};
+    module_option(:,11)  = {'Crop_output','Yes'};
 
     opt.Module_settings = psom_struct_defaults(struct(),module_option(1,:),module_option(2,:));
     
@@ -43,7 +44,12 @@ if isempty(opt)
         '--> Output orienation = Scan'
         '--> Output orientation = ROI'
         }'};
-    user_parameter(:,6)   = {'   .Value out of the mask','char','','OutOfTheMask','','',''};
+    user_parameter(:,6) = {'   .Value out of the mask','char','','OutOfTheMask','','',''};
+    user_parameter(:,7) = {'   .Crop empty slices','cell',{'Yes', 'No'},'Crop_output','','',...
+        {'User can decide to crop empty slices'
+        'for example, if the ROI selected is much smaller that the scan, the output masked scan can have (or not) the same number of slice than the ROI'
+        'The default value is ''Yes''' 
+        }'};
     
     VariableNames = {'Names_Display', 'Type', 'Default', 'PSOM_Fields', 'Scans_Input_DOF', 'IsInputMandatoryOrOptional','Help'};
     opt.table = table(user_parameter(1,:)', user_parameter(2,:)', user_parameter(3,:)', user_parameter(4,:)', user_parameter(5,:)', user_parameter(6,:)', user_parameter(7,:)','VariableNames', VariableNames);
@@ -79,7 +85,7 @@ end
 
 %% Syntax
 if ~exist('files_in','var')||~exist('files_out','var')||~exist('opt','var')
-    error('Module_Arithmetic:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
+    error('Module_Mask:brick','Bad syntax, type ''help %s'' for more info.',mfilename)
 end
 
 %% If the test flag is true, stop here !
@@ -104,7 +110,7 @@ if isfield(files_in, 'In2')
 end
 
 
-if strcmp(opt.Output_orientation, 'Scan') || ~isfield(files_in, 'ROI')
+if strcmp(opt.Output_orientation, 'Scan') %|| ~isfield(files_in, 'ROI')
     ref_scan = 1;
 else
     ref_scan = 2;
@@ -152,9 +158,16 @@ info = niftiinfo(files_in.(['In' num2str(ref_scan)]){1});
 nifti_header_output = info;
 nifti_header_output.Filename = files_out.In1{1};
 nifti_header_output.Filemoddate = char(datetime('now'));
-[OutputImages_reoriented, FinalMat] = CropNifti(OutputImages_reoriented, nifti_header_output.Transform.T');
+
+% since the option 'Crop_ouput' has been added afterwards, we first have to
+% check if the option exist in order to exectute old pipeline.
+if ~isfield(opt, 'Crop_output') || isfield(opt, 'Crop_output') && strcmp(opt.Crop_output, 'Yes')
+    [OutputImages_reoriented, FinalMat] = CropNifti(OutputImages_reoriented, nifti_header_output.Transform.T');
+    nifti_header_output.Transform = affine3d(FinalMat');
+ 
+end
+
 nifti_header_output.Datatype = class(OutputImages_reoriented);
-nifti_header_output.Transform = affine3d(FinalMat');
 nifti_header_output.ImageSize = size(OutputImages_reoriented); 
 nifti_header_output.PixelDimensions = info.PixelDimensions(1:length(nifti_header_output.ImageSize));
 nifti_header_output.MultiplicativeScaling = 1;
