@@ -85,7 +85,7 @@ dictionaryMRI:
   
                    whereBruker:  {file: method, keyName: $PVM_DwEffBval=, type: int, format: ~, units: ~}
                    wherePhilips: {file: PAR ; Xml, keyName: diffusion_b_factor ; Diffusion B Factor, type: float  ; float, format: ~, units: ~}
-                   whereDicom:   {file: ~, keyName: "0018,9087", type: float, format: ~, units: ~} 
+                   whereDicom:   {file: ~, keyName: "2001,1003", type: float, format: ~, units: ~} 
                    
                    viewer: {category: Diffusion}
                    json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -130,7 +130,7 @@ dictionaryMRI:
   
                   whereBruker:  {file: subject, keyName: $SUBJECT_date=, type: string, format: "yyyy-MM-dd'T'HH:mm:ss','SSSZZZZ or HH:mm:ss dd MMM yyyy", units: ~}
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / hHH:mm:ss ; yyyy.MM.dd", units: ~}
-                  whereDicom:   {file: ~, keyName: Study Date & Study Time, type: string, format: "yyyyMMdd ss", units: ~}
+                  whereDicom:   {file: ~, keyName: Study Date, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: CreationDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
 
                   viewer: {category: Equipment}
@@ -163,7 +163,7 @@ dictionaryMRI:
                   whereDicom:   {file: ~, keyName: "2005,10B0", type: float, format: ~, units: ~}
 
                   viewer: {category: Diffusion}
-                  json:   {tagJson: DirectionDiffusion, type: int, format: ~, units: ~}
+                  json:   {tagJson: DirectionDiffusion, type: float, format: ~, units: ~}
 
   Echo Time:
                   description: {info: "Time in ms between the middle of the excitation pulse and the peak of the echo produced "}
