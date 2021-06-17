@@ -234,7 +234,7 @@ for i=1:size(databScans,1)
         load(which('rgb_color_table.mat'), 'num');
         cmap = num;
     end
-    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, cmap, subject_name)
+    qc_write(qcdir,inputdate,subject,{img},{overlay},contrast,command, z, repmat(cmap,20,1), subject_name)
 
 end
 
