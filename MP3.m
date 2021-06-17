@@ -23,7 +23,7 @@ function varargout = MP3(varargin)
 % Edit the above text to modify the response to help MP3
 
 
-% Last Modified by GUIDE v2.5 22-Jan-2021 10:04:42
+% Last Modified by GUIDE v2.5 17-Jun-2021 14:19:22
 
 
 
@@ -6710,3 +6710,25 @@ switch get(hObject, 'Tag')
 end
 
 MP3_remove_scan(hObject, eventdata, handles, nii_index)
+
+
+% --------------------------------------------------------------------
+function MP3_tools_load_json_Callback(hObject, eventdata, handles)
+% hObject    handle to MP3_tools_load_json (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if ~isfield(handles, 'data_loaded')
+    warndlg('Please load the scan you want to display the history.');
+    return
+end
+
+if length(handles.data_loaded.Scan) ~= 1
+    warndlg('Please load only one scan to display its history.');
+    return
+end
+jsonName = [fullfile(char(handles.data_loaded.info_data_loaded.Path), char(handles.data_loaded.info_data_loaded.Filename)), '.json'];
+fprintf("File '%s' loaded in variable 'JsonFile' in base workspace.\n", jsonName)
+assignin('base', 'JsonFile', handles.data_loaded.Scan.json);
+
+
