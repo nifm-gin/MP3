@@ -1,5 +1,5 @@
 # BIDS v 1.2.1
-# protocol name : 
+# ProtocolName or SequenceName: 
 #   Bruker : PV5, PV6
 #   Philips : PAR/REC v4.2, xml/REC
 #   DICOM : Philips, Siemens, GE
@@ -82,7 +82,7 @@ listProtocols:
 
    dwi:
       dwi:
-         Bruker : ['*:DtiStandard']
+         Bruker : ['*:DtiStandard*', '*DTI*']
          Philips : ['*DWI*']
          Dicom : []
          Nifti : []
@@ -105,9 +105,8 @@ listProtocols:
          Nifti : []
 
    fmap:
-      fielmap:
+      fieldmap:
          Bruker : ['*FieldMap*']
          Philips : []
          Dicom : []
          Nifti : []
-         

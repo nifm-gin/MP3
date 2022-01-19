@@ -16,11 +16,13 @@
 #                           'par , xml' (for Philips Achieva PAR 4.2 , Xml)
 #                           'Dirfile, DicomDir or ~ (for Dicom)
 #                           'niftiheader' or 'json' (for Nifti)
+#                           'json' (for BIDS)
 #                            
 #          keyName :        $'nameparameter'= (for Bruker)
 #                           tag without [],(),<> and its elements which are inside (for Philips)
 #                           tag (for Dicom)
 #                           tag (for Nifti)
+#                           tag (for BIDS)
 #                            
 #          type :           string, float, int
 #          format :         "HH:mm:ss dd/MM/yyyy" , "dd/MM/yyyy HH:mm:ss" ,"SSS" (ms) for date, duree,... (Put the parameter in quote "" !)
@@ -48,7 +50,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: Examination date/time ; Examination Date, type: string ; string, format: "yyyy.MM.dd / HH:mm:ss ; yyyy.MM.dd", units: ~}
                   whereDicom:   {file: ~, keyName: Series Date, type: string, format: "yyyyMMdd", units: ~}
                   whereNifti:   {file: json, keyName: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
-                  whereBids:    {file: ~, keyName: AcquisitionDate, type: string, format: ~, units: ~}
+                  whereBids:    {file: json, keyName: AcquisitionDate, type: string, format: ~, units: ~}
                   
                   viewer: {category: Equipment}
                   json:   {tagJson: AcquisitionDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}
@@ -60,6 +62,8 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: Scan Duration ; Scan Duration, type: string ; float, format: "ss ; ~", units: ~}
                   whereDicom:   {file: ~, keyName: Acquisition Time, type:  string, format: "SSS", units: s}
                   whereNifti:   {file: json, keyName: AcquisitionTime, type: string, format: "HH:mm:ss.SSS", units: ~}
+                  whereBids:    {file: json, keyName: AcquisitionTime, type: string, format: ~, units: ~}
+
                   
                   viewer: {category: Equipment}
                   json:   {tagJson: AcquisitionTime, type: string, format: "HH:mm:ss.SSS", units: ~}
@@ -79,13 +83,14 @@ dictionaryMRI:
                   
                   viewer: {category: Angulation-Position}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-                  
+
   B-values effective:
                    description: {info: "Bval for MRtrix and FSL"}
   
                    whereBruker:  {file: method, keyName: $PVM_DwEffBval=, type: int, format: ~, units: ~}
                    wherePhilips: {file: PAR ; Xml, keyName: diffusion_b_factor ; Diffusion B Factor, type: float  ; float, format: ~, units: ~}
-                   whereDicom:   {file: ~, keyName: "2001,1003", type: float, format: ~, units: ~} 
+                   whereDicom:   {file: ~, keyName: "2001,1003", type: float, format: ~, units: ~}
+                   whereBids:    {file: json, keyName: DiffusionBFactor, type: string, format: ~, units: ~}
                    
                    viewer: {category: Diffusion}
                    json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -94,7 +99,8 @@ dictionaryMRI:
                   description: {info: ""}
 
                   whereBruker:  {file: acqp, keyName: $SW_h=, type: float, format: ~, units: MHz}
-                  whereNifti:   {file: json, keyName: BandWidth, type: float, format: ~, units: MHz}                  
+                  whereNifti:   {file: json, keyName: BandWidth, type: float, format: ~, units: MHz}
+                  whereBids:   {file: json, keyName: BandWidth, type: float, format: ~, units: MHz}                  
                   
                   viewer: {category: MRI parameters}
                   json:   {tagJson: BandWidth, type: float, format: ~, units: MHz}
@@ -107,7 +113,7 @@ dictionaryMRI:
                   
                   viewer: {category: Dimensions}
                   json:   {tagJson: ByteOrder, type: string, format: ~, units: ~}
-   
+
   Coil:
                   description: {info: ""}
   
@@ -124,7 +130,7 @@ dictionaryMRI:
                   
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-  
+
   Creation Date:
                   description: {info: ""}
   
@@ -135,7 +141,7 @@ dictionaryMRI:
 
                   viewer: {category: Equipment}
                   json:   {tagJson: CreationDate, type: string, format: "yyyy-MM-dd HH:mm:ss", units: ~}         
- 
+
   Data Type:
                   description: {info: ""}
   
@@ -146,7 +152,7 @@ dictionaryMRI:
 
                   viewer: {category: Dimensions}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-                  
+
   Diffusion Ao Images number:
                   description: {info: ""}
                     
@@ -154,7 +160,7 @@ dictionaryMRI:
 
                   viewer: {category: Diffusion}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-                  
+
   Direction Diffusion:
                   description: {info: "Bvec for MRtrix and FSL"}
                     
@@ -172,6 +178,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: echo_time ; Echo Time, type: float  ; float, format: ~, units: ms   ; ms}
                   whereDicom:   {file: dirfile, keyName: Echo Time, type: float, format: ~, units: ms}
                   whereNifti:   {file: json, keyName: EchoTime, type: float, format: ~, units: ms}
+                  whereBids:   {file: json, keyName: EchoTime, type: float, format: ~, units: ms}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: EchoTime, type: float, format: ~, units: ms}
@@ -183,6 +190,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: image_flip_angle ; Image Flip Angle, type: float  ; float, format: ~, units: ~ ; degree}
                   whereDicom:   {file: dirfile, keyName: Flip Angle, type: float, format: ~, units: degree}
                   whereNifti:   {file: json, keyName: FlipAngle, type: float, format: ~, units: degree}
+                  whereBids:   {file: json, keyName: FlipAngle, type: float, format: ~, units: degree}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: FlipAngle, type: float, format: ~, units: degree}
@@ -255,6 +263,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: image_type_mr  ; Type, type: string ; string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, dicomdir, keyName: Image Type, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: ImageType, type: string, format: ~, units: ~}
+                  whereBids:   {file: json, keyName: ImageType, type: string, format: ~, units: ~}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ImageType, type: string, format: ~, units: ~}  
@@ -310,6 +319,7 @@ dictionaryMRI:
                   description: {info: ""}
   
                   whereDicom:   {file: ~, keyName: Modality, type: string, format: ~, units: ~}
+                  whereBids:    {file: json, keyName: Modality, type: string, format: ~, units: ~}
                   
                   viewer: {category: Test}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
@@ -402,6 +412,7 @@ dictionaryMRI:
                   whereBruker:  {file: visu_pars, keyName: $VisuSubjectPosition=, type: string, format: ~, units: ~}
                   whereDicom:   {file: dirfile, keyName: Patient Position, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: PatientPosition, type: string, format: ~, units: ~}
+                  whereBids:   {file: json, keyName: PatientPosition, type: string, format: ~, units: ~}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: PatientPosition, type: string, format: ~, units: ~}
@@ -435,7 +446,7 @@ dictionaryMRI:
                   whereDicom:   {file: ~, keyName: Pixel Bandwidth, type: float, format: ~, units: ms}
                   whereNifti:   {file: json, keyName: PixelBandwidth, type: float, format: ~, units: ms}
 
-                  viewer: {category: ~}
+                  viewer: {category: MRI parameters}
                   json:   {tagJson: PixelBandwidth, type: float, format: ~, units: Hz/pixel}
 
   Pixel Representation:
@@ -515,6 +526,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: Repetition time  ; Repetition Times, type: float  ; float, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Repetition Time, type: float, format: ~, units: ms}
                   whereNifti:   {file: json, keyName: RepetitionTime, type: float, format: ~, units: ms}
+                  whereBids:   {file: json, keyName: RepetitionTime, type: float, format: ~, units: ms}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: RepetitionTime, type: float, format: ~, units: ms}
@@ -527,13 +539,6 @@ dictionaryMRI:
                   viewer: {category: ~}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
   
-  Scaling slope and intercept:
-                  description: {info: ""}
-  
-                  whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}               
-                  
-                  viewer: {category: MRI parameters}
-                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
   Rescale Intercept:
                   description: {info: ""}
@@ -562,8 +567,14 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
+  Scaling slope and intercept:
+                  description: {info: ""}
   
-  
+                  whereNifti:   {file: niftiheader, keyName: Scaling slope and intercept, type: string, format: ~, units: ~}               
+                  
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}  
+
   Scan Mode:
                   description: {info: ""}
   
@@ -574,7 +585,7 @@ dictionaryMRI:
 
                   viewer: {category: Dimensions}
                   json:   {tagJson: ScanMode, type: string, format: ~, units: ~}
-          
+
   Scan Resolution:
                   description: {info: ""}
   
@@ -648,6 +659,7 @@ dictionaryMRI:
                   whereBruker:  {file: acqp, keyName: $ACQ_slice_sepn=, type: float, format: ~, units: mm}
                   whereDicom:   {file: ~, keyName: Spacing Between Slices, type: float, format: ~, units: mm}
                   whereNifti:   {file: json, keyName: SpacingBetweenSlices, type: float, format: ~, units: mm}
+                  whereBids:   {file: json, keyName: SpacingBetweenSlices, type: float, format: ~, units: mm}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: SpacingBetweenSlices, type: float, format: ~, units: mm}
@@ -659,6 +671,7 @@ dictionaryMRI:
                   wherePhilips: {file: PAR ; Xml, keyName: slice thickness ; Slice Thickness, type: float ; float, format: ~, units: mm}
                   whereDicom:   {file: ~, keyName: Slice Thickness, type: float, format: ~, units: mm}
                   whereNifti:   {file: json, keyName: SliceThickness, type: float, format: ~, units: mm}
+                  whereBids:   {file: json, keyName: SliceThickness, type: float, format: ~, units: mm}
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
@@ -698,6 +711,7 @@ dictionaryMRI:
                   whereBruker:  {file: acqp, keyName: $ACQ_station=, type: string, format: ~, units: ~}
                   whereDicom:   {file: ~, keyName: Station Name, type: string, format: ~, units: ~}
                   whereNifti:   {file: json, keyName: StationName, type: string, format: ~, units: ~}
+                  whereBids:   {file: json, keyName: StationName, type: string, format: ~, units: ~}
 
                   viewer: {category: Equipment}
                   json:   {tagJson: StationName, type: string, format: ~, units: ~}
