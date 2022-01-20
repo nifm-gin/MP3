@@ -123,10 +123,14 @@ I(I(:) < 0) = nan; % PCNN3D does not support negative values
 
 maxiter = 200;
 OptMask = 0;
-[I_border, Plot, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
+if isa(I,'int16')
+    [I_border, Plot, optG] = PCNN3D(double(I), opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
+else
+    [I_border, Plot, optG] = PCNN3D(I, opt.Radius, nifti_info.raw.pixdim(2:4), [opt.Min_BrainSize opt.Max_BrainSize], maxiter, OptMask);
+end
 % Automatically close the figure which contains the plot
 close(gcf)
-% Compute new optimal 
+% Compute new optimal
 Plot(Plot < opt.Min_BrainSize) = NaN;
 [~,New_optG] = min(gradient(Plot));
 % dispo for info

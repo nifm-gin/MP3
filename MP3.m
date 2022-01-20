@@ -3654,7 +3654,9 @@ function [ROI_matrice, position] = MP3_new_ROI_dyn(hObject, eventdata, handles, 
 % Active Contours Driven by Local Gaussian Distribution Fitting Energy.
 % Signal Processing, 89(12), 2009,p. 2435-2447>
 
-
+if isa(Img,'int16')
+    Img = double(Img);
+end
 NumIter = 5000; %iterations
 timestep=0.1; %time step
 mu=0.1/timestep;% level set regularization term, please refer to "Chunming Li and et al. Level Set Evolution Without Re-initialization: A New Variational Formulation, CVPR 2005"
