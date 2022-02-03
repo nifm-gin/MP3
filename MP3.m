@@ -4667,7 +4667,7 @@ handlesb=handles;
 
 namExport =  '[ExportToMP3]PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime';
 %MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 00012'}) %add lookAndFeel option and ExportOption
-MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 100'}) %add lookAndFeel option and ExportOption
+MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 10012'}) %add lookAndFeel option and ExportOption
 %MRIFileManager.FileManagerFrame.main({MP3_tmp_folder_for_java, namExport handles.original_Java_LookAndFeel, 'NoExitSystem', '[ExportOptions] 000'})
 % [ExportOption] 000 : When Brucker merge calculated scans in an only one
 % file, leave the scans merged
