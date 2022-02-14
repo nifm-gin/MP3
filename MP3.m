@@ -750,6 +750,8 @@ else
         handles.database.Properties.UserData.MP3_Derived_data_path = [new_patient_directory, 'Derived_data', filesep];
         handles.database.Properties.UserData.MP3_Others_data_path = [new_patient_directory, 'Others_data', filesep];
         handles.database.Properties.UserData.PSOM_path = [new_patient_directory, 'PSOM', filesep];
+        handles.database.Properties.UserData.MP3_Others_data_path = [new_patient_directory, 'Others_data', filesep];
+
         % update the path in the table
         %handles.database.Path(handles.database.Type == 'Scan') = handles.database.Properties.UserData.MP3_Raw_data_path;
         if ~isempty(handles.database)
@@ -758,6 +760,7 @@ else
             handles.database.Path(handles.database.Type == 'Mfile',:) = handles.database.Properties.UserData.MP3_Others_data_path;
             handles.database.Path(handles.database.Type == 'ROI') = handles.database.Properties.UserData.MP3_ROI_path;
             handles.database.Path(handles.database.Type == 'Cluster') = handles.database.Properties.UserData.MP3_ROI_path;
+            handles.database.Path(handles.database.Type == 'Mfile') = handles.database.Properties.UserData.MP3_Others_data_path;
         end
         
         guidata(hObject, handles);
@@ -3654,9 +3657,13 @@ function [ROI_matrice, position] = MP3_new_ROI_dyn(hObject, eventdata, handles, 
 % Active Contours Driven by Local Gaussian Distribution Fitting Energy.
 % Signal Processing, 89(12), 2009,p. 2435-2447>
 
+<<<<<<< HEAD
 if isa(Img,'int16')
     Img = double(Img);
 end
+=======
+Img= double(Img);
+>>>>>>> master
 NumIter = 5000; %iterations
 timestep=0.1; %time step
 mu=0.1/timestep;% level set regularization term, please refer to "Chunming Li and et al. Level Set Evolution Without Re-initialization: A New Variational Formulation, CVPR 2005"
@@ -4876,6 +4883,7 @@ for i=1:height(handles.database)
             if exist(Nifti_file, 'file')~=2 || exist(Nifti_file_compressed, 'file')~=2
                 InvalidNiftiFiles = [ValidNiftiFiles, {Nifti_file}];
             elseif exist(Mat_file, 'file')~=2
+<<<<<<< HEAD
                 InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
             end
         end
@@ -4888,6 +4896,8 @@ for i=1:height(handles.database)
         else
             InvalidEntries = [InvalidEntries, i];
             if exist(Mat_file, 'file')~=2
+=======
+>>>>>>> master
                 InvalidMatFiles = [InvalidMatFiles, {Mat_file}];
             end
         end
