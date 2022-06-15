@@ -4290,7 +4290,7 @@ switch selection
         warndlg('not coded yet', 'Warning');
         return
 end
-[old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','single','ListSize', [500 500],...
+[old_scan_name,ok] = listdlg('Name', 'Question?', 'ListString', old_name_listing,'SelectionMode','multiple','ListSize', [500 500],...
     'PromptString', 'Select the data you want to rename');
 if ok == 0 || isempty(old_scan_name)
     return
@@ -4314,7 +4314,13 @@ if strcmp('Other',new_name_listing(new_scan_name)) == 1
 else
     newparameter_name =categorical(new_name_listing(new_scan_name));
 end
-idx_to_update = find(handles.database.SequenceName == old_scan_name);
+%idx_to_update = find(handles.database.SequenceName == old_scan_name);
+
+idx_to_update = [];
+for i=1:size(old_scan_name,1)
+    idx_to_update = [idx_to_update' find(handles.database.SequenceName == categorical(cellstr(old_scan_name(i,:))))']';
+end
+
 %% update the database with the new name
 % but first check if the new scan name does not exist for this patient and
 % time point
@@ -4433,6 +4439,7 @@ if numel(data_selected) > 1
     return
 end
 Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
+Tp_listing = [Tp_listing, 'Other'] ;
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
     'ListSize', [200 300],...
@@ -4440,6 +4447,22 @@ Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.data
 if ok == 0
     return
 end
+
+if strcmp('Other', char(Tp_listing(time_point))) == 1
+    newTP_name = inputdlg('Name of the new Time point ', 'Question?', 1, {''});
+    if isempty(newTP_name)
+        return
+    end
+    if sum(strcmp(newTP_name, cellstr(Tp_listing)) > 0)
+        warning_text = sprintf('Can not import this "New" Time point, because %s time exist already,\nplease try again and select %s time point in the Time Point list proposed',...
+            newTP_name{:}, newTP_name{:});
+        msgbox(warning_text, 'Time point warning') ;
+        return
+    end
+    Tp_listing(time_point) = categorical(newTP_name);
+end
+
+
 for i=1:numel(time_point)
     new_entry = handles.database(data_selected,:);
     new_entry.Tp = Tp_listing(time_point(i));
@@ -4745,6 +4768,8 @@ for i = 1:numel(unique(log_file.StudyName))
         index_data_to_import =findn(patient_filter & CreationDate_filter);
         index_data_to_import = index_data_to_import(:,1);
         filesch =  [{char(unique(log_file.StudyName(index_data_to_import)))}, {char(unique(log_file.CreationDate(index_data_to_import)))},...
+            {char(log_file.NameFile(index_data_to_import(1),:))}];
+        filesch =  [{char(unique(log_file.StudyName(index_data_to_import)))}, {'D00'},...
             {char(log_file.NameFile(index_data_to_import(1),:))}];
         [name_selected, tp_selected]  = Add_Tag_to_new_patient_GUI(handles,filesch);
         if ~isempty(name_selected)
