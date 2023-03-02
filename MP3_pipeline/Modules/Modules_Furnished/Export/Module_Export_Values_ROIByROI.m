@@ -105,7 +105,7 @@ for x = 1:numel(Patient_listing)
             scan_of_reference.data=  read_volume(scan_of_reference.header, scan_of_reference.header, 0, 'Axial');
             % save all the data in output_data
             output_data = scan_of_reference.data;
-            
+            output_data = double(output_data);
             % start to create the CSV file
             PatientName = {};
             GroupName = {};
