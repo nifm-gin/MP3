@@ -41,6 +41,175 @@
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 dictionaryMRI:
 
+  ACQ_grad_matrix:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_grad_matrix=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_grad_matrix, type: string, format: ~, units: ~}  
+
+  ACQ_fov:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_fov=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_fov, type: string, format: ~, units: ~}
+  
+  ACQ_slice_sepn:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_slice_sepn=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_slice_sepn, type: string, format: ~, units: ~}
+
+  ACQ_NSLICES:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $NSLICES=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_NSLICES, type: string, format: ~, units: ~}
+
+  ACQ_slice_thick:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_slice_thick=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_slice_thick, type: string, format: ~, units: ~}
+
+  ACQ_slice_sepn_mode:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_slice_sepn_mode=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_slice_sepn_mode, type: string, format: ~, units: ~}
+
+  ACQ_NI:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $NI=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_NI, type: string, format: ~, units: ~}
+
+  ACQ_obj_order:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: acqp, keyName: $ACQ_obj_order=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: ACQ_obj_order, type: string, format: ~, units: ~}
+
+  PVM_SPackArrReadOffset:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SPackArrReadOffset=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SPackArrReadOffset, type: string, format: ~, units: ~}
+
+  PVM_SPackArrPhase1Offset:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SPackArrPhase1Offset=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SPackArrPhase1Offset, type: string, format: ~, units: ~}
+ 
+  PVM_SPackArrSliceOffset:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SPackArrSliceOffset=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SPackArrSliceOffset, type: string, format: ~, units: ~}
+
+  PVM_SPackArrGradOrient:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SPackArrGradOrient=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SPackArrGradOrient, type: string, format: ~, units: ~}
+
+  PVM_SliceGeo:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SliceGeo=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SliceGeo, type: string, format: ~, units: ~}
+
+  PVM_SPackArrSliceOrient:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: method, keyName: $PVM_SPackArrSliceOrient=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: PVM_SPackArrSliceOrient, type: string, format: ~, units: ~}
+
+  RECO_offset:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: reco, keyName: $RECO_offset=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: RECO_offset, type: string, format: ~, units: ~}
+
+  RECO_ft_size:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: reco, keyName: $RECO_ft_size=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: RECO_ft_size, type: string, format: ~, units: ~}
+
+  RECO_size:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: reco, keyName: $RECO_size=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: RECO_size, type: string, format: ~, units: ~}
+
+  RECO_fov:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: reco, keyName: $RECO_fov=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: RECO_fov, type: string, format: ~, units: ~}
+  
+  RECO_transposition:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: reco, keyName: $RECO_transposition=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: RECO_transposition, type: string, format: ~, units: ~}
+
+  VisuCoreFrameCount:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: visu_pars, keyName: $VisuCoreFrameCount=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: VisuCoreFrameCount, type: string, format: ~, units: ~}
+
+  VisuCoreOrientation:
+                   description: {info: ""}
+  
+                   whereBruker:  {file: visu_pars, keyName: $VisuCoreOrientation=, type: int, format: ~, units: ~}
+                   
+                   viewer: {category: cineASL}
+                   json:   {tagJson: VisuCoreOrientation, type: string, format: ~, units: ~}
+
+
   B-values Number:
                    description: {info: ""}
   
