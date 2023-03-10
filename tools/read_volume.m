@@ -48,7 +48,9 @@ switch  length(Vi_size)
                 Y(:,:,p,n) = reshape(d,Vo(1).dim(1:2));
             end
         end
-        Y = reshape(Y, [size(Y, 1), size(Y, 2), size(Y, 3), Vi_size(4:5)]);
+        %Y = reshape(Y, [size(Y, 1), size(Y, 2), size(Y, 3), Vi_size(4:5)]);
+        Y = reshape(Y, [size(Y, 1), size(Y, 2), size(Y, 3), Vi_size(5), Vi_size(4)]);
+        Y = permute(Y, [1, 2, 3, 5, 4]);
         
 end
 

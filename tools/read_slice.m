@@ -11,7 +11,18 @@ interpolation = 0;
 Y   = zeros(Vref(1).dim(1:3));       % initialize output volume
 
 xy = Vref(1).dim(1:2);
-index_3D_vol = echo_nbr*expt_nbr;
+
+% select the corresponding 3D volume to display as fuction of both 
+% the echo (4th dim) and the expt (5th dim) sliders
+if  size(Vref(1).private.dat.dim,2)  == 3
+    index_3D_vol = 1;
+elseif  size(Vref(1).private.dat.dim,2)  == 4
+    index_3D_vol = echo_nbr;
+elseif size(Vref(1).private.dat.dim,2) == 5
+   index_3D_vol  =  Vref(1).private.dat.dim(5)*(echo_nbr-1) + expt_nbr;
+
+end
+    
 % compute the transformation to apply between the Vi and the Vref
 mat_tmp = Vref(1).mat\Vi(index_3D_vol).mat;
 
