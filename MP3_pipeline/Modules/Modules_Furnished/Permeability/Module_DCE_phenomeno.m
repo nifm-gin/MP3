@@ -201,7 +201,9 @@ TR = duree_tot / size(N, 4);
 repetition_nbr = size(DCE,4);
 if ~strcmp(opt.Last_dyn_before_bolus, 'Auto')
     debut = str2double(opt.Last_dyn_before_bolus);
-    fin = opt.End_analysis;
+    repetion_time = 1:repetition_nbr;
+    repetion_time = repetion_time*TR;
+    [~, fin] = min(abs(repetion_time -(debut*TR + opt.End_analysis)));
 else
     mean_signal =max(reshape(DCE, [size(DCE,1)*size(DCE,2)*size(DCE,3) size(DCE,4)]),[], 1);
     mean_baseline = nanmean(mean_signal(1:3));
