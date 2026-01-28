@@ -14,15 +14,16 @@ xy = Vref(1).dim(1:2);
 
 % select the corresponding 3D volume to display as fuction of both 
 % the echo (4th dim) and the expt (5th dim) sliders
-if  size(Vref(1).private.dat.dim,2)  == 3
+if size(Vref(1).private.dat.dim,2)  == 2
+    index_3D_vol = 1;
+elseif  size(Vref(1).private.dat.dim,2)  == 3
     index_3D_vol = 1;
 elseif  size(Vref(1).private.dat.dim,2)  == 4
     index_3D_vol = echo_nbr;
 elseif size(Vref(1).private.dat.dim,2) == 5
-   index_3D_vol  =  Vref(1).private.dat.dim(5)*(echo_nbr-1) + expt_nbr;
-
-end
-    
+   %index_3D_vol  =  Vref(1).private.dat.dim(5)*(echo_nbr-1) + expt_nbr;
+   index_3D_vol = echo_nbr + ((expt_nbr-1) * Vref(1).private.dat.dim(4));
+end   
 % compute the transformation to apply between the Vi and the Vref
 mat_tmp = Vref(1).mat\Vi(index_3D_vol).mat;
 
@@ -95,6 +96,7 @@ if ~isequal(orient, [1 2 3])
     [~, permutation(1:3)] = sort(rot_orient);
     Y = permute(Y, permutation);
 end
+
 switch view_mode
     case 'Axial'
         
