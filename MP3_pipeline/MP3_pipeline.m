@@ -610,7 +610,7 @@ switch handles.new_module.opt.table.Type{parameter_selected}
         end
         %handles.new_module.opt.DOF{parameter_selected} = {'SequenceName'};
         
-        
+
         table.columnName = {'SequenceName', 'Select Input'};
         table.editable = [false true];
         table.ColumnFormat = {'char'};
@@ -1044,7 +1044,8 @@ parameter_selected = get(handles.MP3_pipeline_module_parameters,'Value');
 
 %table_data = get(handles.MP3_pipeline_parameter_setup_table, 'Data');
 if strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScanOrXROI') ||...
-        strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') 
+        strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XCluster') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XROIOrXCluster') ||...
+   strcmp(handles.new_module.opt.table.Type{parameter_selected}, 'XScan_plus_clip') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan_plus_clip')
     %handles.new_module.opt.parameter_default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data{cell2mat(handles.MP3_pipeline_parameter_setup_table.Data(:,2)),1};
     handles.new_module.opt.table.Default{parameter_selected} = handles.MP3_pipeline_parameter_setup_table.Data;
 elseif strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1Scan') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ScanOr1ROI') || strcmp(handles.new_module.opt.table.Type{parameter_selected}, '1ROI') || ...
