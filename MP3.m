@@ -4439,7 +4439,7 @@ if numel(data_selected) > 1
     return
 end
 Tp_listing = unique(handles.database.Tp(handles.database.Patient == handles.database.Patient(data_selected)));
-Tp_listing = [Tp_listing, 'Other'] ;
+Tp_listing = [Tp_listing', 'Other'] ;
 [time_point,ok] = listdlg('PromptString', 'Select 1 or several time point',...
     'Name', 'Question?',...
     'ListSize', [200 300],...
@@ -5050,6 +5050,8 @@ database_to_import = table();
 for i = 1:length(data_to_import)
     database_to_import = [database_to_import; linked_table{data_to_import(i)}];
 end
+%% temporary code to importe only the ROI
+%database_to_import(database_to_import.Type == 'Scan',:)=[];
 
 for i=1:size(database_to_import,1)
     switch char(database_to_import.Type(i))
