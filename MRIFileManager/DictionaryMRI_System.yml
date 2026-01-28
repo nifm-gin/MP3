@@ -223,6 +223,14 @@ dictionaryMRI:
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: FOV, type: float, format: ~, units: mm}
+  
+  Gradient Orientation:
+                  description: {info: "Gradient Orientation for the calculation MRTrix3 bvecs "}
+                  
+                  whereBruker: {file: method, keyName: "$PVM_SPackArrGradOrient", type: float, format: ~, units: ~}
+                  
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
                   
   Gradient Orientation Number:
                   description: {info: ""}
@@ -231,7 +239,15 @@ dictionaryMRI:
                   
                   viewer: {category: Diffusion}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-                         
+           
+  Gradient Vectors:
+                  description: {info: "Gradient Vectors for the calculation MRTrix3 bvecs "}
+                  
+                  whereBruker: {file: method, keyName: "$PVM_DwGradVec", type: float, format: ~, units: ~}
+                  
+                  viewer: {category: Diffusion}
+                  json:   {tagJson: ~, type: ~, format: ~, units: ~}
+                        
   Images In Acquisition:
                   description: {info: "Number of images that resulted from this acquisition of data"}
   
@@ -667,9 +683,10 @@ dictionaryMRI:
                   description: {info: ""}
   
                   wherePhilips: {file: PAR ; Xml, keyName: slice gap ; Slice Gap, type: float ; float, format: ~, units: mm}
+                  whereNifti:   {file: json, keyName: SliceGap, type: string, format: ~, units: ~}
                   
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
+                  json:   {tagJson: SliceGap, type: float, format: ~, units: mm}
 
   Slice Orientation:
                   description: {info: ""}
@@ -715,6 +732,15 @@ dictionaryMRI:
                   viewer: {category: MRI parameters}
                   json:   {tagJson: SliceThickness, type: float, format: ~, units: mm}
 
+  Slice Thickness In Acq:
+                  description: {info: ""}
+  
+                  wherePhilips: {file: PAR ; Xml, keyName: slice thickness ; Slice Thickness, type: float ; float, format: ~, units: mm}
+                  whereNifti:   {file: json, keyName: SliceThicknessInAcquisition, type: float, format: ~, units: mm}
+
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: SliceThicknessInAcquisition, type: float, format: ~, units: mm}                
+
   Software Version:
                   description: {info: "Manufacturer's designation of software version of the equipment that produced the composite instances"}
   
@@ -737,7 +763,7 @@ dictionaryMRI:
 
                   viewer: {category: MRI parameters}
                   json:   {tagJson: ~, type: ~, format: ~, units: ~}
-                  
+
   Spin Echo Time:
                   description: {info: ""}
                   

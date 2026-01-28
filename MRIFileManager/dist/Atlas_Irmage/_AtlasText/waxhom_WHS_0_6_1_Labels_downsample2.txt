@@ -1,0 +1,48 @@
+1	olfactory bulb
+2	Cerebral cortex
+3	septal nucleus
+4	striatum
+5	globus pallidus
+6	thalamus
+7	hypothalamus
+8	hippocampal formation
+9	superior colliculus
+10	inferior colliculus
+11	cerebellum
+12	fimbria
+13	internal capsule
+14	lateral ventricles
+15	corpus callosum
+16	3rd ventricle
+17	anterior commissure
+18	inner ear
+19	midbrain unsegmented
+20	fornix
+21	4th ventricle
+22	spinal cord
+23	pineal gland
+24	substantia nigra
+25	medulla
+26	pons
+27	fasciculus retroflexus
+28	amygdala
+29	interpeduncular nucleus
+30	periaqueductal gray
+31	nucleus accumbens
+32	optic nerve
+33	optic chiasm
+34	optic tract
+35	trigeminal
+36	trigeminal tract
+37	Epithalamus
+38	mamillary body
+39	acoustic nerve
+40	Brain
+41	midbrain
+42	forebrain
+43	telencephalon
+44	basal forebrain
+45	diencephalon
+46	hindbrain
+47	sensory system
+48	cranial nerves

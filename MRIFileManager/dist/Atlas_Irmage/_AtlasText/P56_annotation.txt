@@ -1,0 +1,1327 @@
+0	Medial accesory oculomotor nucleus
+1	Simple lobule, molecular layer
+2	Anteromedial visual area, layer 2/3
+3	pallidotegmental fascicle
+4	Pontine reticular nucleus, ventral part
+5	intermediate nerve
+6	Pontine reticular nucleus
+7	Folium-tuber vermis (VII)
+8	Nucleus of the solitary tract, medial part
+9	Nucleus of the solitary tract, lateral part
+10	Nodulus (X), molecular layer
+11	Flocculus
+12	Anterior olfactory nucleus, posteroventral part
+13	alveus
+14	spinocerebellar tract
+15	Piriform area, layers 1-3
+16	superior cerebelar peduncles
+17	Uvula (IX), Purkinje layer
+18	Lingula (I), Purkinje layer
+19	Spinal nucleus of the trigeminal, oral part, ventrolateral part
+20	Paraflocculus, granular layer
+21	Caudoputamen
+22	Lobule V, Purkinje layer
+23	Basolateral amygdalar nucleus, posterior part
+24	Parabrachial nucleus, lateral division, superior lateral part
+25	solitary tract
+26	thalamic peduncles
+27	Basolateral amygdalar nucleus, ventral part
+28	terminal nerve
+29	Prosubiculum
+30	Pons, behavioral state related
+31	Bed nuclei of the stria terminalis, anterior division, anterolateral area
+32	Basolateral amygdalar nucleus, anterior part
+33	Subparafascicular area
+34	Infralimbic area, layer 2
+35	Medullary reticular nucleus
+36	trapezoid body
+37	Infralimbic area, layer 5
+38	Subparafascicular nucleus
+39	Subiculum, dorsal part, pyramidal layer
+40	Piriform area
+41	Gustatory areas
+42	Substantia nigra, compact part
+43	Lateral hypothalamic area
+44	Secondary motor area, layer 6a
+45	Lateral strip of striatum
+46	Substantia nigra, lateral part
+47	Rostrolateral area, layer 1
+48	Primary somatosensory area, layer 5
+49	Secondary motor area, layer 6b
+50	Postrhinal area, layer 2/3
+51	Pons
+52	Fastigial nucleus
+53	Substantia nigra, reticular part
+54	Somatosensory areas, layer 2/3
+55	Interpeduncular nucleus, dorsomedial
+56	external medullary lamina of the thalamus
+57	Nucleus of the lateral olfactory tract, layers 1-3
+58	ventrolateral hypothalamic tract
+59	Paraflocculus, Purkinje layer
+60	Laterointermediate area, layer 6b
+61	Retrosplenial area, ventral part, layer 6b
+62	Retrosplenial area, ventral part, layer 6a
+63	Anterior hypothalamic area
+64	glossopharyngeal nerve
+65	Subiculum, ventral part, stratum radiatum
+66	Crus 1, granular layer
+67	Primary motor area, Layer 5
+68	Dentate gyrus lateral blade, polymorph layer
+69	Anterior hypothalamic nucleus
+70	Primary motor area, Layer 1
+71	Nucleus of the posterior commissure
+72	rhinal incisure
+73	Rostrolateral lateral visual area,layer 5
+74	Somatosensory areas
+75	Ventral posterior complex of the thalamus
+76	Lateral group of the dorsal thalamus
+77	Lateral vestibular nucleus
+78	Medulla, behavioral state related
+79	Visual areas, layer 2/3
+80	Parasubthalamic nucleus
+81	Midbrain raphe nuclei
+82	Primary somatosensory area, layer 2/3
+83	Crus 1, Purkinje layer
+84	Lateral septal nucleus, caudal (caudodorsal) part
+85	Parabrachial nucleus, lateral division, ventral lateral part
+86	paramedian sulcus
+87	Entorhinal area, lateral part, layer 4
+88	Entorhinal area, lateral part, layer 5
+89	Entorhinal area, lateral part, layer 2
+90	Entorhinal area, lateral part, layer 3
+91	Entorhinal area, lateral part, layer 1
+92	Lateral septal nucleus, ventral part
+93	Uvula (IX)
+94	Lateral septal nucleus, rostral (rostroventral) part
+95	Medial pretectal area
+96	Laterolateral anterior visual area,layer 5
+97	rubroreticular tract
+98	Secondary motor area
+99	Pontine central gray
+100	mammillary peduncle
+101	Taenia tecta, dorsal part
+102	cerebellar commissure
+103	Pontine reticular nucleus, caudal part
+104	corpus callosum, splenium
+105	Tegmental reticular nucleus
+106	Lateral visual area, layer 5
+107	Primary motor area, Layer 6b
+108	Primary motor area, Layer 6a
+109	Agranular insular area, dorsal part, layer 6b
+110	Primary somatosensory area, nose, layer 6b
+111	Medial mammillary nucleus, lateral part
+112	Cortical amygdalar area, posterior part, lateral zone
+113	Cortical amygdalar area, posterior part, medial zone
+114	Copula pyramidis, Purkinje layer
+115	Simple lobule
+116	supraoptic commissures
+117	Primary visual area, layer 2/3
+118	Posterior parietal association areas, layer 5
+119	Agranular insular area, posterior part, layer 5
+120	Lateral septal complex
+121	Agranular insular area, posterior part, layer 1
+122	Dorsal column nuclei
+123	Rostrolateral lateral visual area, layer 6a
+124	Bed nuclei of the stria terminalis, posterior division, strial extension
+125	Subiculum, dorsal part, molecular layer
+126	optic chiasm
+127	Primary somatosensory area, upper limb, layer 5
+128	Lobule II
+129	thalamus related
+130	Primary somatosensory area
+131	Primary somatosensory area, lower limb, layer 1
+132	Spinal nucleus of the trigeminal, oral part, caudal dorsomedial part
+133	Superior colliculus, zonal layer
+134	Gigantocellular reticular nucleus
+135	Cochlear nucleus, subpedunclular granular region
+136	Intergeniculate leaflet of the lateral geniculate complex
+137	Basolateral amygdalar nucleus
+138	Median eminence
+139	Mediodorsal nucleus of thalamus
+140	Medial geniculate complex
+141	Taenia tecta, dorsal part, layer 3
+142	Magnocellular nucleus
+143	Midbrain
+144	Medial mammillary nucleus
+145	Paraventricular hypothalamic nucleus, parvicellular division, periventricular part
+146	Interstitial nucleus of the vestibular nerve
+147	Cerebellar nuclei
+148	Medial habenula
+149	Paramedian lobule, molecular layer
+150	Medulla, sensory related
+151	epithalamus related
+152	Medial terminal nucleus of the accessory optic tract
+153	Gustatory areas, layer 1
+154	Medial vestibular nucleus
+155	Gustatory areas, layer 5
+156	Gustatory areas, layer 4
+157	midbrain related
+158	Entorhinal area
+159	Cerebellar cortex
+160	lateral forebrain bundle system
+161	Medulla
+162	Interstitial nucleus of Cajal
+163	Fundus of striatum
+164	intraparafloccular fissure
+165	juxtarestiform body
+166	Mediodorsal nucleus of the thalamus, lateral part
+167	Mediodorsal nucleus of the thalamus, medial part
+168	Cortical amygdalar area, posterior part, lateral zone, layers 1-3
+169	Cortical amygdalar area, posterior part, lateral zone, layers 1-2
+170	Parapyramidal nucleus, deep part
+171	Cerebral cortex
+172	Posterodorsal tegmental nucleus
+173	Crus 1
+174	Postsubiculum, layer 2
+175	Uvula (IX), molecular layer
+176	Mediomedial anterior visual area, layer 6b
+177	Mediomedial anterior visual area, layer 6a
+178	Fasciola cinerea
+179	Postsubiculum, layer 1
+180	Fields of Forel
+181	Primary somatosensory area, mouth, layer 2/3
+182	Lobule II, molecular layer
+183	Parapyramidal nucleus, superficial part
+184	Nucleus of the optic tract
+185	ansa peduncularis
+186	Paramedian lobule
+187	Ventral auditory area
+188	Efferent vestibular nucleus
+189	Dentate gyrus medial blade
+190	inferior cerebellar peduncle
+191	Primary auditory area
+192	Nucleus of the lateral olfactory tract
+193	Bed nuclei of the stria terminalis
+194	cerebral nuclei related
+195	Cortical subplate
+196	Frontal pole, layer 6b
+197	Dorsal auditory area
+198	Supramammillary nucleus, lateral part
+199	Ventral part of the lateral geniculate complex, medial zone
+200	Ventral part of the lateral geniculate complex, lateral zone
+201	Secondary motor area, layer 2/3
+202	Entorhinal area, medial part, dorsal zone, layer 2a
+203	Entorhinal area, medial part, dorsal zone, layer 2b
+204	Anteroventral periventricular nucleus
+205	Spinal nucleus of the trigeminal, interpolar part
+206	Prosubiculum, ventral part, molecular layer
+207	Subiculum, ventral part
+208	Spinal vestibular nucleus
+209	Auditory areas
+210	postcommissural fornix
+211	corpus callosum, extreme capsule
+212	Hemispheric regions
+213	Parvicellular motor 5 nucleus
+214	Agranular insular area, posterior part, layer 6a
+215	Subgeniculate nucleus
+216	parafloccular sulcus
+217	Agranular insular area, posterior part, layer 6b
+218	Interpeduncular nucleus, intermediate
+219	Nucleus of the solitary tract, gelatinous part
+220	Motor nucleus of trigeminal
+221	Thalamus, sensory-motor cortex related
+222	Taenia tecta, dorsal part, layer 4
+223	Subiculum, ventral part, pyramidal layer
+224	Lateral tegmental nucleus
+225	Dentate gyrus crest, polymorph layer
+226	Primary motor area, Layer 2/3
+227	Anterolateral visual area, layer 6a
+228	Anterolateral visual area, layer 6b
+229	Olfactory areas
+230	Posterior pretectal nucleus
+231	Ventromedial preoptic nucleus
+232	Anterolateral visual area, layer 2/3
+233	medial lemniscus
+234	Magnocellular reticular nucleus
+235	Ventral auditory area, layer 2/3
+236	facial nerve
+237	Bed nuclei of the stria terminalis, anterior division, juxtacapsular nucleus
+238	Entorhinal area, lateral part, layer 2/3
+239	Substantia innominata
+240	Septohippocampal nucleus
+241	Supraoptic nucleus
+242	Posterior parietal association areas, layer 6a
+243	Posterior parietal association areas, layer 6b
+244	Dorsal part of the lateral geniculate complex, shell
+245	internal medullary lamina of the thalamus
+246	Nucleus of the trapezoid body
+247	Supragenual nucleus
+248	Septofimbrial nucleus
+249	Mediomedial posterior visual area, layer 1
+250	Subparafascicular nucleus, parvicellular part
+251	Primary somatosensory area, nose, layer 6a
+252	Anterior hypothalamic nucleus, dorsal part
+253	hypothalamohypophysial tract
+254	Accessory olfactory bulb, granular layer
+255	anterior commissure, olfactory limb
+256	Cortical amygdalar area, posterior part
+257	Pyramus (VIII), Purkinje layer
+258	Primary somatosensory area, upper limb, layer 6a
+259	Bed nucleus of the anterior commissure
+260	Accessory olfactory bulb, glomerular layer
+261	Entorhinal area, medial part, ventral zone, layer 4
+262	Orbital area
+263	Lateral visual area, layer 1
+264	Field CA1, stratum radiatum
+265	Cortical amygdalar area, anterior part
+266	Entorhinal area, medial part, ventral zone, layer 1
+267	Entorhinal area, medial part, ventral zone, layer 2
+268	Entorhinal area, medial part, ventral zone, layer 3
+269	Hippocampal region
+270	central tegmental bundle
+271	Lateral dorsal nucleus of thalamus
+272	optic nerve
+273	Main olfactory bulb, mitral layer
+274	Lateral amygdalar nucleus
+275	Primary somatosensory area, upper limb, layer 6b
+276	Anteromedial visual area, layer 4
+277	Lateral mammillary nucleus
+278	pyramidal decussation
+279	Field CA1, stratum oriens
+280	Lateral habenula
+281	Anteromedial visual area, layer 1
+282	Dentate gyrus, molecular layer
+283	Lateral terminal nucleus of the accessory optic tract
+284	supraoptic commissures, ventral
+285	Primary somatosensory area, mouth, layer 4
+286	Lateral septal nucleus
+287	Lateral posterior nucleus of the thalamus
+288	Field CA1, stratum lacunosum-moleculare
+289	Ventral posteromedial nucleus of the thalamus
+290	Ventral posterolateral nucleus of the thalamus
+291	Lateral visual area, layer 4
+292	Hypothalamic lateral zone
+293	Peritrigeminal zone
+294	Vestibulocerebellar nucleus
+295	periventricular bundle of the thalamus
+296	Prosubiculum, dorsal part, molecular layer
+297	Laterointermediate area
+298	Parabrachial nucleus, medial division, ventral medial part
+299	Nucleus y
+300	Intertrigeminal nucleus
+301	Laterolateral anterior visual area
+302	Geniculate group, ventral thalamus
+303	Paraventricular hypothalamic nucleus, descending division, forniceal part
+304	Subthalamic nucleus
+305	Midbrain reticular nucleus, retrorubral area
+306	sensory root of the trigeminal nerve
+307	longitudinal association bundle
+308	Parabrachial nucleus, medial division, external medial part
+309	corpus callosum, anterior forceps
+310	Primary somatosensory area, mouth, layer 5
+311	accessory optic tract
+312	Lobule II, Purkinje layer
+313	striatonigral pathway
+314	Parabrachial nucleus, medial division, medial medial part
+315	fimbria
+316	Geniculate group, dorsal thalamus
+317	periventricular bundle of the hypothalamus
+318	Locus ceruleus
+319	Dorsal peduncular area, layer 5
+320	Dorsal peduncular area, layer 2
+321	Dorsal peduncular area, layer 1
+322	Dentate gyrus, granule cell layer
+323	Field CA3
+324	Field CA2
+325	Field CA1
+326	Simple lobule, granular layer
+327	optic radiation
+328	Primary visual area, layer 5
+329	stria medullaris
+330	Mediomedial posterior visual area,layer 5
+331	Infralimbic area, layer 6a
+332	Retrosplenial area
+333	Somatosensory areas, layer 6a
+334	Somatosensory areas, layer 6b
+335	Primary visual area, layer 6a
+336	Orbital area, layer 1
+337	Visceral area, layer 2/3
+338	Linear nucleus of the medulla
+339	tectothalamic pathway
+340	Orbital area, layer 5
+341	Paragigantocellular reticular nucleus
+342	Copula pyramidis
+343	Anterior cingulate area, dorsal part, layer 6b
+344	Ventral auditory area, layer 1
+345	Pallidum, medial region
+346	Primary somatosensory area, nose, layer 4
+347	superior colliculus commissure
+348	Mediomedial posterior visual area, layer 4
+349	Lingula (I)
+350	Nucleus of the lateral olfactory tract, molecular layer
+351	Nucleus of the lateral olfactory tract, pyramidal layer
+352	prepyramidal fissure
+353	Reticular nucleus of the thalamus
+354	Zona incerta
+355	Paraventricular hypothalamic nucleus, descending division, medial parvicellular part, ventral zone
+356	Accessory olfactory bulb
+357	Precommissural nucleus
+358	Interpeduncular nucleus, dorsolateral
+359	Orbital area, lateral part, layer 6a
+360	Anterior olfactory nucleus
+361	lateral lemniscus
+362	Orbital area, lateral part, layer 6b
+363	Nucleus sagulum
+364	Lingula (I), granular layer
+365	posteromedial visual area, layer 5
+366	posteromedial visual area, layer 4
+367	Nucleus of reuniens
+368	Main olfactory bulb, outer plexiform layer
+369	Nucleus prepositus
+370	Supplemental somatosensory area, layer 2/3
+371	rhinocele
+372	Rostral linear nucleus raphe
+373	Nucleus raphe magnus
+374	Red nucleus
+375	Nucleus raphe obscurus
+376	Rhomboid nucleus
+377	Nucleus of the solitary tract
+378	tectospinal pathway
+379	simple fissure
+380	Dentate gyrus crest, granule cell layer
+381	corticospinal tract
+382	Dorsal peduncular area, layer 6a
+383	Field CA3, stratum lacunosum-moleculare
+384	Area prostriata
+385	Crus 2, Purkinje layer
+386	Orbital area, ventrolateral part, layer 2/3
+387	abducens nerve
+388	Field CA2, stratum oriens
+389	Orbital area, ventral part
+390	Lateral preoptic area
+391	Interpeduncular nucleus, rostrolateral
+392	Midbrain reticular nucleus
+393	Orbital area, medial part
+394	Orbital area, lateral part
+395	dorsal acoustic stria
+396	Primary somatosensory area, unassigned, layer 5
+397	Primary somatosensory area, unassigned, layer 4
+398	Dentate gyrus, subgranular zone
+399	Primary somatosensory area, unassigned, layer 2/3
+400	Primary somatosensory area, unassigned, layer 1
+401	Field CA3, stratum lucidum
+402	grooves of the cerebral cortex
+403	Interpeduncular nucleus, caudal
+404	Interpeduncular nucleus, apical
+405	Interpeduncular fossa
+406	Superior vestibular nucleus
+407	Oculomotor nucleus
+408	Spinal nucleus of the trigeminal, oral part, middle dorsomedial part, ventral zone
+409	Facial motor nucleus
+410	Interpeduncular nucleus
+411	Superior colliculus, motor related, deep white layer
+412	Interpeduncular nucleus, lateral
+413	Pallidum, ventral region
+414	Interpeduncular nucleus, rostral
+415	Subfornical organ
+416	Anterior pretectal nucleus
+417	Globus pallidus, external segment
+418	Spinal nucleus of the trigeminal, oral part, middle dorsomedial part, dorsal zone
+419	Primary auditory area, layer 6b
+420	Pallidum, caudal region
+421	Superior colliculus, motor related, deep gray layer
+422	Superior colliculus, motor related, intermediate gray layer, sublayer b
+423	cervicothalamic tract
+424	corpus callosum, posterior forceps
+425	Agranular insular area, dorsal part, layer 2/3
+426	Paramedian lobule, granular layer
+427	Somatosensory areas, layer 5
+428	Somatosensory areas, layer 4
+429	endorhinal groove
+430	Anterolateral visual area
+431	Anteromedial visual area
+432	external capsule
+433	Mediomedial anterior visual area,layer 5
+434	Hypothalamus
+435	Visual areas, layer 6b
+436	oculomotor nerve
+437	Hippocampo-amygdalar transition area
+438	propriohypothalamic pathways, lateral
+439	Anterior cingulate area, ventral part, 6a
+440	Gustatory areas, layer 2/3
+441	Anterior cingulate area, ventral part, 6b
+442	Paragigantocellular reticular nucleus, dorsal part
+443	Dorsal peduncular area, layer 2/3
+444	Posterolateral visual area, layer 6a
+445	Basomedial amygdalar nucleus
+446	Bed nuclei of the stria terminalis, posterior division, principal nucleus
+447	Central amygdalar nucleus
+448	Paragigantocellular reticular nucleus, lateral part
+449	vestibular nerve
+450	Lateral visual area, layer 6b
+451	dorsal spinocerebellar tract
+452	Lateral visual area, layer 6a
+453	Pons, sensory related
+454	columns of the fornix
+455	rhinal fissure
+456	Abducens nucleus
+457	Bed nuclei of the stria terminalis, anterior division, dorsomedial nucleus
+458	supramammillary decussation
+459	ventral spinocerebellar tract
+460	Nucleus of the lateral lemniscus
+461	Primary somatosensory area, trunk, layer 2/3
+462	Orbital area, medial part, layer 5
+463	Folium-tuber vermis (VII), granular layer
+464	Orbital area, medial part, layer 1
+465	Bed nuclei of the stria terminalis, posterior division, dorsal nucleus
+466	Orbital area, medial part, layer 2
+467	Agranular insular area, ventral part, layer 5
+468	nigrothalamic fibers
+469	Supplemental somatosensory area
+470	Orbital area, medial part, layer 2/3
+471	Anterior area, layer 1
+472	Agranular insular area, ventral part, layer 2/3
+473	Anterior area, layer 4
+474	Anterior area, layer 5
+475	Dentate gyrus, polymorph layer
+476	Bed nuclei of the stria terminalis, anterior division, oval nucleus
+477	posteromedial visual area, layer 6b
+478	Edinger-Westphal nucleus
+479	Medial amygdalar nucleus, anteroventral part
+480	Piriform area, polymorph layer
+481	Piriform area, pyramidal layer
+482	Piriform area, molecular layer
+483	Pedunculopontine nucleus
+484	Superior central nucleus raphe, medial part
+485	Superior central nucleus raphe, lateral part
+486	Somatomotor areas, Layer 2/3
+487	corticospinal tract, uncrossed
+488	Retrosplenial area, lateral agranular part, layer 6b
+489	Posterior auditory area, layer 5
+490	Primary somatosensory area, barrel field, layer 2/3
+491	Posterior auditory area, layer 1
+492	Primary somatosensory area, upper limb, layer 1
+493	accessory olfactory tract
+494	Subiculum, dorsal part
+495	Superior salivatory nucleus
+496	stria terminalis
+497	Islands of Calleja
+498	vestibulocochlear nerve
+499	corticotectal tract
+500	Cortical amygdalar area, anterior part, layer 1
+501	Cortical amygdalar area, anterior part, layer 3
+502	Cortical amygdalar area, anterior part, layer 2
+503	Periventricular hypothalamic nucleus, posterior part
+504	Primary somatosensory area, nose, layer 5
+505	internal arcuate fibers
+506	Intermediate reticular nucleus
+507	Primary somatosensory area, nose, layer 1
+508	Ventral group of the dorsal thalamus
+509	Anterior group of the dorsal thalamus
+510	Nucleus of Darkschewitsch
+511	cochlear nerve
+512	Prosubiculum, ventral part
+513	Retrosplenial area, lateral agranular part, layer 5
+514	Periventricular hypothalamic nucleus, anterior part
+515	olfactory nerve layer of main olfactory bulb
+516	Laterolateral anterior visual area, layer 1
+517	Superior colliculus, motor related, intermediate gray layer, sublayer c
+518	Inferior salivatory nucleus
+519	Superior colliculus, motor related, intermediate gray layer, sublayer a
+520	Primary auditory area, layer 6a
+521	Periventricular hypothalamic nucleus, intermediate part
+522	Prosubiculum, dorsal part
+523	Ethmoid nucleus of the thalamus
+524	Pyramus (VIII)
+525	Dorsal tegmental nucleus
+526	Lateral visual area, layer 2/3
+527	ventral hippocampal commissure
+528	Periventricular region
+529	Piriform-amygdalar area
+530	Paraventricular nucleus of the thalamus
+531	Superior colliculus, motor related, intermediate white layer
+532	Lobule V, molecular layer
+533	Efferent cochlear group
+534	Retrosplenial area, lateral agranular part, layer 1
+535	Periventricular zone
+536	Ectorhinal area/Layer 6b
+537	subependymal zone
+538	Hippocampal formation
+539	External cuneate nucleus
+540	Ectorhinal area
+541	hypoglossal nerve
+542	Postsubiculum
+543	Superior colliculus, motor related, intermediate gray layer
+544	Lobule III, Purkinje layer
+545	Paraventricular hypothalamic nucleus
+546	Dentate gyrus lateral blade, granule cell layer
+547	Accessory supraoptic group
+548	Prosubiculum, ventral part, pyramidal layer
+549	intermediate acoustic stria
+550	Primary somatosensory area, lower limb, layer 6a
+551	Barrington's nucleus
+552	Intermediodorsal nucleus of the thalamus
+553	Central amygdalar nucleus, medial part
+554	Central amygdalar nucleus, lateral part
+555	Central amygdalar nucleus, capsular part
+556	Infralimbic area, layer 6b
+557	Superior olivary complex, medial part
+558	Superior olivary complex, lateral part
+559	Claustrum
+560	Taenia tecta, ventral part
+561	Frontal pole, cerebral cortex
+562	Cerebellar cortex, Purkinje layer
+563	Declive (VI), Purkinje layer
+564	Medial mammillary nucleus, posterior part
+565	Supplemental somatosensory area, layer 1
+566	Anterior area, layer 6b
+567	Anterior area, layer 6a
+568	subthalamic fascicle
+569	Xiphoid thalamic nucleus
+570	vagus nerve
+571	Koelliker-Fuse subnucleus
+572	Ventromedial hypothalamic nucleus
+573	commissural branch of stria terminalis
+574	Anterior hypothalamic nucleus, anterior part
+575	Anterior hypothalamic nucleus, central part
+576	Basic cell groups and regions
+577	doral tegmental decussation
+578	Medial mammillary nucleus, medial part
+579	Medial visual area, layer 6b
+580	Medial visual area, layer 6a
+581	spinotectal pathway
+582	Medial preoptic nucleus, lateral part
+583	Anterior hypothalamic nucleus, posterior part
+584	Interbrain
+585	cerebrum related
+586	Ventral posterolateral nucleus of the thalamus, parvicellular part
+587	dorsal tegmental tract
+588	Dentate nucleus
+589	Ventral tegmental area
+590	Anterior amygdalar area
+591	Dentate gyrus
+592	Anterior area, layer 2/3
+593	Agranular insular area, dorsal part, layer 1
+594	Ventral premammillary nucleus
+595	extrapyramidal fiber systems
+596	Primary somatosensory area, lower limb, layer 6b
+597	Posterior parietal association areas
+598	Cortical amygdalar area, posterior part, medial zone, layer 1
+599	Cortical amygdalar area, posterior part, medial zone, layer 2
+600	Cortical amygdalar area, posterior part, medial zone, layer 3
+601	Dentate gyrus medial blade, molecular layer
+602	Olfactory tubercle, molecular layer
+603	Dorsal terminal nucleus of the accessory optic tract
+604	Olfactory tubercle, polymorph layer
+605	Dorsal nucleus raphe
+606	Dorsal peduncular area
+607	Main olfactory bulb, inner plexiform layer
+608	Lobule IV, molecular layer
+609	Paramedian lobule, Purkinje layer
+610	brachium of the inferior colliculus
+611	Medial septal nucleus
+612	Temporal association areas, layer 1
+613	Superior olivary complex, periolivary region
+614	Temporal association areas, layer 4
+615	Temporal association areas, layer 5
+616	Nucleus raphe pallidus
+617	Postrhinal area, layer 6b
+618	Posterior limiting nucleus of the thalamus
+619	Dentate gyrus lateral blade, molecular layer
+620	Primary somatosensory area, barrel field, layer 6b
+621	Temporal association areas, layer 6b
+622	Medial amygdalar nucleus, posteroventral part
+623	Infralimbic area, layer 2/3
+624	Nucleus raphe pontis
+625	Medial visual area, layer 4
+626	Medial visual area,layer 5
+627	Taenia tecta, dorsal part, layer 2
+628	Paratrochlear nucleus
+629	Medial visual area, layer 1
+630	Medial visual area, layer 2/3
+631	Nucleus of the lateral lemniscus, ventral part
+632	Posterior triangular thalamic nucleus
+633	olfactory nerve
+634	corpus callosum, rostrum
+635	Perifornical nucleus
+636	Dorsal part of the lateral geniculate complex
+637	Ventral cochlear nucleus
+638	Perirhinal area, layer 6b
+639	Arcuate hypothalamic nucleus
+640	Perirhinal area, layer 6a
+641	Pretectal region
+642	Nucleus of the lateral lemniscus, horizontal part
+643	Nucleus x
+644	Sublaterodorsal nucleus
+645	Nucleus of the lateral lemniscus, dorsal part
+646	Ventral tegmental nucleus
+647	Ventral part of the lateral geniculate complex
+648	Retrosplenial area, dorsal part
+649	corpus callosum
+650	Subceruleus nucleus
+651	Prelimbic area, layer 6b
+652	Paraventricular hypothalamic nucleus, magnocellular division, medial magnocellular part
+653	Entorhinal area, medial part, dorsal zone, layer 1
+654	Prelimbic area, layer 6a
+655	Anterolateral visual area, layer 5
+656	Anterolateral visual area, layer 4
+657	Anterolateral visual area, layer 1
+658	Medial geniculate complex, dorsal part
+659	Prosubiculum, dorsal part, pyramidal layer
+660	Entorhinal area, medial part, ventral zone, layer 5/6
+661	Prosubiculum, dorsal part, stratum radiatum
+662	Orbital area, layer 2/3
+663	Rostrolateral area, layer 2/3
+664	Midbrain reticular nucleus, magnocellular part, general
+665	Lobules IV-V, Purkinje layer
+666	Retrosplenial area, dorsal part, layer 4
+667	Retrosplenial area, dorsal part, layer 5
+668	Postpiriform transition area, layers 2
+669	Retrosplenial area, dorsal part, layer 1
+670	Parasubiculum
+671	Parasolitary nucleus
+672	Gustatory areas, layer 6b
+673	Uvula (IX), granular layer
+674	Gustatory areas, layer 6a
+675	Bed nuclei of the stria terminalis, anterior division, anteromedial area
+676	Agranular insular area, dorsal part, layer 6a
+677	Midbrain, motor related
+678	Parabrachial nucleus, lateral division, central lateral part
+679	Retrosplenial area, ventral part, layer 5
+680	Crus 2
+681	Retrosplenial area, ventral part, layer 1
+682	Retrosplenial area, ventral part, layer 2
+683	hippocampal commissures
+684	Visceral area, layer 4
+685	posteromedial visual area
+686	Posterolateral visual area
+687	Pallidum
+688	Laterolateral anterior visual area, layer 6a
+689	Dorsal cochlear nucleus
+690	Laterolateral anterior visual area, layer 6b
+691	Bed nuclei of the stria terminalis, anterior division
+692	Primary somatosensory area, lower limb, layer 4
+693	Primary somatosensory area, lower limb, layer 5
+694	Perirhinal area
+695	Postsubiculum, layer 3
+696	Isocortex
+697	Ectorhinal area/Layer 2/3
+698	Retroethmoid nucleus
+699	Accessory trigeminal nucleus
+700	Bed nuclei of the stria terminalis, anterior division, ventral nucleus
+701	medial forebrain bundle system
+702	Bed nuclei of the stria terminalis, posterior division
+703	Visceral area, layer 5
+704	brachium of the superior colliculus
+705	Lobule IV
+706	Lobule V
+707	Perirhinal area, layer 5
+708	spino-olivary pathway
+709	olivocerebellar tract
+710	Perirhinal area, layer 1
+711	Lobule IV, Purkinje layer
+712	Interanteromedial nucleus of the thalamus
+713	dorsolateral fascicle
+714	Primary visual area, layer 4
+715	Bed nuclei of the stria terminalis, anterior division, fusiform nucleus
+716	Primary visual area, layer 1
+717	Paraventricular hypothalamic nucleus, magnocellular division
+718	dorsal fornix
+719	Paraventricular hypothalamic nucleus, parvicellular division, medial parvicellular part, dorsal zone
+720	hypothalamus related
+721	precommissural fornix diagonal band
+722	dorsal column
+723	Paraventricular hypothalamic nucleus, descending division
+724	Entorhinal area, medial part, dorsal zone
+725	mammillary related
+726	Taenia tecta, ventral part, layer 2
+727	Medial mammillary nucleus, dorsal part
+728	Dorsal auditory area, layer 6b
+729	Paraventricular hypothalamic nucleus, parvicellular division
+730	Dorsal auditory area, layer 6a
+731	Ventral auditory area, layer 5
+732	Ventral auditory area, layer 4
+733	Primary somatosensory area, mouth, layer 1
+734	spinohypothalamic pathway
+735	Mediomedial posterior visual area, layer 6b
+736	Globus pallidus, internal segment
+737	corticorubral tract
+738	Mediomedial posterior visual area, layer 6a
+739	Thalamus, polymodal association cortex related
+740	lateral olfactory tract, general
+741	Mediomedial anterior visual area, layer 4
+742	Entorhinal area, lateral part
+743	accessory spinal nerve
+744	Crus 2, granular layer
+745	Perihypoglossal nuclei
+746	Posterolateral visual area, layer 2/3
+747	Nucleus intercalatus
+748	Ventral anterior-lateral complex of the thalamus
+749	Dorsomedial nucleus of the hypothalamus, posterior part
+750	Piriform-amygdalar area, pyramidal layer
+751	Piriform-amygdalar area, polymorph layer
+752	Endopiriform nucleus
+753	Piriform-amygdalar area, molecular layer
+754	Laterolateral anterior visual area, layer 4
+755	Declive (VI), granular layer
+756	Dorsomedial nucleus of the hypothalamus
+757	Somatomotor areas, Layer 1
+758	Epithalamus
+759	Somatomotor areas, Layer 5
+760	Posterior parietal association areas, layer 2/3
+761	Orbital area, ventrolateral part, layer 1
+762	Dorsal premammillary nucleus
+763	arbor vitae
+764	Cerebellar cortex, granular layer
+765	secondary fissure
+766	Primary somatosensory area, trunk
+767	Anterior olfactory nucleus, lateral part
+768	Anterior olfactory nucleus, medial part
+769	Dorsal motor nucleus of the vagus nerve
+770	Temporal association areas, layer 6a
+771	Anteromedial visual area, layer 5
+772	Anterior olfactory nucleus, dorsal part
+773	Anterior olfactory nucleus, external part
+774	Perireunensis nucleus
+775	Parastrial nucleus
+776	Peripeduncular nucleus
+777	dorsal longitudinal fascicle
+778	Parataenial nucleus
+779	ventral roots
+780	Olfactory tubercle, pyramidal layer
+781	habenular commissure
+782	Parabrachial nucleus
+783	Lobule III
+784	Posterior amygdalar nucleus
+785	Parafascicular nucleus
+786	Pontine gray
+787	Posterodorsal preoptic nucleus
+788	Laterodorsal tegmental nucleus
+789	Medial mammillary nucleus, median part
+790	Temporal association areas, layer 2/3
+791	Posterior hypothalamic nucleus
+792	Agranular insular area, ventral part, layer 1
+793	Paranigral nucleus
+794	Posterior complex of the thalamus
+795	Prelimbic area
+796	dorsal limb
+797	Medial geniculate complex, medial part
+798	Presubiculum
+799	Primary motor area
+800	Lobule V, granular layer
+801	Cortical amygdalar area, posterior part, medial zone, layers 1-2
+802	Cortical amygdalar area, posterior part, medial zone, layers 1-3
+803	Anterior olfactory nucleus, layer 2
+804	Anterior olfactory nucleus, layer 1
+805	Striatum ventral region
+806	Paratrigeminal nucleus
+807	supraoptic commissures, anterior
+808	Postrhinal area, layer 1
+809	Mediomedial anterior visual area, layer 2/3
+810	Postrhinal area, layer 4
+811	Postrhinal area, layer 5
+812	ventral tegmental decussation
+813	Rostrolateral lateral visual area, layer 1
+814	central canal, spinal cord/medulla
+815	uncinate fascicle
+816	Medial geniculate complex, ventral part
+817	Ventrolateral preoptic nucleus
+818	Prosubiculum, ventral part, stratum radiatum
+819	supraoptic commissures, dorsal
+820	Anterior cingulate area, ventral part, layer 1
+821	Anteromedial visual area, layer 6a
+822	Anteromedial visual area, layer 6b
+823	Endopiriform nucleus, ventral part
+824	Cortical plate
+825	Hypoglossal nucleus
+826	Medulla, motor related
+827	Mediomedial anterior visual area
+828	Main olfactory bulb
+829	Intercollicular nucleus
+830	Principal sensory nucleus of the trigeminal
+831	posteromedial visual area, layer 1
+832	Preparasubthalamic nucleus
+833	genu of the facial nerve
+834	Anterior cingulate area, dorsal part, layer 1
+835	Prelimbic area, layer 5
+836	Orbital area, lateral part, layer 5
+837	Prelimbic area, layer 2
+838	Prelimbic area, layer 1
+839	Infralimbic area
+840	Ventromedial hypothalamic nucleus, central part
+841	Primary somatosensory area, nose, layer 2/3
+842	Ventromedial hypothalamic nucleus, anterior part
+843	Intralaminar nuclei of the dorsal thalamus
+844	lateral recess
+845	Postpiriform transition area, layers 1-3
+846	Cortical amygdalar area
+847	Dorsal auditory area, layer 5
+848	Dorsal auditory area, layer 4
+849	Supramammillary nucleus
+850	Dorsal auditory area, layer 1
+851	Presubiculum, layer 1
+852	preoptic commissure
+853	Presubiculum, layer 3
+854	Rostrolateral visual area
+855	cuneate fascicle
+856	Field CA3, stratum radiatum
+857	Laterointermediate area, layer 1
+858	Field CA3, pyramidal layer
+859	Tuberomammillary nucleus, ventral part
+860	Subparaventricular zone
+861	pyramid
+862	posterior commissure
+863	Tuberomammillary nucleus, dorsal part
+864	Midbrain, sensory related
+865	Striatum dorsal region
+866	Field CA3, stratum oriens
+867	Laterointermediate area, layer 6a
+868	principal mammillary tract
+869	Layer 6b, isocortex
+870	Cerebrum
+871	Cochlear nuclei
+872	Central medial nucleus of the thalamus
+873	Midbrain reticular nucleus, parvicellular part
+874	Cerebellum
+875	Ammon's horn
+876	Diagonal band nucleus
+877	Somatomotor areas, Layer 6b
+878	supra-callosal cerebral white matter
+879	Somatomotor areas, Layer 6a
+880	Retrosplenial area, dorsal part, layer 6a
+881	Retrosplenial area, dorsal part, layer 6b
+882	Agranular insular area, ventral part, layer 6a
+883	Superior central nucleus raphe
+884	Spinal nucleus of the trigeminal, oral part, rostral dorsomedial part
+885	Midbrain reticular nucleus, magnocellular part
+886	medial corticohypothalamic tract
+887	Endopiriform nucleus, dorsal part
+888	Cuneate nucleus
+889	middle cerebellar peduncle
+890	Dorsal part of the lateral geniculate complex, core
+891	medial longitudinal fascicle
+892	Entorhinal area, medial part, dorsal zone, layer 5/6
+893	Postpiriform transition area, layers 1
+894	preculminate fissure
+895	ventral spinothalamic tract
+896	cerebellar peduncles
+897	Posterior auditory area, layer 4
+898	angular path
+899	lateral spinothalamic tract
+900	Suprachiasmatic preoptic nucleus
+901	Superior colliculus, superficial gray layer
+902	Central linear nucleus raphe
+903	Rostrolateral lateral visual area, layer 4
+904	precentral fissure
+905	efferent cochleovestibular bundle
+906	Somatomotor areas
+907	Orbital area, ventrolateral part, layer 6a
+908	Spinal nucleus of the trigeminal, caudal part
+909	Primary somatosensory area, trunk, layer 4
+910	ventral commissure of the spinal cord
+911	Simple lobule, Purkinje layer
+912	Orbital area, ventrolateral part, layer 6b
+913	Taenia tecta, ventral part, layer 1
+914	Nucleus ambiguus, ventral division
+915	Spinal nucleus of the trigeminal, oral part
+916	dorsal roots
+917	Dentate gyrus crest, molecular layer
+918	Retrochiasmatic area
+919	Primary somatosensory area, mouth, layer 6a
+920	Supplemental somatosensory area, layer 5
+921	Supplemental somatosensory area, layer 4
+922	Nucleus ambiguus, dorsal division
+923	Anterior cingulate area, ventral part, layer 5
+924	posteromedial visual area, layer 2/3
+925	Retroparafascicular nucleus
+926	pallidothalamic pathway
+927	Ectorhinal area/Layer 5
+928	Superior olivary complex
+929	Mammillary body
+930	Ectorhinal area/Layer 1
+931	Accessory olfactory bulb, mitral layer
+932	Primary visual area, layer 6b
+933	cingulum bundle
+934	Agranular insular area, ventral part
+935	dorsal hippocampal commissure
+936	Agranular insular area, posterior part
+937	Anterior cingulate area, dorsal part, layer 6a
+938	Primary somatosensory area, unassigned
+939	third ventricle
+940	fourth ventricle
+941	Major island of Calleja
+942	Orbital area, medial part, layer 6b
+943	Superior colliculus, optic layer
+944	Agranular insular area, dorsal part
+945	Parapyramidal nucleus
+946	Agranular insular area, dorsal part, layer 5
+947	Entorhinal area, lateral part, layer 2a
+948	amygdalar capsule
+949	Entorhinal area, lateral part, layer 2b
+950	Frontal pole, layer 5
+951	Rostrolateral area, layer 6a
+952	Frontal pole, layer 1
+953	Rostrolateral area, layer 6b
+954	Interposed nucleus
+955	Visceral area, layer 1
+956	lateral ventricle
+957	Ventral medial nucleus of the thalamus
+958	Frontal pole, layer 2/3
+959	Trochlear nucleus
+960	Cortical amygdalar area, posterior part, lateral zone, layer 3
+961	Cortical amygdalar area, posterior part, lateral zone, layer 2
+962	Cortical amygdalar area, posterior part, lateral zone, layer 1
+963	ventricular systems
+964	Midline group of the dorsal thalamus
+965	Inferior olivary complex
+966	Primary somatosensory area, upper limb, layer 4
+967	Intercalated amygdalar nucleus
+968	Inferior colliculus
+969	propriohypothalamic pathways
+970	vomeronasal nerve
+971	Medial amygdalar nucleus, anterodorsal part
+972	Induseum griseum
+973	Interfascicular nucleus raphe
+974	Field CA2, stratum radiatum
+975	Postrhinal area
+976	Medial preoptic nucleus, central part
+977	mammillotegmental tract
+978	Medial preoptic nucleus, medial part
+979	cuneocerebellar tract
+980	Primary somatosensory area, barrel field
+981	Interanterodorsal nucleus of the thalamus
+982	Periventricular hypothalamic nucleus, preoptic part
+983	trigeminal nerve
+984	Primary somatosensory area, mouth, layer 6b
+985	Dentate gyrus crest
+986	Bed nuclei of the stria terminalis, posterior division, transverse nucleus
+987	Posterior auditory area, layer 2/3
+988	Taenia tecta, dorsal part, layers 1-4
+989	Median preoptic nucleus
+990	Anterior cingulate area, layer 6b
+991	genu of corpus callosum
+992	Anterior cingulate area, layer 6a
+993	Visceral area, layer 6a
+994	Visceral area, layer 6b
+995	Dentate gyrus lateral blade
+996	medial forebrain bundle
+997	Tuberal nucleus
+998	Dorsomedial nucleus of the hypothalamus, anterior part
+999	Bed nucleus of the accessory olfactory tract
+1000	Anterior cingulate area, layer 2/3
+1001	Parvicellular reticular nucleus
+1002	trigeminocerebellar tract
+1003	Entorhinal area, medial part, ventral zone
+1004	Medullary reticular nucleus, ventral part
+1005	Dorsomedial nucleus of the hypothalamus, ventral part
+1006	Medial amygdalar nucleus, posterodorsal part
+1007	Ectorhinal area/Layer 6a
+1008	Brain stem
+1009	Bed nuclei of the stria terminalis, posterior division, interfascicular nucleus
+1010	Medullary reticular nucleus, dorsal part
+1011	Declive (VI), molecular layer
+1012	Anterior cingulate area, dorsal part, layer 5
+1013	gracile fascicle
+1014	Nucleus of the solitary tract, commissural part
+1015	Posterior intralaminar thalamic nucleus
+1016	cranial nerves
+1017	Pineal body
+1018	Nucleus of the solitary tract, central part
+1019	Orbital area, lateral part, layer 1
+1020	corpus callosum, body
+1021	Accessory facial motor nucleus
+1022	Central lobule
+1023	retriculospinal tract
+1024	choroid plexus
+1025	Tuberomammillary nucleus
+1026	Retrosplenial area, ventral part, layer 2/3
+1027	Mediodorsal nucleus of the thalamus, central part
+1028	Superior colliculus, motor related
+1029	pineal stalk
+1030	spinal tract of the trigeminal nerve
+1031	optic tract
+1032	Primary somatosensory area, trunk, layer 5
+1033	Orbital area, ventrolateral part, layer 5
+1034	Submedial nucleus of the thalamus
+1035	Primary somatosensory area, trunk, layer 1
+1036	Lobule III, molecular layer
+1037	Entorhinal area, medial part, dorsal zone, layer 5
+1038	Entorhinal area, medial part, dorsal zone, layer 4
+1039	Primary somatosensory area, upper limb
+1040	Entorhinal area, medial part, dorsal zone, layer 6
+1041	Anterior cingulate area, ventral part, layer 2/3
+1042	Lobule IV, granular layer
+1043	Entorhinal area, medial part, dorsal zone, layer 3
+1044	Entorhinal area, medial part, dorsal zone, layer 2
+1045	Retrosplenial area, lateral agranular part, layer 6a
+1046	Nodulus (X)
+1047	Nodulus (X), Purkinje layer
+1048	spinotelenchephalic pathway
+1049	Copula pyramidis, granular layer
+1050	Crus 1, molecular layer
+1051	Piriform-amygdalar area, layers 1-3
+1052	posterior superior fissure
+1053	Posterior auditory area, layer 6a
+1054	Posterior auditory area, layer 6b
+1055	Primary somatosensory area, barrel field, layer 6a
+1056	Primary somatosensory area, trunk, layer 6b
+1057	Primary somatosensory area, trunk, layer 6a
+1058	Paraventricular hypothalamic nucleus, magnocellular division, posterior magnocellular part
+1059	Vermal regions
+1060	motor root of the trigeminal nerve
+1061	Subiculum, dorsal part, stratum radiatum
+1062	Nucleus of the lateral olfactory tract, layer 3
+1063	Entorhinal area, lateral part, layer 4/5
+1064	Parasubiculum, layer 2
+1065	Parasubiculum, layer 1
+1066	Retrohippocampal region
+1067	Lobules IV-V, molecular layer
+1068	Vascular organ of the lamina terminalis
+1069	Olfactory tubercle
+1070	Primary somatosensory area, unassigned, layer 6a
+1071	Entorhinal area, lateral part, layer 5/6
+1072	Olivary pretectal nucleus
+1073	Entorhinal area, lateral part, layer 6a
+1074	Posterior parietal association areas, layer 4
+1075	Retrosplenial area, lateral agranular part, layer 2/3
+1076	Entorhinal area, lateral part, layer 6b
+1077	Midbrain, behavioral state related
+1078	Orbital area, layer 6a
+1079	Orbital area, layer 6b
+1080	retina
+1081	precommissural fornix, general
+1082	Anteromedial nucleus, dorsal part
+1083	Accessory abducens nucleus
+1084	Supplemental somatosensory area, layer 6b
+1085	Pyramus (VIII), granular layer
+1086	Supplemental somatosensory area, layer 6a
+1087	Hindbrain
+1088	root
+1089	Declive (VI)
+1090	Superior colliculus, sensory related
+1091	Retrosplenial area, lateral agranular part
+1092	Medial amygdalar nucleus, posterodorsal part, sublayer c
+1093	Medial amygdalar nucleus, posterodorsal part, sublayer b
+1094	Medial amygdalar nucleus, posterodorsal part, sublayer a
+1095	Suprachiasmatic nucleus
+1096	Visual areas
+1097	Subiculum, ventral part, molecular layer
+1098	ansoparamedian fissure
+1099	vestibulospinal pathway
+1100	Nucleus ambiguus
+1101	intercrural fissure
+1102	perforant path
+1103	Taenia tecta, ventral part, layer 3
+1104	Orbital area, ventrolateral part
+1105	Rostrolateral area, layer 4
+1106	Rostrolateral area, layer 5
+1107	Posterolateral visual area, layer 4
+1108	Frontal pole, layer 6a
+1109	corticospinal tract, crossed
+1110	retriculospinal tract, medial part
+1111	retriculospinal tract, lateral part
+1112	Postpiriform transition area, layers 3
+1113	Presubiculum, layer 2
+1114	trochlear nerve decussation
+1115	Primary somatosensory area, lower limb
+1116	Folium-tuber vermis (VII), molecular layer
+1117	dorsal commissure of the spinal cord
+1118	Paraventricular hypothalamic nucleus, magnocellular division, anterior magnocellular part
+1119	choroid fissure
+1120	trochlear nerve
+1121	Flocculus, granular layer
+1122	Paraventricular hypothalamic nucleus, magnocellular division, posterior magnocellular part, medial zone
+1123	Paraventricular hypothalamic nucleus, magnocellular division, posterior magnocellular part, lateral zone
+1124	posterolateral fissure
+1125	Striatum-like amygdalar nuclei
+1126	Supraoculomotor periaqueductal gray
+1127	superior cerebellar peduncle decussation
+1128	Subparafascicular nucleus, magnocellular part
+1129	Paraventricular hypothalamic nucleus, parvicellular division, anterior parvicellular part
+1130	Triangular nucleus of septum
+1131	Retrosplenial area, ventral part
+1132	rubrospinal tract
+1133	Infralimbic area, layer 1
+1134	Olfactory tubercle, layers 1-3
+1135	interventricular foramen
+1136	Laterointermediate area, layer 5
+1137	Medial preoptic nucleus
+1138	Medial preoptic area
+1139	Rostrolateral lateral visual area
+1140	Laterointermediate area, layer 4
+1141	Anteroventral preoptic nucleus
+1142	Field CA1, pyramidal layer
+1143	Intermediate geniculate nucleus
+1144	Lateral reticular nucleus
+1145	Primary somatosensory area, layer 6a
+1146	spinoreticular pathway
+1147	Primary somatosensory area, layer 6b
+1148	Primary somatosensory area, lower limb, layer 2/3
+1149	Primary somatosensory area, unassigned, layer 6b
+1150	anterior commissure, temporal limb
+1151	Parabrachial nucleus, medial division
+1152	Parabrachial nucleus, lateral division
+1153	grooves of the cerebellar cortex
+1154	Primary somatosensory area, upper limb, layer 2/3
+1155	Rostrolateral lateral visual area, layer 6b
+1156	Nucleus accumbens
+1157	Anterior cingulate area
+1158	Subiculum
+1159	Vestibular nuclei
+1160	Temporal association areas
+1161	Dentate gyrus medial blade, granule cell layer
+1162	Primary auditory area, layer 4
+1163	Parabrachial nucleus, lateral division, dorsal lateral part
+1164	Parabrachial nucleus, lateral division, external lateral part
+1165	Secondary motor area, layer 5
+1166	Parasubiculum, layer 3
+1167	Supratrigeminal nucleus
+1168	Secondary motor area, layer 1
+1169	Postrhinal area, layer 6a
+1170	Flocculus, Purkinje layer
+1171	Posterior parietal association areas, layer 1
+1172	nigrostriatal tract
+1173	Gracile nucleus
+1174	Nucleus incertus
+1175	Anterior cingulate area, dorsal part
+1176	spinocervical tract
+1177	Paramedian reticular nucleus
+1178	posteromedial visual area, layer 6a
+1179	reticulocerebellar tract
+1180	Dorsal auditory area, layer 2/3
+1181	Nucleus of the brachium of the inferior colliculus
+1182	Nucleus circularis
+1183	Main olfactory bulb, granule layer
+1184	Supramammillary nucleus, medial part
+1185	Anterior cingulate area, ventral part
+1186	Main olfactory bulb, glomerular layer
+1187	Paraventricular hypothalamic nucleus, descending division, lateral parvicellular part
+1188	Bed nuclei of the stria terminalis, anterior division, rhomboid nucleus
+1189	Lobule III, granular layer
+1190	Granular lamina of the cochlear nuclei
+1191	Cerebellar cortex, molecular layer
+1192	Nucleus of Roller
+1193	Primary somatosensory area, layer 1
+1194	Orbital area, medial part, layer 6a
+1195	Primary somatosensory area, barrel field, layer 1
+1196	Prelimbic area, layer 2/3
+1197	Anterodorsal preoptic nucleus
+1198	fiber tracts
+1199	Agranular insular area, ventral part, layer 6b
+1200	Somatosensory areas, layer 1
+1201	Primary somatosensory area, barrel field, layer 5
+1202	midbrain tract of the trigeminal nerve
+1203	Retrosplenial area, dorsal part, layer 2/3
+1204	fasciculus retroflexus
+1205	Perirhinal area, layer 2/3
+1206	Pallidum, dorsal region
+1207	Cuneiform nucleus
+1208	Anterior cingulate area, dorsal part, layer 2/3
+1209	Culmen
+1210	hippocampal fissure
+1211	Folium-tuber vermis (VII), Purkinje layer
+1212	inferior colliculus commissure
+1213	Medial group of the dorsal thalamus
+1214	Medial amygdalar nucleus
+1215	Visual areas, layer 4
+1216	Striatum
+1217	Primary somatosensory area, barrel field, layer 4
+1218	Mediomedial posterior visual area
+1219	dorsal thalamus related
+1220	mammillothalamic tract
+1221	Orbital area, lateral part, layer 2/3
+1222	Inferior colliculus, central nucleus
+1223	Anterior cingulate area, layer 5
+1224	Midbrain trigeminal nucleus
+1225	Anterior cingulate area, layer 1
+1226	Posterolateral visual area, layer 5
+1227	middle thalamic commissure
+1228	Nucleus z
+1229	fasciculus proprius
+1230	Primary somatosensory area, mouth
+1231	Primary somatosensory area, nose
+1232	Hypothalamic medial zone
+1233	Taenia tecta, ventral part, layers 1-3
+1234	Lingula (I), molecular layer
+1235	Laterolateral anterior visual area, layer 2/3
+1236	cerebellum related fiber tracts
+1237	Basomedial amygdalar nucleus, anterior part
+1238	internal capsule
+1239	Ventromedial hypothalamic nucleus, dorsomedial part
+1240	fornix system
+1241	Field CA2, pyramidal layer
+1242	Posterior auditory area
+1243	Primary auditory area, layer 2/3
+1244	Flocculus, molecular layer
+1245	Paraflocculus
+1246	crossed tectospinal pathway
+1247	Visceral area
+1248	Paraflocculus, molecular layer
+1249	auditory radiation
+1250	Basomedial amygdalar nucleus, posterior part
+1251	corticobulbar tract
+1252	direct tectospinal pathway
+1253	Taenia tecta, dorsal part, layer 1
+1254	Medial septal complex
+1255	Nodulus (X), granular layer
+1256	grooves
+1257	Primary visual area
+1258	Mediomedial posterior visual area, layer 2/3
+1259	Dopaminergic A13 group
+1260	Paraventricular hypothalamic nucleus, descending division, dorsal parvicellular part
+1261	Taenia tecta
+1262	Central lateral nucleus of the thalamus
+1263	Postpiriform transition area
+1264	Lateral reticular nucleus, magnocellular part
+1265	nodular fissure
+1266	Lateral reticular nucleus, parvicellular part
+1267	premammillary commissure
+1268	Anterior area
+1269	Thalamus
+1270	Suprageniculate nucleus
+1271	Rostrolateral lateral visual area, layer 2/3
+1272	Anteromedial nucleus, ventral part
+1273	Mediomedial anterior visual area, layer 1
+1274	Lateral visual area
+1275	Medial visual area
+1276	Periaqueductal gray
+1277	Cerebral nuclei
+1278	Visual areas, layer 6a
+1279	Anterodorsal nucleus
+1280	Lobules IV-V
+1281	Posterolateral visual area, layer 6b
+1282	Agranular insular area
+1283	Infracerebellar nucleus
+1284	Field CA2, stratum lacunosum-moleculare
+1285	Paracentral nucleus
+1286	Anteromedial nucleus
+1287	Subcommissural organ
+1288	Ansiform lobule
+1289	cerebral aqueduct
+1290	Area postrema
+1291	Primary auditory area, layer 1
+1292	Anterior tegmental nucleus
+1293	Primary auditory area, layer 5
+1294	Anteroventral nucleus of thalamus
+1295	Parabigeminal nucleus
+1296	Primary somatosensory area, layer 4
+1297	Dentate gyrus medial blade, polymorph layer
+1298	primary fissure
+1299	Ventral posteromedial nucleus of the thalamus, parvicellular part
+1300	Agranular insular area, posterior part, layer 2/3
+1301	propriohypothalamic pathways, medial
+1302	Ventromedial hypothalamic nucleus, ventrolateral part
+1303	Visual areas, layer 1
+1304	Bed nuclei of the stria terminalis, anterior division, magnocellular nucleus
+1305	Visual areas, layer 5
+1306	propriohypothalamic pathways, dorsal
+1307	Ventral auditory area, layer 6a
+1308	Ventral auditory area, layer 6b
+1309	lateral olfactory tract, body
+1310	cerebal peduncle
+1311	Posterolateral visual area, layer 1
+1312	Inferior colliculus, external nucleus
+1313	Inferior colliculus, dorsal nucleus
+1314	Pyramus (VIII), molecular layer
+1315	Pons, motor related
+1316	Dorsal part of the lateral geniculate complex, ipsilateral zone
+1317	Laterointermediate area, layer 2/3
+1318	spinothalamic tract
+1319	Crus 2, molecular layer
+1320	bulbocerebellar tract
+1321	Copula pyramidis, molecular layer
+1322	propriohypothalamic pathways, ventral
+1323	Lobules IV-V, granular layer
+1324	corticopontine tract
+1325	spinovestibular pathway
+1326	Lobule II, granular layer

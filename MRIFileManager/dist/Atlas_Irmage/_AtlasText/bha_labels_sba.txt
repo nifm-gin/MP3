@@ -1,0 +1,65 @@
+2	cerebellar cortex
+4	thalamus
+5	olfactory bulbs
+7	striatum
+8	corpus callosum
+9	colliculus: superior
+10	periaqueductal grey
+11	fimbria
+12	internal capsule
+13	stratum granulosum of hippocampus
+14	cerebral peduncle
+16	dentate gyrus of hippocampus
+18	corticospinal tract/pyramids
+19	facial nerve (cranial nerve 7)
+20	medial lemniscus/medial longitudinal fasciculus
+22	fornix
+23	anterior commissure: pars posterior
+25	fasciculus retroflexus
+43	colliculus: inferior
+44	globus pallidus
+45	cerebellar peduncle: middle
+47	arbor vita of cerebellum
+51	amygdala
+52	basal forebrain
+53	medial septum
+54	fundus of striatum
+55	nucleus accumbens
+57	lateral ventricle
+59	stria terminalis
+61	mammillary bodies
+64	cerebral cortex: frontal lobe
+76	bed nucleus of stria terminalis
+85	pontine nucleus
+95	olfactory tubercle
+99	habenular commissure
+100	posterior commissure
+101	lateral olfactory tract
+107	lateral septum
+113	inferior olivary complex
+115	anterior commissure: pars anterior
+116	optic tract
+118	fourth ventricle
+119	cerebral aqueduct
+123	cerebellar peduncle: inferior
+124	superior olivary complex
+130	cerebral cortex: occipital lobe
+131	pre-para subiculum
+140	subependymale zone / rhinocele
+146	third ventricle
+147	CA1 of hippocampus
+148	CA2 of hippocampus
+149	CA3 of hippocampus
+150	hypothalamus
+156	ventral tegmental decussation
+157	interpedunclar nucleus
+166	cuneate nucleus
+174	medulla
+180	cerebral cortex: parieto-temporal lobe
+187	pons
+194	midbrain
+205	stria medullaris
+209	cerebral cortex: entorhinal cortex
+210	mammilothalamic tract
+222	cerebellar peduncle: superior
+252	hippocampal formation

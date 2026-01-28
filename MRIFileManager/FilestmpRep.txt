@@ -1,0 +1,12 @@
+[Bruker] /Volumes/GIN_EQUIPE_05/PROJECTS/Current/2022_Breaveheart_BL_LR/MRI/Raw_data
+[Dicom] /Users/blemasso/Library/CloudStorage/GoogleDrive-lemasson.benjamin@gmail.com/Mon Drive/matlab/MP3/MRIFileManager/
+[ParRec] /Users/blemasso/Library/CloudStorage/GoogleDrive-lemasson.benjamin@gmail.com/Mon Drive/matlab/MP3/MRIFileManager/
+[NifTI] /Users/blemasso/Library/CloudStorage/GoogleDrive-lemasson.benjamin@gmail.com/Mon Drive/matlab/MP3/MRIFileManager/
+[Bids] /Users/blemasso/Library/CloudStorage/GoogleDrive-lemasson.benjamin@gmail.com/Mon Drive/matlab/MP3/MRIFileManager/
+[Export] /Users/blemasso/Library/CloudStorage/GoogleDrive-lemasson.benjamin@gmail.com/Mon Drive/matlab/MP3/MRIFileManager/
+[LookAndFeel] com.apple.laf.AquaLookAndFeel
+[NamingRepNifTI] /
+[NamingFileNifTI] PatientName-StudyName-CreationDate-SeqNumber-Protocol-SequenceName-AcquisitionTime
+[NamingOptionsNifTI] 10012
+[previewActived] No
+[SeqDetail] 111111111111100000000

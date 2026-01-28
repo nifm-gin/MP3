@@ -209,7 +209,6 @@ dictionaryMRI:
                    viewer: {category: cineASL}
                    json:   {tagJson: VisuCoreOrientation, type: string, format: ~, units: ~}
 
-
   B-values Number:
                    description: {info: ""}
   
@@ -663,5 +662,67 @@ dictionaryMRI:
                   whereBruker:  {file: method, keyName: $PVM_ScanTime=, type: float, format: ~, units: ~}
                    
                   viewer: {category: MRI parameters}
-                  json:   {tagJson: ScanTime, type: float, format: ~, units: ~}              
-             
+                  json:   {tagJson: ScanTime, type: float, format: ~, units: ~}   
+
+  KVP:
+                  description: {info: ""}
+                  whereDicom:  {file: ~, keyName: KVP, type: float, format: ~, units: ~}
+                   
+                  viewer: {category: MRI parameters}
+                  json:   {tagJson: KVP, type: float, format: ~, units: ~}
+
+  Sat Transf Pulse:
+                  description: {info: "(Length(ms), Bandwidth(Hz), Flipangle(°), Calculated?, Sharpness, Bwfac(Hz.ms), Sint, Pint, Type, Rpfac(%), Pow(W), Shape)"}
+                  whereBruker: {file: method, keyName: $PVM_SatTransPulse=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransPulse, type: string, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransPulse, type: string, format: ~, units: ~}
+
+  Sat Transf Freq Range:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransFreqRanges=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransFreqRanges, type: float, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransFreqRanges, type: float, format: ~, units: ~}
+  
+  Sat Transf Pulse Number:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransNPulses=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransNPulses, type: float, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransNPulses, type: float, format: ~, units: ~}
+
+  Sat Transf Freq Unit:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransFreqUnit=, type: string, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransFreqUnit, type: string, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransFreqUnit, type: string, format: ~, units: ~}
+
+  Sat Transf Pulse Ampl:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransPulseAmpl_uT=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransPulseAmpl, type: float, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransPulseAmpl, type: float, format: ~, units: ~}
+
+  Sat Transf InterPulse Delay:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransInterPulseDelay=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransInterPulseDelay, type: float, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransInterPulseDelay, type: float, format: ~, units: ~}
+
+  Sat Transf Module Time:
+                  description: {info: ""}
+                  whereBruker:  {file: method, keyName: $PVM_SatTransModuleTime=, type: float, format: ~, units: ~}
+                  whereNifti:  {file: json, keyName: SatTransModuleTime, type: float, format: ~, units: ~}
+
+                  viewer: {category: Saturation Transfert}
+                  json:   {tagJson: SatTransModuleTime, type: float, format: ~, units: ~}
