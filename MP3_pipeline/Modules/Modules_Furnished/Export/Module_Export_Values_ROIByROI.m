@@ -106,6 +106,7 @@ for x = 1:numel(Patient_listing)
             % save all the data in output_data
             output_data = scan_of_reference.data;
             output_data = double(output_data);
+            output_data = squeeze(output_data);
             % start to create the CSV file
             PatientName = {};
             GroupName = {};
